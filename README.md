@@ -24,4 +24,4 @@ Python based toolbox for processing motion data
 ```
                         
 ## Authors
-Robbin Johannes, Clint Hansen, Julius Welzel & Walter Maetzler
+[@rmndrs89](https://github.com/rmndrs89), Clint Hansen, Julius Welzel & Walter Maetzler
