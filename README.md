@@ -25,3 +25,23 @@ Python based toolbox for processing motion data
                         
 ## Authors
 [@rmndrs89](https://github.com/rmndrs89), Clint Hansen, Julius Welzel & Walter Maetzler
+
+
+## Organigram
+
+```mermaid
+graph TD;
+  ch(CEO - Clint Hansen) --> rr(CTO - Robbin Romijnders);
+  ch --> cfo(CFO);
+  rr --> jw(Data Engineer - Julius Welzel);
+```
+
+
+## Workflow
+```mermaid
+graph LR;
+  md(Clint - motion data) --> jw(Julius - database);
+  jw --> rr(Robbin - algorithms)
+  rr --> free(NGMT free)
+  rr --> paid(NGMT reports)
+```
