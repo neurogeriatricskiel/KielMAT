@@ -62,7 +62,9 @@ class MotionData:
     @classmethod
     def import_time_series(self, file: str):
         # Placeholder function to be implemented
-        pass
+        with open(file, 'r') as infile:
+            raw = np.loadtxt(infile)
+        return raw
     
     @classmethod
     def import_hasomed_imu(cls, file: str):
