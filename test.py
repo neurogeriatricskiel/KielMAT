@@ -1,23 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from typing import Optional, List
-from dataclasses import dataclass, field
 from ngmt.datasets import keepcontrol
-
-@dataclass(kw_only=True)
-class IMURecording:
-    type: str
-    units: str
-    fs: float
-    data: np.array
-
-@dataclass(kw_only=True)
-class IMUDevice:
-    tracked_point: str
-    device_manufacturer: Optional[str] = ""
-    device_model: Optional[str] = ""
-    recordings: List[IMURecording] = field(default_factory=list)
 
 def main():
     # User settings
@@ -26,24 +10,23 @@ def main():
     TRACKSYS = "imu"
 
     # Load data
-    df = keepcontrol.load_file(
-        os.path.join(f"sub-{SUB_ID}", 
-                     "motion",
-                     f"sub-{SUB_ID}_task-{TASK_NAME}_tracksys-{TRACKSYS}_motion.tsv")
+    ds = keepcontrol.load_file(
+        sub_id=SUB_ID,
+        task_name=TASK_NAME,
+        tracksys=TRACKSYS
     )
 
-    tracked_point = "sternum"
-    acc = IMURecording(type="acc", units="g", fs=200., data=df.loc[:, [channel_name for channel_name in df.columns if f"{tracked_point}_ACC" in channel_name]].values)
-    gyr = IMURecording(type="gyr", units="deg/s", fs=200., data=df.loc[:, [channel_name for channel_name in df.columns if f"{tracked_point}_ANGVEL" in channel_name]].values)
-    mag = IMURecording(type="mag", units="a.u.", fs=200., data=df.loc[:, [channel_name for channel_name in df.columns if f"{tracked_point}_MAGN" in channel_name]].values)
-    imu = IMUDevice(tracked_point=tracked_point, recordings=[acc, gyr, mag])
+    # Get a list of unique tracked points
+    tracked_points = [imu.tracked_point for imu in ds.devices]
 
-    fig, axs = plt.subplots(3, 1, sharex=True)
+    # Get IMU data from given tracked point
+    tracked_point = "pelvis"
+    imu = [imu for imu in ds.devices if tracked_point in imu.tracked_point][0]
+
+    fig, axs = plt.subplots(len(imu.recordings), 1, sharex=True)
     for i in range(len(imu.recordings)):
         axs[i].plot(imu.recordings[i].data)
-    axs[-1].set_xlim((0, acc.data.shape[0]))
-    for ax in axs:
-        ax.grid(True)
+        axs[i].set_ylabel(f"{imu.recordings[i].type} ({imu.recordings[i].units})")
     plt.show()
     return
 
