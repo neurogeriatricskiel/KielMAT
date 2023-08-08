@@ -1,10 +1,13 @@
 # NGMT
-##  NeuroGeriatricMotionToolbox
+
+## NeuroGeriatricMotionToolbox
+
 Python based toolbox for processing motion data
 
 ## Structure
-```
-│NGMT                <- Main folder. It is initialized as a Git
+
+```markdown
+│ngmt                <- Main folder. It is initialized as a Git
 │                       repository with a reasonable .gitignore file.
 │
 ├── examples         <- Various scripts, e.g. simulations, plotting, analysis,
@@ -19,9 +22,15 @@ Python based toolbox for processing motion data
 ├── test             <- Folder containing tests for `ngmt`.
 │
 ├── README.md        <- Top-level README. 
+├── LICENSE
+├── requirements.txt <- The requirements file for reproducing the analysis environment, e.g.
+│                       generated with `pip freeze > requirements.txt`. Might be replaced by
+│                       a `environment.yml` file for Anaconda.
+├── setup.py         <- makes project pip installable (pip install -e .) so src can be imported
 |
 └── .gitignore       <- focused on Python VS Code
 ```
-                        
+
 ## Authors
+
 [Robbin Romijnders](https://github.com/rmndrs89) & Julius Welzel
