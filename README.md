@@ -31,11 +31,12 @@ Python based toolbox for processing motion data
 └── .gitignore       <- focused on Python VS Code
 ```
 
-## Realation of data classes
+## Relation of data classes
 ```mermaid
 classDiagram
     class MotionData {
         info: FileInfo
+        srate: float
         channels: ChannelMetaData
         times: np.ndarray
         time_series: np.ndarray
@@ -46,7 +47,6 @@ classDiagram
     class FileInfo {
         SubjectId: str
         TaskName: str
-        SamplingFrequency: float
         FilePath: str
         import_data()
     }
