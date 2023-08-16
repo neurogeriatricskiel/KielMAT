@@ -7,3 +7,7 @@ my_messy_code/mytestconde.py
 ngmt/examples_gait_sqeuence.py
 
 examples/data/exDataGSDA.mat
+
+ngmt\datasets\__pycache__
+
+ngmt\modules\gsd\__pycache__
