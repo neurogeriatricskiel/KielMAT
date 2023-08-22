@@ -141,8 +141,7 @@ def calculate_envelope_activity(input_signal, smooth_window, threshold_style, du
         plt.plot(np.where(alarm != 0, np.max(input_signal), 0), 'r', linewidth=2.5)
         plt.plot(THR_buf, '--g', linewidth=2.5)
         plt.title('Raw Signal and detected Onsets of activity')
-        plt.legend(['Raw Signal', 'Detected Activity in Signal', 'Adaptive Threshold'], loc='upper left',
-                   orientation='horizontal')
+        plt.legend(['Raw Signal', 'Detected Activity in Signal', 'Adaptive Threshold'], loc='upper left')
         plt.grid(True)
         plt.axis('tight')
 
@@ -151,10 +150,9 @@ def calculate_envelope_activity(input_signal, smooth_window, threshold_style, du
         plt.plot(THR_buf, '--g', linewidth=2.5)
         plt.plot(thres_buf, '--r', linewidth=2)
         plt.plot(noise_buf, '--k', linewidth=2)
-        plt.title('Smoothed Envelope of the signal(Hilbert Transform)')
-        plt.legend(['Smoothed Envelope of the signal(Hilbert Transform)', 'Adaptive Threshold', 'Activity level',
-                    'Noise Level'], loc='upper left', orientation='horizontal')
-        plt.link_xaxes([ax, ax2])
+        plt.title('Smoothed Envelope of the signal (Hilbert Transform)')
+        plt.legend(['Smoothed Envelope of the signal (Hilbert Transform)', 'Adaptive Threshold', 'Activity level',
+                    'Noise Level'])
         plt.grid(True)
         plt.axis('tight')
         plt.tight_layout()
@@ -347,3 +345,57 @@ def find_interval_intersection(set_a, set_b):
                 state = 2
 
     return np.array(intersection_intervals)
+
+
+def organize_and_pack_results(walking_periods, peak_steps):
+    """Organize and Pack Walking Results with Associated Peak Steps.
+
+    Given lists of walking periods and peak step indices, this function organizes and packs the results
+    into a more structured format. It calculates the number of steps in each walking period, associates
+    peak steps with their corresponding walking periods, and extends the duration of walking periods based
+    on step time. The function also checks for overlapping walking periods and merges them.
+
+    Args:
+        walking_periods (list): List of tuples representing walking periods, where each tuple contains the start and end indices.
+        peak_steps (list): List of peak step indices.
+
+    Returns:
+        tuple(list, list): A tuple containing two elements:
+            - A list of dictionaries representing organized walking results, each dictionary contains:
+                - 'start': Start index of the walking period.
+                - 'end': End index of the walking period.
+                - 'steps': Number of steps within the walking period.
+                - 'mid_swing': List of peak step indices within the walking period.
+            - A list of sorted peak step indices across all walking periods.
+    """
+    num_periods = len(walking_periods)
+    organized_results = [{'start': walking_periods[i][0], 'end': walking_periods[i][1], 'steps': 0, 'mid_swing': []} for i in range(num_periods)]
+    all_mid_swing = []
+
+    for i in range(num_periods):
+        steps_within_period = [p for p in peak_steps if organized_results[i]['start'] <= p <= organized_results[i]['end']]
+        organized_results[i]['steps'] = len(steps_within_period)
+        organized_results[i]['mid_swing'] = steps_within_period
+        all_mid_swing.extend(steps_within_period)
+
+        # Calculate step time based on detected peak steps
+        if len(steps_within_period) > 2:
+            step_time = sum([steps_within_period[j + 1] - steps_within_period[j] for j in range(len(steps_within_period) - 1)]) / (len(steps_within_period) - 1)
+            organized_results[i]['start'] = int(organized_results[i]['start'] - 1.5 * step_time / 2)
+            organized_results[i]['end'] = int(organized_results[i]['end'] + 1.5 * step_time / 2)
+
+    all_mid_swing.sort()
+
+    # Check for overlapping walking periods and merge them
+    i = 0
+    while i < num_periods - 1:
+        if organized_results[i]['end'] >= organized_results[i + 1]['start']:
+            organized_results[i]['end'] = organized_results[i + 1]['end']
+            organized_results[i]['steps'] += organized_results[i + 1]['steps']
+            organized_results[i]['mid_swing'].extend(organized_results[i + 1]['mid_swing'])
+            organized_results.pop(i + 1)
+            num_periods -= 1
+        else:
+            i += 1
+
+    return organized_results, all_mid_swing
