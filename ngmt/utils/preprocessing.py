@@ -3,7 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
 import scipy.signal
-
+import scipy.io
+import scipy.ndimage
+import pywt
 
 def resample_interpolate(input_signal, initial_sampling_rate, target_sampling_rate):
     """_summary_
@@ -20,10 +22,19 @@ def resample_interpolate(input_signal, initial_sampling_rate, target_sampling_ra
     Returns:
     resampled_signal (array_like): The resampled and interpolated signal.
     """
+    # Calculate the length of the input signal.
     recording_time = len(input_signal)
+    
+    # Create an array representing the time indices of the input signal.
     x = np.arange(1, recording_time + 1)
+    
+    # Create an array representing the time indices of the resampled signal.
     xq = np.arange(1, recording_time + 1, initial_sampling_rate / target_sampling_rate)
-    interpolator = scipy.interpolate.interp1d(x, input_signal, kind='linear', axis=0, fill_value='extrapolate') # Create an interpolation function and apply it to the data
+    
+    # Create an interpolation function using linear interpolation and apply it to the data.
+    interpolator = scipy.interpolate.interp1d(x, input_signal, kind='linear', axis=0, fill_value='extrapolate') 
+    
+    # Resample and interpolate the input signal to the desired target sampling rate.
     resampled_signal  = interpolator(xq)
     
     return resampled_signal 
@@ -42,11 +53,45 @@ def remove_40Hz_drift(signal):
     Returns:
     filtered_signal (ndarray): The filtered signal with removed drift.
     """
-    numerator_coefficient = np.array([1, -1])       # The numerator coefficient vector of the filter.
-    denominator_coefficient = np.array([1, -0.9748])  # The denominator coefficient vector of the filter.
+    # The numerator coefficient vector of the filter.
+    numerator_coefficient = np.array([1, -1])
+
+    # The denominator coefficient vector of the filter.
+    denominator_coefficient = np.array([1, -0.9748])  
+
+    # Filter signal using high-pass filter
     filtered_signal = scipy.signal.filtfilt(numerator_coefficient, denominator_coefficient, signal, axis=0, padtype='odd', padlen=3 * (max(len(numerator_coefficient), len(denominator_coefficient)) - 1))
 
     return filtered_signal
+
+
+def recursive_gaussian_smoothing(noisy_data, window_lengths, sigmas):
+    """
+    Apply recursive Gaussian smoothing to noisy data using different window lengths and sigmas.
+
+    Args:
+        noisy_data (numpy.ndarray): Input noisy data as a 1D NumPy array.
+        window_lengths (list of int): List of window lengths for each smoothing step.
+        sigmas (list of float): List of standard deviations corresponding to window_lengths.
+
+    Returns:
+        numpy.ndarray: Smoothed data after applying multiple Gaussian filters.
+    """
+    smoothed_data = noisy_data.copy()
+
+    for window_length, sigma in zip(window_lengths, sigmas):
+        
+        # Create the Gaussian kernel
+        x = np.arange(-window_length // 2 + 1, window_length // 2 + 1, 1)
+        gaussian_kernel = np.exp(-x**2 / (2 * sigma**2))
+
+        # Normalize the kernel
+        gaussian_kernel /= np.sum(gaussian_kernel)  
+
+        # Apply the filter to the data using convolution
+        smoothed_data = np.convolve(smoothed_data, gaussian_kernel, mode='same')
+
+    return smoothed_data
 
 
 def calculate_envelope_activity(input_signal, smooth_window, threshold_style, duration, plot_results):
@@ -90,8 +135,8 @@ def calculate_envelope_activity(input_signal, smooth_window, threshold_style, du
     
     # Take the moving average of the analytic signal
     env = scipy.signal.convolve(env, np.ones(smooth_window) / smooth_window, mode='full')  # Returns the discrete, linear convolution of two one-dimensional sequences.
-    env = env - np.mean(env)                                                  # Remove the offset by subtracting the mean of 'env'
-    env = env / np.max(env)                                                   # Normalize the 'env' by dividing by its maximum value
+    env = env - np.mean(env)     # Remove the offset by subtracting the mean of 'env'
+    env = env / np.max(env)      # Normalize the 'env' by dividing by its maximum value
 
     # Threshold the signal
     if threshold_style == 0:
@@ -176,11 +221,20 @@ def find_consecutive_groups(input_array):
     ind (ndarray): A 2D array where each row represents a group of consecutive non-zero values.
         The first column contains the start index of the group, and the second column contains the end index.
     """
-    temp = np.where(input_array)[0]  # find indices of non-zeros
-    idx = np.where(np.diff(temp) > 1)[0]  # find where the difference between indices is greater than 1
-    ind = np.zeros((len(idx) + 1, 2), dtype=int)  # initialize the output array
-    ind[:, 1] = temp[np.append(idx, -1)]  # set the second column
-    ind[:, 0] = temp[np.insert(idx + 1, 0, 0)]  # set the first column
+    # Find indices of non-zeros
+    temp = np.where(input_array)[0]
+
+    # Find where the difference between indices is greater than 1
+    idx = np.where(np.diff(temp) > 1)[0]
+
+    # Initialize the output array
+    ind = np.zeros((len(idx) + 1, 2), dtype=int)
+
+    # Set the second column
+    ind[:, 1] = temp[np.append(idx, -1)]
+
+    # Set the first column
+    ind[:, 0] = temp[np.insert(idx + 1, 0, 0)]  
 
     return ind
 
@@ -201,13 +255,18 @@ def find_local_min_max(signal, threshold=None):
             - minima_indices: Indices of local minima in the signal.
             - maxima_indices: Indices of local maxima in the signal.
     """
+    # Compute the difference between adjacent signal values.
     signal_diff = np.diff(signal)
+    
+    # Find the indices where the signal changes sign, indicating potential minima and maxima.
     zero_crossings = np.where(signal_diff[1:] * signal_diff[:-1] <= 0)[0]
     zero_crossings = zero_crossings + 1
 
+    # Identify the indices of local minima and maxima based on sign changes.
     minima_indices = zero_crossings[signal_diff[zero_crossings] >= 0]
     maxima_indices = zero_crossings[signal_diff[zero_crossings] < 0]
 
+    # If a threshold is provided, filter out maxima and minima that do not meet the threshold.
     if threshold is not None:
         maxima_indices = maxima_indices[signal[maxima_indices] > threshold]
         minima_indices = minima_indices[signal[minima_indices] < -threshold]
@@ -232,32 +291,46 @@ def identify_pulse_trains(signal):
             - 'end': The index of the last value in the pulse train.
             - 'steps': The number of steps in the pulse train.
     """
+    # Initialize an empty list to store detected pulse trains.
     pulse_trains = []
+    
+    # Initialize a flag to track whether we are within a pulse train.
     walking_flag = 0
+
+    # Set an initial threshold value for pulse train detection.
     threshold = 3.5 * 40
+
+    # Initialize a counter for the number of detected pulse trains.
     pulse_count = 0
 
+    # Check if the signal has more than 2 elements.
     if len(signal) > 2:
         for i in range(len(signal) - 1):
+            # Check if the difference between adjacent values is less than the threshold.
             if signal[i + 1] - signal[i] < threshold:
                 if walking_flag == 0:
+                    # If not already in a pulse train, start a new one.
                     pulse_trains.append({'start': signal[i], 'steps': 1})
                     pulse_count += 1
                     walking_flag = 1
                 else:
+                    # If already in a pulse train, update the number of steps and threshold.
                     pulse_trains[pulse_count - 1]['steps'] += 1
                     threshold = 1.5 * 40 + (signal[i] - pulse_trains[pulse_count - 1]['start']) / pulse_trains[pulse_count - 1]['steps']
             else:
                 if walking_flag == 1:
+                    # If leaving a pulse train, record its end and reset threshold.
                     pulse_trains[pulse_count - 1]['end'] = signal[i - 1]
                     walking_flag = 0
                     threshold = 3.5 * 40
 
     if walking_flag == 1:
         if signal[-1] - signal[-2] < threshold:
+            # If still in a pulse train at the end, record its end and update steps.
             pulse_trains[-1]['end'] = signal[-1]
             pulse_trains[-1]['steps'] += 1
         else:
+            # If leaving a pulse train at the end, record its end.
             pulse_trains[-1]['end'] = signal[-2]
 
     return pulse_trains
@@ -279,11 +352,16 @@ def convert_pulse_train_to_array(pulse_train_list):
         numpy.ndarray: A 2D array where each row represents a pulse train with the 'start' value
             in the first column and the 'end' value in the second column.
     """
+    # Initialize a 2D array with the same number of rows as pulse train dictionaries and 2 columns.
     array_representation = np.zeros((len(pulse_train_list), 2), dtype=np.uint64)
 
+    # Iterate through the list of pulse train dictionaries.
     for i, pulse_train_dict in enumerate(pulse_train_list):
-        array_representation[i, 0] = pulse_train_dict['start']  # Access the 'start' key within the dictionary
-        array_representation[i, 1] = pulse_train_dict['end']  # Access the 'end' key within the dictionary
+        # Iterate through the list of pulse train dictionaries.
+        array_representation[i, 0] = pulse_train_dict['start']
+
+        # Iterate through the list of pulse train dictionaries.
+        array_representation[i, 1] = pulse_train_dict['end']
 
     return array_representation
 
@@ -303,18 +381,23 @@ def find_interval_intersection(set_a, set_b):
     Returns:
         numpy.ndarray: A new set of intervals representing the intersection of intervals from `set_a` and `set_b`.
     """
+    # Get the number of intervals in each set.
     num_intervals_a = set_a.shape[0]
     num_intervals_b = set_b.shape[0]
 
+    # Initialize an empty list to store the intersection intervals.
     intersection_intervals = []
 
+    # If either set of intervals is empty, return an empty array.
     if num_intervals_a == 0 or num_intervals_b == 0:
         return np.array(intersection_intervals)
-
+    
+    # Initialize indices and state variables for set_a and set_b traversal.
     index_a = 0
     index_b = 0
     state = 3
 
+    # Traverse both sets of intervals and compute their intersection.
     while index_a < num_intervals_a and index_b < num_intervals_b:
         if state == 1:
             if set_a[index_a, 1] < set_b[index_b, 0]:
@@ -368,14 +451,27 @@ def organize_and_pack_results(walking_periods, peak_steps):
                 - 'mid_swing': List of peak step indices within the walking period.
             - A list of sorted peak step indices across all walking periods.
     """
+    # Calculate the number of walking periods.
     num_periods = len(walking_periods)
+    
+    # Initialize a list of dictionaries to store organized walking results.
     organized_results = [{'start': walking_periods[i][0], 'end': walking_periods[i][1], 'steps': 0, 'mid_swing': []} for i in range(num_periods)]
+    
+    # Initialize a list to store all peak step indices.
     all_mid_swing = []
 
+    # Iterate through each walking period.
     for i in range(num_periods):
+        # Find peak steps within the current walking period.
         steps_within_period = [p for p in peak_steps if organized_results[i]['start'] <= p <= organized_results[i]['end']]
+        
+        # Calculate the number of steps within the walking period.
         organized_results[i]['steps'] = len(steps_within_period)
+
+        # Store the peak step indices within the walking period.
         organized_results[i]['mid_swing'] = steps_within_period
+        
+        # Add peak step indices to the list of all peak step indices.
         all_mid_swing.extend(steps_within_period)
 
         # Calculate step time based on detected peak steps
@@ -384,6 +480,7 @@ def organize_and_pack_results(walking_periods, peak_steps):
             organized_results[i]['start'] = int(organized_results[i]['start'] - 1.5 * step_time / 2)
             organized_results[i]['end'] = int(organized_results[i]['end'] + 1.5 * step_time / 2)
 
+    # Sort all peak step indices.
     all_mid_swing.sort()
 
     # Check for overlapping walking periods and merge them
@@ -399,3 +496,117 @@ def organize_and_pack_results(walking_periods, peak_steps):
             i += 1
 
     return organized_results, all_mid_swing
+
+
+def max_peaks_between_zc(x):
+    """_summary_
+    Find peaks and their locations from the vector x between zero crossings.
+    
+    Args:
+        x (numpy.ndarray): Input column vector.
+        
+    Returns:
+        pks (numpy.ndarray): Signed max/min values between zero crossings.
+        ipks (numpy.ndarray): Locations of the peaks in the original vector.
+    """
+    # Check if the input is a valid column vector.
+    if x.shape[0] == 1:
+        raise ValueError('X must be a column vector')
+    if x.size != len(x):
+        raise ValueError('X must be a column vector')
+    
+    # Find zero crossing locations
+    zero_crossings = np.where(np.diff(np.sign(x)) != 0)[0]
+    
+    # Calculate the number of peaks (one less than zero crossings).
+    L = len(zero_crossings) - 1
+    
+    # Define a function to find the index of the maximum absolute value in a subarray.
+    def imax(x):
+        idx = np.argmax(x)
+        return idx
+    
+    # Find the indices of max/min values between zero crossings.
+    ipk = np.fromiter((imax(np.abs(x[zero_crossings[i]:zero_crossings[i+1]])) for i in range(L)), dtype=int)
+    
+    # Calculate peak locations in the original vector
+    ipks = zero_crossings[:-1] + ipk
+    
+    # Get peak values from the original vector
+    pks = x[ipks]
+    
+    return pks, ipks
+
+
+def signal_decomposition_algorithm(vertical_accelerarion_data,initial_sampling_frequency):
+    """_summary_
+    Perform the Signal Decomposition algorithm on accelerometer data.
+
+    Args:
+        vertical_accelerarion_data (numpy.ndarray): Vertical Acceleration data.
+        initial_sampling_frequency (float): Sampling frequency of the data.
+        
+    Returns:
+        IC_seconds (numpy.ndarray): Detected IC (Initial Contact) timings in seconds.
+        FC_seconds (numpy.ndarray): Detected FC (Foot-off Contact) timings in seconds.
+    """
+    # Define the target sampling frequency for processing.
+    target_sampling_frequency = 40
+    
+    # Resample and interpolate the vertical acceleration data to the target sampling frequency.
+    smoothed_vertical_accelerarion_data = resample_interpolate(vertical_accelerarion_data, initial_sampling_frequency, target_sampling_frequency)
+    
+    # Load FIR filter designed and apply for the low SNR, impaired, asymmetric, and slow gait
+    filtering_file =  scipy.io.loadmat('C:\\Users\\Project\\Desktop\\Gait_Sequence\\Mobilise-D-TVS-Recommended-Algorithms\\GSDB\\Library\\FIR-2-3Hz-40.mat')
+    num = filtering_file['Num'][0, :]
+    width_of_pad = 10000 * len(num)
+    smoothed_vertical_accelerarion_data_padded = np.pad(smoothed_vertical_accelerarion_data, width_of_pad, mode='wrap')
+    detrended_vertical_acceleration_signal = scipy.signal.filtfilt(num, 1, remove_40Hz_drift(smoothed_vertical_accelerarion_data_padded))
+    detrended_vertical_acceleration_signal_lpf_rmzp = detrended_vertical_acceleration_signal[width_of_pad : -width_of_pad]
+    det_ver_acc_sig_LPInt = scipy.integrate.cumtrapz(detrended_vertical_acceleration_signal_lpf_rmzp) / target_sampling_frequency
+    
+    # Perform a continuous wavelet transform on the siganl
+    scales = 9
+    wavelet = 'gaus2'
+    sampling_period = 1/target_sampling_frequency
+    coefficients, _ = pywt.cwt(det_ver_acc_sig_LPInt, np.arange(1, scales + 1), wavelet, sampling_period)
+    desired_scale = 9
+    smoothed_wavelet_result = coefficients[desired_scale - 1, :]
+    smoothed_wavelet_result = smoothed_wavelet_result - np.mean(smoothed_wavelet_result)
+    smoothed_wavelet_result = np.array(smoothed_wavelet_result)  
+    
+    # Apply max_peaks_between_zc funtion to find peaks and their locations.
+    pks1, ipks1 = max_peaks_between_zc(smoothed_wavelet_result.T)
+    
+    # Calculate indx1 (logical indices of negative elements)
+    indx1 = pks1 < 0
+
+    # Extract IC (indices of negative peaks)
+    IC = ipks1[indx1]
+
+    # Convert IC to seconds
+    IC_seconds = IC / target_sampling_frequency
+
+    # Apply continuous wavelet transform
+    scales = 9
+    wavelet = 'gaus2'
+    sampling_period = 1/target_sampling_frequency
+    coefficients, _ = pywt.cwt(smoothed_wavelet_result, np.arange(1, scales + 1), wavelet, sampling_period)
+    desired_scale = 9
+    accVLPIntCwt2 = coefficients[desired_scale - 1, :]
+    accVLPIntCwt2 = accVLPIntCwt2 - np.mean(accVLPIntCwt2)
+    accVLPIntCwt2 = np.array(accVLPIntCwt2)
+    
+    # Apply max_peaks_between_zc funtion to find peaks and their locations.
+    pks2, ipks2 = max_peaks_between_zc(accVLPIntCwt2.T)
+
+    # Calculate indx1 (logical indices of negative elements)
+    indx2 = pks2 > 0
+
+    # Extract IC (indices of negative peaks)
+    FC = ipks2[indx2]
+
+    # Convert IC to seconds
+    FC_seconds = FC / target_sampling_frequency
+
+    return IC_seconds, FC_seconds
