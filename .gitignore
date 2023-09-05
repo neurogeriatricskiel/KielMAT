@@ -11,3 +11,4 @@ examples/data/exDataGSDA.mat
 ngmt\datasets\__pycache__
 
 ngmt\modules\gsd\__pycache__
+/.vscode
