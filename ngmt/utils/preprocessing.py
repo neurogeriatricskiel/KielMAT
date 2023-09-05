@@ -23,10 +23,12 @@ def resample_interpolate(input_signal, initial_sampling_rate, target_sampling_ra
     recording_time = len(input_signal)
     x = np.arange(1, recording_time + 1)
     xq = np.arange(1, recording_time + 1, initial_sampling_rate / target_sampling_rate)
-    interpolator = scipy.interpolate.interp1d(x, input_signal, kind='linear', axis=0, fill_value='extrapolate') # Create an interpolation function and apply it to the data
-    resampled_signal  = interpolator(xq)
-    
-    return resampled_signal 
+    interpolator = scipy.interpolate.interp1d(
+        x, input_signal, kind="linear", axis=0, fill_value="extrapolate"
+    )  # Create an interpolation function and apply it to the data
+    resampled_signal = interpolator(xq)
+
+    return resampled_signal
 
 
 def remove_40Hz_drift(signal):
@@ -42,14 +44,27 @@ def remove_40Hz_drift(signal):
     Returns:
     filtered_signal (ndarray): The filtered signal with removed drift.
     """
-    numerator_coefficient = np.array([1, -1])       # The numerator coefficient vector of the filter.
-    denominator_coefficient = np.array([1, -0.9748])  # The denominator coefficient vector of the filter.
-    filtered_signal = scipy.signal.filtfilt(numerator_coefficient, denominator_coefficient, signal, axis=0, padtype='odd', padlen=3 * (max(len(numerator_coefficient), len(denominator_coefficient)) - 1))
+    numerator_coefficient = np.array(
+        [1, -1]
+    )  # The numerator coefficient vector of the filter.
+    denominator_coefficient = np.array(
+        [1, -0.9748]
+    )  # The denominator coefficient vector of the filter.
+    filtered_signal = scipy.signal.filtfilt(
+        numerator_coefficient,
+        denominator_coefficient,
+        signal,
+        axis=0,
+        padtype="odd",
+        padlen=3 * (max(len(numerator_coefficient), len(denominator_coefficient)) - 1),
+    )
 
     return filtered_signal
 
 
-def calculate_envelope_activity(input_signal, smooth_window, threshold_style, duration, plot_results):
+def calculate_envelope_activity(
+    input_signal, smooth_window, threshold_style, duration, plot_results
+):
     """_summary_
     Calculate envelope-based activity detection using the Hilbert transform.
 
@@ -70,91 +85,131 @@ def calculate_envelope_activity(input_signal, smooth_window, threshold_style, du
         - env (ndarray): Smoothed envelope of the signal.
     """
     # Input handling
-    if len(locals()) < 5:    # If there is < 5 inputs.
+    if len(locals()) < 5:  # If there is < 5 inputs.
         plot_results = 1  # Default value
-        if len(locals()) < 4:     # If there is < 4 inputs.
+        if len(locals()) < 4:  # If there is < 4 inputs.
             duration = 20  # Default value
-            if len(locals()) < 3:       # If there is < 3 inputs.
+            if len(locals()) < 3:  # If there is < 3 inputs.
                 threshold_style = 1  # Default 1, means it is done automatically
-                if len(locals()) < 2:      # If there is < 2 inputs.
+                if len(locals()) < 2:  # If there is < 2 inputs.
                     smooth_window = 20  # Default value for smoothing length
-                    if len(locals()) < 1:     # If there is < 1 inputs.
-                        v = np.tile(np.concatenate((0.1 * np.ones((200, 1)), np.ones((100, 1)))), (10, 1))  # Generate true variance profile
+                    if len(locals()) < 1:  # If there is < 1 inputs.
+                        v = np.tile(
+                            np.concatenate(
+                                (0.1 * np.ones((200, 1)), np.ones((100, 1)))
+                            ),
+                            (10, 1),
+                        )  # Generate true variance profile
                         input_signal = np.sqrt(v) * np.random.randn(*v.shape)
 
     # Calculate the analytical signal and get the envelope
-    input_signal = input_signal.flatten()          # Return a copy of the preprocessed data into one dimension.
+    input_signal = (
+        input_signal.flatten()
+    )  # Return a copy of the preprocessed data into one dimension.
     # Compute the analytic signal, using the Hilbert transform form scipy.signal.
-    analytic = scipy.signal.hilbert(input_signal)    
-    env = np.abs(analytic)      # Compute the envelope of the analytic signal.
-    
+    analytic = scipy.signal.hilbert(input_signal)
+    env = np.abs(analytic)  # Compute the envelope of the analytic signal.
+
     # Take the moving average of the analytic signal
-    env = scipy.signal.convolve(env, np.ones(smooth_window) / smooth_window, mode='full')  # Returns the discrete, linear convolution of two one-dimensional sequences.
-    env = env - np.mean(env)                                                  # Remove the offset by subtracting the mean of 'env'
-    env = env / np.max(env)                                                   # Normalize the 'env' by dividing by its maximum value
+    env = scipy.signal.convolve(
+        env, np.ones(smooth_window) / smooth_window, mode="full"
+    )  # Returns the discrete, linear convolution of two one-dimensional sequences.
+    env = env - np.mean(env)  # Remove the offset by subtracting the mean of 'env'
+    env = env / np.max(env)  # Normalize the 'env' by dividing by its maximum value
 
     # Threshold the signal
     if threshold_style == 0:
         hg = plt.figure()
         plt.plot(env)
-        plt.title('Select a threshold on the graph')
+        plt.title("Select a threshold on the graph")
         _, THR_SIG = plt.ginput(1)
         plt.close(hg)
     elif threshold_style == 1:
         THR_SIG = 4 * np.mean(env)
 
     # Set noise and signal levels
-    noise = np.mean(env) * (1/3)  # Noise level: Set an initial estimate of the noise level
-    threshold = np.mean(env)      # Signal level: It's used as a reference to distinguish between the background noise and the actual signal activity.
+    noise = np.mean(env) * (
+        1 / 3
+    )  # Noise level: Set an initial estimate of the noise level
+    threshold = np.mean(
+        env
+    )  # Signal level: It's used as a reference to distinguish between the background noise and the actual signal activity.
 
     # Initialize Buffers
-    thres_buf = np.zeros(len(env) - duration)    # This buffer stores values related to a threshold.
-    noise_buf = np.zeros(len(env) - duration)    # This buffer stores values related to the noise.
-    THR_buf = np.zeros(len(env))                 # This buffer stores threshold values.
-    alarm = np.zeros_like(env)                   # This buffer tracks alarm-related information.
+    thres_buf = np.zeros(
+        len(env) - duration
+    )  # This buffer stores values related to a threshold.
+    noise_buf = np.zeros(
+        len(env) - duration
+    )  # This buffer stores values related to the noise.
+    THR_buf = np.zeros(len(env))  # This buffer stores threshold values.
+    alarm = np.zeros_like(env)  # This buffer tracks alarm-related information.
     h = 1
 
     for i in range(len(env) - duration):
-        if np.all(env[i:i+duration] > THR_SIG):      
-            alarm[i] = np.max(env)                                     # If the current window of data surpasses the threshold, set an alarm.
-            threshold = 0.1 * np.mean(env[i:i+duration])               # Set a new threshold based on the mean of the current window.
+        if np.all(env[i : i + duration] > THR_SIG):
+            alarm[i] = np.max(
+                env
+            )  # If the current window of data surpasses the threshold, set an alarm.
+            threshold = 0.1 * np.mean(
+                env[i : i + duration]
+            )  # Set a new threshold based on the mean of the current window.
             h += 1
         else:
             # Update noise
-            if np.mean(env[i:i+duration]) < THR_SIG:
-                noise = np.mean(env[i:i+duration])                     # Update the noise value based on the mean of the current window.
+            if np.mean(env[i : i + duration]) < THR_SIG:
+                noise = np.mean(
+                    env[i : i + duration]
+                )  # Update the noise value based on the mean of the current window.
             else:
                 if len(noise_buf) > 0:
-                    noise = np.mean(noise_buf)                         # If available, use the mean of noise buffer to update the noise.      
-                    thres_buf[i] = threshold                           # Store the threshold value in the threshold buffer.
-                    noise_buf[i] = noise                               # Store the noise value in the noise buffer.
+                    noise = np.mean(
+                        noise_buf
+                    )  # If available, use the mean of noise buffer to update the noise.
+                    thres_buf[
+                        i
+                    ] = threshold  # Store the threshold value in the threshold buffer.
+                    noise_buf[i] = noise  # Store the noise value in the noise buffer.
 
             # Update threshold
             if h > 1:
-                THR_SIG = noise + 0.50 * (np.abs(threshold - noise))   # Update the threshold using noise and threshold values.
-                THR_buf[i] = THR_SIG                                   # Store the updated threshold value in the threshold buffer.
+                THR_SIG = noise + 0.50 * (
+                    np.abs(threshold - noise)
+                )  # Update the threshold using noise and threshold values.
+                THR_buf[
+                    i
+                ] = THR_SIG  # Store the updated threshold value in the threshold buffer.
 
     if plot_results == 1:
         plt.figure()
         ax = plt.subplot(2, 1, 1)
         plt.plot(input_signal)
-        plt.plot(np.where(alarm != 0, np.max(input_signal), 0), 'r', linewidth=2.5)
-        plt.plot(THR_buf, '--g', linewidth=2.5)
-        plt.title('Raw Signal and detected Onsets of activity')
-        plt.legend(['Raw Signal', 'Detected Activity in Signal', 'Adaptive Threshold'], loc='upper left')
+        plt.plot(np.where(alarm != 0, np.max(input_signal), 0), "r", linewidth=2.5)
+        plt.plot(THR_buf, "--g", linewidth=2.5)
+        plt.title("Raw Signal and detected Onsets of activity")
+        plt.legend(
+            ["Raw Signal", "Detected Activity in Signal", "Adaptive Threshold"],
+            loc="upper left",
+        )
         plt.grid(True)
-        plt.axis('tight')
+        plt.axis("tight")
 
         ax2 = plt.subplot(2, 1, 2)
         plt.plot(env)
-        plt.plot(THR_buf, '--g', linewidth=2.5)
-        plt.plot(thres_buf, '--r', linewidth=2)
-        plt.plot(noise_buf, '--k', linewidth=2)
-        plt.title('Smoothed Envelope of the signal (Hilbert Transform)')
-        plt.legend(['Smoothed Envelope of the signal (Hilbert Transform)', 'Adaptive Threshold', 'Activity level',
-                    'Noise Level'])
+        plt.plot(THR_buf, "--g", linewidth=2.5)
+        plt.plot(thres_buf, "--r", linewidth=2)
+        plt.plot(noise_buf, "--k", linewidth=2)
+        plt.title("Smoothed Envelope of the signal (Hilbert Transform)")
+        plt.legend(
+            [
+                "Smoothed Envelope of the signal (Hilbert Transform)",
+                "Adaptive Threshold",
+                "Activity level",
+                "Noise Level",
+            ]
+        )
         plt.grid(True)
-        plt.axis('tight')
+        plt.axis("tight")
         plt.tight_layout()
         plt.show()
 
@@ -177,7 +232,9 @@ def find_consecutive_groups(input_array):
         The first column contains the start index of the group, and the second column contains the end index.
     """
     temp = np.where(input_array)[0]  # find indices of non-zeros
-    idx = np.where(np.diff(temp) > 1)[0]  # find where the difference between indices is greater than 1
+    idx = np.where(np.diff(temp) > 1)[
+        0
+    ]  # find where the difference between indices is greater than 1
     ind = np.zeros((len(idx) + 1, 2), dtype=int)  # initialize the output array
     ind[:, 1] = temp[np.append(idx, -1)]  # set the second column
     ind[:, 0] = temp[np.insert(idx + 1, 0, 0)]  # set the first column
@@ -188,7 +245,7 @@ def find_consecutive_groups(input_array):
 def find_local_min_max(signal, threshold=None):
     """_summary_
     Find Local Minima and Maxima in a Given Signal.
-    
+
     This function takes an input signal and identifies the indices of local minima and maxima.
     Optionally, a threshold can be provided to filter out minima and maxima that do not exceed the threshold.
 
@@ -241,24 +298,28 @@ def identify_pulse_trains(signal):
         for i in range(len(signal) - 1):
             if signal[i + 1] - signal[i] < threshold:
                 if walking_flag == 0:
-                    pulse_trains.append({'start': signal[i], 'steps': 1})
+                    pulse_trains.append({"start": signal[i], "steps": 1})
                     pulse_count += 1
                     walking_flag = 1
                 else:
-                    pulse_trains[pulse_count - 1]['steps'] += 1
-                    threshold = 1.5 * 40 + (signal[i] - pulse_trains[pulse_count - 1]['start']) / pulse_trains[pulse_count - 1]['steps']
+                    pulse_trains[pulse_count - 1]["steps"] += 1
+                    threshold = (
+                        1.5 * 40
+                        + (signal[i] - pulse_trains[pulse_count - 1]["start"])
+                        / pulse_trains[pulse_count - 1]["steps"]
+                    )
             else:
                 if walking_flag == 1:
-                    pulse_trains[pulse_count - 1]['end'] = signal[i - 1]
+                    pulse_trains[pulse_count - 1]["end"] = signal[i - 1]
                     walking_flag = 0
                     threshold = 3.5 * 40
 
     if walking_flag == 1:
         if signal[-1] - signal[-2] < threshold:
-            pulse_trains[-1]['end'] = signal[-1]
-            pulse_trains[-1]['steps'] += 1
+            pulse_trains[-1]["end"] = signal[-1]
+            pulse_trains[-1]["steps"] += 1
         else:
-            pulse_trains[-1]['end'] = signal[-2]
+            pulse_trains[-1]["end"] = signal[-2]
 
     return pulse_trains
 
@@ -282,8 +343,12 @@ def convert_pulse_train_to_array(pulse_train_list):
     array_representation = np.zeros((len(pulse_train_list), 2), dtype=np.uint64)
 
     for i, pulse_train_dict in enumerate(pulse_train_list):
-        array_representation[i, 0] = pulse_train_dict['start']  # Access the 'start' key within the dictionary
-        array_representation[i, 1] = pulse_train_dict['end']  # Access the 'end' key within the dictionary
+        array_representation[i, 0] = pulse_train_dict[
+            "start"
+        ]  # Access the 'start' key within the dictionary
+        array_representation[i, 1] = pulse_train_dict[
+            "end"
+        ]  # Access the 'end' key within the dictionary
 
     return array_representation
 
@@ -369,30 +434,53 @@ def organize_and_pack_results(walking_periods, peak_steps):
             - A list of sorted peak step indices across all walking periods.
     """
     num_periods = len(walking_periods)
-    organized_results = [{'start': walking_periods[i][0], 'end': walking_periods[i][1], 'steps': 0, 'mid_swing': []} for i in range(num_periods)]
+    organized_results = [
+        {
+            "start": walking_periods[i][0],
+            "end": walking_periods[i][1],
+            "steps": 0,
+            "mid_swing": [],
+        }
+        for i in range(num_periods)
+    ]
     all_mid_swing = []
 
     for i in range(num_periods):
-        steps_within_period = [p for p in peak_steps if organized_results[i]['start'] <= p <= organized_results[i]['end']]
-        organized_results[i]['steps'] = len(steps_within_period)
-        organized_results[i]['mid_swing'] = steps_within_period
+        steps_within_period = [
+            p
+            for p in peak_steps
+            if organized_results[i]["start"] <= p <= organized_results[i]["end"]
+        ]
+        organized_results[i]["steps"] = len(steps_within_period)
+        organized_results[i]["mid_swing"] = steps_within_period
         all_mid_swing.extend(steps_within_period)
 
         # Calculate step time based on detected peak steps
         if len(steps_within_period) > 2:
-            step_time = sum([steps_within_period[j + 1] - steps_within_period[j] for j in range(len(steps_within_period) - 1)]) / (len(steps_within_period) - 1)
-            organized_results[i]['start'] = int(organized_results[i]['start'] - 1.5 * step_time / 2)
-            organized_results[i]['end'] = int(organized_results[i]['end'] + 1.5 * step_time / 2)
+            step_time = sum(
+                [
+                    steps_within_period[j + 1] - steps_within_period[j]
+                    for j in range(len(steps_within_period) - 1)
+                ]
+            ) / (len(steps_within_period) - 1)
+            organized_results[i]["start"] = int(
+                organized_results[i]["start"] - 1.5 * step_time / 2
+            )
+            organized_results[i]["end"] = int(
+                organized_results[i]["end"] + 1.5 * step_time / 2
+            )
 
     all_mid_swing.sort()
 
     # Check for overlapping walking periods and merge them
     i = 0
     while i < num_periods - 1:
-        if organized_results[i]['end'] >= organized_results[i + 1]['start']:
-            organized_results[i]['end'] = organized_results[i + 1]['end']
-            organized_results[i]['steps'] += organized_results[i + 1]['steps']
-            organized_results[i]['mid_swing'].extend(organized_results[i + 1]['mid_swing'])
+        if organized_results[i]["end"] >= organized_results[i + 1]["start"]:
+            organized_results[i]["end"] = organized_results[i + 1]["end"]
+            organized_results[i]["steps"] += organized_results[i + 1]["steps"]
+            organized_results[i]["mid_swing"].extend(
+                organized_results[i + 1]["mid_swing"]
+            )
             organized_results.pop(i + 1)
             num_periods -= 1
         else:

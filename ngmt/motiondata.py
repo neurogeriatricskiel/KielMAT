@@ -3,8 +3,20 @@ from typing import List, Optional
 import numpy as np
 import pandas as pd
 
-VALID_CHANNEL_TYPES = {"ACCEL", "ANGACCEL", "GYRO", "JNTANG", "LATENCY", "MAGN", "MISC", "ORNT", "POS", "VEL"}
+VALID_CHANNEL_TYPES = {
+    "ACCEL",
+    "ANGACCEL",
+    "GYRO",
+    "JNTANG",
+    "LATENCY",
+    "MAGN",
+    "MISC",
+    "ORNT",
+    "POS",
+    "VEL",
+}
 VALID_COMPONENT_TYPES = {"x", "y", "z", "quat_x", "quat_y", "quat_z", "quat_w", "n/a"}
+
 
 @dataclass
 class ChannelMetaData:
@@ -22,9 +34,13 @@ class ChannelMetaData:
 
     def __post_init__(self):
         if self.ch_type not in VALID_CHANNEL_TYPES:
-            raise ValueError(f"Invalid channel type {self.ch_type}. Must be one of {VALID_CHANNEL_TYPES}")
+            raise ValueError(
+                f"Invalid channel type {self.ch_type}. Must be one of {VALID_CHANNEL_TYPES}"
+            )
         if self.component not in VALID_COMPONENT_TYPES:
-            raise ValueError(f"Invalid component type {self.component}. Must be one of {VALID_COMPONENT_TYPES}")
+            raise ValueError(
+                f"Invalid component type {self.component}. Must be one of {VALID_COMPONENT_TYPES}"
+            )
 
 
 @dataclass
@@ -54,31 +70,35 @@ class MotionData:
 
     def __post_init__(self):
         if len(self.times) != self.time_series.shape[1]:
-            raise ValueError("The length of `times` should match the number of columns in `time_series`")
-        
+            raise ValueError(
+                "The length of `times` should match the number of columns in `time_series`"
+            )
+
         if len(self.channel_names) != self.time_series.shape[0]:
-            raise ValueError("The number of `channel_names` should match the number of rows in `time_series`")
-        
+            raise ValueError(
+                "The number of `channel_names` should match the number of rows in `time_series`"
+            )
+
     @classmethod
     def import_time_series(self, file: str):
         # Placeholder function to be implemented
-        with open(file, 'r') as infile:
+        with open(file, "r") as infile:
             raw = np.loadtxt(infile)
         return raw
-    
+
     @classmethod
     def import_hasomed_imu(cls, file: str):
         """
-        This function reads a file and returns a MotionData object. 
+        This function reads a file and returns a MotionData object.
 
         Parameters:
         file (str): path to the .csv file
 
         Returns:
-        MotionData: an object of class MotionData that includes FileInfo 
+        MotionData: an object of class MotionData that includes FileInfo
         object with metadata from the file,
-        a 1D numpy array with time values, 
-        a list of channel names, 
+        a 1D numpy array with time values,
+        a list of channel names,
         and a 2D numpy array with the time series data.
 
         The file structure is assumed to be as follows:
@@ -92,23 +112,25 @@ class MotionData:
         Also, error checking and exception handling has been kept minimal for simplicity.
         You might want to add more robust error handling for a production-level application.
         """
-        with open(file, 'r') as f:
+        with open(file, "r") as f:
             lines = f.readlines()
-        
+
         # Keep track of where the metadata ends and the time series data begins
         data_start_idx = 0
-        
+
         # Instantiate empty FileInfo
-        info = FileInfo(TaskName="", SamplingFrequency=100.0)  # default SamplingFrequency to 100.0 if not found
-        
+        info = FileInfo(
+            TaskName="", SamplingFrequency=100.0
+        )  # default SamplingFrequency to 100.0 if not found
+
         for idx, line in enumerate(lines):
             # Metadata ends when we encounter a line that doesn't start with '#'
-            if not line.startswith('#'):
+            if not line.startswith("#"):
                 data_start_idx = idx
                 break
 
             # Extract fields for FileInfo
-            parts = line.strip().split(';')
+            parts = line.strip().split(";")
 
             if "Patient-ID" in line:
                 info.TaskName = parts[2]
@@ -119,18 +141,26 @@ class MotionData:
             # Add more fields as necessary here...
 
         # Create DataFrame from the time series data
-        data = pd.read_csv(file, skiprows=data_start_idx - 1, delimiter=';')
-        
+        data = pd.read_csv(file, skiprows=data_start_idx - 1, delimiter=";")
+
         # Extract the channel names from the column names of the DataFrame
         channel_names = data.columns.tolist()
 
         # Convert time to numpy array
         times = np.linspace(0, data.shape[0] / info.SamplingFrequency, data.shape[0])
 
-        type_imu = ['Acc', 'Gyro', 'Mag'] 
+        type_imu = ["Acc", "Gyro", "Mag"]
         # drop non relevant columns
-        filtered_col_names = [col for col in channel_names if not any(sensor in col for sensor in type_imu)]
-        channel_names = [col for col in channel_names if any(sensor in col for sensor in type_imu)]
+        filtered_col_names = [
+            col
+            for col in channel_names
+            if not any(sensor in col for sensor in type_imu)
+        ]
+        channel_names = [
+            col for col in channel_names if any(sensor in col for sensor in type_imu)
+        ]
         time_series = data.drop(columns=filtered_col_names).to_numpy().T  # transpose
 
-        return cls(info=info, times=times, channel_names=channel_names, time_series=time_series)
+        return cls(
+            info=info, times=times, channel_names=channel_names, time_series=time_series
+        )
