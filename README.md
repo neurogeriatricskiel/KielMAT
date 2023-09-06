@@ -40,47 +40,46 @@ classDiagram
     }
 
     class FileInfo {
-        SubjectId: str
+        SubjectID: str
         TaskName: str
-        ProjectName: str
-        FilePath: Optional[str]
-        import_data()
+        DatasetName: str
+        FilePath: str
     }
 
     class ChannelData {
-        name: list[int]
-        component: list[str]
-        ch_type: list[str]
-        tracked_point: list[int]
-        units: list[int]
+        name: List[str]
+        component: List[str]
+        ch_type: List[str]
+        tracked_point: List[str]
+        units: List[str]
         get_channel_units()
     }
 
     class EventData {
-        onset: float
-        duration: float
-        sample: integer
-        trial_type: Optional[string]
-        value: Optional[number or string]
+        name: List[str]
+        onset: List[float]
+        duration: List[float]
+        trial_type: Optional[List[str]] = None
     }
 
     class RecordingData {
-        type: str
-        units: ChannelData
-        sampling_rate: float
-        times: np.1darray
+        name: str
         data: np.ndarray
-        events: Optional[list]
-        get_duration(): datetime
-        get_inital_contacts()
+        sampling_frequency: float
+        times: np.1darray
+        channels: ChannelData
+        start_time: float
+        types: List[str]
+        GSD()
+        ICD()
     }
 
     class MotionData {
-        data: list[RecordingData]
-        times: np.1darray 
-        info: FileInfo
-        Manufacturer: Optional[list]
-        check_channel_info()
+        data: List[RecordingData]
+        times: np.ndarray  # Can be a 1D array representing timestamps
+        info: List[FileInfo]
+        ch_names: List[str]  # Can be a list of channel names
+        synchronise_recordings(self, systems: List[RecordingData]):
     }
 
     RecordingData --> MotionData: raw data with same sampling rate
