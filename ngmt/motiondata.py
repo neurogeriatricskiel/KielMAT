@@ -19,18 +19,52 @@ VALID_COMPONENT_TYPES = {"x", "y", "z", "quat_x", "quat_y", "quat_z", "quat_w", 
 
 
 @dataclass
-class ChannelMetaData:
-    name: str
-    component: str
-    ch_type: str
-    tracked_point: str
-    units: str
-    placement: Optional[str] = None
-    description: Optional[str] = None
+class FileInfo:
+    """
+    A data class representing information about a file to be processed.
+
+    Attributes:
+        SubjectID (str): The identifier of the subject associated with the file.
+        TaskName (str): The name of the task or experiment associated with the file.
+        DatasetName (str): The name of the dataset to which the file belongs.
+        FilePath (str): The path to the file in the file system.
+    """
+    SubjectID: str
+    TaskName: str
+    DatasetName: str
+    FilePath: str
+
+@dataclass
+class ChannelData:
+    """
+    A data class for representing information about channels used in a recording.
+
+    Attributes:
+        name (List[str]): A list of channel names.
+        component (List[str]): A list of channel components.
+        ch_type (List[str]): A list of channel types.
+        tracked_point (List[str]): A list of tracked points.
+        units (List[str]): A list of measurement units.
+        placement (Optional[List[str]]): An optional list of placement information (default is None).
+        description (Optional[List[str]]): An optional list of channel descriptions (default is None).
+        sampling_frequency (Optional[float]): An optional sampling frequency (default is None).
+        status (Optional[List[float]]): An optional list of channel statuses (default is None).
+        status_description (Optional[List[str]]): An optional list of status descriptions (default is None).
+
+    Raises:
+        ValueError: If the provided 'ch_type' is not one of the valid channel types.
+        ValueError: If the provided 'component' is not one of the valid component types.
+    """
+    name: List[str]
+    component: List[str]
+    ch_type: List[str]
+    tracked_point: List[str]
+    units: List[str]
+    placement: Optional[List[str]] = None
+    description: Optional[List[str]] = None
     sampling_frequency: Optional[float] = None
-    status: Optional[str] = None
-    status_description: Optional[str] = None
-    additional_columns: Optional[dict] = field(default_factory=dict)
+    status: Optional[List[float]] = None
+    status_description: Optional[List[str]] = None
 
     def __post_init__(self):
         if self.ch_type not in VALID_CHANNEL_TYPES:
@@ -41,32 +75,76 @@ class ChannelMetaData:
             raise ValueError(
                 f"Invalid component type {self.component}. Must be one of {VALID_COMPONENT_TYPES}"
             )
-
+        
+@dataclass
+class EventData:
+    """
+    A data class to describe timing and other properties of events during a recording.
+    Events can include stimuli presented to the participant,
+    participant responses or labeling of data samples.
+    Events can overlap in time.
+    
+    Attributes:
+        name (List[str]): A list of event names.
+        onset (List[float]): A list of event onset times.
+        duration (List[float]): A list of event durations.
+        trial_type (Optional[List[str]]): An optional list of trial types (default is None).
+    """
+    name: List[str]
+    onset: List[float]
+    duration: List[float]
+    trial_type: Optional[List[str]] = None
 
 @dataclass
-class FileInfo:
-    TaskName: str
-    SamplingFrequency: float
-    TaskDescription: Optional[str] = None
-    Instructions: Optional[str] = None
-    Manufacturer: Optional[str] = None
-    ManufacturersModelName: Optional[str] = None
-    MissingValues: Optional[str] = None
-    RotationOrder: Optional[str] = None
-    RotationRule: Optional[str] = None
-    SamplingFrequencyEffective: Optional[float] = None
-    SpatialAxes: Optional[str] = None
-    TrackedPointsCount: Optional[int] = None
-    TrackingSystemName: Optional[str] = None
-    Channels: List[ChannelMetaData] = field(default_factory=list)
+class RecordingData:
+    """
+    A data class to hold meaningful groups of motion data channels from a single
+    recording. For example, a recording of a participant walking on a treadmill.
+    
+    Attributes:
 
+        name (str): A name for the recording data.
+
+        data (np.ndarray): A nD numpy array of shape (n_channels, n_samples) containing
+            the motion data. Channels MUST have the same sampling frequency.
+
+        sampling_frequency (float): The sampling frequency of the motion data.
+
+        times (np.ndarray): A 1D numpy array of shape (n_samples,) containing the   
+            timestamps of the motion data. If no time stamps are provided from the 
+            system, timestamps are relative to the start of the recording.
+
+        channels (ChannelData): A ChannelData object containing information about the   
+            channels in the data.
+
+        start_time (float): The start time of the recording in seconds. 0 if no time
+            stamps are provided from the system.
+
+        types (List[str]): A list of strings describing the type of data in each channel.
+            For example, "acceleration", "angular velocity", "position", etc.
+
+        ch_names (Optional[List[str]]): An optional list of channel names (default is None).
+            If None, the channel names will be set to the channel numbers.
+
+        events (Optional[EventData]): An optional EventData object containing information
+            about events during the recording (default is None).
+    """
+    name: str
+    data: np.ndarray
+    sampling_frequency: float
+    times: np.1darray
+    channels: ChannelData
+    start_time: float
+    types: List[str]
+    ch_names: Optional[List[str]] = None
+    events: Optional[EventData] = None
 
 @dataclass
 class MotionData:
-    info: FileInfo
+    data: List[RecordingData]
     times: np.ndarray  # Can be a 1D array representing timestamps
-    channel_names: List[str]  # Can be a list of channel names
-    time_series: np.ndarray  # Can be a 2D array where each row is a channel
+    info: List[FileInfo]
+    ch_names: List[str]  # Can be a list of channel names
 
     def __post_init__(self):
         if len(self.times) != self.time_series.shape[1]:
@@ -80,87 +158,59 @@ class MotionData:
             )
 
     @classmethod
-    def import_time_series(self, file: str):
-        # Placeholder function to be implemented
-        with open(file, "r") as infile:
-            raw = np.loadtxt(infile)
-        return raw
+    def synchronise_recordings(self, systems: List[RecordingData]):
+        """This functions uses the times provided from the systems to create a globally
+        valid times vector. If no start time is provided or if the start times start at
+        0, meaningful synchronization is not possible functions returns a warning.
 
-    @classmethod
-    def import_hasomed_imu(cls, file: str):
+
+        Args:
+            systems (List[RecordingData]): List of RecordingData objects
+
         """
-        This function reads a file and returns a MotionData object.
 
-        Parameters:
-        file (str): path to the .csv file
+        # find the start time of each system if not 0
+        start_times = []
+        for system in systems:
+            if system.start_time != 0:
+                start_times.append(system.start_time)
 
-        Returns:
-        MotionData: an object of class MotionData that includes FileInfo
-        object with metadata from the file,
-        a 1D numpy array with time values,
-        a list of channel names,
-        and a 2D numpy array with the time series data.
+        # if all start times are 0, no meaningful synchronization is possible, give warning
+        if len(start_times) == 0:
+            print(
+                "Warning: No start times provided or all start times are 0. No meaningful synchronization is possible."
+            )
+            return
+        
+        # find the minimum start time and the index of the system with the minimum start time
+        min_start_time = min(start_times)
+        min_start_time_index = start_times.index(min_start_time)
 
-        The file structure is assumed to be as follows:
-        - The header contains lines starting with '#' with metadata information.
-        - The actual time series data starts after the metadata lines.
-        - The first column in the time series data represents the 'Sample number' or time.
-        - The remaining columns represent the channel data.
+        # find the time difference between the start time of the system with the minimum start time and the other systems
+        time_diffs = []
+        for system in systems:
+            time_diffs.append(system.start_time - min_start_time)   
 
-        Note: This function only extracts a subset of the possible FileInfo fields.
-        Additional fields need to be added manually depending on what fields are present in the files.
-        Also, error checking and exception handling has been kept minimal for simplicity.
-        You might want to add more robust error handling for a production-level application.
-        """
-        with open(file, "r") as f:
-            lines = f.readlines()
+        # find the highest time stamp in regard to the system with the minimum start time
+        max_time = 0
+        for system in systems:
+            if system.times[-1] > max_time:
+                max_time = system.times[-1]
 
-        # Keep track of where the metadata ends and the time series data begins
-        data_start_idx = 0
+        # find the system with the highest sampling frequency
+        max_sampling_frequency = 0
+        for system in systems:
+            if system.sampling_frequency > max_sampling_frequency:
+                max_sampling_frequency = system.sampling_frequency
 
-        # Instantiate empty FileInfo
-        info = FileInfo(
-            TaskName="", SamplingFrequency=100.0
-        )  # default SamplingFrequency to 100.0 if not found
+        # create a new times vector with the highest sampling frequency and the highest time stamp
+        new_times = np.arange(0, max_time, 1/max_sampling_frequency)
 
-        for idx, line in enumerate(lines):
-            # Metadata ends when we encounter a line that doesn't start with '#'
-            if not line.startswith("#"):
-                data_start_idx = idx
-                break
+        # store new time vector
+        self.times = new_times
 
-            # Extract fields for FileInfo
-            parts = line.strip().split(";")
+        return
+        
+        
 
-            if "Patient-ID" in line:
-                info.TaskName = parts[2]
-            elif "Sample rate" in line:
-                info.SamplingFrequency = float(parts[6])
-            elif "Assessment type" in line:
-                info.TaskDescription = parts[2]
-            # Add more fields as necessary here...
-
-        # Create DataFrame from the time series data
-        data = pd.read_csv(file, skiprows=data_start_idx - 1, delimiter=";")
-
-        # Extract the channel names from the column names of the DataFrame
-        channel_names = data.columns.tolist()
-
-        # Convert time to numpy array
-        times = np.linspace(0, data.shape[0] / info.SamplingFrequency, data.shape[0])
-
-        type_imu = ["Acc", "Gyro", "Mag"]
-        # drop non relevant columns
-        filtered_col_names = [
-            col
-            for col in channel_names
-            if not any(sensor in col for sensor in type_imu)
-        ]
-        channel_names = [
-            col for col in channel_names if any(sensor in col for sensor in type_imu)
-        ]
-        time_series = data.drop(columns=filtered_col_names).to_numpy().T  # transpose
-
-        return cls(
-            info=info, times=times, channel_names=channel_names, time_series=time_series
-        )
+        
