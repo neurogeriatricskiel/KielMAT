@@ -14,7 +14,6 @@ _MAP_UNITS = {
 
 
 def load_file(file_name: str) -> IMUDataset:
-
     # Load data from the MATLAB file
     data_dict = matlab_loader.load_matlab(file_name, top_level="data")
 
@@ -26,7 +25,6 @@ def load_file(file_name: str) -> IMUDataset:
 
     # Loop over the tracked points
     for tracked_point in tracked_points:
-
         # Instantiate an IMUDevice object for the tracked point
         imu_device = IMUDevice(tracked_point=tracked_point)
 
@@ -35,7 +33,6 @@ def load_file(file_name: str) -> IMUDataset:
             tracked_point
         ].keys():
             if sensor_type not in ["Timestamp", "Fs"]:
-
                 # Get the data
                 data = data_dict["TimeMeasure1"]["Recording4"]["SU"][tracked_point][
                     sensor_type

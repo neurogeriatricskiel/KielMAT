@@ -14,7 +14,6 @@ else:
 
 
 def load_file(sub_id: str, task_name: str, tracksys: str) -> IMUDataset:
-
     # Set the filename
     _base_file_name = f"sub-{sub_id}_task-{task_name}_tracksys-{tracksys}"
 
@@ -39,7 +38,6 @@ def load_file(sub_id: str, task_name: str, tracksys: str) -> IMUDataset:
     # For each tracked point,
     imus = []
     for tracked_point in df_channels["tracked_point"].unique():
-
         imus.append(
             IMUDevice(
                 tracked_point=tracked_point,

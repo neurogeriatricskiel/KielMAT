@@ -62,7 +62,6 @@ class HDF5Decoder:
                     elem, depth=depth + 1, flatten_keys=flatten_keys
                 )
                 if matlab_class == b"struct" and len(elem) > 1:
-
                     values = unpacked.values()
 
                     # we can only pack them together in MATLAB style if
