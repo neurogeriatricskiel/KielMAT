@@ -29,10 +29,12 @@ class FileInfo:
         DatasetName (str): The name of the dataset to which the file belongs.
         FilePath (str): The path to the file in the file system.
     """
+
     SubjectID: str
     TaskName: str
     DatasetName: str
     FilePath: str
+
 
 @dataclass
 class ChannelData:
@@ -55,6 +57,7 @@ class ChannelData:
         ValueError: If the provided 'ch_type' is not one of the valid channel types.
         ValueError: If the provided 'component' is not one of the valid component types.
     """
+
     name: List[str]
     component: List[str]
     ch_type: List[str]
@@ -75,7 +78,8 @@ class ChannelData:
             raise ValueError(
                 f"Invalid component type {self.component}. Must be one of {VALID_COMPONENT_TYPES}"
             )
-        
+
+
 @dataclass
 class EventData:
     """
@@ -83,24 +87,26 @@ class EventData:
     Events can include stimuli presented to the participant,
     participant responses or labeling of data samples.
     Events can overlap in time.
-    
+
     Attributes:
         name (List[str]): A list of event names.
         onset (List[float]): A list of event onset times.
         duration (List[float]): A list of event durations.
         trial_type (Optional[List[str]]): An optional list of trial types (default is None).
     """
+
     name: List[str]
     onset: List[float]
     duration: List[float]
     trial_type: Optional[List[str]] = None
+
 
 @dataclass
 class RecordingData:
     """
     A data class to hold meaningful groups of motion data channels from a single
     recording. For example, a recording of a participant walking on a treadmill.
-    
+
     Attributes:
 
         name (str): A name for the recording data.
@@ -110,11 +116,11 @@ class RecordingData:
 
         sampling_frequency (float): The sampling frequency of the motion data.
 
-        times (np.ndarray): A 1D numpy array of shape (n_samples,) containing the   
-            timestamps of the motion data. If no time stamps are provided from the 
+        times (np.ndarray): A 1D numpy array of shape (n_samples,) containing the
+            timestamps of the motion data. If no time stamps are provided from the
             system, timestamps are relative to the start of the recording.
 
-        channels (ChannelData): A ChannelData object containing information about the   
+        channels (ChannelData): A ChannelData object containing information about the
             channels in the data.
 
         start_time (float): The start time of the recording in seconds. 0 if no time
@@ -129,15 +135,17 @@ class RecordingData:
         events (Optional[EventData]): An optional EventData object containing information
             about events during the recording (default is None).
     """
+
     name: str
     data: np.ndarray
     sampling_frequency: float
-    times: np.1darray
+    times: np.ndarray
     channels: ChannelData
     start_time: float
     types: List[str]
     ch_names: Optional[List[str]] = None
     events: Optional[EventData] = None
+
 
 @dataclass
 class MotionData:
@@ -181,7 +189,7 @@ class MotionData:
                 "Warning: No start times provided or all start times are 0. No meaningful synchronization is possible."
             )
             return
-        
+
         # find the minimum start time and the index of the system with the minimum start time
         min_start_time = min(start_times)
         min_start_time_index = start_times.index(min_start_time)
@@ -189,7 +197,7 @@ class MotionData:
         # find the time difference between the start time of the system with the minimum start time and the other systems
         time_diffs = []
         for system in systems:
-            time_diffs.append(system.start_time - min_start_time)   
+            time_diffs.append(system.start_time - min_start_time)
 
         # find the highest time stamp in regard to the system with the minimum start time
         max_time = 0
@@ -204,13 +212,9 @@ class MotionData:
                 max_sampling_frequency = system.sampling_frequency
 
         # create a new times vector with the highest sampling frequency and the highest time stamp
-        new_times = np.arange(0, max_time, 1/max_sampling_frequency)
+        new_times = np.arange(0, max_time, 1 / max_sampling_frequency)
 
         # store new time vector
         self.times = new_times
 
         return
-        
-        
-
-        
