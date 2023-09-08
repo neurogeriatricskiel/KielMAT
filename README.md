@@ -99,6 +99,10 @@ The `RecordingData` object can also contain information about events. The `Event
 
 The `ChannelData` object is used to store the channel name, the channel type, the channel units and the tracked point.
 
+## Formatting
+The code uploaded here follows the latest black style guide. Please make sure to format your code accordingly before uploading it.
+To do this, install black with `pip install black` and run `black .` in the root directory of the project.
+
 ## Authors
 
 [Masoud Abedinifar](https://github.com/masoudabedinifar), [Robbin Romijnders](https://github.com/rmndrs89) & [Julius Welzel](https://github.com/JuliusWelzel)
