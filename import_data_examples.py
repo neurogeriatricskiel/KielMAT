@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 from ngmt.motiondata import MotionData
-from ngmt.importers import import_polar_watch
+from ngmt.utils.importers import import_polar_watch
 from pathlib import Path
 
 # set Path and import motion data form HasoMed IMU sensor
