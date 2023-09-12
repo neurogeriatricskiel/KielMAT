@@ -69,15 +69,19 @@ class ChannelData:
     status: Optional[List[float]] = None
     status_description: Optional[List[str]] = None
 
+    # check if all entries in the list of self.ch_type are valid
     def __post_init__(self):
-        if self.ch_type not in VALID_CHANNEL_TYPES:
-            raise ValueError(
-                f"Invalid channel type {self.ch_type}. Must be one of {VALID_CHANNEL_TYPES}"
-            )
-        if self.component not in VALID_COMPONENT_TYPES:
-            raise ValueError(
-                f"Invalid component type {self.component}. Must be one of {VALID_COMPONENT_TYPES}"
-            )
+        for ch_type in self.ch_type:
+            if ch_type not in VALID_CHANNEL_TYPES:
+                raise ValueError(
+                    f"Invalid channel type '{ch_type}'. Valid channel types are: {VALID_CHANNEL_TYPES}"
+                )
+
+        for component in self.component:
+            if component not in VALID_COMPONENT_TYPES:
+                raise ValueError(
+                    f"Invalid component '{component}'. Valid components are: {VALID_COMPONENT_TYPES}"
+                )
 
 
 @dataclass

@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 import sys
-from ..utils.data_utils import IMUDataset, IMUDevice, IMURecording
+from ..utils.ngmt_data_classes import IMUDataset, IMUDevice, IMURecording
 
 if sys.platform == "linux":
     _BASE_PATH = "/mnt/neurogeriatrics_data/Keep Control/Data/lab dataset/rawdata"

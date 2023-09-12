@@ -1,7 +1,7 @@
 import os
 import sys
 import scipy
-from ..utils.data_utils import IMUDataset, IMUDevice, IMURecording
+from ..utils.ngmt_data_classes import IMUDataset, IMUDevice, IMURecording
 from ..utils import matlab_loader as matlab_loader
 
 # Dictionary that maps sensor types to their corresponding units of measurement
