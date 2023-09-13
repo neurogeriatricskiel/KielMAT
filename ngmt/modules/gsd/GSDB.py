@@ -7,6 +7,7 @@ import scipy.signal
 import scipy.ndimage
 import pywt
 from ngmt.utils import preprocessing
+import os
 
 
 def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
@@ -26,201 +27,256 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
     # Convert imu_acceleration to a numpy array of float64 data type
     imu_acceleration = np.array(imu_acceleration, dtype=np.float64)
 
-    # Calculate the norm of acceleration as acceleration_norm using x, y, and z components.
-    acceleration_norm = np.sqrt(imu_acceleration[:, 0]**2 + imu_acceleration[:, 1]**2 + imu_acceleration[:, 2]**2)    
+    # Calculate the norm of acceleration as acceleration_norm using x, y, and z components
+    acceleration_norm = np.sqrt(
+        imu_acceleration[:, 0] ** 2
+        + imu_acceleration[:, 1] ** 2
+        + imu_acceleration[:, 2] ** 2
+    )
 
-    # Resample acceleration_norm to target sampling frequency using resample_interpolate function.
+    # Resample acceleration_norm to target sampling frequency
     initial_sampling_frequency = sampling_frequency
-    target_sampling_frequency = 40      
-    resampled_acceleration = preprocessing.resample_interpolate(acceleration_norm, initial_sampling_frequency, target_sampling_frequency)      # Resampled data with 40Hz  
-    
+    target_sampling_frequency = 40
+    resampled_acceleration = preprocessing.resample_interpolate(
+        acceleration_norm, initial_sampling_frequency, target_sampling_frequency
+    )
+
     # Applying Savitzky-Golay filter to smoothen the resampled data with frequency of 40Hz
-    window_length = 21         
+    window_length = 21
     polynomial_order = 7
-    smoothed_acceleration = scipy.signal.savgol_filter(resampled_acceleration, window_length, polynomial_order)
+    smoothed_acceleration = scipy.signal.savgol_filter(
+        resampled_acceleration, window_length, polynomial_order
+    )
 
-    # Load FIR filter designed and apply for the low SNR, impaired, asymmetric, and slow gait
-    filtering_file =  scipy.io.loadmat('C:\\Users\\Project\\Desktop\\Gait_Sequence\\Mobilise-D-TVS-Recommended-Algorithms\\GSDB\\Library\\FIR-2-3Hz-40.mat')
-    num = filtering_file['Num'][0, :]
-    
-    # Remove drifts using defined function in utls (RemoveDrift40Hz).
-    # Define parameters of the filter
+    # Load filter designed for low SNR, impaired, asymmetric and slow gait
+    os.chdir("ngmt/utils")
+    filtering_file = scipy.io.loadmat("FIR_2_3Hz_40.mat")
+    num = filtering_file["Num"][0, :]
+
+    # Remove drifts from signal.
     numerator_coefficient = num
-    denominator_coefficient = np.array([1., ])
-    detrended_acceleration = scipy.signal.filtfilt(numerator_coefficient, denominator_coefficient, preprocessing.remove_40Hz_drift(smoothed_acceleration))
+    denominator_coefficient = np.array(
+        [
+            1.0,
+        ]
+    )
+    detrended_acceleration = scipy.signal.filtfilt(
+        numerator_coefficient,
+        denominator_coefficient,
+        preprocessing.remove_40Hz_drift(smoothed_acceleration),
+    )
 
-    # Perform the continuous wavelet transform on the filtered acceleration data accN_filt2
-    scale = 10                   
-    wavelet = pywt.ContinuousWavelet('gaus2')               
-    sampling_period = 1/target_sampling_frequency
-    coefficients, _ = pywt.cwt(detrended_acceleration, np.arange(1, scale + 1), wavelet, sampling_period)
-    desired_scale = 10 
+    # Perform the continuous wavelet transform on the filtered acceleration data
+    scale = 10
+    wavelet = pywt.ContinuousWavelet("gaus2")
+    sampling_period = 1 / target_sampling_frequency
+    coefficients, _ = pywt.cwt(
+        detrended_acceleration, np.arange(1, scale + 1), wavelet, sampling_period
+    )
+    desired_scale = 10
     wavelet_transform_result = coefficients[desired_scale - 1, :]
 
     # Applying Savitzky-Golay filter to further smoothen the wavelet transformed data
     window_length = 11
     polynomial_order = 5
-    smoothed_wavelet_result = scipy.signal.savgol_filter(wavelet_transform_result, window_length, polynomial_order)
+    smoothed_wavelet_result = scipy.signal.savgol_filter(
+        wavelet_transform_result, window_length, polynomial_order
+    )
 
     # Perform continuous wavelet transform
-    coefficients, _ = pywt.cwt(smoothed_wavelet_result, np.arange(1, scale + 1), wavelet, sampling_period)
+    coefficients, _ = pywt.cwt(
+        smoothed_wavelet_result, np.arange(1, scale + 1), wavelet, sampling_period
+    )
     desired_scale = 10
     further_smoothed_wavelet_result = coefficients[desired_scale - 1, :]
 
     # Smoothing the data using successive Gaussian filters
     window_lengths = [10, 10, 15, 10]
     sigmas = [2.5, 2.5, 2.5, 2.5]
-    detected_activity_signal = preprocessing.recursive_gaussian_smoothing(further_smoothed_wavelet_result, window_lengths, sigmas)
+    detected_activity_signal = preprocessing.recursive_gaussian_smoothing(
+        further_smoothed_wavelet_result, window_lengths, sigmas
+    )
 
-    # Compute the envelope of the processed acceleration data.
+    # Compute the envelope of the processed acceleration data
     envelope = []
-    envelope, _ = preprocessing.calculate_envelope_activity(detected_activity_signal, int(round(target_sampling_frequency)), 1, int(round(target_sampling_frequency)), 1) 
+    envelope, _ = preprocessing.calculate_envelope_activity(
+        detected_activity_signal,
+        int(round(target_sampling_frequency)),
+        1,
+        int(round(target_sampling_frequency)),
+        1,
+    )
 
-    # Initialize a list for walking bouts.
+    # Initialize a list for walking bouts
     walking_bouts = []
 
-    # Process alarm data to identify walking bouts.
+    # Process alarm data to identify walking bouts
     if envelope.size > 0:
         index_ranges = preprocessing.find_consecutive_groups(envelope > 0)
         for j in range(len(index_ranges)):
             if index_ranges[j, 1] - index_ranges[j, 0] <= 3 * target_sampling_frequency:
-                envelope[index_ranges[j, 0]:index_ranges[j, 1] + 1] = 0
+                envelope[index_ranges[j, 0] : index_ranges[j, 1] + 1] = 0
             else:
-                walking_bouts.extend(detected_activity_signal[index_ranges[j, 0]:index_ranges[j, 1] + 1])
-                
+                walking_bouts.extend(
+                    detected_activity_signal[
+                        index_ranges[j, 0] : index_ranges[j, 1] + 1
+                    ]
+                )
+
         # Convert walk_low_back list to a NumPy array
         walking_bouts_array = np.array(walking_bouts)
-                
+
         # Find positive peaks in the walk_low_back_array
-        positive_peak_indices, _ = scipy.signal.find_peaks(walking_bouts_array, height=0)
-                
+        positive_peak_indices, _ = scipy.signal.find_peaks(
+            walking_bouts_array, height=0
+        )
+
         # Get the corresponding y-axis data values for the positive peak
         positive_peaks = walking_bouts_array[positive_peak_indices]
-                
+
         # Find negative peaks in the inverted walk_low_back array
-        negative_peak_indices , _ = scipy.signal.find_peaks(-walking_bouts_array)
-                
+        negative_peak_indices, _ = scipy.signal.find_peaks(-walking_bouts_array)
+
         # Get the corresponding y-axis data values for the positive peak
         negative_peaks = -walking_bouts_array[negative_peak_indices]
-                
+
         # Convert pksn list to a NumPy array before using it in concatenation
         negative_peaks_array = np.array(negative_peaks)
-                
+
         # Combine positive and negative peaks
         combined_peaks = np.concatenate((positive_peaks, negative_peaks_array))
-                
+
         # Calculate the data adaptive threshold using the 5th percentile of the combined peaks
         threshold = np.percentile(combined_peaks, 5)
-    
-        # Set f to sigDetActv
+
+        # Set selected_signal to detected_activity_signal
         selected_signal = detected_activity_signal
 
     else:
-        threshold = 0.15  # If hilbert envelope fails to detect 'active', try version [1]
+        threshold = 0.15
         selected_signal = smoothed_wavelet_result
 
-    # Detect mid-swing peaks.
+    # Detect mid-swing peaks
     min_peaks, max_peaks = preprocessing.find_local_min_max(selected_signal, threshold)
 
     # Find pulse trains in max_peaks and remove ones with steps less than 4
     pulse_trains_max = preprocessing.identify_pulse_trains(max_peaks)
-    
+
     # Access the fields of the struct-like array
-    pulse_trains_max = [train for train in pulse_trains_max if train['steps'] >= 4]
-    
+    pulse_trains_max = [train for train in pulse_trains_max if train["steps"] >= 4]
+
     # Find pulse trains in min_peaks and remove ones with steps less than 4
     pulse_trains_min = preprocessing.identify_pulse_trains(min_peaks)
-    
+
     # Access the fields of the struct-like array
-    pulse_trains_min = [train for train in pulse_trains_min if train['steps'] >= 4]
-    
+    pulse_trains_min = [train for train in pulse_trains_min if train["steps"] >= 4]
+
     # Convert t1 and t2 to sets and find their intersection
-    walking_periods = preprocessing.find_interval_intersection(preprocessing.convert_pulse_train_to_array(pulse_trains_max), preprocessing.convert_pulse_train_to_array(pulse_trains_min))
-    
+    walking_periods = preprocessing.find_interval_intersection(
+        preprocessing.convert_pulse_train_to_array(pulse_trains_max),
+        preprocessing.convert_pulse_train_to_array(pulse_trains_min),
+    )
+
     # Check if walking_periods is empty
-    if walking_periods is None:  
+    if walking_periods is None:
         walking_bouts = []
         MidSwing = []
     else:
         # Call the organize_and_pack_results function with walking_periods and MaxPeaks
-        walking_bouts, MidSwing = preprocessing.organize_and_pack_results(walking_periods, max_peaks)
-        # Check if w is not empty
+        walking_bouts, MidSwing = preprocessing.organize_and_pack_results(
+            walking_periods, max_peaks
+        )
         if walking_bouts:
-            # Update the start value of the first element in w
-            walking_bouts[0]['start'] = max([1, walking_bouts[0]['start']])
+            # Update the start value of the first element
+            walking_bouts[0]["start"] = max([1, walking_bouts[0]["start"]])
 
-            # Update the end value of the last element in w
-            walking_bouts[-1]['end'] = min([walking_bouts[-1]['end'], len(detected_activity_signal)])
+            # Update the end value of the last element
+            walking_bouts[-1]["end"] = min(
+                [walking_bouts[-1]["end"], len(detected_activity_signal)]
+            )
 
-    # Calculate the length (size) of w
+    # Calculate the length of walking bouts
     walking_bouts_length = len(walking_bouts)
 
-    # Initialize an empty list w_new
+    # Initialize an empty list
     filtered_walking_bouts = []
 
-    # Initialize a counter variable k
+    # Initialize a counter variable "counter"
     counter = 0
-    # Loop through the range from 0 to n-1
-    for j in range(walking_bouts_length):
-        # Check if the 'steps' field of the j-th element in w is greater than or equal to 5
-        if walking_bouts[j]['steps'] >= 5:
-            # Increment the counter k
-            counter += 1
 
-            # Add a new element to w_new with 'start' and 'end' fields from the j-th element in w
-            filtered_walking_bouts.append({'start': walking_bouts[j]['start'], 'end': walking_bouts[j]['end']})
-            
-    # Initialize an array of zeros with the length of sigDetActv
+    for j in range(walking_bouts_length):
+        if walking_bouts[j]["steps"] >= 5:
+            counter += 1
+            filtered_walking_bouts.append(
+                {"start": walking_bouts[j]["start"], "end": walking_bouts[j]["end"]}
+            )
+
+    # Initialize an array of zeros with the length of detected_activity_signal
     walking_labels = np.zeros(len(detected_activity_signal))
 
-    # Calculate the length (size) of w_new
+    # Calculate the length of the filtered_walking_bouts
     filtered_walking_bouts_length = len(filtered_walking_bouts)
 
-    # Loop through the range from 0 to n-1
     for j in range(filtered_walking_bouts_length):
+        walking_labels[
+            filtered_walking_bouts[j]["start"] : filtered_walking_bouts[j]["end"] + 1
+        ] = 1
 
-        # Update elements in walking_labels to 1 between the 'start' and 'end' indices of the j-th element in w_new
-        walking_labels[filtered_walking_bouts[j]['start']:filtered_walking_bouts[j]['end']+1] = 1
-    
-    # Merge walking bouts if break less than 3 seconds
+    # Call the find_consecutive_groups function with the walking_labels variable
     ind_noWk = []
     ind_noWk = preprocessing.find_consecutive_groups(walking_labels == 0)
-    if len(ind_noWk) > 0:
+
+    # Merge walking bouts if break less than 3 seconds
+    if ind_noWk.size > 0:
         for j in range(len(ind_noWk)):
             if ind_noWk[j, 1] - ind_noWk[j, 0] <= target_sampling_frequency * 3:
-                walking_labels[ind_noWk[j, 0]:ind_noWk[j, 1] + 1] = 1
+                walking_labels[ind_noWk[j, 0] : ind_noWk[j, 1] + 1] = 1
 
+    # Merge walking bouts if break less than 3 seconds
     ind_Wk = []
-    if np.any(walking_labels == 1):
+    walkLabel_1_indices = np.where(walking_labels == 1)[0]
+
+    if walkLabel_1_indices.size > 0:
         ind_Wk = preprocessing.find_consecutive_groups(walking_labels == 1)
-        if len(ind_Wk) > 0:
-            GSD_Output = []
+        # Create an empty list to store 'walk' dictionaries
+        walk = []
+        if ind_Wk.size > 0:
             for j in range(len(ind_Wk)):
-                GSD_Output.append({
-                    'Start': ind_Wk[j, 0] / target_sampling_frequency,
-                    'End': ind_Wk[j, 1] / target_sampling_frequency,
-                    'fs': initial_sampling_frequency
-                })
+                walk.append({"start": (ind_Wk[j, 0]), "end": ind_Wk[j, 1]})
+
+        n = len(walk)
+        GSD_Output = []
+
+        for j in range(n):
+            GSD_Output.append(
+                {
+                    "Start": walk[j]["start"] / target_sampling_frequency,
+                    "End": walk[j]["end"] / target_sampling_frequency,
+                    "fs": 100,
+                }
+            )
+        print("Gait sequences detected.")
     else:
-        print('No gait sequence(s) detected')
+        print("No gait sequence(s) detected.")
 
     # Plot results if set to true
     if plot_results:
-        plt.figure(figsize=(10, 6))  
-
-        plt.plot(detected_activity_signal, linewidth=3)  
-        plt.plot(walking_labels, 'r', linewidth=5)
-
-        plt.title('Detected Activity and Walking Labels', fontsize=20)  
-        plt.xlabel('Samples (40Hz)', fontsize=20)  
-        plt.ylabel('Amplitude', fontsize=20)  
-
-        plt.legend(['Processed Acceleration Signal from Lowerback IMU Sensor', 'Detected Gait Sequences'], fontsize=16)  
-        plt.grid(True)  
-
-        plt.xticks(fontsize=20)  
-        plt.yticks(fontsize=20)  
-
+        plt.figure(figsize=(10, 6))
+        plt.plot(detected_activity_signal, linewidth=3)
+        plt.plot(walking_labels, "r", linewidth=5)
+        plt.title("Detected Activity and Walking Labels", fontsize=20)
+        plt.xlabel("Samples (40Hz)", fontsize=20)
+        plt.ylabel("Amplitude", fontsize=20)
+        plt.legend(
+            [
+                "Processed Acceleration Signal from Lowerback IMU Sensor",
+                "Detected Gait Sequences",
+            ],
+            fontsize=16,
+        )
+        plt.grid(True)
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
         plt.show()
 
     return GSD_Output
