@@ -7,8 +7,6 @@ import scipy.signal
 import scipy.ndimage
 import pywt
 from ngmt.utils import preprocessing
-import os
-
 
 def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
     """_summary_
@@ -48,23 +46,8 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         resampled_acceleration, window_length, polynomial_order
     )
 
-    # Load filter designed for low SNR, impaired, asymmetric and slow gait
-    os.chdir("ngmt/utils")
-    filtering_file = scipy.io.loadmat("FIR_2_3Hz_40.mat")
-    num = filtering_file["Num"][0, :]
-
-    # Remove drifts from signal.
-    numerator_coefficient = num
-    denominator_coefficient = np.array(
-        [
-            1.0,
-        ]
-    )
-    detrended_acceleration = scipy.signal.filtfilt(
-        numerator_coefficient,
-        denominator_coefficient,
-        preprocessing.remove_40Hz_drift(smoothed_acceleration),
-    )
+    # Filter data using lowpass filter designed for low SNR, impaired, asymmetric and slow gait
+    detrended_acceleration = preprocessing.fir_lowpass_filter(smoothed_acceleration)
 
     # Perform the continuous wavelet transform on the filtered acceleration data
     scale = 10
