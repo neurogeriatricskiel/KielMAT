@@ -693,8 +693,8 @@ def signal_decomposition_algorithm(
     )
 
     # Load FIR filter designed and apply for the low SNR, impaired, asymmetric, and slow gait
-    filtering_file = "ngmt/utils/FIR_2_3Hz_40.mat"
-    num = scipy.io.loadmat(filtering_file)
+    filtering_file = scipy.io.loadmat("ngmt/utils/FIR_2_3Hz_40.mat")
+    num = filtering_file["Num"][0, :]
     width_of_pad = 10000 * len(num)
     smoothed_vertical_accelerarion_data_padded = np.pad(
         smoothed_vertical_accelerarion_data, width_of_pad, mode="wrap"
