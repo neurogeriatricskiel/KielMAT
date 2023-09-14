@@ -70,11 +70,6 @@ def Initial_Contact_Detection(
         processed_output = []
 
     if plot_results:
-        # Load filter designed for low SNR, impaired, asymmetric and slow gait
-        os.chdir("ngmt/utils")
-        filtering_file = scipy.io.loadmat("FIR_2_3Hz_40.mat")
-        filter_coeffs = filtering_file["Num"][0, :]
-
         target_sampling_frequency = 40
         max_ic_count = max(len(gs.get("IC", [])) for gs in gait_sequences)
 
@@ -92,6 +87,10 @@ def Initial_Contact_Detection(
         accV_resampled = preprocessing.resample_interpolate(
             acc_vertical, sampling_frequency, target_sampling_frequency
         )
+
+        # Load filter designed for low SNR, impaired, asymmetric and slow gait
+        filtering_file = scipy.io.loadmat("ngmt/utils/FIR_2_3Hz_40.mat")
+        filter_coeffs = filtering_file["Num"][0, :]
         accV_filtered = scipy.signal.filtfilt(
             filter_coeffs, 1, preprocessing.remove_40Hz_drift(accV_resampled)
         )
