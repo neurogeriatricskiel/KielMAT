@@ -50,11 +50,13 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
     detrended_acceleration = preprocessing.fir_lowpass_filter(smoothed_acceleration)
 
     # Perform the continuous wavelet transform on the filtered acceleration data
-    scale = 10
-    wavelet = pywt.ContinuousWavelet("gaus2")
-    sampling_period = 1 / target_sampling_frequency
+    scales = 10 
+    wavelet = "gaus2" 
+    sampling_period = (
+        1 / target_sampling_frequency
+    )
     coefficients, _ = pywt.cwt(
-        detrended_acceleration, np.arange(1, scale + 1), wavelet, sampling_period
+        detrended_acceleration, np.arange(1, scales + 1), wavelet, sampling_period
     )
     desired_scale = 10
     wavelet_transform_result = coefficients[desired_scale - 1, :]
@@ -68,17 +70,24 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
 
     # Perform continuous wavelet transform
     coefficients, _ = pywt.cwt(
-        smoothed_wavelet_result, np.arange(1, scale + 1), wavelet, sampling_period
+        smoothed_wavelet_result, np.arange(1, scales + 1), wavelet, sampling_period
     )
     desired_scale = 10
     further_smoothed_wavelet_result = coefficients[desired_scale - 1, :]
-
+    further_smoothed_wavelet_result = further_smoothed_wavelet_result.T
+    
     # Smoothing the data using successive Gaussian filters
-    window_lengths = [10, 10, 15, 10]
-    sigmas = [2.5, 2.5, 2.5, 2.5]
-    detected_activity_signal = preprocessing.recursive_gaussian_smoothing(
-        further_smoothed_wavelet_result, window_lengths, sigmas
-    )
+    sigma_params = [2, 2, 3, 2]
+    kernel_size_params = [10, 10, 15, 10]
+    mode_params = ['reflect', 'reflect', 'nearest', 'reflect']
+
+    # Apply Gaussian filters in a loop using the named parameters
+    for sigma, kernel_size, mode in zip(sigma_params, kernel_size_params, mode_params):
+        gaussian_radius = (kernel_size - 1) / 2
+        filtered_signal = scipy.ndimage.gaussian_filter1d(further_smoothed_wavelet_result, sigma=sigma, mode=mode, radius=round(gaussian_radius))
+
+    # Use preprocessed signal for gait sequence detection 
+    detected_activity_signal = filtered_signal
 
     # Compute the envelope of the processed acceleration data
     envelope = []
@@ -91,7 +100,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
     )
 
     # Initialize a list for walking bouts
-    walking_bouts = []
+    walking_bouts = [0]
 
     # Process alarm data to identify walking bouts
     if envelope.size > 0:
@@ -111,7 +120,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
 
         # Find positive peaks in the walk_low_back_array
         positive_peak_indices, _ = scipy.signal.find_peaks(
-            walking_bouts_array, height=0
+            walking_bouts_array
         )
 
         # Get the corresponding y-axis data values for the positive peak
@@ -123,12 +132,9 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         # Get the corresponding y-axis data values for the positive peak
         negative_peaks = -walking_bouts_array[negative_peak_indices]
 
-        # Convert pksn list to a NumPy array before using it in concatenation
-        negative_peaks_array = np.array(negative_peaks)
-
         # Combine positive and negative peaks
-        combined_peaks = np.concatenate((positive_peaks, negative_peaks_array))
-
+        combined_peaks = [x for x in positive_peaks if x > 0] + [x for x in negative_peaks if x > 0]
+        
         # Calculate the data adaptive threshold using the 5th percentile of the combined peaks
         threshold = np.percentile(combined_peaks, 5)
 
@@ -138,7 +144,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
     else:
         threshold = 0.15
         selected_signal = smoothed_wavelet_result
-
+    
     # Detect mid-swing peaks
     min_peaks, max_peaks = preprocessing.find_local_min_max(selected_signal, threshold)
 
@@ -235,7 +241,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
                 {
                     "Start": walk[j]["start"] / target_sampling_frequency,
                     "End": walk[j]["end"] / target_sampling_frequency,
-                    "fs": 100,
+                    "fs": sampling_frequency,
                 }
             )
         print("Gait sequences detected.")
