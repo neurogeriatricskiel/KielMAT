@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 import scipy.interpolate
 import scipy.signal
 import scipy.io
+import scipy.integrate
 import scipy.ndimage
 import pywt
-
 
 def fir_lowpass_filter(data, fir_file="ngmt/utils/FIR_2_3Hz_40.mat"):
     """
@@ -34,6 +34,8 @@ def fir_lowpass_filter(data, fir_file="ngmt/utils/FIR_2_3Hz_40.mat"):
     The filter is applied using `scipy.signal.filtfilt`, which performs zero-phase
     filtering to avoid phase distortion.
     """
+    # Remove drifts using desinged filter (remove_40Hz_drift)
+    filtered_signal = remove_40Hz_drift(data)
 
     # Load FIR filter coefficients from the specified MAT file
     num = scipy.io.loadmat(fir_file)
@@ -50,7 +52,7 @@ def fir_lowpass_filter(data, fir_file="ngmt/utils/FIR_2_3Hz_40.mat"):
 
     # Apply the FIR low-pass filter using filtfilt
     filtered_signal = scipy.signal.filtfilt(
-        numerator_coefficient, denominator_coefficient, data
+        numerator_coefficient, denominator_coefficient, filtered_signal
     )
 
     # Return the filtered signal
@@ -164,38 +166,21 @@ def calculate_envelope_activity(
 
     Args:
     input_signal (array_like): The input signal.
-    smooth_window (int): Window length for smoothing the envelope (default is 20).
-    threshold_style (int): Threshold selection style: 0 for manual, 1 for automatic (default is 1).
-    duration (int): Minimum duration of activity to be detected (default is 20).
-    plot_results (int): Set to 1 for plotting results, 0 otherwise (default is 1).
+    smooth_window (int): Window length for smoothing the envelope.
+    threshold_style (int): Threshold selection style: 0 for manual, 1 for automatic.
+    duration (int): Minimum duration of activity to be detected.
+    plot_results (int): Set to 1 for plotting results, 0 otherwise.
 
     Returns:
     tuple(ndarray, ndarray): A tuple containing:
         - alarm (ndarray): Vector indicating active parts of the signal.
         - env (ndarray): Smoothed envelope of the signal.
     """
-    # Input handling
-    if len(locals()) < 5:  # If there is < 5 inputs.
-        plot_results = 1  # Default value
-        if len(locals()) < 4:  # If there is < 4 inputs.
-            duration = 20  # Default value
-            if len(locals()) < 3:  # If there is < 3 inputs.
-                threshold_style = 1  # Default 1, means it is done automatically
-                if len(locals()) < 2:  # If there is < 2 inputs.
-                    smooth_window = 20  # Default value for smoothing length
-                    if len(locals()) < 1:  # If there is < 1 inputs.
-                        v = np.tile(
-                            np.concatenate(
-                                (0.1 * np.ones((200, 1)), np.ones((100, 1)))
-                            ),
-                            (10, 1),
-                        )  # Generate true variance profile
-                        input_signal = np.sqrt(v) * np.random.randn(*v.shape)
 
     # Calculate the analytical signal and get the envelope
     input_signal = (
         input_signal.flatten()
-    )  # Return a copy of the preprocessed data into one dimension.
+    )
     # Compute the analytic signal, using the Hilbert transform form scipy.signal.
     analytic = scipy.signal.hilbert(input_signal)
     env = np.abs(analytic)  # Compute the envelope of the analytic signal.
@@ -204,26 +189,24 @@ def calculate_envelope_activity(
     env = scipy.signal.convolve(
         env, np.ones(smooth_window) / smooth_window, mode="full"
     )  # Returns the discrete, linear convolution of two one-dimensional sequences.
+
     env = env - np.mean(env)  # Remove the offset by subtracting the mean of 'env'
     env = env / np.max(env)  # Normalize the 'env' by dividing by its maximum value
 
     # Threshold the signal
     if threshold_style == 0:
-        hg = plt.figure()
         plt.plot(env)
         plt.title("Select a threshold on the graph")
-        _, THR_SIG = plt.ginput(1)
-        plt.close(hg)
-    elif threshold_style == 1:
+        THR_SIG = plt.ginput(1)[0][1]
+        plt.close()
+    else:
         THR_SIG = 4 * np.mean(env)
 
     # Set noise and signal levels
-    noise = np.mean(env) * (
-        1 / 3
-    )  # Noise level: Set an initial estimate of the noise level
-    threshold = np.mean(
-        env
-    )  # Signal level: It's used as a reference to distinguish between the background noise and the actual signal activity.
+    noise = np.mean(env) / 3  # noise level
+    
+    # Signal level: It's used as a reference to distinguish between the background noise and the actual signal activity.
+    threshold = np.mean(env)
 
     # Initialize Buffers
     thres_buf = np.zeros(
@@ -233,42 +216,38 @@ def calculate_envelope_activity(
         len(env) - duration
     )  # This buffer stores values related to the noise.
     THR_buf = np.zeros(len(env))  # This buffer stores threshold values.
-    alarm = np.zeros_like(env)  # This buffer tracks alarm-related information.
+    alarm = np.zeros(len(env))  # This buffer tracks alarm-related information.
     h = 1
 
     for i in range(len(env) - duration):
-        if np.all(env[i : i + duration] > THR_SIG):
+        if np.all(env[i:i + duration+1] > THR_SIG):
             alarm[i] = np.max(
                 env
             )  # If the current window of data surpasses the threshold, set an alarm.
             threshold = 0.1 * np.mean(
-                env[i : i + duration]
+                env[i : i + duration+1]
             )  # Set a new threshold based on the mean of the current window.
             h += 1
         else:
             # Update noise
-            if np.mean(env[i : i + duration]) < THR_SIG:
+            if np.mean(env[i : i + duration+1]) < THR_SIG:
                 noise = np.mean(
-                    env[i : i + duration]
+                    env[i : i + duration+1]
                 )  # Update the noise value based on the mean of the current window.
             else:
                 if len(noise_buf) > 0:
                     noise = np.mean(
                         noise_buf
                     )  # If available, use the mean of noise buffer to update the noise.
-                    thres_buf[
-                        i
-                    ] = threshold  # Store the threshold value in the threshold buffer.
-                    noise_buf[i] = noise  # Store the noise value in the noise buffer.
+        thres_buf[i] = threshold  # Store the threshold value in the threshold buffer.
+        noise_buf[i] = noise  # Store the noise value in the noise buffer.
 
             # Update threshold
-            if h > 1:
-                THR_SIG = noise + 0.50 * (
+        if h > 1:
+            THR_SIG = noise + 0.50 * (
                     np.abs(threshold - noise)
                 )  # Update the threshold using noise and threshold values.
-                THR_buf[
-                    i
-                ] = THR_SIG  # Store the updated threshold value in the threshold buffer.
+        THR_buf[i] = THR_SIG  # Store the updated threshold value in the threshold buffer.
 
     if plot_results == 1:
         plt.figure()
@@ -321,7 +300,7 @@ def find_consecutive_groups(input_array):
     ind (ndarray): A 2D array where each row represents a group of consecutive non-zero values.
         The first column contains the start index of the group, and the second column contains the end index.
     """
-    # Find indices of non-zeros
+    # Find indices of non-zeros elements
     temp = np.where(input_array)[0]
 
     # Find where the difference between indices is greater than 1
@@ -355,21 +334,18 @@ def find_local_min_max(signal, threshold=None):
             - minima_indices: Indices of local minima in the signal.
             - maxima_indices: Indices of local maxima in the signal.
     """
-    # Compute the difference between adjacent signal values.
-    signal_diff = np.diff(signal)
+    # Find positive peaks in the signal
+    maxima_indices, _ = scipy.signal.find_peaks(
+        signal
+    )
 
-    # Find the indices where the signal changes sign, indicating potential minima and maxima.
-    zero_crossings = np.where(signal_diff[1:] * signal_diff[:-1] <= 0)[0]
-    zero_crossings = zero_crossings + 1
+    # Find negative peaks in the inverted signal
+    minima_indices, _ = scipy.signal.find_peaks(-signal)
 
-    # Identify the indices of local minima and maxima based on sign changes.
-    minima_indices = zero_crossings[signal_diff[zero_crossings] >= 0]
-    maxima_indices = zero_crossings[signal_diff[zero_crossings] < 0]
-
-    # If a threshold is provided, filter out maxima and minima that do not meet the threshold.
     if threshold is not None:
-        maxima_indices = maxima_indices[signal[maxima_indices] > threshold]
-        minima_indices = minima_indices[signal[minima_indices] < -threshold]
+        maxima_indices = maxima_indices[signal[maxima_indices] > threshold] + 1
+        minima_indices = minima_indices[signal[minima_indices] < -threshold] + 1
+
 
     return minima_indices, maxima_indices
 
@@ -625,45 +601,42 @@ def organize_and_pack_results(walking_periods, peak_steps):
     return organized_results, all_mid_swing
 
 
-def max_peaks_between_zc(x):
+def max_peaks_between_zc(input_signal):
     """_summary_
-    Find peaks and their locations from the vector x between zero crossings.
+    Find peaks and their locations from the vector input_signal between zero crossings.
 
     Args:
-        x (numpy.ndarray): Input column vector.
+        input_signal (numpy.ndarray): Input column vector.
 
     Returns:
         pks (numpy.ndarray): Signed max/min values between zero crossings.
         ipks (numpy.ndarray): Locations of the peaks in the original vector.
     """
     # Check if the input is a valid column vector.
-    if x.shape[0] == 1:
+    if input_signal.shape[0] == 1:
         raise ValueError("X must be a column vector")
-    if x.size != len(x):
+    if input_signal.size != len(input_signal):
         raise ValueError("X must be a column vector")
 
-    # Find zero crossing locations
-    zero_crossings = np.where(np.diff(np.sign(x)) != 0)[0]
+    # Flatten the input vector to ensure it's 1D.
+    input_signal = input_signal.flatten()
 
-    # Calculate the number of peaks (one less than zero crossings).
-    L = len(zero_crossings) - 1
+    # Find the locations of zero crossings in the input vector.
+    zero_crossings_locations = np.where(np.abs(np.diff(np.sign(input_signal))) == 2)[0] + 1 
+    
+    # Calculate the number of peaks.
+    number_of_peaks = len(zero_crossings_locations) - 1
 
-    # Define a function to find the index of the maximum absolute value in a subarray.
-    def imax(x):
-        idx = np.argmax(x)
-        return idx
+    def imax(input_signal):
+        return np.argmax(input_signal)
+    
+    # Find the indices of the maximum values within each peak region.
+    ipk = np.array([imax(np.abs(input_signal[zero_crossings_locations[i]:zero_crossings_locations[i + 1]])) for i in range(number_of_peaks)])
+    ipks = zero_crossings_locations[:number_of_peaks] + ipk 
+    ipks = ipks + 1
 
-    # Find the indices of max/min values between zero crossings.
-    ipk = np.fromiter(
-        (imax(np.abs(x[zero_crossings[i] : zero_crossings[i + 1]])) for i in range(L)),
-        dtype=int,
-    )
-
-    # Calculate peak locations in the original vector
-    ipks = zero_crossings[:-1] + ipk
-
-    # Get peak values from the original vector
-    pks = x[ipks]
+    # Retrieve the signed max/min values at the peak locations.
+    pks = input_signal[ipks - 1]
 
     return pks, ipks
 
@@ -696,17 +669,21 @@ def signal_decomposition_algorithm(
     filtering_file = scipy.io.loadmat("ngmt/utils/FIR_2_3Hz_40.mat")
     num = filtering_file["Num"][0, :]
     width_of_pad = 10000 * len(num)
+
     smoothed_vertical_accelerarion_data_padded = np.pad(
         smoothed_vertical_accelerarion_data, width_of_pad, mode="wrap"
     )
+
     detrended_vertical_acceleration_signal = scipy.signal.filtfilt(
         num, 1, remove_40Hz_drift(smoothed_vertical_accelerarion_data_padded)
     )
+
     detrended_vertical_acceleration_signal_lpf_rmzp = (
-        detrended_vertical_acceleration_signal[width_of_pad:-width_of_pad]
+        detrended_vertical_acceleration_signal[width_of_pad-1: len(detrended_vertical_acceleration_signal)-width_of_pad]
     )
+
     det_ver_acc_sig_LPInt = (
-        scipy.integrate.cumtrapz(detrended_vertical_acceleration_signal_lpf_rmzp)
+        scipy.integrate.cumulative_trapezoid(detrended_vertical_acceleration_signal_lpf_rmzp,initial='0')
         / target_sampling_frequency
     )
 
@@ -727,12 +704,12 @@ def signal_decomposition_algorithm(
 
     # Calculate indx1 (logical indices of negative elements)
     indx1 = pks1 < 0
-
+    
     # Extract IC (indices of negative peaks)
-    IC = ipks1[indx1]
+    indices_of_negative_peaks = ipks1[indx1]
 
     # Convert IC to seconds
-    IC_seconds = IC / target_sampling_frequency
+    IC_seconds = indices_of_negative_peaks / target_sampling_frequency
 
     # Apply continuous wavelet transform
     scales = 9
@@ -747,15 +724,15 @@ def signal_decomposition_algorithm(
     accVLPIntCwt2 = np.array(accVLPIntCwt2)
 
     # Apply max_peaks_between_zc funtion to find peaks and their locations.
-    pks2, ipks2 = max_peaks_between_zc(accVLPIntCwt2.T)
+    pks2, ipks2 = max_peaks_between_zc(accVLPIntCwt2)
 
     # Calculate indx1 (logical indices of negative elements)
     indx2 = pks2 > 0
 
     # Extract IC (indices of negative peaks)
-    FC = ipks2[indx2]
+    final_contact = ipks2[indx2]
 
     # Convert IC to seconds
-    FC_seconds = FC / target_sampling_frequency
+    FC_seconds = final_contact / target_sampling_frequency
 
     return IC_seconds, FC_seconds
