@@ -86,7 +86,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         gaussian_radius = (kernel_size - 1) / 2
         filtered_signal = scipy.ndimage.gaussian_filter1d(further_smoothed_wavelet_result, sigma=sigma, mode=mode, radius=round(gaussian_radius))
 
-    # Use preprocessed signal for gait sequence detection 
+    # Use filtered signal for post-processing purposes
     detected_activity_signal = filtered_signal
 
     # Compute the envelope of the processed acceleration data
@@ -244,7 +244,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
                     "fs": sampling_frequency,
                 }
             )
-        print("Gait sequences detected.")
+        print("Gait sequence(s) detected.")
     else:
         print("No gait sequence(s) detected.")
 
