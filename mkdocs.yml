@@ -1,0 +1,18 @@
+site_name: NeuroGeriatricsMotionToolbox NGMT
+
+theme:
+  name: "mkdocs"
+
+plugins:
+- search
+- mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [ngmt]
+
+nav:
+  - index.md
+  - Datasets: datasets.md
+  - Modules: modules.md
+  - Utilities: utils.md
