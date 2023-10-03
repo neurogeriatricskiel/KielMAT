@@ -11,6 +11,14 @@ plugins:
         python:
           paths: [ngmt]
 
+theme:
+  logo: ng_logo.png
+  name: material
+  palette:
+    primary: light green
+    accent: purple
+
+
 nav:
   - index.md
   - Datasets: datasets.md

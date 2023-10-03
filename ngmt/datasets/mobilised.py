@@ -14,6 +14,14 @@ _MAP_UNITS = {
 
 
 def load_file(file_name: str) -> IMUDataset:
+    """_summary_
+
+    Args:
+        file_name (str): _description_
+
+    Returns:
+        IMUDataset: _description_
+    """
     # Load data from the MATLAB file
     data_dict = matlab_loader.load_matlab(file_name, top_level="data")
 

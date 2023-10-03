@@ -6,19 +6,19 @@ import scipy.signal
 
 
 def resample_interpolate(input_signal, initial_sampling_rate, target_sampling_rate):
-    """_summary_
+    """
     Resample and interpolate a signal to a new sampling rate.
 
     This function takes a signal `input_signal` sampled at an initial sampling rate `initial_sampling_rate`
     and resamples it to a new sampling rate `target_sampling_rate` using linear interpolation.
 
     Args:
-    input_signal (array_like): The input signal.
-    initial_sampling_rate (float): The initial sampling rate of the input signal.
-    target_sampling_rate (float): The desired sampling rate for the output signal.
+        input_signal (array_like): The input signal.
+        initial_sampling_rate (float): The initial sampling rate of the input signal.
+        target_sampling_rate (float): The desired sampling rate for the output signal.
 
     Returns:
-    resampled_signal (array_like): The resampled and interpolated signal.
+        resampled_signal (array_like): The resampled and interpolated signal.
     """
     recording_time = len(input_signal)
     x = np.arange(1, recording_time + 1)
@@ -32,17 +32,17 @@ def resample_interpolate(input_signal, initial_sampling_rate, target_sampling_ra
 
 
 def remove_40Hz_drift(signal):
-    """_summary_
+    """
     Remove 40Hz drift from a signal using a high-pass filter.
 
     This function applies a high-pass filter to remove low-frequency drift at 40Hz
     from the input signal `signal`.
 
     Args:
-    signal (array_like): The input signal.
+        signal (array_like): The input signal.
 
     Returns:
-    filtered_signal (ndarray): The filtered signal with removed drift.
+        filtered_signal (ndarray): The filtered signal with removed drift.
     """
     numerator_coefficient = np.array(
         [1, -1]
@@ -62,10 +62,8 @@ def remove_40Hz_drift(signal):
     return filtered_signal
 
 
-def calculate_envelope_activity(
-    input_signal, smooth_window, threshold_style, duration, plot_results
-):
-    """_summary_
+def calculate_envelope_activity(input_signal, smooth_window = 20, threshold_style = 1, duration = 20, plot_results = 1):
+    """
     Calculate envelope-based activity detection using the Hilbert transform.
 
     This function analyzes an input signal `input_signal` to detect periods of activity based on the signal's envelope.
@@ -73,16 +71,16 @@ def calculate_envelope_activity(
     adaptive threshold to identify active regions.
 
     Args:
-    input_signal (array_like): The input signal.
-    smooth_window (int): Window length for smoothing the envelope (default is 20).
-    threshold_style (int): Threshold selection style: 0 for manual, 1 for automatic (default is 1).
-    duration (int): Minimum duration of activity to be detected (default is 20).
-    plot_results (int): Set to 1 for plotting results, 0 otherwise (default is 1).
+        input_signal (array_like): The input signal.
+        smooth_window (int): Window length for smoothing the envelope (default is 20).
+        threshold_style (int): Threshold selection style: 0 for manual, 1 for automatic (default is 1).
+        duration (int): Minimum duration of activity to be detected (default is 20).
+        plot_results (int): Set to 1 for plotting results, 0 otherwise (default is 1).
 
     Returns:
-    tuple(ndarray, ndarray): A tuple containing:
-        - alarm (ndarray): Vector indicating active parts of the signal.
-        - env (ndarray): Smoothed envelope of the signal.
+        tuple (ndarray, ndarray): A tuple containing:
+        alarm (ndarray): Vector indicating active parts of the signal.
+        env (ndarray): Smoothed envelope of the signal.
     """
     # Input handling
     if len(locals()) < 5:  # If there is < 5 inputs.
@@ -217,7 +215,7 @@ def calculate_envelope_activity(
 
 
 def find_consecutive_groups(input_array):
-    """_summary_
+    """
     Find consecutive groups of non-zero values in an input array.
 
     This function takes an input array `input_array`, converts it to a column vector, and identifies consecutive groups of
@@ -243,7 +241,7 @@ def find_consecutive_groups(input_array):
 
 
 def find_local_min_max(signal, threshold=None):
-    """_summary_
+    """
     Find Local Minima and Maxima in a Given Signal.
 
     This function takes an input signal and identifies the indices of local minima and maxima.
@@ -273,7 +271,7 @@ def find_local_min_max(signal, threshold=None):
 
 
 def identify_pulse_trains(signal):
-    """_summary_
+    """
     Identify Pulse Trains in a Given Signal.
 
     This function takes an input signal and detects pulse trains within the signal.
@@ -325,7 +323,7 @@ def identify_pulse_trains(signal):
 
 
 def convert_pulse_train_to_array(pulse_train_list):
-    """_summary_
+    """
     Convert a List of Pulse Train Dictionaries to a 2D Array.
 
     This function takes a list of pulse train dictionaries and converts it into a 2D array.
@@ -354,7 +352,7 @@ def convert_pulse_train_to_array(pulse_train_list):
 
 
 def find_interval_intersection(set_a, set_b):
-    """_summary_
+    """
     Find the Intersection of Two Sets of Intervals.
 
     Given two sets of intervals, this function computes their intersection and returns a new set

@@ -14,6 +14,16 @@ else:
 
 
 def load_file(sub_id: str, task_name: str, tracksys: str) -> IMUDataset:
+    """_summary_
+
+    Args:
+        sub_id (str): _description_
+        task_name (str): _description_
+        tracksys (str): _description_
+
+    Returns:
+        IMUDataset: _description_
+    """
     # Set the filename
     _base_file_name = f"sub-{sub_id}_task-{task_name}_tracksys-{tracksys}"
 
