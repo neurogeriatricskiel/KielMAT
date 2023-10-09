@@ -62,7 +62,9 @@ def remove_40Hz_drift(signal):
     return filtered_signal
 
 
-def calculate_envelope_activity(input_signal, smooth_window = 20, threshold_style = 1, duration = 20, plot_results = 1):
+def calculate_envelope_activity(
+    input_signal, smooth_window=20, threshold_style=1, duration=20, plot_results=1
+):
     """
     Calculate envelope-based activity detection using the Hilbert transform.
 
