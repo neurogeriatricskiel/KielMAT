@@ -8,6 +8,80 @@ import scipy.integrate
 import scipy.ndimage
 import pywt
 
+
+def lowpass_filter(signal, method="savgol", **kwargs):
+    """
+    Apply a low-pass filter to the input signal.
+
+    Args:
+        signal (numpy.ndarray): The input signal to be filtered.
+        method (str): The filter method to use ("savgol", "butter", or "fir").
+        **kwargs: Additional keyword arguments specific to the chosen filter method.
+
+    Returns:
+        numpy.ndarray: The filtered signal.
+    """
+    # Define default parameters for Savitzky-Golay filter
+    default_savgol_params = {
+        "window_length": 21,
+        "polynomial_order": 7,
+    }
+
+    if method == "savgol":
+        # Update default parameters with any provided kwargs
+        savgol_params = {**default_savgol_params, **kwargs}
+        window_length = savgol_params.get("window_length", default_savgol_params["window_length"])
+        polynomial_order = savgol_params.get("polynomial_order", default_savgol_params["polynomial_order"])
+        return scipy.signal.savgol_filter(signal, window_length, polynomial_order)
+
+    else:
+        raise ValueError("Invalid filter method specified")
+
+
+def apply_continuous_wavelet_transform(data, scales, wavelet, sampling_frequency):
+    """
+    Apply continuous wavelet transform to the input data.
+
+    Args:
+        data (numpy.ndarray): Input data.
+        scales (int): Number of scales for the wavelet transform.
+        wavelet (str): Type of wavelet to use.
+        sampling_frequency (float): Sampling frequency of the data.
+
+    Returns:
+        numpy.ndarray: Transformed data.
+    """
+    sampling_period = 1 / sampling_frequency
+    coefficients, _ = pywt.cwt(data, np.arange(1, scales + 1), wavelet, sampling_period)
+    desired_scale = 10  
+    wavelet_transform_result = coefficients[desired_scale - 1, :]
+    
+    return wavelet_transform_result
+
+
+def apply_successive_gaussian_filters(data):
+    """
+    Apply successive Gaussian filters to the input data.
+
+    Args:
+        data (numpy.ndarray): Input data.
+
+    Returns:
+        numpy.ndarray: Filtered data.
+    """
+    sigma_params = [2, 2, 3, 2]
+    kernel_size_params = [10, 10, 15, 10]
+    mode_params = ['reflect', 'reflect', 'nearest', 'reflect']
+
+    filtered_signal = data
+    
+    for sigma, kernel_size, mode in zip(sigma_params, kernel_size_params, mode_params):
+        gaussian_radius = (kernel_size - 1) / 2
+        filtered_signal = scipy.ndimage.gaussian_filter1d(filtered_signal, sigma=sigma, mode=mode, radius=round(gaussian_radius))
+    
+    return filtered_signal
+
+
 def fir_lowpass_filter(data, fir_file="ngmt/utils/FIR_2_3Hz_40.mat"):
     """
     Apply a finite impulse response (FIR) low-pass filter to input data.

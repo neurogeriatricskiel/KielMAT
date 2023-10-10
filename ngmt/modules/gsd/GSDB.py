@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import scipy.io
 import scipy.signal
 import scipy.ndimage
-import pywt
 from ngmt.utils import preprocessing
 
 def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
@@ -18,7 +17,32 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
 
     Returns:
         list: A list of dictionaries containing gait sequence information, including start and end times, and sampling frequency.
+    
+    Description:
+        This function performs Gait Sequence Detection (GSD) on accelerometer data
+        collected from a low back sensor. The purpose of GSD is to identify and
+        characterize walking bouts or gait sequences within the input data.
+
+        The input accelerometer data should be provided as a numpy.ndarray with shape
+        (N, 3), where N is the number of data points. The three columns represent the
+        acceleration along the x, y, and z axes.
+
+        The function processes the input data through a series of signal processing steps
+        including resampling, filtering, wavelet transform, and peak detection to identify
+        gait sequences. The detected gait sequences are returned as a list of dictionaries
+        containing start and end times.
+
+        If `plot_results` is set to True, the function will also generate a plot showing
+        the pre-processed acceleration data and the detected gait sequences for
+        visualization purposes.
     """
+    # Error handling for invalid input data
+    if not isinstance(imu_acceleration, np.ndarray) or imu_acceleration.shape[1] != 3:
+        raise ValueError("imu_acceleration must be a 2D numpy array with 3 columns.")
+    
+    if not isinstance(sampling_frequency, (int, float)) or sampling_frequency <= 0:
+        raise ValueError("sampling_frequency must be a positive float.")
+    
     # Initialize the GSD_Output dictionary
     GSD_Output = {}
 
@@ -31,7 +55,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         + imu_acceleration[:, 1] ** 2
         + imu_acceleration[:, 2] ** 2
     )
-
+    
     # Resample acceleration_norm to target sampling frequency
     initial_sampling_frequency = sampling_frequency
     target_sampling_frequency = 40
@@ -39,54 +63,30 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         acceleration_norm, initial_sampling_frequency, target_sampling_frequency
     )
 
-    # Applying Savitzky-Golay filter to smoothen the resampled data with frequency of 40Hz
-    window_length = 21
-    polynomial_order = 7
-    smoothed_acceleration = scipy.signal.savgol_filter(
-        resampled_acceleration, window_length, polynomial_order
+    # Applying Savitzky-Golay filter to smoothen the resampled data
+    smoothed_acceleration = preprocessing.lowpass_filter(
+        resampled_acceleration, method="savgol", window_length=21, polynomial_order=7
     )
 
     # Filter data using lowpass filter designed for low SNR, impaired, asymmetric and slow gait
     detrended_acceleration = preprocessing.fir_lowpass_filter(smoothed_acceleration)
 
     # Perform the continuous wavelet transform on the filtered acceleration data
-    scales = 10 
-    wavelet = "gaus2" 
-    sampling_period = (
-        1 / target_sampling_frequency
-    )
-    coefficients, _ = pywt.cwt(
-        detrended_acceleration, np.arange(1, scales + 1), wavelet, sampling_period
-    )
-    desired_scale = 10
-    wavelet_transform_result = coefficients[desired_scale - 1, :]
+    wavelet_transform_result = preprocessing.apply_continuous_wavelet_transform(detrended_acceleration, scales=10, wavelet="gaus2", sampling_frequency=target_sampling_frequency)
 
     # Applying Savitzky-Golay filter to further smoothen the wavelet transformed data
-    window_length = 11
-    polynomial_order = 5
-    smoothed_wavelet_result = scipy.signal.savgol_filter(
-        wavelet_transform_result, window_length, polynomial_order
+    smoothed_wavelet_result = preprocessing.lowpass_filter(
+        wavelet_transform_result, window_length=11, polynomial_order=5
     )
 
     # Perform continuous wavelet transform
-    coefficients, _ = pywt.cwt(
-        smoothed_wavelet_result, np.arange(1, scales + 1), wavelet, sampling_period
-    )
-    desired_scale = 10
-    further_smoothed_wavelet_result = coefficients[desired_scale - 1, :]
+    further_smoothed_wavelet_result = preprocessing.apply_continuous_wavelet_transform(smoothed_wavelet_result, scales=10, wavelet="gaus2", sampling_frequency=target_sampling_frequency)
     further_smoothed_wavelet_result = further_smoothed_wavelet_result.T
     
     # Smoothing the data using successive Gaussian filters
-    sigma_params = [2, 2, 3, 2]
-    kernel_size_params = [10, 10, 15, 10]
-    mode_params = ['reflect', 'reflect', 'nearest', 'reflect']
-
-    # Apply Gaussian filters in a loop using the named parameters
-    for sigma, kernel_size, mode in zip(sigma_params, kernel_size_params, mode_params):
-        gaussian_radius = (kernel_size - 1) / 2
-        filtered_signal = scipy.ndimage.gaussian_filter1d(further_smoothed_wavelet_result, sigma=sigma, mode=mode, radius=round(gaussian_radius))
-
-    # Use filtered signal for post-processing purposes
+    filtered_signal = preprocessing.apply_successive_gaussian_filters(further_smoothed_wavelet_result)
+    
+    # Use pre-processsed signal for post-processing purposes
     detected_activity_signal = filtered_signal
 
     # Compute the envelope of the processed acceleration data
@@ -98,7 +98,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         int(round(target_sampling_frequency)),
         1,
     )
-
+    
     # Initialize a list for walking bouts
     walking_bouts = [0]
 
@@ -140,7 +140,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
 
         # Set selected_signal to detected_activity_signal
         selected_signal = detected_activity_signal
-
+        
     else:
         threshold = 0.15
         selected_signal = smoothed_wavelet_result
@@ -251,15 +251,15 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
     # Plot results if set to true
     if plot_results:
         plt.figure(figsize=(10, 6))
-        plt.plot(detected_activity_signal, linewidth=3)
-        plt.plot(walking_labels, "r", linewidth=5)
-        plt.title("Detected Activity and Walking Labels", fontsize=20)
-        plt.xlabel("Samples (40Hz)", fontsize=20)
-        plt.ylabel("Amplitude", fontsize=20)
+        plt.plot(np.arange(len(detected_activity_signal)) / (60 * target_sampling_frequency), detected_activity_signal, "r", linewidth=3)
+        plt.plot(np.arange(len(detected_activity_signal)) / (60 * target_sampling_frequency), walking_labels, "b", linewidth=5)
+        plt.title("Detected activity and walking labels", fontsize=20)
+        plt.xlabel("Time (minutes)", fontsize=20)
+        plt.ylabel("Acceleration (g)", fontsize=20)
         plt.legend(
             [
-                "Processed Acceleration Signal from Lowerback IMU Sensor",
-                "Detected Gait Sequences",
+                "Pre-processed acceleration signal from lowerback IMU sensor",
+                "Detected gait sequences",
             ],
             fontsize=16,
         )
