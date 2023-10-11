@@ -152,6 +152,16 @@ class RecordingData:
     ch_names: Optional[List[str]] = None
     events: Optional[EventData] = None
 
+    def __post_init__(self):
+            if len(self.times) != self.data.shape[0]:
+                raise ValueError(
+                    "The length of `times` should match the number of columns in `data`"
+                )
+
+            if len(self.ch_names) != self.data.shape[1]:
+                raise ValueError(
+                    "The number of `channel_names` should match the number of rows in `time_series`"
+                )
 
 @dataclass
 class MotionData:
@@ -160,16 +170,6 @@ class MotionData:
     info: List[FileInfo]
     ch_names: List[str]  # Can be a list of channel names
 
-    def __post_init__(self):
-        if len(self.times) != self.time_series.shape[1]:
-            raise ValueError(
-                "The length of `times` should match the number of columns in `time_series`"
-            )
-
-        if len(self.channel_names) != self.time_series.shape[0]:
-            raise ValueError(
-                "The number of `channel_names` should match the number of rows in `time_series`"
-            )
 
     @classmethod
     def synchronise_recordings(self, systems: List[RecordingData]):
