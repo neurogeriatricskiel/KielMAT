@@ -49,6 +49,7 @@ class ChannelData:
         units (List[str]): A list of measurement units.
         placement (Optional[List[str]]): An optional list of placement information (default is None).
         description (Optional[List[str]]): An optional list of channel descriptions (default is None).
+        range(Optional[List[float]]): An optional list of sensor ranges (default is None).
         sampling_frequency (Optional[float]): An optional sampling frequency (default is None).
         status (Optional[List[float]]): An optional list of channel statuses (default is None).
         status_description (Optional[List[str]]): An optional list of status descriptions (default is None).
@@ -65,6 +66,7 @@ class ChannelData:
     units: List[str]
     placement: Optional[List[str]] = None
     description: Optional[List[str]] = None
+    range: Optional[List[float]] = None
     sampling_frequency: Optional[float] = None
     status: Optional[List[float]] = None
     status_description: Optional[List[str]] = None
