@@ -117,7 +117,7 @@ class RecordingData:
 
         name (str): A name for the recording data.
 
-        data (np.ndarray): A nD numpy array of shape (n_channels, n_samples) containing
+        data (np.ndarray): A nD numpy array of shape (n_samples, n_channels) containing
             the motion data. Channels MUST have the same sampling frequency.
 
         sampling_frequency (float): The sampling frequency of the motion data.
