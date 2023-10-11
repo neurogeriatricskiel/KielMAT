@@ -57,7 +57,6 @@ def _load_file(file_path: str) -> dict:
     for i, tracked_point in zip(range(num_tracked_points), indip_data.keys()):
         # Loop over the channel types
         for ch_type in indip_data[tracked_point]["Fs"].keys():
-
             # Add info to channels data
             channels_dict["name"] += [
                 f"{tracked_point}_{_MAP_CHANNEL_NAMES[ch_type]}_{x}"
