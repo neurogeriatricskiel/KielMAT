@@ -58,9 +58,10 @@ class HDF5Decoder:
                     flatten_keys = True
                 matlab_class = hdf5[key].attrs.get("MATLAB_class")
                 elem = hdf5[key]
-                unpacked = self.unpack_mat(elem, depth=depth + 1, flatten_keys=flatten_keys)
+                unpacked = self.unpack_mat(
+                    elem, depth=depth + 1, flatten_keys=flatten_keys
+                )
                 if matlab_class == b"struct" and len(elem) > 1:
-
                     values = unpacked.values()
 
                     # we can only pack them together in MATLAB style if
@@ -163,7 +164,18 @@ class HDF5Decoder:
             return arr.T.squeeze()
 
         # if it is none of the above, we can convert to numpy array
-        elif mtype in ("double", "single", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64"):
+        elif mtype in (
+            "double",
+            "single",
+            "int8",
+            "int16",
+            "int32",
+            "int64",
+            "uint8",
+            "uint16",
+            "uint32",
+            "uint64",
+        ):
             arr = np.array(dataset, dtype=dataset.dtype)
             arr = arr.T.squeeze()
             if flatten_keys and arr.shape == tuple():
@@ -181,7 +193,9 @@ def convert_mat_to_dict(data, load_only_su=True):
         if isinstance(val, sio.matlab.mio5_params.mat_struct):
             if load_only_su and "SU" in val._fieldnames:
                 out[key] = {}
-                out[key]["SU"] = convert_mat_to_dict(getattr(val, "SU"), load_only_su=load_only_su)
+                out[key]["SU"] = convert_mat_to_dict(
+                    getattr(val, "SU"), load_only_su=load_only_su
+                )
                 if "StartDateTime" in val._fieldnames:
                     out[key]["StartDateTime"] = getattr(val, "StartDateTime")
                 if "TimeZone" in val._fieldnames:
@@ -191,7 +205,9 @@ def convert_mat_to_dict(data, load_only_su=True):
                 out[key] = convert_mat_to_dict(val, load_only_su=load_only_su)
         elif isinstance(val, (list, np.ndarray)) and len(val) == 0:
             out[key] = val
-        elif isinstance(val, (list, np.ndarray)) and isinstance(val[0], sio.matlab.mio5_params.mat_struct):
+        elif isinstance(val, (list, np.ndarray)) and isinstance(
+            val[0], sio.matlab.mio5_params.mat_struct
+        ):
             tmp = [convert_mat_to_dict(v, load_only_su=load_only_su) for v in val]
             out[key] = tmp
         else:
@@ -201,7 +217,9 @@ def convert_mat_to_dict(data, load_only_su=True):
 
 def load_matlab(file_name, top_level, load_only_su=False):
     try:
-        data = sio.loadmat(file_name, squeeze_me=True, struct_as_record=False, mat_dtype=True)
+        data = sio.loadmat(
+            file_name, squeeze_me=True, struct_as_record=False, mat_dtype=True
+        )
         data = data[top_level]
         data = convert_mat_to_dict(data, load_only_su=load_only_su)
     except NotImplementedError:

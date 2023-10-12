@@ -9,18 +9,18 @@ def get_unit_from_type(channel_types):
     Returns:
         list: List of units
     """
-    
+
     # create list of units as long as types
     units = [None] * len(channel_types)
 
     # automatically assign units if common channel types are found
     for i, ch_type in enumerate(channel_types):
-        if ch_type == 'ACCEL':
-            units[i] = 'm/s^2'
-        elif ch_type == 'GYRO':
-            units[i] = 'deg/s'
-        elif ch_type == 'MAGN':
-            units[i] = 'T'
+        if ch_type == "ACCEL":
+            units[i] = "m/s^2"
+        elif ch_type == "GYRO":
+            units[i] = "deg/s"
+        elif ch_type == "MAGN":
+            units[i] = "T"
         else:
             units[i] = None
 

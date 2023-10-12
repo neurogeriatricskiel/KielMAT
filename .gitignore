@@ -1,4 +1,5 @@
 /ngmt/__pycache__
+/ngmt/*/__pycache__
 /ngmt.egg-info
 
 my_messy_code/mytestconde.py
@@ -12,4 +13,3 @@ ngmt\datasets\__pycache__
 
 ngmt\modules\gsd\__pycache__
 
-ngmt/modules/icd/__pycache__/__init__.cpython-311.pyc
