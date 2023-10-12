@@ -72,7 +72,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
     detrended_acceleration = preprocessing.fir_lowpass_filter(smoothed_acceleration)
 
     # Perform the continuous wavelet transform on the filtered acceleration data
-    wavelet_transform_result = preprocessing.apply_continuous_wavelet_transform(detrended_acceleration, scales=10, wavelet="gaus2", sampling_frequency=target_sampling_frequency)
+    wavelet_transform_result = preprocessing.apply_continuous_wavelet_transform(detrended_acceleration, scales=10, desired_scale=10, wavelet="gaus2", sampling_frequency=target_sampling_frequency)
 
     # Applying Savitzky-Golay filter to further smoothen the wavelet transformed data
     smoothed_wavelet_result = preprocessing.lowpass_filter(
@@ -80,7 +80,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
     )
 
     # Perform continuous wavelet transform
-    further_smoothed_wavelet_result = preprocessing.apply_continuous_wavelet_transform(smoothed_wavelet_result, scales=10, wavelet="gaus2", sampling_frequency=target_sampling_frequency)
+    further_smoothed_wavelet_result = preprocessing.apply_continuous_wavelet_transform(smoothed_wavelet_result, scales=10, desired_scale=10, wavelet="gaus2", sampling_frequency=target_sampling_frequency)
     further_smoothed_wavelet_result = further_smoothed_wavelet_result.T
     
     # Smoothing the data using successive Gaussian filters

@@ -5,18 +5,17 @@ import matplotlib.pyplot as plt
 import scipy.io
 import scipy.signal
 import scipy.ndimage
-import pywt
 from ngmt.utils import preprocessing
-import os
 
 
 def Initial_Contact_Detection(
     imu_acceleration, gait_sequences, sampling_frequency, plot_results
 ):
     """_summary_
-    Initial Contact Detection Algorithm (ICDA) performs Signal Decomposition on low back IMU accelerometer data for detecting initial contacts (ICs).
+    Initial Contact Detection Algorithm (ICDA) performs Signal Decomposition
+    on low back IMU accelerometer data for detecting initial contacts (ICs).
 
-    Parameters:
+    Args:
         imu_acceleration (numpy.ndarray): IMU accelerometer data.
         gait_sequences (list): List of dictionaries containing gait sequence 'Start' and 'End' fields.
         sampling_frequency (float): Sampling frequency of the accelerometer data.
@@ -35,26 +34,29 @@ def Initial_Contact_Detection(
     ):
         processed_output = []
 
+        # Determine the maximum number of ICs among all gait sequences
         max_ic_count = max(len(gs.get("IC", [])) for gs in gait_sequences)
 
         for j in range(len(gait_sequences)):
-            start_index = round(sampling_frequency * gait_sequences[j]["Start"])
-            stop_index = round(sampling_frequency * gait_sequences[j]["End"])
-            accV_gs = acc_vertical[start_index:stop_index]
+            # Calculate start and stop indices for the current gait sequence
+            start_index = int(sampling_frequency * gait_sequences[j]["Start"] - 1)
+            stop_index = int(sampling_frequency * gait_sequences[j]["End"] - 1)
+            accV_gs = acc_vertical[start_index : stop_index + 2]
 
             try:
                 # Perform Signal Decomposition Algorithm for Initial Contacts (ICs)
                 IC_rel, _ = preprocessing.signal_decomposition_algorithm(
                     accV_gs, sampling_frequency
                 )
-                IC = gait_sequences[j]["Start"] + IC_rel
-                gait_sequences[j]["IC"] = IC.tolist()
+                Initial_Contact = (gait_sequences[j]["Start"]) + IC_rel
+
+                gait_sequences[j]["IC"] = Initial_Contact.tolist()
             except Exception as e:
                 print(
                     "SD algorithm did not run successfully. Returning an empty vector of ICs"
                 )
                 print(f"Error: {e}")
-                IC = []
+                Initial_Contact = []
                 gait_sequences[j]["IC"] = []
 
             # Add sampling frequency and pad ICs to the output
@@ -70,9 +72,11 @@ def Initial_Contact_Detection(
         processed_output = []
 
     if plot_results:
+        # Set the target sampling frequency for plotting
         target_sampling_frequency = 40
         max_ic_count = max(len(gs.get("IC", [])) for gs in gait_sequences)
 
+        # Combine ICs from all gait sequences into a single array
         IC_all_signal = np.vstack(
             [
                 gs.get("IC", []) + [np.nan] * (max_ic_count - len(gs.get("IC", [])))
@@ -81,6 +85,7 @@ def Initial_Contact_Detection(
             ]
         )
 
+        # Convert ICs to sample indices
         IC_indices = np.round(IC_all_signal * sampling_frequency).astype(int)
 
         # Resample and filter accelerometer data
@@ -89,24 +94,15 @@ def Initial_Contact_Detection(
         )
 
         # Load filter designed for low SNR, impaired, asymmetric and slow gait
-        filtering_file = scipy.io.loadmat("ngmt/utils/FIR_2_3Hz_40.mat")
-        filter_coeffs = filtering_file["Num"][0, :]
-        accV_filtered = scipy.signal.filtfilt(
-            filter_coeffs, 1, preprocessing.remove_40Hz_drift(accV_resampled)
-        )
+        accV_filtered = preprocessing.fir_lowpass_filter(accV_resampled)
         accV_integral = (
             scipy.integrate.cumtrapz(accV_filtered) / target_sampling_frequency
         )
 
         # Perform Continuous Wavelet Transform (CWT)
-        num_scales = 9
-        wavelet = "gaus2"
-        sampling_period = 1 / target_sampling_frequency
-        coefficients, _ = pywt.cwt(
-            accV_integral, np.arange(1, num_scales + 1), wavelet, sampling_period
-        )
-        desired_scale = 9
-        accV_cwt = coefficients[desired_scale - 1, :]
+        accV_cwt = preprocessing.apply_continuous_wavelet_transform(accV_integral, scales=9, desired_scale=9, wavelet="gaus2", sampling_frequency=target_sampling_frequency)
+
+        # Subtraction of the mean of the data from signal
         accV_cwt = accV_cwt - np.mean(accV_cwt)
 
         # Resample CWT results back to original sampling frequency

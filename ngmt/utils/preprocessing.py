@@ -38,13 +38,14 @@ def lowpass_filter(signal, method="savgol", **kwargs):
         raise ValueError("Invalid filter method specified")
 
 
-def apply_continuous_wavelet_transform(data, scales, wavelet, sampling_frequency):
+def apply_continuous_wavelet_transform(data, scales, desired_scale, wavelet, sampling_frequency):
     """
     Apply continuous wavelet transform to the input data.
 
     Args:
         data (numpy.ndarray): Input data.
         scales (int): Number of scales for the wavelet transform.
+        desired_scale (int): Desired scale to use in calculations.
         wavelet (str): Type of wavelet to use.
         sampling_frequency (float): Sampling frequency of the data.
 
@@ -52,10 +53,8 @@ def apply_continuous_wavelet_transform(data, scales, wavelet, sampling_frequency
         numpy.ndarray: Transformed data.
     """
     sampling_period = 1 / sampling_frequency
-    coefficients, _ = pywt.cwt(data, np.arange(1, scales + 1), wavelet, sampling_period)
-    desired_scale = 10  
+    coefficients, _ = pywt.cwt(data, np.arange(1, scales + 1), wavelet, sampling_period) 
     wavelet_transform_result = coefficients[desired_scale - 1, :]
-    
     return wavelet_transform_result
 
 
