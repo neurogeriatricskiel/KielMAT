@@ -30,15 +30,21 @@ def lowpass_filter(signal, method="savgol", **kwargs):
     if method == "savgol":
         # Update default parameters with any provided kwargs
         savgol_params = {**default_savgol_params, **kwargs}
-        window_length = savgol_params.get("window_length", default_savgol_params["window_length"])
-        polynomial_order = savgol_params.get("polynomial_order", default_savgol_params["polynomial_order"])
+        window_length = savgol_params.get(
+            "window_length", default_savgol_params["window_length"]
+        )
+        polynomial_order = savgol_params.get(
+            "polynomial_order", default_savgol_params["polynomial_order"]
+        )
         return scipy.signal.savgol_filter(signal, window_length, polynomial_order)
 
     else:
         raise ValueError("Invalid filter method specified")
 
 
-def apply_continuous_wavelet_transform(data, scales, desired_scale, wavelet, sampling_frequency):
+def apply_continuous_wavelet_transform(
+    data, scales, desired_scale, wavelet, sampling_frequency
+):
     """
     Apply continuous wavelet transform to the input data.
 
@@ -53,7 +59,7 @@ def apply_continuous_wavelet_transform(data, scales, desired_scale, wavelet, sam
         numpy.ndarray: Transformed data.
     """
     sampling_period = 1 / sampling_frequency
-    coefficients, _ = pywt.cwt(data, np.arange(1, scales + 1), wavelet, sampling_period) 
+    coefficients, _ = pywt.cwt(data, np.arange(1, scales + 1), wavelet, sampling_period)
     wavelet_transform_result = coefficients[desired_scale - 1, :]
     return wavelet_transform_result
 
@@ -70,14 +76,16 @@ def apply_successive_gaussian_filters(data):
     """
     sigma_params = [2, 2, 3, 2]
     kernel_size_params = [10, 10, 15, 10]
-    mode_params = ['reflect', 'reflect', 'nearest', 'reflect']
+    mode_params = ["reflect", "reflect", "nearest", "reflect"]
 
     filtered_signal = data
-    
+
     for sigma, kernel_size, mode in zip(sigma_params, kernel_size_params, mode_params):
         gaussian_radius = (kernel_size - 1) / 2
-        filtered_signal = scipy.ndimage.gaussian_filter1d(filtered_signal, sigma=sigma, mode=mode, radius=round(gaussian_radius))
-    
+        filtered_signal = scipy.ndimage.gaussian_filter1d(
+            filtered_signal, sigma=sigma, mode=mode, radius=round(gaussian_radius)
+        )
+
     return filtered_signal
 
 
@@ -133,7 +141,7 @@ def fir_lowpass_filter(data, fir_file="ngmt/utils/FIR_2_3Hz_40.mat"):
 
 
 def resample_interpolate(input_signal, initial_sampling_rate, target_sampling_rate):
-    """_summary_
+    """
     Resample and interpolate a signal to a new sampling rate.
 
     This function takes a signal `input_signal` sampled at an initial sampling rate `initial_sampling_rate`
@@ -168,7 +176,7 @@ def resample_interpolate(input_signal, initial_sampling_rate, target_sampling_ra
 
 
 def remove_40Hz_drift(signal):
-    """_summary_
+    """
     Remove 40Hz drift from a signal using a high-pass filter.
 
     This function applies a high-pass filter to remove low-frequency drift at 40Hz
@@ -230,7 +238,7 @@ def recursive_gaussian_smoothing(noisy_data, window_lengths, sigmas):
 def calculate_envelope_activity(
     input_signal, smooth_window, threshold_style, duration, plot_results
 ):
-    """_summary_
+    """
     Calculate envelope-based activity detection using the Hilbert transform.
 
     This function analyzes an input signal `input_signal` to detect periods of activity based on the signal's envelope.
@@ -251,9 +259,7 @@ def calculate_envelope_activity(
     """
 
     # Calculate the analytical signal and get the envelope
-    input_signal = (
-        input_signal.flatten()
-    )
+    input_signal = input_signal.flatten()
     # Compute the analytic signal, using the Hilbert transform form scipy.signal.
     analytic = scipy.signal.hilbert(input_signal)
     env = np.abs(analytic)  # Compute the envelope of the analytic signal.
@@ -277,7 +283,7 @@ def calculate_envelope_activity(
 
     # Set noise and signal levels
     noise = np.mean(env) / 3  # noise level
-    
+
     # Signal level: It's used as a reference to distinguish between the background noise and the actual signal activity.
     threshold = np.mean(env)
 
@@ -293,19 +299,19 @@ def calculate_envelope_activity(
     h = 1
 
     for i in range(len(env) - duration):
-        if np.all(env[i:i + duration+1] > THR_SIG):
+        if np.all(env[i : i + duration + 1] > THR_SIG):
             alarm[i] = np.max(
                 env
             )  # If the current window of data surpasses the threshold, set an alarm.
             threshold = 0.1 * np.mean(
-                env[i : i + duration+1]
+                env[i : i + duration + 1]
             )  # Set a new threshold based on the mean of the current window.
             h += 1
         else:
             # Update noise
-            if np.mean(env[i : i + duration+1]) < THR_SIG:
+            if np.mean(env[i : i + duration + 1]) < THR_SIG:
                 noise = np.mean(
-                    env[i : i + duration+1]
+                    env[i : i + duration + 1]
                 )  # Update the noise value based on the mean of the current window.
             else:
                 if len(noise_buf) > 0:
@@ -315,12 +321,14 @@ def calculate_envelope_activity(
         thres_buf[i] = threshold  # Store the threshold value in the threshold buffer.
         noise_buf[i] = noise  # Store the noise value in the noise buffer.
 
-            # Update threshold
+        # Update threshold
         if h > 1:
             THR_SIG = noise + 0.50 * (
-                    np.abs(threshold - noise)
-                )  # Update the threshold using noise and threshold values.
-        THR_buf[i] = THR_SIG  # Store the updated threshold value in the threshold buffer.
+                np.abs(threshold - noise)
+            )  # Update the threshold using noise and threshold values.
+        THR_buf[
+            i
+        ] = THR_SIG  # Store the updated threshold value in the threshold buffer.
 
     if plot_results == 1:
         plt.figure()
@@ -359,7 +367,7 @@ def calculate_envelope_activity(
 
 
 def find_consecutive_groups(input_array):
-    """_summary_
+    """
     Find consecutive groups of non-zero values in an input array.
 
     This function takes an input array `input_array`, converts it to a column vector, and identifies consecutive groups of
@@ -392,7 +400,7 @@ def find_consecutive_groups(input_array):
 
 
 def find_local_min_max(signal, threshold=None):
-    """_summary_
+    """
     Find Local Minima and Maxima in a Given Signal.
 
     This function takes an input signal and identifies the indices of local minima and maxima.
@@ -408,9 +416,7 @@ def find_local_min_max(signal, threshold=None):
             - maxima_indices: Indices of local maxima in the signal.
     """
     # Find positive peaks in the signal
-    maxima_indices, _ = scipy.signal.find_peaks(
-        signal
-    )
+    maxima_indices, _ = scipy.signal.find_peaks(signal)
 
     # Find negative peaks in the inverted signal
     minima_indices, _ = scipy.signal.find_peaks(-signal)
@@ -419,12 +425,11 @@ def find_local_min_max(signal, threshold=None):
         maxima_indices = maxima_indices[signal[maxima_indices] > threshold] + 1
         minima_indices = minima_indices[signal[minima_indices] < -threshold] + 1
 
-
     return minima_indices, maxima_indices
 
 
 def identify_pulse_trains(signal):
-    """_summary_
+    """
     Identify Pulse Trains in a Given Signal.
 
     This function takes an input signal and detects pulse trains within the signal.
@@ -490,7 +495,7 @@ def identify_pulse_trains(signal):
 
 
 def convert_pulse_train_to_array(pulse_train_list):
-    """_summary_
+    """
     Convert a List of Pulse Train Dictionaries to a 2D Array.
 
     This function takes a list of pulse train dictionaries and converts it into a 2D array.
@@ -520,7 +525,7 @@ def convert_pulse_train_to_array(pulse_train_list):
 
 
 def find_interval_intersection(set_a, set_b):
-    """_summary_
+    """
     Find the Intersection of Two Sets of Intervals.
 
     Given two sets of intervals, this function computes their intersection and returns a new set
@@ -675,7 +680,7 @@ def organize_and_pack_results(walking_periods, peak_steps):
 
 
 def max_peaks_between_zc(input_signal):
-    """_summary_
+    """
     Find peaks and their locations from the vector input_signal between zero crossings.
 
     Args:
@@ -695,17 +700,30 @@ def max_peaks_between_zc(input_signal):
     input_signal = input_signal.flatten()
 
     # Find the locations of zero crossings in the input vector.
-    zero_crossings_locations = np.where(np.abs(np.diff(np.sign(input_signal))) == 2)[0] + 1 
-    
+    zero_crossings_locations = (
+        np.where(np.abs(np.diff(np.sign(input_signal))) == 2)[0] + 1
+    )
+
     # Calculate the number of peaks.
     number_of_peaks = len(zero_crossings_locations) - 1
 
     def imax(input_signal):
         return np.argmax(input_signal)
-    
+
     # Find the indices of the maximum values within each peak region.
-    ipk = np.array([imax(np.abs(input_signal[zero_crossings_locations[i]:zero_crossings_locations[i + 1]])) for i in range(number_of_peaks)])
-    ipks = zero_crossings_locations[:number_of_peaks] + ipk 
+    ipk = np.array(
+        [
+            imax(
+                np.abs(
+                    input_signal[
+                        zero_crossings_locations[i] : zero_crossings_locations[i + 1]
+                    ]
+                )
+            )
+            for i in range(number_of_peaks)
+        ]
+    )
+    ipks = zero_crossings_locations[:number_of_peaks] + ipk
     ipks = ipks + 1
 
     # Retrieve the signed max/min values at the peak locations.
@@ -717,7 +735,7 @@ def max_peaks_between_zc(input_signal):
 def signal_decomposition_algorithm(
     vertical_accelerarion_data, initial_sampling_frequency
 ):
-    """_summary_
+    """
     Perform the Signal Decomposition algorithm on accelerometer data.
 
     Args:
@@ -752,11 +770,17 @@ def signal_decomposition_algorithm(
     )
 
     detrended_vertical_acceleration_signal_lpf_rmzp = (
-        detrended_vertical_acceleration_signal[width_of_pad-1: len(detrended_vertical_acceleration_signal)-width_of_pad]
+        detrended_vertical_acceleration_signal[
+            width_of_pad
+            - 1 : len(detrended_vertical_acceleration_signal)
+            - width_of_pad
+        ]
     )
 
     det_ver_acc_sig_LPInt = (
-        scipy.integrate.cumulative_trapezoid(detrended_vertical_acceleration_signal_lpf_rmzp,initial='0')
+        scipy.integrate.cumulative_trapezoid(
+            detrended_vertical_acceleration_signal_lpf_rmzp, initial="0"
+        )
         / target_sampling_frequency
     )
 
@@ -777,7 +801,7 @@ def signal_decomposition_algorithm(
 
     # Calculate indx1 (logical indices of negative elements)
     indx1 = pks1 < 0
-    
+
     # Extract IC (indices of negative peaks)
     indices_of_negative_peaks = ipks1[indx1]
 
