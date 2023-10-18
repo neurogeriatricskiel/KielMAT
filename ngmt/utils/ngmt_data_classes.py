@@ -49,6 +49,7 @@ class ChannelData:
         units (List[str]): A list of measurement units.
         placement (Optional[List[str]]): An optional list of placement information (default is None).
         description (Optional[List[str]]): An optional list of channel descriptions (default is None).
+        range(Optional[List[float]]): An optional list of sensor ranges (default is None).
         sampling_frequency (Optional[float]): An optional sampling frequency (default is None).
         status (Optional[List[float]]): An optional list of channel statuses (default is None).
         status_description (Optional[List[str]]): An optional list of status descriptions (default is None).
@@ -65,6 +66,7 @@ class ChannelData:
     units: List[str]
     placement: Optional[List[str]] = None
     description: Optional[List[str]] = None
+    range: Optional[List[float]] = None
     sampling_frequency: Optional[float] = None
     status: Optional[List[float]] = None
     status_description: Optional[List[str]] = None
@@ -115,7 +117,7 @@ class RecordingData:
 
         name (str): A name for the recording data.
 
-        data (np.ndarray): A nD numpy array of shape (n_channels, n_samples) containing
+        data (np.ndarray): A nD numpy array of shape (n_samples, n_channels) containing
             the motion data. Channels MUST have the same sampling frequency.
 
         sampling_frequency (float): The sampling frequency of the motion data.
@@ -150,6 +152,17 @@ class RecordingData:
     ch_names: Optional[List[str]] = None
     events: Optional[EventData] = None
 
+    def __post_init__(self):
+        if len(self.times) != self.data.shape[0]:
+            raise ValueError(
+                "The length of `times` should match the number of columns in `data`"
+            )
+
+        if len(self.ch_names) != self.data.shape[1]:
+            raise ValueError(
+                "The number of `channel_names` should match the number of rows in `time_series`"
+            )
+
 
 @dataclass
 class MotionData:
@@ -157,17 +170,6 @@ class MotionData:
     times: np.ndarray  # Can be a 1D array representing timestamps
     info: List[FileInfo]
     ch_names: List[str]  # Can be a list of channel names
-
-    def __post_init__(self):
-        if len(self.times) != self.time_series.shape[1]:
-            raise ValueError(
-                "The length of `times` should match the number of columns in `time_series`"
-            )
-
-        if len(self.channel_names) != self.time_series.shape[0]:
-            raise ValueError(
-                "The number of `channel_names` should match the number of rows in `time_series`"
-            )
 
     @classmethod
     def synchronise_recordings(self, systems: List[RecordingData]):
