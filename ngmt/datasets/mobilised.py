@@ -1,7 +1,8 @@
 import os
 import numpy as np
-from ..utils import matlab_loader as matlab_loader
-from ..utils.ngmt_data_classes import (
+from utils.ngmt_data_classes import RecordingData
+import utils.matlab_loader as matlab_loader
+from utils.ngmt_data_classes import (
     FileInfo,
     EventData,
     ChannelData,
@@ -22,7 +23,8 @@ _MAP_UNITS = {
 
 _MAP_CHANNEL_NAMES = {"Acc": "ACCEL", "Gyr": "GYRO", "Mag": "MAGN"}
 
-def load_file(file_name: str) -> IMUDataset:
+
+def load_file(file_name: str) -> RecordingData:
     """
     Args:
         file_name (str): _description_
