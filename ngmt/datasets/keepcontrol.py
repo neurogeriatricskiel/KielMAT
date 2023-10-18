@@ -14,8 +14,7 @@ else:
 
 
 def load_file(sub_id: str, task_name: str, tracksys: str) -> IMUDataset:
-    """_summary_
-
+    """
     Args:
         sub_id (str): _description_
         task_name (str): _description_

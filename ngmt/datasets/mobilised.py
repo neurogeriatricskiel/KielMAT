@@ -22,8 +22,6 @@ _MAP_UNITS = {
 
 _MAP_CHANNEL_NAMES = {"Acc": "ACCEL", "Gyr": "GYRO", "Mag": "MAGN"}
 
-
-
 def load_file(file_name: str) -> IMUDataset:
     """
     Args:
