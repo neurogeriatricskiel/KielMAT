@@ -25,8 +25,7 @@ _MAP_CHANNEL_NAMES = {"Acc": "ACCEL", "Gyr": "GYRO", "Mag": "MAGN"}
 
 
 def load_file(file_name: str) -> IMUDataset:
-    """_summary_
-
+    """
     Args:
         file_name (str): _description_
 
