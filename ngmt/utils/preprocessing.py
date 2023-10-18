@@ -148,12 +148,12 @@ def resample_interpolate(input_signal, initial_sampling_rate, target_sampling_ra
     and resamples it to a new sampling rate `target_sampling_rate` using linear interpolation.
 
     Args:
-    input_signal (array_like): The input signal.
-    initial_sampling_rate (float): The initial sampling rate of the input signal.
-    target_sampling_rate (float): The desired sampling rate for the output signal.
+        input_signal (array_like): The input signal.
+        initial_sampling_rate (float): The initial sampling rate of the input signal.
+        target_sampling_rate (float): The desired sampling rate for the output signal.
 
     Returns:
-    resampled_signal (array_like): The resampled and interpolated signal.
+        resampled_signal (array_like): The resampled and interpolated signal.
     """
     # Calculate the length of the input signal.
     recording_time = len(input_signal)
@@ -183,10 +183,10 @@ def remove_40Hz_drift(signal):
     from the input signal `signal`.
 
     Args:
-    signal (array_like): The input signal.
+        signal (array_like): The input signal.
 
     Returns:
-    filtered_signal (ndarray): The filtered signal with removed drift.
+        filtered_signal (ndarray): The filtered signal with removed drift.
     """
     # The numerator coefficient vector of the filter.
     numerator_coefficient = np.array([1, -1])
@@ -236,7 +236,7 @@ def recursive_gaussian_smoothing(noisy_data, window_lengths, sigmas):
 
 
 def calculate_envelope_activity(
-    input_signal, smooth_window, threshold_style, duration, plot_results
+    input_signal, smooth_window=20, threshold_style=1, duration=20, plot_results=1
 ):
     """
     Calculate envelope-based activity detection using the Hilbert transform.
@@ -246,16 +246,17 @@ def calculate_envelope_activity(
     adaptive threshold to identify active regions.
 
     Args:
-    input_signal (array_like): The input signal.
-    smooth_window (int): Window length for smoothing the envelope.
-    threshold_style (int): Threshold selection style: 0 for manual, 1 for automatic.
-    duration (int): Minimum duration of activity to be detected.
-    plot_results (int): Set to 1 for plotting results, 0 otherwise.
+
+        input_signal (array_like): The input signal.
+        smooth_window (int): Window length for smoothing the envelope (default is 20).
+        threshold_style (int): Threshold selection style: 0 for manual, 1 for automatic (default is 1).
+        duration (int): Minimum duration of activity to be detected (default is 20).
+        plot_results (int): Set to 1 for plotting results, 0 otherwise (default is 1).
 
     Returns:
-    tuple(ndarray, ndarray): A tuple containing:
-        - alarm (ndarray): Vector indicating active parts of the signal.
-        - env (ndarray): Smoothed envelope of the signal.
+        tuple (ndarray, ndarray): A tuple containing:
+        alarm (ndarray): Vector indicating active parts of the signal.
+        env (ndarray): Smoothed envelope of the signal.
     """
 
     # Calculate the analytical signal and get the envelope

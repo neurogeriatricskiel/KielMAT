@@ -23,10 +23,18 @@ _MAP_UNITS = {
 _MAP_CHANNEL_NAMES = {"Acc": "ACCEL", "Gyr": "GYRO", "Mag": "MAGN"}
 
 
-def _load_file(file_path: str) -> dict:
-    # Get subject ID and session info
-    sub_path, session_name = os.path.split(os.path.split(file_path)[0])
-    base_path, sub_id = os.path.split(sub_path)
+
+def load_file(file_name: str) -> IMUDataset:
+    """_summary_
+
+    Args:
+        file_name (str): _description_
+
+    Returns:
+        IMUDataset: _description_
+    """
+    # Load data from the MATLAB file
+    data_dict = matlab_loader.load_matlab(file_name, top_level="data")
 
     # Set file info
     file_info = FileInfo(

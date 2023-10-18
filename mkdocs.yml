@@ -1,0 +1,34 @@
+site_name: NeuroGeriatricsMotionToolbox NGMT
+
+theme:
+  name: "mkdocs"
+
+plugins:
+- search
+- mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [ngmt]
+
+theme:
+  logo: ng_logo.png
+  name: material
+  palette:
+    primary: light green
+    accent: purple
+
+
+nav:
+  - index.md
+  - Datasets: datasets.md
+  - Modules: modules.md
+  - Utilities: utils.md
+
+markdown_extensions:
+- pymdownx.superfences:
+    custom_fences:
+      - name: mermaid
+        class: mermaid
+        format: !!python/name:pymdownx.superfences.fence_code_format
+
