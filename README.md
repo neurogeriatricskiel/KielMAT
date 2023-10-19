@@ -1,35 +1,16 @@
 # NGMT
 
-## NeuroGeriatricMotionToolbox
+Welcome to the NeuroGeriatricMotionToolbox (NGMT). We are a Python based toolbox for processing motion data.
 
-Python based toolbox for processing motion data
+> The toolbox is currently under development and is not yet ready for use.
 
-## Structure
+The toolbox is aimed at a wide variety of motion researchers who want to use open souce software to process their data.
+We have implemented a wide variety of functions to process motion data, such as:
+-   Gait sequence detection (GSD)
+-   Inital contact detection (ICD)
+-   More to follow ...
 
-```markdown
-│ngmt                <- Main folder. It is initialized as a Git
-│                       repository with a reasonable .gitignore file.
-│
-├── examples         <- Various scripts, e.g. simulations, plotting, analysis,
-│                       The scripts use the `ngmt` folder for their base code.
-|
-├── info             <- Slides, Paper, basically any document related to the work in progress.
-│
-├── ngmt             <- Source code for use in this project. Contains functions,
-│                       structures and modules that are used throughout
-│                       the project and in multiple scripts.
-│
-├── test             <- Folder containing tests for `ngmt`.
-│
-├── README.md        <- Top-level README. 
-├── LICENSE
-├── requirements.txt <- The requirements file for reproducing the analysis environment, e.g.
-│                       generated with `pip freeze > requirements.txt`. Might be replaced by
-│                       a `environment.yml` file for Anaconda.
-├── setup.py         <- makes project pip installable (pip install -e .) so src can be imported
-|
-└── .gitignore       <- focused on Python VS Code
-```
+The idea is that various motion data can be loaded into our dedicated dataclasses which rely on principles from the [Motion-BIDS](https://bids-specification.readthedocs.io/en/latest/modality-specific-files/motion.html) standard.
 
 ## Relation of data classes
 ```mermaid
@@ -99,10 +80,27 @@ The `RecordingData` object can also contain information about events. The `Event
 
 The `ChannelData` object is used to store the channel name, the channel type, the channel units and the tracked point.
 
-## Formatting
-The code uploaded here follows the latest black style guide. Please make sure to format your code accordingly before uploading it.
-To do this, install black with `pip install black` and run `black .` in the root directory of the project.
+## Documentation
+The full documentation can be found here.
+
+## Installation
+After the first release, the toolbox can be installed via pip
+
+For now, the toolbox can be installed via the following steps:
+1. Clone the repository
+2. Create a virtual environment
+3. Install the requirements
+4. Install the toolbox
+
+```bash
+git clone https://github.com/neurogeriatricskiel/NGMT.git
+cd NeuroGeriatricMotionToolbox
+python -m venv venv_ngmt
+source venv_ngmt/bin/activate
+pip install -r environment.yml
+pip install -e .
+```
 
 ## Authors
 
-[Masoud Abedinifar](https://github.com/masoudabedinifar), [Robbin Romijnders](https://github.com/rmndrs89) & [Julius Welzel](https://github.com/JuliusWelzel)
+[Masoud Abedinifar](https://github.com/masoudabedinifar), [Clint Hansen](mailto:c.hansen@neurologie.uni-kiel.de), [Robbin Romijnders](https://github.com/rmndrs89) & [Julius Welzel](https://github.com/JuliusWelzel)

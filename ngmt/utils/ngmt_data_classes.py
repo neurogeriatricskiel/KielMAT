@@ -114,30 +114,21 @@ class RecordingData:
     recording. For example, a recording of a participant walking on a treadmill.
 
     Attributes:
-
         name (str): A name for the recording data.
-
         data (np.ndarray): A nD numpy array of shape (n_samples, n_channels) containing
             the motion data. Channels MUST have the same sampling frequency.
-
         sampling_frequency (float): The sampling frequency of the motion data.
-
         times (np.ndarray): A 1D numpy array of shape (n_samples,) containing the
             timestamps of the motion data. If no time stamps are provided from the
             system, timestamps are relative to the start of the recording.
-
         channels (ChannelData): A ChannelData object containing information about the
             channels in the data.
-
         start_time (float): The start time of the recording in seconds. 0 if no time
             stamps are provided from the system.
-
         types (List[str]): A list of strings describing the type of data in each channel.
             For example, "acceleration", "angular velocity", "position", etc.
-
         ch_names (Optional[List[str]]): An optional list of channel names (default is None).
             If None, the channel names will be set to the channel numbers.
-
         events (Optional[EventData]): An optional EventData object containing information
             about events during the recording (default is None).
     """

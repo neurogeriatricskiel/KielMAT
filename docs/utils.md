@@ -7,6 +7,3 @@ This part from the utilities documentation focuses on comon preprocessing steps.
 
 This part from the utilities documentation focuses on comon load functions for different hardwares.
 ::: utils.importers
-
-In the following the NGMT dataclasses are described.
-::: utils.ngmt_data_classes

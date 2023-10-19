@@ -22,6 +22,7 @@ theme:
 nav:
   - index.md
   - Datasets: datasets.md
+  - Dataclasses: dataclasses.md
   - Modules: modules.md
   - Utilities: utils.md
 

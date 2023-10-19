@@ -56,7 +56,7 @@ def apply_continuous_wavelet_transform(
         sampling_frequency (float): Sampling frequency of the data.
 
     Returns:
-        numpy.ndarray: Transformed data.
+        data (numpy.ndarray): Transformed data.
     """
     sampling_period = 1 / sampling_frequency
     coefficients, _ = pywt.cwt(data, np.arange(1, scales + 1), wavelet, sampling_period)
@@ -72,7 +72,7 @@ def apply_successive_gaussian_filters(data):
         data (numpy.ndarray): Input data.
 
     Returns:
-        numpy.ndarray: Filtered data.
+        data (numpy.ndarray): Filtered data.
     """
     sigma_params = [2, 2, 3, 2]
     kernel_size_params = [10, 10, 15, 10]
@@ -97,17 +97,15 @@ def fir_lowpass_filter(data, fir_file="ngmt/utils/FIR_2_3Hz_40.mat"):
     the filter to the input data using the `scipy.signal.filtfilt` function.
 
     Args:
-    ----------
-    data : array-like
-        The input data to be filtered.
-    fir_file : str, optional
-        The filename of the FIR filter coefficients MAT file.
-        Default is "FIR_2_3Hz_40.mat".
+        data (array-like):
+            The input data to be filtered.
+        fir_file (str, optional):
+            The filename of the FIR filter coefficients MAT file.
+            Default is "FIR_2_3Hz_40.mat".
 
     Returns:
-    -------
-    filtered_signal : array
-        The filtered signal after applying the FIR low-pass filter.
+        filtered_signal (array):
+            The filtered signal after applying the FIR low-pass filter.
 
     Notes:
     -----
