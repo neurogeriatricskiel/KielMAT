@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import os
 import sys
@@ -25,7 +26,22 @@ else:
     )
 
 
-def load_file(sub_id: str, task_name: str, tracksys: str) -> MotionData:
+def load_file(file_path: str) -> MotionData:
+    
+    # Split path and file name
+    path_name, file_name = os.path.split(file_path)
+
+    # Get relevant infos
+    s = file_name.replace("sub-", "")
+    sub_id = s[:s.find("_task")]
+    s = s[s.find("_task")+len("_task")+1:]
+    if "_run" in file_name:
+        run_name = s[:s.find("_run")]
+        s = s[s.find("_run")+len("_run")+1:]
+    task_name = s[:s.find("_tracksys")]
+    s = s[s.find("_tracksys")+len("_tracksys")+1:]
+    tracksys = s[:s.find("_")]
+
     # Set the filename
     _base_file_name = f"sub-{sub_id}_task-{task_name}_tracksys-{tracksys}"
 
@@ -66,39 +82,21 @@ def load_file(sub_id: str, task_name: str, tracksys: str) -> MotionData:
         header=0,
     )
 
-    # For each tracked point,
-    imus = []
-    for tracked_point in df_channels["tracked_point"].unique():
-        imus.append(
-            IMUDevice(
-                tracked_point=tracked_point,
-                recordings=[
-                    IMURecording(
-                        type=sensor_type,
-                        units=df_channels[
-                            (df_channels["tracked_point"] == tracked_point)
-                            & (df_channels["type"] == sensor_type)
-                        ]["units"].iloc[0],
-                        fs=df_channels[
-                            (df_channels["tracked_point"] == tracked_point)
-                            & (df_channels["type"] == sensor_type)
-                        ]["sampling_frequency"]
-                        .iloc[0]
-                        .astype(float),
-                        data=df_data.loc[
-                            :,
-                            [
-                                col
-                                for col in df_data.columns
-                                if (tracked_point in col) and (sensor_type in col)
-                            ],
-                        ].values,
-                    )
-                    for sensor_type in df_channels[
-                        (df_channels["tracked_point"] == tracked_point)
-                    ]["type"].unique()
-                ],
-            )
-        )
+    # Set the recording data
+    recording_data = RecordingData(
+        name=file_name,
+        data=df_data.values,
+        sampling_frequency=channel_data.sampling_frequency[0],
+        times=np.arange(len(df_data))/channel_data.sampling_frequency[0],
+        channels=channel_data,
+        start_time=0.,
+        types=channel_data.ch_type,
+        ch_names=channel_data.name
+    )
 
-    return IMUDataset(subject_id=sub_id, devices=imus)
+    return MotionData(
+        data=[recording_data],
+        times=recording_data.times,
+        info=[file_info],
+        ch_names=channel_data.name
+    )
