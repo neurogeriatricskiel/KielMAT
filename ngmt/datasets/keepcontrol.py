@@ -1,7 +1,19 @@
 import pandas as pd
 import os
 import sys
-from ..utils.ngmt_data_classes import IMUDataset, IMUDevice, IMURecording
+from ..utils.ngmt_data_classes import (
+    FileInfo,
+    ChannelData,
+    EventData,
+    RecordingData,
+    MotionData,
+)
+
+_MAP_CHANNEL_TYPES = {
+    "ACC": "ACCEL",
+    "ANGVEL": "GYRO",
+    "MAGN": "MAGN"
+}
 
 if sys.platform == "linux":
     _BASE_PATH = "/mnt/neurogeriatrics_data/Keep Control/Data/lab dataset/rawdata"
@@ -13,9 +25,17 @@ else:
     )
 
 
-def load_file(sub_id: str, task_name: str, tracksys: str) -> IMUDataset:
+def load_file(sub_id: str, task_name: str, tracksys: str) -> MotionData:
     # Set the filename
     _base_file_name = f"sub-{sub_id}_task-{task_name}_tracksys-{tracksys}"
+
+    # Set the file info
+    file_info = FileInfo(
+        SubjectID=sub_id,
+        TaskName=task_name,
+        DatasetName="Keep Control",
+        FilePath=os.path.join(_BASE_PATH, _base_file_name)
+    )
 
     # Load the channels information
     df_channels = pd.read_csv(
@@ -24,6 +44,17 @@ def load_file(sub_id: str, task_name: str, tracksys: str) -> IMUDataset:
         ),
         sep="\t",
         header=0,
+    )
+    df_channels["type"] = df_channels["type"].map(_MAP_CHANNEL_TYPES)
+
+    # Set the channel data
+    channel_data = ChannelData(
+        name=df_channels["name"].to_list(),
+        component=df_channels["component"].to_list(),
+        ch_type=df_channels["type"].to_list(),
+        tracked_point=df_channels["tracked_point"].to_list(),
+        units=df_channels["units"].to_list(),
+        sampling_frequency=df_channels["sampling_frequency"].astype(float).to_list()
     )
 
     # Load the data
