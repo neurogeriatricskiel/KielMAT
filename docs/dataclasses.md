@@ -1,16 +1,7 @@
-# NGMT
-
-Welcome to the NeuroGeriatricMotionToolbox (NGMT). We are a Python based toolbox for processing motion data.
-
-> The toolbox is currently under development and is not yet ready for use.
-
-The toolbox is aimed at a wide variety of motion researchers who want to use open souce software to process their data.
-We have implemented a wide variety of functions to process motion data, such as:
--   Gait sequence detection (GSD)
--   Inital contact detection (ICD)
--   More to follow ...
-
-The idea is that various motion data can be loaded into our dedicated dataclasses which rely on principles from the [Motion-BIDS](https://bids-specification.readthedocs.io/en/latest/modality-specific-files/motion.html) standard.
+In the following the NGMT dataclasses are described.
+The dataclasses are used to store motion data in a standardized way. We provide some small set of import functions, each of which returns a dataclass.
+User should easily be able to write their own import functions, to get the their data into the provided dataclasses (this step might take some thinking).
+After the data is in the dataclasses, running functions on the data from our toolbox should be really straight forward.
 
 ## Relation of data classes
 ```mermaid
@@ -80,27 +71,4 @@ The `RecordingData` object can also contain information about events. The `Event
 
 The `ChannelData` object is used to store the channel name, the channel type, the channel units and the tracked point.
 
-## Documentation
-The full documentation can be found [here](https://neurogeriatricskiel.github.io/NGMT/).
-
-## Installation
-After the first release, the toolbox can be installed via pip
-
-For now, the toolbox can be installed via the following steps:
-1. Clone the repository
-2. Create a virtual environment
-3. Install the requirements
-4. Install the toolbox
-
-```bash
-git clone https://github.com/neurogeriatricskiel/NGMT.git
-cd NeuroGeriatricMotionToolbox
-python -m venv venv_ngmt
-source venv_ngmt/bin/activate
-pip install -r environment.yml
-pip install -e .
-```
-
-## Authors
-
-[Masoud Abedinifar](https://github.com/masoudabedinifar), [Clint Hansen](mailto:c.hansen@neurologie.uni-kiel.de), [Robbin Romijnders](https://github.com/rmndrs89) & [Julius Welzel](https://github.com/JuliusWelzel)
+::: utils.ngmt_data_classes

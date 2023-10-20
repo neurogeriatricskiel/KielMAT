@@ -25,7 +25,20 @@ else:
     )
 
 
+<<<<<<< HEAD
 def load_file(sub_id: str, task_name: str, tracksys: str) -> MotionData:
+=======
+def load_file(sub_id: str, task_name: str, tracksys: str) -> IMUDataset:
+    """
+    Args:
+        sub_id (str): _description_
+        task_name (str): _description_
+        tracksys (str): _description_
+
+    Returns:
+        IMUDataset: _description_
+    """
+>>>>>>> b95f2456eb5ff52b4964a16bb29ff8b2d7f92f37
     # Set the filename
     _base_file_name = f"sub-{sub_id}_task-{task_name}_tracksys-{tracksys}"
 

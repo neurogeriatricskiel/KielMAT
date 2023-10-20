@@ -9,7 +9,7 @@ from ngmt.utils import preprocessing
 
 
 def gsd_low_back_acc(imu_acceleration, sampling_frequency, plot_results):
-    """_summary_
+    """
     Perform Gait Sequence Detection (GSD) using low back accelerometer data.
 
     Args:

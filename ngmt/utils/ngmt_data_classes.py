@@ -114,30 +114,21 @@ class RecordingData:
     recording. For example, a recording of a participant walking on a treadmill.
 
     Attributes:
-
         name (str): A name for the recording data.
-
-        data (np.ndarray): A nD numpy array of shape (n_channels, n_samples) containing
+        data (np.ndarray): A nD numpy array of shape (n_samples, n_channels) containing
             the motion data. Channels MUST have the same sampling frequency.
-
         sampling_frequency (float): The sampling frequency of the motion data.
-
         times (np.ndarray): A 1D numpy array of shape (n_samples,) containing the
             timestamps of the motion data. If no time stamps are provided from the
             system, timestamps are relative to the start of the recording.
-
         channels (ChannelData): A ChannelData object containing information about the
             channels in the data.
-
         start_time (float): The start time of the recording in seconds. 0 if no time
             stamps are provided from the system.
-
         types (List[str]): A list of strings describing the type of data in each channel.
             For example, "acceleration", "angular velocity", "position", etc.
-
         ch_names (Optional[List[str]]): An optional list of channel names (default is None).
             If None, the channel names will be set to the channel numbers.
-
         events (Optional[EventData]): An optional EventData object containing information
             about events during the recording (default is None).
     """
@@ -152,6 +143,17 @@ class RecordingData:
     ch_names: Optional[List[str]] = None
     events: Optional[EventData] = None
 
+    def __post_init__(self):
+        if len(self.times) != self.data.shape[0]:
+            raise ValueError(
+                "The length of `times` should match the number of columns in `data`"
+            )
+
+        if len(self.ch_names) != self.data.shape[1]:
+            raise ValueError(
+                "The number of `channel_names` should match the number of rows in `time_series`"
+            )
+
 
 @dataclass
 class MotionData:
@@ -159,17 +161,6 @@ class MotionData:
     times: np.ndarray  # Can be a 1D array representing timestamps
     info: List[FileInfo]
     ch_names: List[str]  # Can be a list of channel names
-
-    def __post_init__(self):
-        if len(self.times) != self.time_series.shape[1]:
-            raise ValueError(
-                "The length of `times` should match the number of columns in `time_series`"
-            )
-
-        if len(self.channel_names) != self.time_series.shape[0]:
-            raise ValueError(
-                "The number of `channel_names` should match the number of rows in `time_series`"
-            )
 
     @classmethod
     def synchronise_recordings(self, systems: List[RecordingData]):
