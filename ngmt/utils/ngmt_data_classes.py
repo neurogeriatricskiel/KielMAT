@@ -149,7 +149,7 @@ class RecordingData:
                 "The length of `times` should match the number of columns in `data`"
             )
 
-        if len(self.ch_names) != self.data.shape[1]:
+        if self.ch_names is not None and len(self.ch_names) != self.data.shape[1]:
             raise ValueError(
                 "The number of `channel_names` should match the number of rows in `time_series`"
             )
