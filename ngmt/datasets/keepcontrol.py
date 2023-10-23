@@ -10,11 +10,7 @@ from ..utils.ngmt_data_classes import (
     MotionData,
 )
 
-_MAP_CHANNEL_TYPES = {
-    "ACC": "ACCEL",
-    "ANGVEL": "GYRO",
-    "MAGN": "MAGN"
-}
+_MAP_CHANNEL_TYPES = {"ACC": "ACCEL", "ANGVEL": "GYRO", "MAGN": "MAGN"}
 
 if sys.platform == "linux":
     _BASE_PATH = "/mnt/neurogeriatrics_data/Keep Control/Data/lab dataset/rawdata"
@@ -27,20 +23,20 @@ else:
 
 
 def load_file(file_path: str) -> MotionData:
-    
+
     # Split path and file name
     path_name, file_name = os.path.split(file_path)
 
     # Get relevant infos
     s = file_name.replace("sub-", "")
-    sub_id = s[:s.find("_task")]
-    s = s[s.find("_task")+len("_task")+1:]
+    sub_id = s[: s.find("_task")]
+    s = s[s.find("_task") + len("_task") + 1 :]
     if "_run" in file_name:
-        run_name = s[:s.find("_run")]
-        s = s[s.find("_run")+len("_run")+1:]
-    task_name = s[:s.find("_tracksys")]
-    s = s[s.find("_tracksys")+len("_tracksys")+1:]
-    tracksys = s[:s.find("_")]
+        run_name = s[: s.find("_run")]
+        s = s[s.find("_run") + len("_run") + 1 :]
+    task_name = s[: s.find("_tracksys")]
+    s = s[s.find("_tracksys") + len("_tracksys") + 1 :]
+    tracksys = s[: s.find("_")]
 
     # Set the filename
     _base_file_name = f"sub-{sub_id}_task-{task_name}_tracksys-{tracksys}"
@@ -50,7 +46,7 @@ def load_file(file_path: str) -> MotionData:
         SubjectID=sub_id,
         TaskName=task_name,
         DatasetName="Keep Control",
-        FilePath=os.path.join(_BASE_PATH, _base_file_name)
+        FilePath=os.path.join(_BASE_PATH, _base_file_name),
     )
 
     # Load the channels information
@@ -70,7 +66,7 @@ def load_file(file_path: str) -> MotionData:
         ch_type=df_channels["type"].to_list(),
         tracked_point=df_channels["tracked_point"].to_list(),
         units=df_channels["units"].to_list(),
-        sampling_frequency=df_channels["sampling_frequency"].astype(float).to_list()
+        sampling_frequency=df_channels["sampling_frequency"].astype(float).to_list(),
     )
 
     # Load the data
@@ -87,14 +83,14 @@ def load_file(file_path: str) -> MotionData:
         name=file_name,
         data=df_data.values,
         sampling_frequency=channel_data.sampling_frequency[0],
-        times=np.arange(len(df_data))/channel_data.sampling_frequency[0],
+        times=np.arange(len(df_data)) / channel_data.sampling_frequency[0],
         channels=channel_data,
-        start_time=0.,
+        start_time=0.0,
     )
 
     return MotionData(
         data=[recording_data],
         times=recording_data.times,
         info=[file_info],
-        ch_names=channel_data.name
+        ch_names=channel_data.name,
     )

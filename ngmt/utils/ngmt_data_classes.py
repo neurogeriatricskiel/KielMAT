@@ -154,8 +154,8 @@ class RecordingData:
 @dataclass
 class MotionData:
     """
-    A data class to hold meaningful groups of motion data entries. 
-    For example, a recording of a participant walking on a treadmill with multiple 
+    A data class to hold meaningful groups of motion data entries.
+    For example, a recording of a participant walking on a treadmill with multiple
     motion capture systems running.
     Also can be a group of recordings from multiple participants performing the same task.
 
@@ -174,6 +174,7 @@ class MotionData:
         events (Optional[EventData]): An optional EventData object containing information
             about events during the recording (default is None).
     """
+
     data: List[RecordingData]
     times: np.ndarray  # Can be a 1D array representing timestamps
     info: List[FileInfo]
