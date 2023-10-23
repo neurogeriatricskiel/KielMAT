@@ -102,11 +102,10 @@ def load_file(file_name: str) -> RecordingData:
         times=indip_data[tracked_point]["Timestamp"],
         channels=channel_data,
         start_time=indip_data[tracked_point]["Timestamp"][0],
-        types=channel_data.name,
     )
+    
     return MotionData(
         data=[recording_data],
         times=recording_data.times,
         info=[file_info],
-        ch_names=channel_data.name,
     )

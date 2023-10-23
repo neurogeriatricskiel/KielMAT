@@ -90,8 +90,6 @@ def load_file(file_path: str) -> MotionData:
         times=np.arange(len(df_data))/channel_data.sampling_frequency[0],
         channels=channel_data,
         start_time=0.,
-        types=channel_data.ch_type,
-        ch_names=channel_data.name
     )
 
     return MotionData(
