@@ -51,7 +51,6 @@ classDiagram
         times: np.1darray
         channels: ChannelData
         start_time: float
-        types: List[str]
         GSD()
         ICD()
     }
@@ -60,7 +59,6 @@ classDiagram
         data: List[RecordingData]
         times: np.ndarray  # Can be a 1D array representing timestamps
         info: List[FileInfo]
-        ch_names: List[str]  # Can be a list of channel names
         synchronise_recordings(self, systems: List[RecordingData]):
     }
 
