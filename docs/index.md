@@ -1,4 +1,4 @@
-# NGMT
+# Welcome 
 
 Welcome to the NeuroGeriatricMotionToolbox (NGMT). We are a Python based toolbox for processing motion data.
 
@@ -6,6 +6,7 @@ Welcome to the NeuroGeriatricMotionToolbox (NGMT). We are a Python based toolbox
 
 The toolbox is aimed at a wide variety of motion researchers who want to use open souce software to process their data.
 We have implemented a wide variety of functions to process motion data, such as:
+
 -   Gait sequence detection (GSD)
 -   Inital contact detection (ICD)
 -   More to follow ...
@@ -79,7 +80,7 @@ The `RecordingData` object can also contain information about events. The `Event
 The `ChannelData` object is used to store the channel name, the channel type, the channel units and the tracked point.
 
 ## Documentation
-The full documentation can be found [here](https://neurogeriatricskiel.github.io/NGMT/).
+The full documentation can be found here.
 
 ## Installation
 After the first release, the toolbox can be installed via pip

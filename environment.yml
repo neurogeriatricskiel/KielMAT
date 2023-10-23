@@ -1,5 +1,6 @@
 name: venv_ngmt
 channels:
+  - conda-forge
   - defaults
 dependencies:
   - bzip2=1.0.8=he774522_0
@@ -17,6 +18,8 @@ dependencies:
   - xz=5.4.2=h8cc25b3_0
   - zlib=1.2.13=h8cc25b3_0
   - pip:
+      - mkdocs==1.5.3
+      - jinja2==3.1.2  # Specify a compatible version of Jinja2
       - contourpy==1.1.0
       - cycler==0.11.0
       - fonttools==4.41.1

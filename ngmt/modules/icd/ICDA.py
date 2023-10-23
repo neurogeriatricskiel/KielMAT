@@ -11,7 +11,7 @@ from ngmt.utils import preprocessing
 def Initial_Contact_Detection(
     imu_acceleration, gait_sequences, sampling_frequency, plot_results
 ):
-    """_summary_
+    """
     Initial Contact Detection Algorithm (ICDA) performs Signal Decomposition
     on low back IMU accelerometer data for detecting initial contacts (ICs).
 
@@ -100,7 +100,13 @@ def Initial_Contact_Detection(
         )
 
         # Perform Continuous Wavelet Transform (CWT)
-        accV_cwt = preprocessing.apply_continuous_wavelet_transform(accV_integral, scales=9, desired_scale=9, wavelet="gaus2", sampling_frequency=target_sampling_frequency)
+        accV_cwt = preprocessing.apply_continuous_wavelet_transform(
+            accV_integral,
+            scales=9,
+            desired_scale=9,
+            wavelet="gaus2",
+            sampling_frequency=target_sampling_frequency,
+        )
 
         # Subtraction of the mean of the data from signal
         accV_cwt = accV_cwt - np.mean(accV_cwt)

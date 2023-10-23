@@ -7,8 +7,9 @@ import scipy.signal
 import scipy.ndimage
 from ngmt.utils import preprocessing
 
+
 def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
-    """_summary_
+    """
     Perform Gait Sequence Detection (GSD) using low back accelerometer data.
 
     Args:
@@ -17,7 +18,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
 
     Returns:
         list: A list of dictionaries containing gait sequence information, including start and end times, and sampling frequency.
-    
+
     Description:
         This function performs Gait Sequence Detection (GSD) on accelerometer data
         collected from a low back sensor. The purpose of GSD is to identify and
@@ -39,10 +40,10 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
     # Error handling for invalid input data
     if not isinstance(imu_acceleration, np.ndarray) or imu_acceleration.shape[1] != 3:
         raise ValueError("imu_acceleration must be a 2D numpy array with 3 columns.")
-    
+
     if not isinstance(sampling_frequency, (int, float)) or sampling_frequency <= 0:
         raise ValueError("sampling_frequency must be a positive float.")
-    
+
     # Initialize the GSD_Output dictionary
     GSD_Output = {}
 
@@ -55,7 +56,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         + imu_acceleration[:, 1] ** 2
         + imu_acceleration[:, 2] ** 2
     )
-    
+
     # Resample acceleration_norm to target sampling frequency
     initial_sampling_frequency = sampling_frequency
     target_sampling_frequency = 40
@@ -72,7 +73,13 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
     detrended_acceleration = preprocessing.fir_lowpass_filter(smoothed_acceleration)
 
     # Perform the continuous wavelet transform on the filtered acceleration data
-    wavelet_transform_result = preprocessing.apply_continuous_wavelet_transform(detrended_acceleration, scales=10, desired_scale=10, wavelet="gaus2", sampling_frequency=target_sampling_frequency)
+    wavelet_transform_result = preprocessing.apply_continuous_wavelet_transform(
+        detrended_acceleration,
+        scales=10,
+        desired_scale=10,
+        wavelet="gaus2",
+        sampling_frequency=target_sampling_frequency,
+    )
 
     # Applying Savitzky-Golay filter to further smoothen the wavelet transformed data
     smoothed_wavelet_result = preprocessing.lowpass_filter(
@@ -80,12 +87,20 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
     )
 
     # Perform continuous wavelet transform
-    further_smoothed_wavelet_result = preprocessing.apply_continuous_wavelet_transform(smoothed_wavelet_result, scales=10, desired_scale=10, wavelet="gaus2", sampling_frequency=target_sampling_frequency)
+    further_smoothed_wavelet_result = preprocessing.apply_continuous_wavelet_transform(
+        smoothed_wavelet_result,
+        scales=10,
+        desired_scale=10,
+        wavelet="gaus2",
+        sampling_frequency=target_sampling_frequency,
+    )
     further_smoothed_wavelet_result = further_smoothed_wavelet_result.T
-    
+
     # Smoothing the data using successive Gaussian filters
-    filtered_signal = preprocessing.apply_successive_gaussian_filters(further_smoothed_wavelet_result)
-    
+    filtered_signal = preprocessing.apply_successive_gaussian_filters(
+        further_smoothed_wavelet_result
+    )
+
     # Use pre-processsed signal for post-processing purposes
     detected_activity_signal = filtered_signal
 
@@ -98,7 +113,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         int(round(target_sampling_frequency)),
         1,
     )
-    
+
     # Initialize a list for walking bouts
     walking_bouts = [0]
 
@@ -119,9 +134,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         walking_bouts_array = np.array(walking_bouts)
 
         # Find positive peaks in the walk_low_back_array
-        positive_peak_indices, _ = scipy.signal.find_peaks(
-            walking_bouts_array
-        )
+        positive_peak_indices, _ = scipy.signal.find_peaks(walking_bouts_array)
 
         # Get the corresponding y-axis data values for the positive peak
         positive_peaks = walking_bouts_array[positive_peak_indices]
@@ -133,18 +146,20 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         negative_peaks = -walking_bouts_array[negative_peak_indices]
 
         # Combine positive and negative peaks
-        combined_peaks = [x for x in positive_peaks if x > 0] + [x for x in negative_peaks if x > 0]
-        
+        combined_peaks = [x for x in positive_peaks if x > 0] + [
+            x for x in negative_peaks if x > 0
+        ]
+
         # Calculate the data adaptive threshold using the 5th percentile of the combined peaks
         threshold = np.percentile(combined_peaks, 5)
 
         # Set selected_signal to detected_activity_signal
         selected_signal = detected_activity_signal
-        
+
     else:
         threshold = 0.15
         selected_signal = smoothed_wavelet_result
-    
+
     # Detect mid-swing peaks
     min_peaks, max_peaks = preprocessing.find_local_min_max(selected_signal, threshold)
 
@@ -251,8 +266,18 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
     # Plot results if set to true
     if plot_results:
         plt.figure(figsize=(10, 6))
-        plt.plot(np.arange(len(detected_activity_signal)) / (60 * target_sampling_frequency), detected_activity_signal, "r", linewidth=3)
-        plt.plot(np.arange(len(detected_activity_signal)) / (60 * target_sampling_frequency), walking_labels, "b", linewidth=5)
+        plt.plot(
+            np.arange(len(detected_activity_signal)) / (60 * target_sampling_frequency),
+            detected_activity_signal,
+            "r",
+            linewidth=3,
+        )
+        plt.plot(
+            np.arange(len(detected_activity_signal)) / (60 * target_sampling_frequency),
+            walking_labels,
+            "b",
+            linewidth=5,
+        )
         plt.title("Detected activity and walking labels", fontsize=20)
         plt.xlabel("Time (minutes)", fontsize=20)
         plt.ylabel("Acceleration (g)", fontsize=20)
