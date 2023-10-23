@@ -1,4 +1,5 @@
 # Import libraries
+import importlib.resources as pkg_resources
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.interpolate
@@ -8,6 +9,9 @@ import scipy.integrate
 import scipy.ndimage
 import pywt
 
+# use the importlib.resources package to access the FIR_2_3Hz_40.mat file
+with pkg_resources.path("ngmt.utils", "FIR_2_3Hz_40.mat") as mat_filter_coefficients_file:
+    pass
 
 def lowpass_filter(signal, method="savgol", **kwargs):
     """
@@ -89,7 +93,7 @@ def apply_successive_gaussian_filters(data):
     return filtered_signal
 
 
-def fir_lowpass_filter(data, fir_file="ngmt/utils/FIR_2_3Hz_40.mat"):
+def fir_lowpass_filter(data, fir_file=mat_filter_coefficients_file):
     """
     Apply a finite impulse response (FIR) low-pass filter to input data.
 
