@@ -23,7 +23,6 @@ else:
 
 
 def load_file(file_path: str) -> MotionData:
-
     # Split path and file name
     path_name, file_name = os.path.split(file_path)
 
