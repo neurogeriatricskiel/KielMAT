@@ -5,6 +5,7 @@ theme:
 
 plugins:
 - search
+- mkdocs-jupyter
 - mkdocstrings:
       default_handler: python
       handlers:
@@ -25,6 +26,7 @@ nav:
   - Dataclasses: dataclasses.md
   - Modules: modules.md
   - Utilities: utils.md
+  - Examples: examples/event_visualization.ipynb
 
 markdown_extensions:
 - pymdownx.superfences:
