@@ -93,7 +93,6 @@ def import_hasomed_imu(file_path: str):
     data_start_idx = 0
 
     for idx, line in enumerate(lines):
-
         # get acceleration unit
         if "Accelerometer data unit" in line:
             unit_acc = line.split(";")[2].strip()
