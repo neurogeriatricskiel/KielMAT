@@ -1,6 +1,11 @@
 import numpy as np
 import pandas as pd
-from ngmt.utils.ngmt_data_classes import FileInfo, ChannelData, RecordingData
+from ngmt.utils.ngmt_data_classes import (
+    FileInfo,
+    ChannelData,
+    RecordingData,
+    MotionData,
+)
 from datetime import datetime, timedelta
 from ngmt.utils.file_io import get_unit_from_type
 
@@ -42,7 +47,7 @@ def import_polar_watch(data_file_path: str):
     # Create ChannelMetaData objects for each channel
     channels = []
     for channel_name in channel_names:
-        channel_data = ChannelMetaData(
+        channel_data = ChannelData(
             name=channel_name,
             component="n/a",
             ch_type="MISC",
@@ -81,11 +86,22 @@ def import_hasomed_imu(file_path: str):
     """
     with open(file_path, "r") as f:
         lines = f.readlines()
+        if len(lines) < 25:
+            return None
 
     # Keep track of where the metadata ends and the time series data begins
     data_start_idx = 0
 
     for idx, line in enumerate(lines):
+
+        # get acceleration unit
+        if "Accelerometer data unit" in line:
+            unit_acc = line.split(";")[2].strip()
+
+        # get gyro unit
+        if "Gyroscope data unit" in line:
+            unit_gyro = line.split(";")[2].strip()
+
         # Metadata ends when we encounter a line that doesn't start with '#'
         if not line.startswith("#"):
             data_start_idx = idx
@@ -108,26 +124,34 @@ def import_hasomed_imu(file_path: str):
     )  # default SamplingFrequency to 100.0 if not found
 
     # Create DataFrame from the time series data
-    data = pd.read_csv(file_path, skiprows=data_start_idx - 1, delimiter=";")
+    data = pd.read_csv(
+        file_path, skiprows=data_start_idx - 1, delimiter=";", decimal=","
+    )
+
+    # check if data["AccX"][0] is string
+    if isinstance(data["AccX"][0], str):
+        data = pd.read_csv(
+            file_path, skiprows=data_start_idx - 1, delimiter=";", decimal="."
+        )
 
     # Extract the channel names from the column names of the DataFrame
-    channel_names = data.columns.tolist()
-
-    # Convert time to numpy array
-    times = np.linspace(0, data.shape[0] / SamplingFrequency, data.shape[0])
+    org_channel_names = data.columns.tolist()
 
     # drop non relevant columns
+    # create a lost of all columns that not contain "Acc", "Gyro", "Magn"
     filtered_col_names = [
         col
-        for col in channel_names
-        if not any(sensor in col for sensor in ["Acc", "Gyro", "Mag"])
+        for col in org_channel_names
+        if not any(x in col for x in ["Acc", "Gyro", "Mag"])
     ]
-    channel_names = [
-        col
-        for col in channel_names
-        if any(sensor in col for sensor in ["Acc", "Gyro", "Mag"])
-    ]
-    time_series = data.drop(columns=filtered_col_names).to_numpy().T  # transpose
+
+    time_series = data.drop(columns=filtered_col_names).to_numpy()  # transpose
+    ch_names = data.drop(columns=filtered_col_names).columns.tolist()
+
+    # print shape of data
+    print(
+        f"Data has {time_series.shape[1]} channels and {time_series.shape[0]} samples"
+    )
 
     # Create ChannelData class
     ch_types = [["ACCEL"] * 3 + ["GYRO"] * 3 + ["MAGN"] * 3] * 3
@@ -138,9 +162,14 @@ def import_hasomed_imu(file_path: str):
 
     units = get_unit_from_type(ch_types)
 
+    times = np.linspace(0, len(time_series) / SamplingFrequency, len(time_series))
+    print(f"Time series has {len(times)} samples")
+
     channel_data = ChannelData(
-        name=channel_names,
-        component=["x", "y", "z"] * 6,
+        name=ch_names,
+        component=["x", "y", "z"]
+        * len(np.unique(tracked_point))
+        * len(np.unique(ch_types)),
         ch_type=ch_types,
         tracked_point=tracked_point,
         units=units,
@@ -149,12 +178,11 @@ def import_hasomed_imu(file_path: str):
     # Create RecordingData class
     test_data = RecordingData(
         name="HasoMedTest",
-        data=data,
+        data=time_series,
         sampling_frequency=SamplingFrequency,
         channels=channel_data,
         start_time=0.0,
         times=times,
-        types=ch_types,
     )
 
     return test_data

@@ -140,15 +140,52 @@ class RecordingData:
     def __post_init__(self):
         if len(self.times) != self.data.shape[0]:
             raise ValueError(
-                "The length of `times` should match the number of columns in `data`"
+                "The length of `times` should match the number of rows in `data`"
             )
 
-        # check if start time is give as float, if not change to float
-        if isinstance(self.start_time, float):
-            self.start_time = float(self.start_time)
-            raise Warning(
-                "Start time is not given as float, lacking precision. Converted to float."
-            )
+    def pick_channel_types(self, channel_type_oi):
+        """
+        This function returns a trimmed version of the MotionData
+        for a given channel type.
+
+        Parameters:
+            channel_type (str): channel type
+
+        Returns:
+            MotionData: an object of class MotionData that includes
+            FileInfo object with metadata from the file, a 1D numpy array
+            with time values, a list of channel names, and a 2D numpy array
+            with the time series data.
+        """
+
+        # find the indices_type_oi of the channels with the given channel type
+        indices_type_oi = []
+        for index, channel_type in enumerate(self.channels.ch_type):
+            if channel_type == channel_type_oi:
+                indices_type_oi.append(index)
+
+        # iterate through the indices_type_oi and create a new ChannelData object
+        channel_data_clean_type = ChannelData(
+            name=[self.channels.name[index] for index in indices_type_oi],
+            component=[self.channels.component[index] for index in indices_type_oi],
+            ch_type=[self.channels.ch_type[index] for index in indices_type_oi],
+            tracked_point=[
+                self.channels.tracked_point[index] for index in indices_type_oi
+            ],
+            units=[self.channels.units[index] for index in indices_type_oi],
+        )
+        # create a new MotionData object with the given channel type
+        motion_data_clean_type = RecordingData(
+            name=self.name,
+            data=self.data[:, indices_type_oi],
+            sampling_frequency=self.sampling_frequency,
+            times=self.times,
+            channels=channel_data_clean_type,
+            start_time=self.start_time,
+            events=self.events,
+        )
+
+        return motion_data_clean_type
 
 
 @dataclass
