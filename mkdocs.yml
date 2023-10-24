@@ -26,7 +26,7 @@ nav:
   - Dataclasses: dataclasses.md
   - Modules: modules.md
   - Utilities: utils.md
-  - Examples: examples/event_visualization.ipynb
+  - Examples: examples.md
 
 markdown_extensions:
 - pymdownx.superfences:
