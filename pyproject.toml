@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "ngmt"
 version = "0.0.1"
-description = "The NeuroGeriatricMotionToolbox (NGMT) is a Python based toolbox for processing motion data."
+description = "The NeuroGeriatricMotionToolbox (NGMT) is a Python-based toolbox for processing motion data."
 license = "MIT"
 readme = "README.md"
 homepage = "https://neurogeriatricskiel.github.io/NGMT/"
 repository = "https://github.com/neurogeriatricskiel/NGMT"
-documentation = "https://neurogeriatricskiel.github.io/NGMT/"
+documentation = "https://neurogeriatricskiel.github.io/NGMT"
 authors = [
     "Masoud Abedinifar <Masoud.Abedinifar@uksh.de>",
     "Robbin Romijnders <r.romijnders@neurologie.uni-kiel.de>",
@@ -20,7 +20,7 @@ maintainers = [
     "Julius Welzel <j.welzel@neurologie.uni-kiel.de>"
 ]
 packages = [
-    { include = "ngmt"},
+    { include = "ngmt" },
 ]
 
 [tool.poetry.dependencies]
@@ -29,6 +29,9 @@ pandas = ">=2"
 scipy = ">=1.6.1"
 numpy = ">=1.20"
 
+[tool.poetry.extras]
+docs = ["mkdocs", "mkdocs-material", "pymdownx.superfences"]
 
-
-
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

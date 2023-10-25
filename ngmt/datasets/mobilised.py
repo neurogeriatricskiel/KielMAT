@@ -80,13 +80,18 @@ def load_file(file_path: str) -> RecordingData:
             # Add info to channels data
             comps = ["x", "y", "z"] if ch_type in ["Acc", "Gyr", "Mag"] else ["n/a"]
             channels_dict["name"] += [
-                f"{tracked_point}_{_MAP_CHANNEL_NAMES[ch_type]}_{x}"
-                for x in comps
+                f"{tracked_point}_{_MAP_CHANNEL_NAMES[ch_type]}_{x}" for x in comps
             ]
             channels_dict["component"] += comps
-            channels_dict["ch_type"] += [_MAP_CHANNEL_NAMES[ch_type] for _ in range(readings.shape[-1])]
-            channels_dict["tracked_point"] += [tracked_point for _ in range(readings.shape[-1])]
-            channels_dict["units"] += [_MAP_UNITS[ch_type] for _ in range(readings.shape[-1])]
+            channels_dict["ch_type"] += [
+                _MAP_CHANNEL_NAMES[ch_type] for _ in range(readings.shape[-1])
+            ]
+            channels_dict["tracked_point"] += [
+                tracked_point for _ in range(readings.shape[-1])
+            ]
+            channels_dict["units"] += [
+                _MAP_UNITS[ch_type] for _ in range(readings.shape[-1])
+            ]
             channels_dict["sampling_frequency"] += [
                 su_data[tracked_point]["Fs"][ch_type] for _ in range(readings.shape[-1])
             ]
@@ -95,9 +100,7 @@ def load_file(file_path: str) -> RecordingData:
             if data is None:
                 data = readings
             else:
-                data = np.concatenate(
-                    (data, readings), axis=1
-                )
+                data = np.concatenate((data, readings), axis=1)
 
     # Generate ChannelData object
     channel_data = ChannelData(
