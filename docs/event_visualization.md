@@ -10,9 +10,11 @@ import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 
-from ngmt.modules.gsd import GSDB
+from ngmt.modules import GSDB
 from ngmt.utils.importers import import_hasomed_imu
 from ngmt.utils.ngmt_data_classes import ChannelData, RecordingData
+
+from ngmt.config import cfg_colors
 ```
 
 
@@ -75,12 +77,14 @@ In the following, the raw data of the lower back sensor is plotted with the dete
 
 
 ```python
+# get colors for raw
+colors = cfg_colors['raw']
 # plot the raw data from the lower back
 fig, ax = plt.subplots(1,1,figsize=(15,10))
 
 # plot the acceleration data with three colors from the magma colormap
 for i in range(3):
-    ax.plot(acc.times, acc_data_lower_back[:,i], color=plt.cm.plasma(i/3), label=f'Acc {i+1}')
+    ax.plot(acc.times, acc_data_lower_back[:,i], color=colors[i], label=f'Acc {i+1}')
 
 # plot the gait sequences
 for gait_sequence in gait_sequences:
@@ -98,7 +102,7 @@ ax.legend()
 
 
 
-    <matplotlib.legend.Legend at 0x239a0ffbac0>
+    <matplotlib.legend.Legend at 0x2c2966be9e0>
 
 
 
