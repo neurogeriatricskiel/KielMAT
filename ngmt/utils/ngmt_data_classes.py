@@ -6,6 +6,7 @@ import pandas as pd
 VALID_CHANNEL_TYPES = {
     "ACCEL",
     "ANGACCEL",
+    "BARO",
     "GYRO",
     "JNTANG",
     "LATENCY",
