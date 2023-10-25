@@ -6,7 +6,7 @@ import scipy.io
 import scipy.signal
 import scipy.ndimage
 from ngmt.utils import preprocessing
-
+from ngmt.config import cfg_colors
 
 def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
     """
@@ -275,7 +275,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         plt.plot(
             np.arange(len(detected_activity_signal)) / (60 * target_sampling_frequency),
             walking_labels,
-            "b",
+            color=cfg_colors["raw"][0],
             linewidth=5,
         )
         plt.title("Detected activity and walking labels", fontsize=20)
