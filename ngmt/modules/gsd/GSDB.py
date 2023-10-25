@@ -111,7 +111,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         int(round(target_sampling_frequency)),
         1,
         int(round(target_sampling_frequency)),
-        1,
+        0,
     )
 
     # Initialize a list for walking bouts
@@ -269,25 +269,28 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         plt.plot(
             np.arange(len(detected_activity_signal)) / (60 * target_sampling_frequency),
             detected_activity_signal,
-            "r",
+            "b",
             linewidth=3,
         )
-        plt.plot(
-            np.arange(len(detected_activity_signal)) / (60 * target_sampling_frequency),
-            walking_labels,
-            "b",
-            linewidth=5,
-        )
-        plt.title("Detected activity and walking labels", fontsize=20)
-        plt.xlabel("Time (minutes)", fontsize=20)
+        plt.title("Detected walking sequences", fontsize=20)
+        plt.xlabel("Time (minute)", fontsize=20)
         plt.ylabel("Acceleration (g)", fontsize=20)
+
+        # Fill the area between start and end times
+        for sequence in GSD_Output:
+            start_time = sequence["Start"] / 60  # Convert to minutes
+            end_time = sequence["End"] / 60  # Convert to minutes
+            plt.axvline(start_time, color="g")
+            plt.axvline(end_time, color="r")
+            plt.axvspan(start_time, end_time, facecolor="grey", alpha=0.8)
+
         plt.legend(
             [
-                "Pre-processed acceleration signal from lowerback IMU sensor",
-                "Detected gait sequences",
+                "Pre-processed acceleration signal",
             ],
             fontsize=16,
         )
+
         plt.grid(True)
         plt.xticks(fontsize=20)
         plt.yticks(fontsize=20)
