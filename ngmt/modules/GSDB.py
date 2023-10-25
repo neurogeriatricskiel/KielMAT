@@ -8,6 +8,7 @@ import scipy.ndimage
 from ngmt.utils import preprocessing
 from ngmt.config import cfg_colors
 
+
 def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
     """
     Perform Gait Sequence Detection (GSD) using low back accelerometer data.
