@@ -1,8 +1,7 @@
 import os
 import numpy as np
-from utils.ngmt_data_classes import RecordingData
-import utils.matlab_loader as matlab_loader
-from utils.ngmt_data_classes import (
+from ..utils import matlab_loader as matlab_loader
+from ..utils.ngmt_data_classes import (
     FileInfo,
     EventData,
     ChannelData,
@@ -21,19 +20,24 @@ _MAP_UNITS = {
     "Bar": "hPa",  # Barometer data: hectopascals ('hPa')
 }
 
-_MAP_CHANNEL_NAMES = {"Acc": "ACCEL", "Gyr": "GYRO", "Mag": "MAGN"}
+_MAP_CHANNEL_NAMES = {"Acc": "ACCEL", "Gyr": "GYRO", "Mag": "MAGN", "Bar": "BARO"}
 
 
-def load_file(file_name: str) -> RecordingData:
+def load_file(file_path: str) -> RecordingData:
     """
     Args:
-        file_name (str): _description_
+        file_path (str): Path to the data file (*.mat).
 
     Returns:
-        IMUDataset: _description_
+        MotionData: An instance of a `MotionData` object.
     """
+    # Split path and filename
+    path_name, file_name = os.path.split(file_path)
+    sub_path_name, session_name = os.path.split(path_name)
+    _, sub_id = os.path.split(sub_path_name)
+
     # Load data from the MATLAB file
-    data_dict = matlab_loader.load_matlab(file_name, top_level="data")
+    data_dict = matlab_loader.load_matlab(file_path, top_level="data")
 
     # Set file info
     file_info = FileInfo(
@@ -45,10 +49,10 @@ def load_file(file_name: str) -> RecordingData:
 
     # Load the data into a dictionary
     data_dict = matlab_loader.load_matlab(file_name=file_path, top_level="data")
-    indip_data = data_dict["TimeMeasure1"]["Recording4"]["SU_INDIP"]
+    su_data = data_dict["TimeMeasure1"]["Recording4"]["SU"]
 
     # Get data from the INDIP system
-    num_tracked_points = len(indip_data.keys())
+    num_tracked_points = len(su_data.keys())
     data = None
     channels_dict = {
         "name": [],
@@ -61,27 +65,38 @@ def load_file(file_name: str) -> RecordingData:
     }
 
     # Loop over the tracked points
-    for i, tracked_point in zip(range(num_tracked_points), indip_data.keys()):
+    for i, tracked_point in zip(range(num_tracked_points), su_data.keys()):
+
         # Loop over the channel types
-        for ch_type in indip_data[tracked_point]["Fs"].keys():
+        for ch_type in su_data[tracked_point]["Fs"].keys():
+
+            # Get the corresponding sensor readings
+            readings = su_data[tracked_point][ch_type]
+
+            # Check dimensions of data array
+            if readings.ndim == 1:
+                readings = np.expand_dims(readings, axis=-1)
+
             # Add info to channels data
+            comps = ["x", "y", "z"] if ch_type in ["Acc", "Gyr", "Mag"] else ["n/a"]
             channels_dict["name"] += [
                 f"{tracked_point}_{_MAP_CHANNEL_NAMES[ch_type]}_{x}"
-                for x in ["x", "y" "z"]
+                for x in comps
             ]
-            channels_dict["component"] += ["x", "y", "z"]
-            channels_dict["ch_type"] += [_MAP_CHANNEL_NAMES[ch_type] for _ in range(3)]
-            channels_dict["tracked_point"] += [tracked_point for _ in range(3)]
-            channels_dict["units"] += [_MAP_UNITS[ch_type] for _ in range(3)]
+            channels_dict["component"] += comps
+            channels_dict["ch_type"] += [_MAP_CHANNEL_NAMES[ch_type] for _ in range(readings.shape[-1])]
+            channels_dict["tracked_point"] += [tracked_point for _ in range(readings.shape[-1])]
+            channels_dict["units"] += [_MAP_UNITS[ch_type] for _ in range(readings.shape[-1])]
             channels_dict["sampling_frequency"] += [
-                indip_data[tracked_point]["Fs"][ch_type] for _ in range(3)
+                su_data[tracked_point]["Fs"][ch_type] for _ in range(readings.shape[-1])
             ]
 
+            # Add current readings to cumulative data array
             if data is None:
-                data = indip_data[tracked_point][ch_type]
+                data = readings
             else:
                 data = np.concatenate(
-                    (data, indip_data[tracked_point][ch_type]), axis=1
+                    (data, readings), axis=1
                 )
 
     # Generate ChannelData object
@@ -99,9 +114,9 @@ def load_file(file_name: str) -> RecordingData:
         name=f"{_DATASET_NAME}_TVS",
         data=data,
         sampling_frequency=channels_dict["sampling_frequency"][0],
-        times=indip_data[tracked_point]["Timestamp"],
+        times=su_data[tracked_point]["Timestamp"],
         channels=channel_data,
-        start_time=indip_data[tracked_point]["Timestamp"][0],
+        start_time=su_data[tracked_point]["Timestamp"][0],
     )
 
     return MotionData(
