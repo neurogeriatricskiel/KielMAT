@@ -66,10 +66,8 @@ def load_file(file_path: str) -> RecordingData:
 
     # Loop over the tracked points
     for i, tracked_point in zip(range(num_tracked_points), su_data.keys()):
-
         # Loop over the channel types
         for ch_type in su_data[tracked_point]["Fs"].keys():
-
             # Get the corresponding sensor readings
             readings = su_data[tracked_point][ch_type]
 
