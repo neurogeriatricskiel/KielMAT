@@ -270,16 +270,10 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         plt.plot(
             np.arange(len(detected_activity_signal)) / (60 * target_sampling_frequency),
             detected_activity_signal,
-            "b",
+            cfg_colors["raw"][0],
             linewidth=3,
         )
 
-        plt.plot(
-            np.arange(len(detected_activity_signal)) / (60 * target_sampling_frequency),
-            walking_labels,
-            color=cfg_colors["raw"][0],
-            linewidth=5,
-        )
         plt.title("Detected activity and walking labels", fontsize=20)
         plt.xlabel("Time (minutes)", fontsize=20)
 
