@@ -96,12 +96,41 @@ def apply_successive_gaussian_filters(data):
     return filtered_signal
 
 
+def highpass_filter(signal):
+    """
+    Apply a high-pass filter to remove low-frequency drift from the input signal.
+
+    Args:
+        signal (array_like): The input signal.
+
+    Returns:
+        filtered_signal (ndarray): The filtered signal with removed drift.
+    """
+    # The numerator coefficient vector of the high-pass filter.
+    numerator_coefficient = np.array([1, -1])
+
+    # The denominator coefficient vector of the high-pass filter.
+    denominator_coefficient = np.array([1, -0.9748])
+
+    # Filter the signal using the high-pass filter
+    filtered_signal = scipy.signal.filtfilt(
+        numerator_coefficient,
+        denominator_coefficient,
+        signal,
+        axis=0,
+        padtype="odd",
+        padlen=3 * (max(len(numerator_coefficient), len(denominator_coefficient)) - 1),
+    )
+
+    return filtered_signal
+
+
 def fir_lowpass_filter(data, fir_file=mat_filter_coefficients_file):
     """
     Apply a finite impulse response (FIR) low-pass filter to input data.
 
     This function loads FIR filter coefficients from a given FIR file and applies
-    the filter to the input data using the `scipy.signal.filtfilt` function.
+    the low-pass filter to the input data using the `scipy.signal.filtfilt` function.
 
     Args:
         data (array-like):
@@ -113,35 +142,19 @@ def fir_lowpass_filter(data, fir_file=mat_filter_coefficients_file):
     Returns:
         filtered_signal (array):
             The filtered signal after applying the FIR low-pass filter.
-
-    Notes:
-    -----
-    The FIR filter coefficients are loaded from the specified MAT file (`fir_file`).
-    The filter is applied using `scipy.signal.filtfilt`, which performs zero-phase
-    filtering to avoid phase distortion.
     """
-    # Remove drifts using desinged filter (remove_40Hz_drift)
-    filtered_signal = remove_40Hz_drift(data)
-
-    # Load FIR filter coefficients from the specified MAT file
-    num = scipy.io.loadmat(fir_file)
-
-    # Extract the numerator coefficients from the loaded data
-    numerator_coefficient = num["Num"][0, :]
+    # Load FIR low-pass filter coefficients from the specified MAT file
+    lowpass_coefficients = scipy.io.loadmat(fir_file)
+    numerator_coefficient = lowpass_coefficients["Num"][0, :]
 
     # Define the denominator coefficients as [1.0] to perform FIR filtering
-    denominator_coefficient = np.array(
-        [
-            1.0,
-        ]
-    )
+    denominator_coefficient = np.array([1.0])
 
     # Apply the FIR low-pass filter using filtfilt
     filtered_signal = scipy.signal.filtfilt(
-        numerator_coefficient, denominator_coefficient, filtered_signal
+        numerator_coefficient, denominator_coefficient, data
     )
 
-    # Return the filtered signal
     return filtered_signal
 
 
@@ -178,38 +191,6 @@ def resample_interpolate(input_signal, initial_sampling_rate, target_sampling_ra
     resampled_signal = interpolator(xq)
 
     return resampled_signal
-
-
-def remove_40Hz_drift(signal):
-    """
-    Remove 40Hz drift from a signal using a high-pass filter.
-
-    This function applies a high-pass filter to remove low-frequency drift at 40Hz
-    from the input signal `signal`.
-
-    Args:
-        signal (array_like): The input signal.
-
-    Returns:
-        filtered_signal (ndarray): The filtered signal with removed drift.
-    """
-    # The numerator coefficient vector of the filter.
-    numerator_coefficient = np.array([1, -1])
-
-    # The denominator coefficient vector of the filter.
-    denominator_coefficient = np.array([1, -0.9748])
-
-    # Filter signal using high-pass filter
-    filtered_signal = scipy.signal.filtfilt(
-        numerator_coefficient,
-        denominator_coefficient,
-        signal,
-        axis=0,
-        padtype="odd",
-        padlen=3 * (max(len(numerator_coefficient), len(denominator_coefficient)) - 1),
-    )
-
-    return filtered_signal
 
 
 def recursive_gaussian_smoothing(noisy_data, window_lengths, sigmas):

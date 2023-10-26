@@ -70,12 +70,15 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         resampled_acceleration, method="savgol", window_length=21, polynomial_order=7
     )
 
-    # Filter data using lowpass filter designed for low SNR, impaired, asymmetric and slow gait
-    detrended_acceleration = preprocessing.fir_lowpass_filter(smoothed_acceleration)
+    # Remove 40Hz drift from the filtered data
+    drift_removed_acceleration = preprocessing.highpass_filter(smoothed_acceleration)
+
+    # Filter data using the low-pass filter
+    filtered_acceleration = preprocessing.fir_lowpass_filter(drift_removed_acceleration)
 
     # Perform the continuous wavelet transform on the filtered acceleration data
     wavelet_transform_result = preprocessing.apply_continuous_wavelet_transform(
-        detrended_acceleration,
+        filtered_acceleration,
         scales=10,
         desired_scale=10,
         wavelet="gaus2",
@@ -270,10 +273,16 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         plt.plot(
             np.arange(len(detected_activity_signal)) / (60 * target_sampling_frequency),
             detected_activity_signal,
-            cfg_colors["raw"][0],
+            "b",
             linewidth=3,
         )
 
+        plt.plot(
+            np.arange(len(detected_activity_signal)) / (60 * target_sampling_frequency),
+            walking_labels,
+            color=cfg_colors["raw"][0],
+            linewidth=5,
+        )
         plt.title("Detected activity and walking labels", fontsize=20)
         plt.xlabel("Time (minutes)", fontsize=20)
 
@@ -285,7 +294,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
             end_time = sequence["End"] / 60  # Convert to minutes
             plt.axvline(start_time, color="g")
             plt.axvline(end_time, color="r")
-            plt.axvspan(start_time, end_time, facecolor="green", alpha=0.8)
+            plt.axvspan(start_time, end_time, facecolor="grey", alpha=0.8)
 
         plt.legend(
             [
