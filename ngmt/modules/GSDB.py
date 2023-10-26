@@ -273,10 +273,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
             "b",
             linewidth=3,
         )
-<<<<<<< HEAD:ngmt/modules/gsd/GSDB.py
-        plt.title("Detected walking sequences", fontsize=20)
-        plt.xlabel("Time (minute)", fontsize=20)
-=======
+
         plt.plot(
             np.arange(len(detected_activity_signal)) / (60 * target_sampling_frequency),
             walking_labels,
@@ -285,7 +282,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         )
         plt.title("Detected activity and walking labels", fontsize=20)
         plt.xlabel("Time (minutes)", fontsize=20)
->>>>>>> c23d385e3191ece132b733940f86a5202b6cb67e:ngmt/modules/GSDB.py
+
         plt.ylabel("Acceleration (g)", fontsize=20)
 
         # Fill the area between start and end times
