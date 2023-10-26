@@ -291,7 +291,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
             end_time = sequence["End"] / 60  # Convert to minutes
             plt.axvline(start_time, color="g")
             plt.axvline(end_time, color="r")
-            plt.axvspan(start_time, end_time, facecolor="grey", alpha=0.8)
+            plt.axvspan(start_time, end_time, facecolor="green", alpha=0.8)
 
         plt.legend(
             [
