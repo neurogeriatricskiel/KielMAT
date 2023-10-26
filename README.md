@@ -2,7 +2,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # NGMT
-![NeurogeriatricsLogo](docs\ng_logo.png)
+![NeurogeriatricsLogo](docs/ng_logo.png)
 
 Welcome to the NeuroGeriatricMotionToolbox (NGMT). We are a Python based toolbox for processing motion data.
 
