@@ -54,8 +54,7 @@ classDiagram
         times: np.1darray
         channels: ChannelData
         start_time: float
-        GSD()
-        ICD()
+        pick_channel_types()
     }
 
     class MotionData {

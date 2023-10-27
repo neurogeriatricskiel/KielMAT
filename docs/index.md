@@ -51,8 +51,7 @@ classDiagram
         times: np.1darray
         channels: ChannelData
         start_time: float
-        GSD()
-        ICD()
+        pick_channel_types()
     }
 
     class MotionData {
@@ -102,4 +101,4 @@ pip install -e .
 
 ## Authors
 
-[Masoud Abedinifar](https://github.com/masoudabedinifar), [Clint Hansen](mailto:c.hansen@neurologie.uni-kiel.de), [Robbin Romijnders](https://github.com/rmndrs89) & [Julius Welzel](https://github.com/JuliusWelzel)
+[Masoud Abedinifar](https://github.com/masoudabedinifar), [Clint Hansen](mailto:c.hansen@neurologie.uni-kiel.de), [Walter Maetzler](mailto:w.maetzler@neurologie.uni-kiel.de), [Robbin Romijnders](https://github.com/rmndrs89) & [Julius Welzel](https://github.com/JuliusWelzel)
