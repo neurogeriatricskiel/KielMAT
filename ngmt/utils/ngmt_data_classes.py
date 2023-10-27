@@ -146,13 +146,13 @@ class RecordingData:
                 "The length of `times` should match the number of rows in `data`"
             )
 
-    def pick_channel_types(channel_type_oi):
+    def pick_channel_types(self, channel_type_oi):
         """
         This function returns a trimmed version of the MotionData
         for a given channel type.
 
         Parameters:
-            channel_type (str): channel type
+            channel_type_oi (str): channel type
 
         Returns:
             motion_data_clean_type (RecordingData): An object of class MotionData that includes

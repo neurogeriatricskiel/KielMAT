@@ -60,6 +60,12 @@ print(f"End Time: {gait_sequences[0]['End']} seconds")
     Gait sequence(s) detected.
     
 
+
+    
+![png](event_visualization_files/event_visualization_6_1.png)
+    
+
+
     Gait Sequence:
     Start Time: 6.05 seconds
     End Time: 27.95 seconds
@@ -91,9 +97,17 @@ ax.set_ylabel(f'Acceleration [{acc.channels.units[0]}]') # use the channel unit 
 #remove the box around the plot
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
-ax.legend();
+ax.legend()
 
 ```
+
+
+
+
+    <matplotlib.legend.Legend at 0x23c81873670>
+
+
+
 
     
 ![png](event_visualization_files/event_visualization_8_1.png)

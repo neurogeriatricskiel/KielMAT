@@ -23,7 +23,7 @@ def lowpass_filter(signal, method="savgol", **kwargs):
     Args:
         signal (numpy.ndarray): The input signal to be filtered.
         method (str): The filter method to use ("savgol", "butter", or "fir").
-        **kwargs: Additional keyword arguments specific to the chosen filter method.
+        param (**kwargs): Additional keyword arguments specific to the Savitzky-Golay filter method.
 
     Returns:
         filt_signal (numpy.ndarray): The filtered signal.
@@ -612,9 +612,7 @@ def organize_and_pack_results(walking_periods, peak_steps):
         peak_steps (list): List of peak step indices.
 
     Returns:
-        organized_results, all_mid_swing (tulpe): A tuple containing two elements:
-
-            - A list of dictionaries representing organized walking results, each dictionary contains:
+        organized_results (list): A list of dictionaries representing organized walking results, each dictionary contains:
 
                 - 'start': Start index of the walking period.
 
@@ -624,7 +622,7 @@ def organize_and_pack_results(walking_periods, peak_steps):
 
                 - 'mid_swing': List of peak step indices within the walking period.
 
-            - A list of sorted peak step indices across all walking periods.
+        all_mid_swing (list): A list of sorted peak step indices across all walking periods.
     """
     # Calculate the number of walking periods.
     num_periods = len(walking_periods)

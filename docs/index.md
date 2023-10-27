@@ -1,4 +1,8 @@
-# Welcome 
+[![build docs](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/mkdocs.yml/badge.svg)](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/mkdocs.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+# NGMT
+![NeurogeriatricsLogo](ng_logo.png)
 
 Welcome to the NeuroGeriatricMotionToolbox (NGMT). We are a Python based toolbox for processing motion data.
 
@@ -6,7 +10,6 @@ Welcome to the NeuroGeriatricMotionToolbox (NGMT). We are a Python based toolbox
 
 The toolbox is aimed at a wide variety of motion researchers who want to use open souce software to process their data.
 We have implemented a wide variety of functions to process motion data, such as:
-
 -   Gait sequence detection (GSD)
 -   Inital contact detection (ICD)
 -   More to follow ...
@@ -71,7 +74,7 @@ classDiagram
     RawData --> FileInfo: Get info from file
 ```
 
-This is the planned class structure for motion data. Data from any file format can ultimately be imported into the `MotionData` class. The `MotionData` object contains a `FileInfo` object. The `FileInfo` object contains information about the file, such as the subject ID, the task name, the project name and the file path. The `MotionData` class also contains a list of `RecordingData` objects. 
+This is the planned class structure for motion data. Data from any file format can ultimately be imported into the `MotionData` class. The `MotionData` object contains a `FileInfo` object. The `FileInfo` object contains information about the file, such as the subject ID, the task name, the project name and the file path. The `MotionData` class also contains a list of `RecordingData` objects.
 
 Each `RecordingData` object contains the raw data, the sampling rate, the time stamps and the channel info (`ChannelData`) of a tracking system. It is up to the user how to group the source data into a tracking system.
 The `RecordingData` object can also contain information about events. The `EventData` objects stores information about events such as onset or duration.
@@ -79,7 +82,7 @@ The `RecordingData` object can also contain information about events. The `Event
 The `ChannelData` object is used to store the channel name, the channel type, the channel units and the tracked point.
 
 ## Documentation
-The full documentation can be found here.
+The full documentation can be found [here](https://neurogeriatricskiel.github.io/NGMT/).
 
 ## Installation
 After the first release, the toolbox can be installed via pip
