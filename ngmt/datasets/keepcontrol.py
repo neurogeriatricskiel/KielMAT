@@ -28,7 +28,7 @@ def load_file(file_path: str) -> MotionData:
 
     The data is saved as a tab-separated text document, following the
     BIDS motion guidelines.
-    
+
     Args:
         file_path (str): Path to the data file (*.tsv).
 
