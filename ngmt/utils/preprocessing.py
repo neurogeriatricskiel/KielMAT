@@ -44,7 +44,9 @@ def lowpass_filter(signal, method="savgol", **kwargs):
             "polynomial_order", default_savgol_params["polynomial_order"]
         )
 
-        filt_signal = scipy.signal.savgol_filter(signal, window_length, polynomial_order) 
+        filt_signal = scipy.signal.savgol_filter(
+            signal, window_length, polynomial_order
+        )
         return filt_signal
 
     else:
@@ -446,7 +448,7 @@ def identify_pulse_trains(signal):
 
     Returns:
         pulse_train (list): A list of dictionaries, each containing information about a detected pulse train.
-            Each dictionary has the following keys: 
+            Each dictionary has the following keys:
 
             `start`: The index of the first value in the pulse train.
 

@@ -229,7 +229,7 @@ class MotionData:
         Args:
             systems (RecordingData): List of RecordingData objects
 
-        Returns: 
+        Returns:
             self (RecordingData): A RecordingData object with a globally valid times vector
 
         """
