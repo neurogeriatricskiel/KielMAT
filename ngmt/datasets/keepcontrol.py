@@ -24,8 +24,13 @@ else:
 
 def load_file(file_path: str) -> MotionData:
     """
+    Loads data from a given file from the Keep Control validation study.
+
+    The data is saved as a tab-separated text document, following the
+    BIDS motion guidelines.
+    
     Args:
-        file_path (str): Path to the data file (*.csv).
+        file_path (str): Path to the data file (*.tsv).
 
     Returns:
         MotionData: An instance of a `MotionData` object.
