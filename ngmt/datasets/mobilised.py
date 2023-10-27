@@ -29,7 +29,7 @@ def load_file(file_path: str) -> RecordingData:
         file_path (str): Path to the data file (*.mat).
 
     Returns:
-        MotionData: An instance of a `MotionData` object.
+        RecordingData: An instance of a `RecordingData` object.
     """
     # Split path and filename
     path_name, file_name = os.path.split(file_path)

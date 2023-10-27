@@ -22,7 +22,7 @@ def Initial_Contact_Detection(
         plot_results (bool): Whether to plot the results.
 
     Returns:
-        list: List of dictionaries containing detected ICs and associated information.
+        processed_output (list): List of dictionaries containing detected ICs and associated information.
     """
     # Extract vertical accelerometer data
     acc_vertical = imu_acceleration[:, 0]

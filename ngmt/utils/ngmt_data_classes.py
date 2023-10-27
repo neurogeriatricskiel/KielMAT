@@ -23,6 +23,8 @@ VALID_COMPONENT_TYPES = {"x", "y", "z", "quat_x", "quat_y", "quat_z", "quat_w", 
 class FileInfo:
     """
     A data class representing information about a file to be processed.
+    The main puprose is to store the metadata of the file for a larger dataset,
+    and the path to the file in the file system.
 
     Attributes:
         SubjectID (str): The identifier of the subject associated with the file.
@@ -144,7 +146,7 @@ class RecordingData:
                 "The length of `times` should match the number of rows in `data`"
             )
 
-    def pick_channel_types(self, channel_type_oi):
+    def pick_channel_types(channel_type_oi):
         """
         This function returns a trimmed version of the MotionData
         for a given channel type.
@@ -153,10 +155,10 @@ class RecordingData:
             channel_type (str): channel type
 
         Returns:
-            MotionData: an object of class MotionData that includes
-            FileInfo object with metadata from the file, a 1D numpy array
-            with time values, a list of channel names, and a 2D numpy array
-            with the time series data.
+            motion_data_clean_type (RecordingData): An object of class MotionData that includes
+                FileInfo object with metadata from the file, a 1D numpy array
+                with time values, a list of channel names, and a 2D numpy array
+                with the time series data.
         """
 
         # find the indices_type_oi of the channels with the given channel type
@@ -224,9 +226,11 @@ class MotionData:
         valid times vector. If no start time is provided or if the start times start at
         0, meaningful synchronization is not possible functions returns a warning.
 
-
         Args:
-            systems (List[RecordingData]): List of RecordingData objects
+            systems (RecordingData): List of RecordingData objects
+
+        Returns: 
+            self (RecordingData): A RecordingData object with a globally valid times vector
 
         """
 

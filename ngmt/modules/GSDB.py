@@ -18,7 +18,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         sampling_frequency (float): Sampling frequency of the accelerometer data.
 
     Returns:
-        list: A list of dictionaries containing gait sequence information, including start and end times, and sampling frequency.
+        GSD_Output (list): A list of dictionaries containing gait sequence information, including start and end times, and sampling frequency.
 
     Description:
         This function performs Gait Sequence Detection (GSD) on accelerometer data

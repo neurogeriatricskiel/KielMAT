@@ -26,7 +26,7 @@ def lowpass_filter(signal, method="savgol", **kwargs):
         **kwargs: Additional keyword arguments specific to the chosen filter method.
 
     Returns:
-        numpy.ndarray: The filtered signal.
+        filt_signal (numpy.ndarray): The filtered signal.
     """
     # Define default parameters for Savitzky-Golay filter
     default_savgol_params = {
@@ -43,7 +43,9 @@ def lowpass_filter(signal, method="savgol", **kwargs):
         polynomial_order = savgol_params.get(
             "polynomial_order", default_savgol_params["polynomial_order"]
         )
-        return scipy.signal.savgol_filter(signal, window_length, polynomial_order)
+
+        filt_signal = scipy.signal.savgol_filter(signal, window_length, polynomial_order) 
+        return filt_signal
 
     else:
         raise ValueError("Invalid filter method specified")
@@ -115,10 +117,9 @@ def fir_lowpass_filter(data, fir_file=mat_filter_coefficients_file):
             The filtered signal after applying the FIR low-pass filter.
 
     Notes:
-    -----
-    The FIR filter coefficients are loaded from the specified MAT file (`fir_file`).
-    The filter is applied using `scipy.signal.filtfilt`, which performs zero-phase
-    filtering to avoid phase distortion.
+        The FIR filter coefficients are loaded from the specified MAT file (`fir_file`).
+        The filter is applied using `scipy.signal.filtfilt`, which performs zero-phase
+        filtering to avoid phase distortion.
     """
     # Remove drifts using desinged filter (remove_40Hz_drift)
     filtered_signal = remove_40Hz_drift(data)
@@ -153,12 +154,12 @@ def resample_interpolate(input_signal, initial_sampling_rate, target_sampling_ra
     and resamples it to a new sampling rate `target_sampling_rate` using linear interpolation.
 
     Args:
-        input_signal (array_like): The input signal.
+        input_signal (1darray): The input signal.
         initial_sampling_rate (float): The initial sampling rate of the input signal.
         target_sampling_rate (float): The desired sampling rate for the output signal.
 
     Returns:
-        resampled_signal (array_like): The resampled and interpolated signal.
+        resampled_signal (1darray): The resampled and interpolated signal.
     """
     # Calculate the length of the input signal.
     recording_time = len(input_signal)
@@ -222,7 +223,7 @@ def recursive_gaussian_smoothing(noisy_data, window_lengths, sigmas):
         sigmas (list of float): List of standard deviations corresponding to window_lengths.
 
     Returns:
-        numpy.ndarray: Smoothed data after applying multiple Gaussian filters.
+        smoothed_data (numpy.ndarray): Smoothed data after applying multiple Gaussian filters.
     """
     smoothed_data = noisy_data.copy()
 
@@ -250,8 +251,7 @@ def calculate_envelope_activity(
     It calculates the analytical signal using the Hilbert transform, smoothes the envelope, and applies an
     adaptive threshold to identify active regions.
 
-    Args:
-
+    Parameters:
         input_signal (array_like): The input signal.
         smooth_window (int): Window length for smoothing the envelope (default is 20).
         threshold_style (int): Threshold selection style: 0 for manual, 1 for automatic (default is 1).
@@ -380,12 +380,12 @@ def find_consecutive_groups(input_array):
     non-zero values. It returns a 2D array where each row represents a group, with the first column containing
     the start index of the group and the second column containing the end index of the group.
 
-    Args:
-    input_array (ndarray): The input array.
+    Parameters:
+        input_array (ndarray): The input array.
 
     Returns:
-    ind (ndarray): A 2D array where each row represents a group of consecutive non-zero values.
-        The first column contains the start index of the group, and the second column contains the end index.
+        ind (ndarray): A 2D array where each row represents a group of consecutive non-zero values.
+            The first column contains the start index of the group, and the second column contains the end index.
     """
     # Find indices of non-zeros elements
     temp = np.where(input_array)[0]
@@ -445,11 +445,14 @@ def identify_pulse_trains(signal):
         signal (numpy.ndarray): The input signal.
 
     Returns:
-        list: A list of dictionaries, each containing information about a detected pulse train.
-            Each dictionary has the following keys:
-            - 'start': The index of the first value in the pulse train.
-            - 'end': The index of the last value in the pulse train.
-            - 'steps': The number of steps in the pulse train.
+        pulse_train (list): A list of dictionaries, each containing information about a detected pulse train.
+            Each dictionary has the following keys: 
+
+            `start`: The index of the first value in the pulse train.
+
+            `end`: The index of the last value in the pulse train.
+
+            `steps`: The number of steps in the pulse train.
     """
     # Initialize an empty list to store detected pulse trains.
     pulse_trains = []
@@ -513,8 +516,8 @@ def convert_pulse_train_to_array(pulse_train_list):
         pulse_train_list (list): A list of dictionaries containing pulse train information.
 
     Returns:
-        numpy.ndarray: A 2D array where each row represents a pulse train with the 'start' value
-            in the first column and the 'end' value in the second column.
+        array_representation(numpy.ndarray): A 2D array where each row represents a pulse train with the 'start' value
+                                            in the first column and the 'end' value in the second column.
     """
     # Initialize a 2D array with the same number of rows as pulse train dictionaries and 2 columns.
     array_representation = np.zeros((len(pulse_train_list), 2), dtype=np.uint64)
@@ -543,7 +546,7 @@ def find_interval_intersection(set_a, set_b):
         set_b (numpy.ndarray): The second set of intervals, with the same structure as `set_a`.
 
     Returns:
-        numpy.ndarray: A new set of intervals representing the intersection of intervals from `set_a` and `set_b`.
+        intersection_intervals (numpy.ndarray): A new set of intervals representing the intersection of intervals from `set_a` and `set_b`.
     """
     # Get the number of intervals in each set.
     num_intervals_a = set_a.shape[0]
@@ -607,12 +610,18 @@ def organize_and_pack_results(walking_periods, peak_steps):
         peak_steps (list): List of peak step indices.
 
     Returns:
-        tuple(list, list): A tuple containing two elements:
+        organized_results, all_mid_swing (tulpe): A tuple containing two elements:
+
             - A list of dictionaries representing organized walking results, each dictionary contains:
+
                 - 'start': Start index of the walking period.
+
                 - 'end': End index of the walking period.
+
                 - 'steps': Number of steps within the walking period.
+
                 - 'mid_swing': List of peak step indices within the walking period.
+
             - A list of sorted peak step indices across all walking periods.
     """
     # Calculate the number of walking periods.

@@ -23,6 +23,13 @@ else:
 
 
 def load_file(file_path: str) -> MotionData:
+    """
+    Args:
+        file_path (str): Path to the data file (*.csv).
+
+    Returns:
+        MotionData: An instance of a `MotionData` object.
+    """
     # Split path and file name
     path_name, file_name = os.path.split(file_path)
 
