@@ -93,13 +93,11 @@ For now, the toolbox can be installed via the following steps:
 3. Install the requirements
 4. Install the toolbox
 
+For now please install the toolbox by cloning and install via poerty 
 ```bash
 git clone https://github.com/neurogeriatricskiel/NGMT.git
-cd NeuroGeriatricMotionToolbox
-python -m venv venv_ngmt
-source venv_ngmt/bin/activate
-pip install -r environment.yml
-pip install -e .
+cd ngmt
+poerty install
 ```
 
 ## Authors
