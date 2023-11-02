@@ -22,11 +22,11 @@ theme:
 
 nav:
   - Home: index.md
-  - Datasets: datasets.md
-  - Dataclasses: dataclasses.md
   - Modules: modules.md
-  - Utilities: utils.md
+  - Dataclasses: dataclasses.md
   - Examples: examples.md
+  - Datasets: datasets.md
+  - Utilities: utils.md
 
 markdown_extensions:
 - pymdownx.superfences:
