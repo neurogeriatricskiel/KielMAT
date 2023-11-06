@@ -16,6 +16,51 @@ with pkg_resources.path(
     pass
 
 
+def resample_interpolate(input_signal, initial_sampling_frequency=100, target_sampling_frequency=40):
+    """
+    Resample and interpolate a signal to a new sampling frequency.
+
+    This function takes a signal `input_signal` sampled at an initial sampling frequency `initial_sampling_frequency`
+    and resamples it to a target sampling frequency `target_sampling_frequency` using linear interpolation.
+
+    Args:
+        input_signal (array_like): The input signal.
+        initial_sampling_frequency (float, optional): The initial sampling frequency of the input signal. Default is 100.
+        target_sampling_frequency (float, optional): The target sampling frequency for the output signal. Default is 40.
+
+    Returns:
+        resampled_signal (array_like): The resampled and interpolated signal.
+    """
+    # Error handling for invalid input data
+    if not isinstance(input_signal, np.ndarray):
+        raise ValueError("Input signal should be a NumPy array.")
+
+    if not isinstance(initial_sampling_frequency, (int, float)) or initial_sampling_frequency <= 0:
+        raise ValueError("The initial sampling frequency must be a positive float.")
+    
+    if not isinstance(target_sampling_frequency, (int, float)) or target_sampling_frequency <= 0:
+        raise ValueError("The target sampling frequency must be a positive float.")
+
+    # Calculate the length of the input signal.
+    recording_time = len(input_signal)
+
+    # Create an array representing the time indices of the input signal.
+    x = np.arange(1, recording_time + 1)
+
+    # Create an array representing the time indices of the resampled signal.
+    xq = np.arange(1, recording_time + 1, initial_sampling_frequency / target_sampling_frequency)
+
+    # Create an interpolation function using linear interpolation and apply it to the data.
+    interpolator = scipy.interpolate.interp1d(
+        x, input_signal, kind="linear", axis=0, fill_value="extrapolate"
+    )
+
+    # Resample and interpolate the input signal to the desired target sampling rate.
+    resampled_signal = interpolator(xq)
+
+    return resampled_signal
+
+
 def lowpass_filter(signal, method="savgol", **kwargs):
     """
     Apply a low-pass filter to the input signal.
@@ -28,10 +73,19 @@ def lowpass_filter(signal, method="savgol", **kwargs):
     Returns:
         numpy.ndarray: The filtered signal.
     """
+    # Error handling for invalid input data
+    if not isinstance(signal, np.ndarray):
+        raise ValueError("Input data must be a numpy.ndarray")
+    
     # Define default parameters for Savitzky-Golay filter
     default_savgol_params = {
         "window_length": 21,
         "polynomial_order": 7,
+    }
+
+    # Define default parameters for FIR filter
+    default_fir_params = {
+        "fir_file": mat_filter_coefficients_file,
     }
 
     if method == "savgol":
@@ -44,9 +98,83 @@ def lowpass_filter(signal, method="savgol", **kwargs):
             "polynomial_order", default_savgol_params["polynomial_order"]
         )
         return scipy.signal.savgol_filter(signal, window_length, polynomial_order)
+    
+    elif method == "fir":
+        # Update default parameters with any provided kwargs
+        fir_params = {**default_fir_params, **kwargs}
+        fir_file = fir_params.get("fir_file", default_fir_params["fir_file"])
+        
+        # Load FIR low-pass filter coefficients from the specified MAT file
+        lowpass_coefficients = scipy.io.loadmat(fir_file)
+        numerator_coefficient = lowpass_coefficients["Num"][0, :]
+        
+        # Define the denominator coefficients as [1.0] to perform FIR filtering
+        denominator_coefficient = np.array([1.0])
+        
+        # Apply the FIR low-pass filter using filtfilt
+        filtered_signal = scipy.signal.filtfilt(
+            numerator_coefficient, denominator_coefficient, signal
+        )
+        
+        return filtered_signal
 
     else:
         raise ValueError("Invalid filter method specified")
+
+
+def highpass_filter(signal, sampling_frequency = 40, method = "iir", **kwargs):
+    """
+    Apply a high-pass filter to the input signal using the specified method.
+
+    Args:
+        signal (np.ndarray): The input signal to be filtered.
+        sampling_frequency (float): The sampling frequency of the input signal.
+        method (str): The filtering method to be used.
+        **kwargs: Additional keyword arguments specific to the filtering method.
+
+    Returns:
+        np.ndarray: The filtered signal.
+
+    """
+    if not isinstance(signal, np.ndarray) or not isinstance(sampling_frequency, (int, float)) or sampling_frequency <= 0:
+        raise ValueError("Invalid input data. The 'signal' must be a NumPy array, and 'sampling_frequency' must be a positive number.")
+
+    if method.lower() == "iir":
+        filtered_signal = _iir_highpass_filter(signal, sampling_frequency)
+    else:
+        raise ValueError(f"Unsupported filtering method: {method}")
+
+    return filtered_signal
+
+
+def _iir_highpass_filter(signal, sampling_frequency):
+    """
+    Apply an IIR high-pass filter to the input signal.
+
+    Args:
+        signal (np.ndarray): The input signal to be filtered.
+        sampling_frequency (float): The sampling frequency of the input signal.
+
+    Returns:
+        np.ndarray: The filtered signal.
+
+    """
+    if not isinstance(signal, np.ndarray) or not isinstance(sampling_frequency, (int, float)) or sampling_frequency <= 0:
+        raise ValueError("Invalid input data. The 'signal' must be a NumPy array, and 'sampling_frequency' must be a positive number.")
+
+    if sampling_frequency == 40.:
+        # The numerator coefficient vector of the high-pass filter.
+        numerator_coefficient = np.array([1, -1])
+
+        # The denominator coefficient vector of the high-pass filter.
+        denominator_coefficient = np.array([1, -0.9748])
+    else:
+        # Define filter coefficients based on your specific requirements
+        pass
+
+    filtered_signal = scipy.signal.filtfilt(numerator_coefficient, denominator_coefficient, signal, axis=0, padtype="odd", padlen=3 * (max(len(numerator_coefficient), len(denominator_coefficient)) - 1))
+
+    return filtered_signal
 
 
 def apply_continuous_wavelet_transform(
@@ -96,101 +224,14 @@ def apply_successive_gaussian_filters(data):
     return filtered_signal
 
 
-def highpass_filter(signal):
-    """
-    Apply a high-pass filter to remove low-frequency drift from the input signal.
-
-    Args:
-        signal (array_like): The input signal.
-
-    Returns:
-        filtered_signal (ndarray): The filtered signal with removed drift.
-    """
-    # The numerator coefficient vector of the high-pass filter.
-    numerator_coefficient = np.array([1, -1])
-
-    # The denominator coefficient vector of the high-pass filter.
-    denominator_coefficient = np.array([1, -0.9748])
-
-    # Filter the signal using the high-pass filter
-    filtered_signal = scipy.signal.filtfilt(
-        numerator_coefficient,
-        denominator_coefficient,
-        signal,
-        axis=0,
-        padtype="odd",
-        padlen=3 * (max(len(numerator_coefficient), len(denominator_coefficient)) - 1),
-    )
-
-    return filtered_signal
 
 
-def fir_lowpass_filter(data, fir_file=mat_filter_coefficients_file):
-    """
-    Apply a finite impulse response (FIR) low-pass filter to input data.
-
-    This function loads FIR filter coefficients from a given FIR file and applies
-    the low-pass filter to the input data using the `scipy.signal.filtfilt` function.
-
-    Args:
-        data (array-like):
-            The input data to be filtered.
-        fir_file (str, optional):
-            The filename of the FIR filter coefficients MAT file.
-            Default is "FIR_2_3Hz_40.mat".
-
-    Returns:
-        filtered_signal (array):
-            The filtered signal after applying the FIR low-pass filter.
-    """
-    # Load FIR low-pass filter coefficients from the specified MAT file
-    lowpass_coefficients = scipy.io.loadmat(fir_file)
-    numerator_coefficient = lowpass_coefficients["Num"][0, :]
-
-    # Define the denominator coefficients as [1.0] to perform FIR filtering
-    denominator_coefficient = np.array([1.0])
-
-    # Apply the FIR low-pass filter using filtfilt
-    filtered_signal = scipy.signal.filtfilt(
-        numerator_coefficient, denominator_coefficient, data
-    )
-
-    return filtered_signal
 
 
-def resample_interpolate(input_signal, initial_sampling_rate, target_sampling_rate):
-    """
-    Resample and interpolate a signal to a new sampling rate.
 
-    This function takes a signal `input_signal` sampled at an initial sampling rate `initial_sampling_rate`
-    and resamples it to a new sampling rate `target_sampling_rate` using linear interpolation.
 
-    Args:
-        input_signal (array_like): The input signal.
-        initial_sampling_rate (float): The initial sampling rate of the input signal.
-        target_sampling_rate (float): The desired sampling rate for the output signal.
 
-    Returns:
-        resampled_signal (array_like): The resampled and interpolated signal.
-    """
-    # Calculate the length of the input signal.
-    recording_time = len(input_signal)
 
-    # Create an array representing the time indices of the input signal.
-    x = np.arange(1, recording_time + 1)
-
-    # Create an array representing the time indices of the resampled signal.
-    xq = np.arange(1, recording_time + 1, initial_sampling_rate / target_sampling_rate)
-
-    # Create an interpolation function using linear interpolation and apply it to the data.
-    interpolator = scipy.interpolate.interp1d(
-        x, input_signal, kind="linear", axis=0, fill_value="extrapolate"
-    )
-
-    # Resample and interpolate the input signal to the desired target sampling rate.
-    resampled_signal = interpolator(xq)
-
-    return resampled_signal
 
 
 def recursive_gaussian_smoothing(noisy_data, window_lengths, sigmas):
@@ -222,7 +263,7 @@ def recursive_gaussian_smoothing(noisy_data, window_lengths, sigmas):
 
 
 def calculate_envelope_activity(
-    input_signal, smooth_window=20, threshold_style=1, duration=20, plot_results=1
+    input_signal, smooth_window=20, threshold_style=1, duration=20, plot_results=0
 ):
     """
     Calculate envelope-based activity detection using the Hilbert transform.
@@ -237,7 +278,7 @@ def calculate_envelope_activity(
         smooth_window (int): Window length for smoothing the envelope (default is 20).
         threshold_style (int): Threshold selection style: 0 for manual, 1 for automatic (default is 1).
         duration (int): Minimum duration of activity to be detected (default is 20).
-        plot_results (int): Set to 1 for plotting results, 0 otherwise (default is 1).
+        plot_results (int): Set to 1 for plotting results, 0 otherwise (default is 0).
 
     Returns:
         tuple (ndarray, ndarray): A tuple containing:

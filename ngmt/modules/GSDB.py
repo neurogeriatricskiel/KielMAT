@@ -9,7 +9,7 @@ from ngmt.utils import preprocessing
 from ngmt.config import cfg_colors
 
 
-def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
+def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results=False):
     """
     Perform Gait Sequence Detection (GSD) using low back accelerometer data.
 
@@ -36,20 +36,20 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
 
         If `plot_results` is set to True, the function will also generate a plot showing
         the pre-processed acceleration data and the detected gait sequences for
-        visualization purposes.
+        visualization purposes. Default is False.
     """
     # Error handling for invalid input data
     if not isinstance(imu_acceleration, np.ndarray) or imu_acceleration.shape[1] != 3:
-        raise ValueError("imu_acceleration must be a 2D numpy array with 3 columns.")
+        raise ValueError("Input accelerometer data must be a 2D numpy array with 3 columns.")
 
     if not isinstance(sampling_frequency, (int, float)) or sampling_frequency <= 0:
-        raise ValueError("sampling_frequency must be a positive float.")
+        raise ValueError("Sampling frequency must be a positive float.")
+    
+    if not isinstance(plot_results, bool):
+        raise ValueError("Plot results must be a boolean (True or False).")
 
     # Initialize the GSD_Output dictionary
     GSD_Output = {}
-
-    # Convert imu_acceleration to a numpy array of float64 data type
-    imu_acceleration = np.array(imu_acceleration, dtype=np.float64)
 
     # Calculate the norm of acceleration as acceleration_norm using x, y, and z components
     acceleration_norm = np.sqrt(
@@ -65,16 +65,19 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results):
         acceleration_norm, initial_sampling_frequency, target_sampling_frequency
     )
 
-    # Applying Savitzky-Golay filter to smoothen the resampled data
+    # Applying low-pass Savitzky-Golay filter to smoothen the resampled data
     smoothed_acceleration = preprocessing.lowpass_filter(
         resampled_acceleration, method="savgol", window_length=21, polynomial_order=7
     )
 
     # Remove 40Hz drift from the filtered data
-    drift_removed_acceleration = preprocessing.highpass_filter(smoothed_acceleration)
+    drift_removed_acceleration = preprocessing.highpass_filter(signal = smoothed_acceleration, sampling_frequency = target_sampling_frequency, method = "iir")
 
-    # Filter data using the low-pass filter
-    filtered_acceleration = preprocessing.fir_lowpass_filter(drift_removed_acceleration)
+    # Filter data using the fir low-pass filter
+    #filtered_acceleration = preprocessing.fir_lowpass_filter(drift_removed_acceleration)
+    filtered_acceleration = preprocessing.lowpass_filter(
+        drift_removed_acceleration, method="fir"
+    )
 
     # Perform the continuous wavelet transform on the filtered acceleration data
     wavelet_transform_result = preprocessing.apply_continuous_wavelet_transform(
