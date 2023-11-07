@@ -96,8 +96,8 @@ For now, the toolbox can be installed via the following steps:
 For now please install the toolbox by cloning and install via poerty 
 ```bash
 git clone https://github.com/neurogeriatricskiel/NGMT.git
-cd ngmt
-poerty install
+cd NGMT
+poetry install
 ```
 
 ## Authors
