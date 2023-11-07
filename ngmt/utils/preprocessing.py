@@ -98,13 +98,8 @@ def lowpass_filter(signal, method="savgol", **kwargs):
 
     Args:
         signal (numpy.ndarray): The input signal to be filtered.
-<<<<<<< HEAD
-        method (str): The filter method to use ("savgol", "butter", or "fir").
-        param (**kwargs): Additional keyword arguments specific to the Savitzky-Golay filter method.
-=======
         method (str): The filter method to use ("savgol", "butter", or "fir").  Default is "savgol".
         **kwargs: Additional keyword arguments specific to the chosen filter method.
->>>>>>> masoud-dev
 
     Returns:
         filt_signal (numpy.ndarray): The filtered signal.
@@ -215,13 +210,10 @@ def _iir_highpass_filter(signal, sampling_frequency=40):
     Returns:
         np.ndarray: The filtered signal.
 
-<<<<<<< HEAD
     Notes:
         The FIR filter coefficients are loaded from the specified MAT file (`fir_file`).
         The filter is applied using `scipy.signal.filtfilt`, which performs zero-phase
         filtering to avoid phase distortion.
-=======
->>>>>>> masoud-dev
     """
     # Error handling for invalid input data
     if (
@@ -243,7 +235,6 @@ def _iir_highpass_filter(signal, sampling_frequency=40):
         # Define filter coefficients based on your specific requirements
         pass
 
-<<<<<<< HEAD
     # Define the denominator coefficients as [1.0] to perform FIR filtering
     denominator_coefficient = np.array(
         [
@@ -315,8 +306,6 @@ def remove_40Hz_drift(signal):
     denominator_coefficient = np.array([1, -0.9748])
 
     # Filter signal using high-pass filter
-=======
->>>>>>> masoud-dev
     filtered_signal = scipy.signal.filtfilt(
         numerator_coefficient,
         denominator_coefficient,
@@ -343,11 +332,7 @@ def apply_continuous_wavelet_transform(
         sampling_frequency (float, optional): Sampling frequency of the signal. Default is 40.
 
     Returns:
-<<<<<<< HEAD
         smoothed_data (numpy.ndarray): Smoothed data after applying multiple Gaussian filters.
-=======
-        data (numpy.ndarray): Transformed signal.
->>>>>>> masoud-dev
     """
     # Error handling for invalid input data
     try:
@@ -575,13 +560,8 @@ def find_consecutive_groups(input_signal):
     non-zero values. It returns a 2D array where each row represents a group, with the first column containing
     the start index of the group and the second column containing the end index of the group.
 
-<<<<<<< HEAD
     Parameters:
         input_array (ndarray): The input array.
-=======
-    Args:
-    input_signal (ndarray): The input signal.
->>>>>>> masoud-dev
 
     Returns:
         ind (ndarray): A 2D array where each row represents a group of consecutive non-zero values.
