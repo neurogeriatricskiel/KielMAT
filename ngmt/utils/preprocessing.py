@@ -16,22 +16,117 @@ with pkg_resources.path(
     pass
 
 
+def calculate_norm(input_data):
+    """
+    Calculate the norm of the input signal.
+
+    Args:
+    input_data (numpy.ndarray): Array containing data with three columns (x, y, z).
+
+    Returns:
+    numpy.ndarray: Array containing the calculated norm of the signal.
+    """
+    # Error handling for invalid input data
+    if input_data.shape[1] != 3:
+        raise ValueError("input_data should have three columns (x, y, z).")
+
+    signal_norm = np.sqrt(
+        input_data[:, 0] ** 2 + input_data[:, 1] ** 2 + input_data[:, 2] ** 2
+    )
+
+    return signal_norm
+
+
+def resample_interpolate(
+    input_signal, initial_sampling_frequency=100, target_sampling_frequency=40
+):
+    """
+    Resample and interpolate a signal to a new sampling frequency.
+
+    This function takes a signal `input_signal` sampled at an initial sampling frequency `initial_sampling_frequency`
+    and resamples it to a target sampling frequency `target_sampling_frequency` using linear interpolation.
+
+    Args:
+        input_signal (array_like): The input signal.
+        initial_sampling_frequency (float, optional): The initial sampling frequency of the input signal. Default is 100.
+        target_sampling_frequency (float, optional): The target sampling frequency for the output signal. Default is 40.
+
+    Returns:
+        resampled_signal (array_like): The resampled and interpolated signal.
+    """
+    # Error handling for invalid input data
+    if not isinstance(input_signal, np.ndarray):
+        raise ValueError("Input signal should be a NumPy array.")
+
+    if (
+        not isinstance(initial_sampling_frequency, (int, float))
+        or initial_sampling_frequency <= 0
+    ):
+        raise ValueError("The initial sampling frequency must be a positive float.")
+
+    if (
+        not isinstance(target_sampling_frequency, (int, float))
+        or target_sampling_frequency <= 0
+    ):
+        raise ValueError("The target sampling frequency must be a positive float.")
+
+    # Calculate the length of the input signal.
+    recording_time = len(input_signal)
+
+    # Create an array representing the time indices of the input signal.
+    x = np.arange(1, recording_time + 1)
+
+    # Create an array representing the time indices of the resampled signal.
+    xq = np.arange(
+        1, recording_time + 1, initial_sampling_frequency / target_sampling_frequency
+    )
+
+    # Create an interpolation function using linear interpolation and apply it to the data.
+    interpolator = scipy.interpolate.interp1d(
+        x, input_signal, kind="linear", axis=0, fill_value="extrapolate"
+    )
+
+    # Resample and interpolate the input signal to the desired target sampling rate.
+    resampled_signal = interpolator(xq)
+
+    return resampled_signal
+
+
 def lowpass_filter(signal, method="savgol", **kwargs):
     """
     Apply a low-pass filter to the input signal.
 
     Args:
         signal (numpy.ndarray): The input signal to be filtered.
+<<<<<<< HEAD
         method (str): The filter method to use ("savgol", "butter", or "fir").
         param (**kwargs): Additional keyword arguments specific to the Savitzky-Golay filter method.
+=======
+        method (str): The filter method to use ("savgol", "butter", or "fir").  Default is "savgol".
+        **kwargs: Additional keyword arguments specific to the chosen filter method.
+>>>>>>> masoud-dev
 
     Returns:
         filt_signal (numpy.ndarray): The filtered signal.
     """
+    # Error handling for invalid input data
+    if not isinstance(signal, np.ndarray):
+        raise ValueError("Input data must be a numpy.ndarray")
+
+    if not isinstance(method, str):
+        raise ValueError("'method' must be a string.")
+
+    method = method.lower()
+
     # Define default parameters for Savitzky-Golay filter
     default_savgol_params = {
         "window_length": 21,
         "polynomial_order": 7,
+    }
+
+    # Define default parameters for FIR filter
+    default_fir_params = {
+        "fir_file": mat_filter_coefficients_file,
     }
 
     if method == "savgol":
@@ -49,89 +144,106 @@ def lowpass_filter(signal, method="savgol", **kwargs):
         )
         return filt_signal
 
+    elif method == "fir":
+        # Update default parameters with any provided kwargs
+        fir_params = {**default_fir_params, **kwargs}
+        fir_file = fir_params.get("fir_file", default_fir_params["fir_file"])
+
+        # Load FIR low-pass filter coefficients from the specified MAT file
+        lowpass_coefficients = scipy.io.loadmat(fir_file)
+        numerator_coefficient = lowpass_coefficients["Num"][0, :]
+
+        # Define the denominator coefficients as [1.0] to perform FIR filtering
+        denominator_coefficient = np.array([1.0])
+
+        # Apply the FIR low-pass filter using filtfilt
+        filtered_signal = scipy.signal.filtfilt(
+            numerator_coefficient, denominator_coefficient, signal
+        )
+
+        return filtered_signal
+
     else:
         raise ValueError("Invalid filter method specified")
 
 
-def apply_continuous_wavelet_transform(
-    data, scales, desired_scale, wavelet, sampling_frequency
-):
+def highpass_filter(signal, sampling_frequency=40, method="iir", **kwargs):
     """
-    Apply continuous wavelet transform to the input data.
+    Apply a high-pass filter to the input signal using the specified method.
 
     Args:
-        data (numpy.ndarray): Input data.
-        scales (int): Number of scales for the wavelet transform.
-        desired_scale (int): Desired scale to use in calculations.
-        wavelet (str): Type of wavelet to use.
-        sampling_frequency (float): Sampling frequency of the data.
+        signal (np.ndarray): The input signal to be filtered.
+        sampling_frequency (float): The sampling frequency of the input signal.
+        method (str): The filtering method to be used.
+        **kwargs: Additional keyword arguments specific to the filtering method.
 
     Returns:
-        data (numpy.ndarray): Transformed data.
+        np.ndarray: The filtered signal.
+
     """
-    sampling_period = 1 / sampling_frequency
-    coefficients, _ = pywt.cwt(data, np.arange(1, scales + 1), wavelet, sampling_period)
-    wavelet_transform_result = coefficients[desired_scale - 1, :]
-    return wavelet_transform_result
-
-
-def apply_successive_gaussian_filters(data):
-    """
-    Apply successive Gaussian filters to the input data.
-
-    Args:
-        data (numpy.ndarray): Input data.
-
-    Returns:
-        data (numpy.ndarray): Filtered data.
-    """
-    sigma_params = [2, 2, 3, 2]
-    kernel_size_params = [10, 10, 15, 10]
-    mode_params = ["reflect", "reflect", "nearest", "reflect"]
-
-    filtered_signal = data
-
-    for sigma, kernel_size, mode in zip(sigma_params, kernel_size_params, mode_params):
-        gaussian_radius = (kernel_size - 1) / 2
-        filtered_signal = scipy.ndimage.gaussian_filter1d(
-            filtered_signal, sigma=sigma, mode=mode, radius=round(gaussian_radius)
+    # Error handling for invalid input data
+    if (
+        not isinstance(signal, np.ndarray)
+        or not isinstance(sampling_frequency, (int, float))
+        or sampling_frequency <= 0
+    ):
+        raise ValueError(
+            "Invalid input data. The 'signal' must be a NumPy array, and 'sampling_frequency' must be a positive number."
         )
+
+    if not isinstance(method, str):
+        raise ValueError("'method' must be a string.")
+
+    method = method.lower()
+
+    if method == "iir":
+        filtered_signal = _iir_highpass_filter(signal, sampling_frequency)
+    else:
+        raise ValueError(f"Unsupported filtering method: {method}")
 
     return filtered_signal
 
 
-def fir_lowpass_filter(data, fir_file=mat_filter_coefficients_file):
+def _iir_highpass_filter(signal, sampling_frequency=40):
     """
-    Apply a finite impulse response (FIR) low-pass filter to input data.
-
-    This function loads FIR filter coefficients from a given FIR file and applies
-    the filter to the input data using the `scipy.signal.filtfilt` function.
+    Apply an IIR high-pass filter to the input signal.
 
     Args:
-        data (array-like):
-            The input data to be filtered.
-        fir_file (str, optional):
-            The filename of the FIR filter coefficients MAT file.
-            Default is "FIR_2_3Hz_40.mat".
+        signal (np.ndarray): The input signal to be filtered.
+        sampling_frequency (float): The sampling frequency of the input signal.
 
     Returns:
-        filtered_signal (array):
-            The filtered signal after applying the FIR low-pass filter.
+        np.ndarray: The filtered signal.
 
+<<<<<<< HEAD
     Notes:
         The FIR filter coefficients are loaded from the specified MAT file (`fir_file`).
         The filter is applied using `scipy.signal.filtfilt`, which performs zero-phase
         filtering to avoid phase distortion.
+=======
+>>>>>>> masoud-dev
     """
-    # Remove drifts using desinged filter (remove_40Hz_drift)
-    filtered_signal = remove_40Hz_drift(data)
+    # Error handling for invalid input data
+    if (
+        not isinstance(signal, np.ndarray)
+        or not isinstance(sampling_frequency, (int, float))
+        or sampling_frequency <= 0
+    ):
+        raise ValueError(
+            "Invalid input data. The 'signal' must be a NumPy array, and 'sampling_frequency' must be a positive number."
+        )
 
-    # Load FIR filter coefficients from the specified MAT file
-    num = scipy.io.loadmat(fir_file)
+    if sampling_frequency == 40.0:
+        # The numerator coefficient vector of the high-pass filter.
+        numerator_coefficient = np.array([1, -1])
 
-    # Extract the numerator coefficients from the loaded data
-    numerator_coefficient = num["Num"][0, :]
+        # The denominator coefficient vector of the high-pass filter.
+        denominator_coefficient = np.array([1, -0.9748])
+    else:
+        # Define filter coefficients based on your specific requirements
+        pass
 
+<<<<<<< HEAD
     # Define the denominator coefficients as [1.0] to perform FIR filtering
     denominator_coefficient = np.array(
         [
@@ -203,6 +315,8 @@ def remove_40Hz_drift(signal):
     denominator_coefficient = np.array([1, -0.9748])
 
     # Filter signal using high-pass filter
+=======
+>>>>>>> masoud-dev
     filtered_signal = scipy.signal.filtfilt(
         numerator_coefficient,
         denominator_coefficient,
@@ -215,36 +329,100 @@ def remove_40Hz_drift(signal):
     return filtered_signal
 
 
-def recursive_gaussian_smoothing(noisy_data, window_lengths, sigmas):
+def apply_continuous_wavelet_transform(
+    data, scales=10, desired_scale=10, wavelet="gaus2", sampling_frequency=40
+):
     """
-    Apply recursive Gaussian smoothing to noisy data using different window lengths and sigmas.
+    Apply continuous wavelet transform to the input signal.
 
     Args:
-        noisy_data (numpy.ndarray): Input noisy data as a 1D NumPy array.
-        window_lengths (list of int): List of window lengths for each smoothing step.
-        sigmas (list of float): List of standard deviations corresponding to window_lengths.
+        data (numpy.ndarray): Input signal.
+        scales (int, optional): Number of scales for the wavelet transform. Default is 10.
+        desired_scale (int, optional): Desired scale to use in calculations. Default is 10.
+        wavelet (str, optional): Type of wavelet to use. Default is 'gaus2'.
+        sampling_frequency (float, optional): Sampling frequency of the signal. Default is 40.
 
     Returns:
+<<<<<<< HEAD
         smoothed_data (numpy.ndarray): Smoothed data after applying multiple Gaussian filters.
+=======
+        data (numpy.ndarray): Transformed signal.
+>>>>>>> masoud-dev
     """
-    smoothed_data = noisy_data.copy()
+    # Error handling for invalid input data
+    try:
+        if not isinstance(data, np.ndarray):
+            raise ValueError("Input data must be a numpy.ndarray")
+        if not isinstance(scales, int) or scales <= 0:
+            raise ValueError("Scales must be a positive integer")
+        if (
+            not isinstance(desired_scale, int)
+            or desired_scale <= 0
+            or desired_scale > scales
+        ):
+            raise ValueError(
+                "Desired scale must be a positive integer within the range of scales"
+            )
+        if not isinstance(wavelet, str):
+            raise ValueError("Wavelet must be a string")
+        if not isinstance(sampling_frequency, (int, float)) or sampling_frequency <= 0:
+            raise ValueError("Sampling frequency must be a positive number")
 
-    for window_length, sigma in zip(window_lengths, sigmas):
-        # Create the Gaussian kernel
-        x = np.arange(-window_length // 2 + 1, window_length // 2 + 1, 1)
-        gaussian_kernel = np.exp(-(x**2) / (2 * sigma**2))
+        sampling_period = 1 / sampling_frequency
+        coefficients, _ = pywt.cwt(
+            data, np.arange(1, scales + 1), wavelet, sampling_period
+        )
+        wavelet_transform_result = coefficients[desired_scale - 1, :]
 
-        # Normalize the kernel
-        gaussian_kernel /= np.sum(gaussian_kernel)
+        return wavelet_transform_result
+    except Exception as e:
+        # Handle the exception by printing an error message and returning None.
+        print(f"Error in apply_continuous_wavelet_transform: {e}")
 
-        # Apply the filter to the data using convolution
-        smoothed_data = np.convolve(smoothed_data, gaussian_kernel, mode="same")
+        return None
 
-    return smoothed_data
+
+def apply_successive_gaussian_filters(data):
+    """
+    Apply successive Gaussian filters to the input data.
+
+    Args:
+        data (numpy.ndarray): Input data.
+
+    Returns:
+        data (numpy.ndarray): Filtered data.
+    """
+    # Error handling for invalid input data
+    if not isinstance(data, np.ndarray):
+        raise ValueError("Input data must be a NumPy array.")
+
+    if data.size < 1:
+        raise ValueError("Input data must not be empty.")
+
+    sigma_params = [2, 2, 3, 2]
+    kernel_size_params = [10, 10, 15, 10]
+    mode_params = ["reflect", "reflect", "nearest", "reflect"]
+
+    filtered_signal = data
+
+    for sigma, kernel_size, mode in zip(sigma_params, kernel_size_params, mode_params):
+        if sigma <= 0 or kernel_size <= 0:
+            raise ValueError("Sigma and kernel size must be positive values.")
+        if mode not in ["reflect", "constant", "nearest"]:
+            raise ValueError(
+                "Invalid mode. Supported modes are 'reflect', 'constant', and 'nearest'."
+            )
+
+        gaussian_radius = (kernel_size - 1) / 2
+        filtered_signal = scipy.ndimage.gaussian_filter1d(
+            filtered_signal, sigma=sigma, mode=mode, radius=round(gaussian_radius)
+        )
+
+    return filtered_signal
 
 
 def calculate_envelope_activity(
-    input_signal, smooth_window=20, threshold_style=1, duration=20, plot_results=1
+    input_signal, smooth_window=20, threshold_style=1, duration=20, plot_results=0
 ):
     """
     Calculate envelope-based activity detection using the Hilbert transform.
@@ -258,13 +436,28 @@ def calculate_envelope_activity(
         smooth_window (int): Window length for smoothing the envelope (default is 20).
         threshold_style (int): Threshold selection style: 0 for manual, 1 for automatic (default is 1).
         duration (int): Minimum duration of activity to be detected (default is 20).
-        plot_results (int): Set to 1 for plotting results, 0 otherwise (default is 1).
+        plot_results (int): Set to 1 for plotting results, 0 otherwise (default is 0).
 
     Returns:
         tuple (ndarray, ndarray): A tuple containing:
         alarm (ndarray): Vector indicating active parts of the signal.
         env (ndarray): Smoothed envelope of the signal.
     """
+    # Error handling for invalid input data
+    if not isinstance(input_signal, np.ndarray):
+        raise ValueError("Input signal should be a NumPy array.")
+
+    if not isinstance(smooth_window, (int)) or smooth_window <= 0:
+        raise ValueError("The window length must be a positive integer.")
+
+    if not isinstance(threshold_style, (int)) or threshold_style <= 0:
+        raise ValueError("The threshold style must be a positive integer.")
+
+    if not isinstance(duration, (int)) or duration <= 0:
+        raise ValueError("The duration must be a positive integer.")
+
+    if not plot_results == 0 or plot_results == 1:
+        raise ValueError("The plotting results must be 0 or 1.")
 
     # Calculate the analytical signal and get the envelope
     input_signal = input_signal.flatten()
@@ -374,23 +567,35 @@ def calculate_envelope_activity(
     return alarm, env
 
 
-def find_consecutive_groups(input_array):
+def find_consecutive_groups(input_signal):
     """
     Find consecutive groups of non-zero values in an input array.
 
-    This function takes an input array `input_array`, converts it to a column vector, and identifies consecutive groups of
+    This function takes an input array `input_signal`, converts it to a column vector, and identifies consecutive groups of
     non-zero values. It returns a 2D array where each row represents a group, with the first column containing
     the start index of the group and the second column containing the end index of the group.
 
+<<<<<<< HEAD
     Parameters:
         input_array (ndarray): The input array.
+=======
+    Args:
+    input_signal (ndarray): The input signal.
+>>>>>>> masoud-dev
 
     Returns:
         ind (ndarray): A 2D array where each row represents a group of consecutive non-zero values.
             The first column contains the start index of the group, and the second column contains the end index.
     """
+    # Error handling for invalid input data
+    if not isinstance(input_signal, np.ndarray):
+        raise ValueError("Input data must be a NumPy array.")
+
+    if input_signal.size < 1:
+        raise ValueError("Input data must not be empty.")
+
     # Find indices of non-zeros elements
-    temp = np.where(input_array)[0]
+    temp = np.where(input_signal)[0]
 
     # Find where the difference between indices is greater than 1
     idx = np.where(np.diff(temp) > 1)[0]
@@ -423,6 +628,13 @@ def find_local_min_max(signal, threshold=None):
             - minima_indices: Indices of local minima in the signal.
             - maxima_indices: Indices of local maxima in the signal.
     """
+    # Error handling for invalid input data
+    if not isinstance(signal, np.ndarray):
+        raise ValueError("Input signal must be a NumPy array.")
+
+    if signal.size < 1:
+        raise ValueError("Input signal must not be empty.")
+
     # Find positive peaks in the signal
     maxima_indices, _ = scipy.signal.find_peaks(signal)
 
@@ -456,6 +668,13 @@ def identify_pulse_trains(signal):
 
             `steps`: The number of steps in the pulse train.
     """
+    # Error handling for invalid input data
+    if not isinstance(signal, np.ndarray):
+        raise ValueError("Input signal must be a NumPy array.")
+
+    if signal.size < 1:
+        raise ValueError("Input signal must not be empty.")
+
     # Initialize an empty list to store detected pulse trains.
     pulse_trains = []
 
@@ -521,15 +740,27 @@ def convert_pulse_train_to_array(pulse_train_list):
         array_representation(numpy.ndarray): A 2D array where each row represents a pulse train with the 'start' value
                                             in the first column and the 'end' value in the second column.
     """
+    # Error handling for invalid input data
+    if not isinstance(pulse_train_list, list):
+        raise ValueError("Input should be a list of pulse train dictionaries.")
+
+    # Check if the list is empty
+    if not pulse_train_list:
+        raise ValueError("Input list is empty.")
+
+    # Check that each element in the list is a dictionary with the expected keys
+    for pulse_train in pulse_train_list:
+        if not isinstance(pulse_train, dict):
+            raise ValueError("Each element in the list should be a dictionary.")
+        if "start" not in pulse_train or "end" not in pulse_train:
+            raise ValueError("Each dictionary should contain 'start' and 'end' keys.")
+
     # Initialize a 2D array with the same number of rows as pulse train dictionaries and 2 columns.
     array_representation = np.zeros((len(pulse_train_list), 2), dtype=np.uint64)
 
     # Iterate through the list of pulse train dictionaries.
     for i, pulse_train_dict in enumerate(pulse_train_list):
-        # Iterate through the list of pulse train dictionaries.
         array_representation[i, 0] = pulse_train_dict["start"]
-
-        # Iterate through the list of pulse train dictionaries.
         array_representation[i, 1] = pulse_train_dict["end"]
 
     return array_representation
@@ -550,6 +781,16 @@ def find_interval_intersection(set_a, set_b):
     Returns:
         intersection_intervals (numpy.ndarray): A new set of intervals representing the intersection of intervals from `set_a` and `set_b`.
     """
+    # Error handling for invalid input data
+    if not isinstance(set_a, np.ndarray) or not isinstance(set_b, np.ndarray):
+        raise ValueError("Both input sets should be NumPy arrays.")
+
+    # Check if the input sets have the correct structure (two columns)
+    if set_a.shape[1] != 2 or set_b.shape[1] != 2:
+        raise ValueError(
+            "Input sets should have two columns, indicating start and end points."
+        )
+
     # Get the number of intervals in each set.
     num_intervals_a = set_a.shape[0]
     num_intervals_b = set_b.shape[0]
