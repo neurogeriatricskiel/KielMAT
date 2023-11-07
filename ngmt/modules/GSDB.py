@@ -40,11 +40,13 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results=F
     """
     # Error handling for invalid input data
     if not isinstance(imu_acceleration, np.ndarray) or imu_acceleration.shape[1] != 3:
-        raise ValueError("Input accelerometer data must be a 2D numpy array with 3 columns.")
+        raise ValueError(
+            "Input accelerometer data must be a 2D numpy array with 3 columns."
+        )
 
     if not isinstance(sampling_frequency, (int, float)) or sampling_frequency <= 0:
         raise ValueError("Sampling frequency must be a positive float.")
-    
+
     if not isinstance(plot_results, bool):
         raise ValueError("Plot results must be a boolean (True or False).")
 
@@ -52,11 +54,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results=F
     GSD_Output = {}
 
     # Calculate the norm of acceleration as acceleration_norm using x, y, and z components
-    acceleration_norm = np.sqrt(
-        imu_acceleration[:, 0] ** 2
-        + imu_acceleration[:, 1] ** 2
-        + imu_acceleration[:, 2] ** 2
-    )
+    acceleration_norm = preprocessing.calculate_norm(imu_acceleration)
 
     # Resample acceleration_norm to target sampling frequency
     initial_sampling_frequency = sampling_frequency
@@ -71,10 +69,14 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results=F
     )
 
     # Remove 40Hz drift from the filtered data
-    drift_removed_acceleration = preprocessing.highpass_filter(signal = smoothed_acceleration, sampling_frequency = target_sampling_frequency, method = "iir")
+    drift_removed_acceleration = preprocessing.highpass_filter(
+        signal=smoothed_acceleration,
+        sampling_frequency=target_sampling_frequency,
+        method="iir",
+    )
 
     # Filter data using the fir low-pass filter
-    #filtered_acceleration = preprocessing.fir_lowpass_filter(drift_removed_acceleration)
+    # filtered_acceleration = preprocessing.fir_lowpass_filter(drift_removed_acceleration)
     filtered_acceleration = preprocessing.lowpass_filter(
         drift_removed_acceleration, method="fir"
     )
