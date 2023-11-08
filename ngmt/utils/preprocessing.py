@@ -98,13 +98,8 @@ def lowpass_filter(signal, method="savgol", **kwargs):
 
     Args:
         signal (numpy.ndarray): The input signal to be filtered.
-<<<<<<< HEAD
         method (str): The filter method to use ("savgol", "butter", or "fir").
         param (**kwargs): Additional keyword arguments specific to the Savitzky-Golay filter method.
-=======
-        method (str): The filter method to use ("savgol", "butter", or "fir").  Default is "savgol".
-        **kwargs: Additional keyword arguments specific to the chosen filter method.
->>>>>>> masoud-dev
 
     Returns:
         filt_signal (numpy.ndarray): The filtered signal.
@@ -215,13 +210,10 @@ def _iir_highpass_filter(signal, sampling_frequency=40):
     Returns:
         np.ndarray: The filtered signal.
 
-<<<<<<< HEAD
     Notes:
         The FIR filter coefficients are loaded from the specified MAT file (`fir_file`).
         The filter is applied using `scipy.signal.filtfilt`, which performs zero-phase
         filtering to avoid phase distortion.
-=======
->>>>>>> masoud-dev
     """
     # Error handling for invalid input data
     if (
@@ -239,60 +231,16 @@ def _iir_highpass_filter(signal, sampling_frequency=40):
 
         # The denominator coefficient vector of the high-pass filter.
         denominator_coefficient = np.array([1, -0.9748])
+
+        # Apply the FIR low-pass filter using filtfilt
+        filtered_signal = scipy.signal.filtfilt(
+            numerator_coefficient, denominator_coefficient, signal
+        )
     else:
         # Define filter coefficients based on your specific requirements
         pass
 
-<<<<<<< HEAD
-    # Define the denominator coefficients as [1.0] to perform FIR filtering
-    denominator_coefficient = np.array(
-        [
-            1.0,
-        ]
-    )
-
-    # Apply the FIR low-pass filter using filtfilt
-    filtered_signal = scipy.signal.filtfilt(
-        numerator_coefficient, denominator_coefficient, filtered_signal
-    )
-
-    # Return the filtered signal
     return filtered_signal
-
-
-def resample_interpolate(input_signal, initial_sampling_rate, target_sampling_rate):
-    """
-    Resample and interpolate a signal to a new sampling rate.
-
-    This function takes a signal `input_signal` sampled at an initial sampling rate `initial_sampling_rate`
-    and resamples it to a new sampling rate `target_sampling_rate` using linear interpolation.
-
-    Args:
-        input_signal (1darray): The input signal.
-        initial_sampling_rate (float): The initial sampling rate of the input signal.
-        target_sampling_rate (float): The desired sampling rate for the output signal.
-
-    Returns:
-        resampled_signal (1darray): The resampled and interpolated signal.
-    """
-    # Calculate the length of the input signal.
-    recording_time = len(input_signal)
-
-    # Create an array representing the time indices of the input signal.
-    x = np.arange(1, recording_time + 1)
-
-    # Create an array representing the time indices of the resampled signal.
-    xq = np.arange(1, recording_time + 1, initial_sampling_rate / target_sampling_rate)
-
-    # Create an interpolation function using linear interpolation and apply it to the data.
-    interpolator = scipy.interpolate.interp1d(
-        x, input_signal, kind="linear", axis=0, fill_value="extrapolate"
-    )
-
-    # Resample and interpolate the input signal to the desired target sampling rate.
-    resampled_signal = interpolator(xq)
-
-    return resampled_signal
 
 
 def remove_40Hz_drift(signal):
@@ -315,8 +263,6 @@ def remove_40Hz_drift(signal):
     denominator_coefficient = np.array([1, -0.9748])
 
     # Filter signal using high-pass filter
-=======
->>>>>>> masoud-dev
     filtered_signal = scipy.signal.filtfilt(
         numerator_coefficient,
         denominator_coefficient,
@@ -343,11 +289,7 @@ def apply_continuous_wavelet_transform(
         sampling_frequency (float, optional): Sampling frequency of the signal. Default is 40.
 
     Returns:
-<<<<<<< HEAD
         smoothed_data (numpy.ndarray): Smoothed data after applying multiple Gaussian filters.
-=======
-        data (numpy.ndarray): Transformed signal.
->>>>>>> masoud-dev
     """
     # Error handling for invalid input data
     try:
@@ -575,13 +517,8 @@ def find_consecutive_groups(input_signal):
     non-zero values. It returns a 2D array where each row represents a group, with the first column containing
     the start index of the group and the second column containing the end index of the group.
 
-<<<<<<< HEAD
     Parameters:
         input_array (ndarray): The input array.
-=======
-    Args:
-    input_signal (ndarray): The input signal.
->>>>>>> masoud-dev
 
     Returns:
         ind (ndarray): A 2D array where each row represents a group of consecutive non-zero values.
