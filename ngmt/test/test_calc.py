@@ -39,6 +39,7 @@ from ngmt.utils.preprocessing import (
     convert_pulse_train_to_array,
     find_interval_intersection,
     organize_and_pack_results,
+    max_peaks_between_zc,
 )
 
 
@@ -417,7 +418,7 @@ def test_calculate_envelope_activity():
         env, np.ndarray
     ), "Smoothed envelope of the signal (env) should be a NumPy array."
 
-    # Check that the filtered signal does not contain any NaN or Inf values
+    # Check that the outputs does not contain any NaN or Inf values
     assert not np.isnan(
         alarm
     ).any(), "Vector indicating active parts of the signal (alarm) contains NaN values."
@@ -794,6 +795,35 @@ def test_organize_and_pack_results():
     assert (
         peak_steps_result == expected_peak_steps
     ), "Output peak_steps_result do not match the expected peak_steps."
+
+
+# Test function for the 'max_peaks_between_zc' function
+def test_max_peaks_between_zc():
+    """
+    Test for max_peaks_between_zc function in the 'ngmt.utils.preprocessing' module.
+    """
+    # Test with inputs
+    test_signal = random_input_signal
+
+    # Call the max_peaks_between_zc function with the specified inputs
+    pks, ipks = max_peaks_between_zc(test_signal)
+
+    # Assertions to be checked:
+    # Check that the input signal is a NumPy array
+    assert isinstance(test_signal, np.ndarray), "Input signal should be a NumPy array."
+
+    # Check that the outputs are NumPy arrays
+    assert isinstance(pks, np.ndarray), "Signed max/min values between zero crossings (pks) should be a NumPy array."
+    assert isinstance(ipks, np.ndarray), "Locations of the peaks in the original vector (ipks) should be a NumPy array."
+
+    # Check that the lengths of pks and ipks are consistent
+    assert len(pks) == len(ipks), "Lengths of pks and ipks should be the same."
+
+    # Check that ipks are within the valid range of indices for the input signal
+    assert np.all(ipks >= 0) and np.all(ipks < len(test_signal)), "Peak indices (ipks) should be within the valid range for the input signal."
+
+    # Check that the values in pks correspond to the correct values in the input signal
+    assert np.all(pks == test_signal[ipks - 1]), "Values in pks should correspond to the correct values in the input signal."
 
 
 # Run the tests with pytest

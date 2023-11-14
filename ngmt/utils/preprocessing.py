@@ -297,14 +297,6 @@ def apply_continuous_wavelet_transform(
             raise ValueError("Input data must be a numpy.ndarray")
         if not isinstance(scales, int) or scales <= 0:
             raise ValueError("Scales must be a positive integer")
-        if (
-            not isinstance(desired_scale, int)
-            or desired_scale <= 0
-            or desired_scale > scales
-        ):
-            raise ValueError(
-                "Desired scale must be a positive integer within the range of scales"
-            )
         if not isinstance(wavelet, str):
             raise ValueError("Wavelet must be a string")
         if not isinstance(sampling_frequency, (int, float)) or sampling_frequency <= 0:
@@ -883,7 +875,7 @@ def max_peaks_between_zc(input_signal):
         pks (numpy.ndarray): Signed max/min values between zero crossings.
         ipks (numpy.ndarray): Locations of the peaks in the original vector.
     """
-    # Check if the input is a valid column vector.
+    # Error handling for invalid input data
     if input_signal.shape[0] == 1:
         raise ValueError("X must be a column vector")
     if input_signal.size != len(input_signal):
@@ -926,7 +918,7 @@ def max_peaks_between_zc(input_signal):
 
 
 def signal_decomposition_algorithm(
-    vertical_accelerarion_data, initial_sampling_frequency
+    vertical_accelerarion_data, initial_sampling_frequency=100
 ):
     """
     Perform the Signal Decomposition algorithm on accelerometer data.
@@ -939,6 +931,19 @@ def signal_decomposition_algorithm(
         IC_seconds (numpy.ndarray): Detected IC (Initial Contact) timings in seconds.
         FC_seconds (numpy.ndarray): Detected FC (Foot-off Contact) timings in seconds.
     """
+    # Error handling for invalid input data
+    if not isinstance(vertical_accelerarion_data, np.ndarray):
+        raise ValueError("vertical_acceleration_data must be a numpy.ndarray")
+
+    if len(vertical_accelerarion_data.shape) < 1:
+        raise ValueError("vertical_acceleration_data must have at least one dimension")
+
+    if (
+        not isinstance(initial_sampling_frequency, (int, float))
+        or initial_sampling_frequency <= 0
+    ):
+        raise ValueError("The initial sampling frequency must be a positive float.")
+
     # Define the target sampling frequency for processing.
     target_sampling_frequency = 40
 
@@ -949,19 +954,27 @@ def signal_decomposition_algorithm(
         target_sampling_frequency,
     )
 
-    # Load FIR filter designed and apply for the low SNR, impaired, asymmetric, and slow gait
-    filtering_file = scipy.io.loadmat("ngmt/utils/FIR_2_3Hz_40.mat")
+    # Load filtering coefficients from a .mat file
+    filtering_file = scipy.io.loadmat(mat_filter_coefficients_file)
     num = filtering_file["Num"][0, :]
     width_of_pad = 10000 * len(num)
-
     smoothed_vertical_accelerarion_data_padded = np.pad(
         smoothed_vertical_accelerarion_data, width_of_pad, mode="wrap"
     )
 
-    detrended_vertical_acceleration_signal = scipy.signal.filtfilt(
-        num, 1, remove_40Hz_drift(smoothed_vertical_accelerarion_data_padded)
+    # Remove 40Hz drift from the filtered data
+    drift_removed_acceleration = highpass_filter(
+        signal=smoothed_vertical_accelerarion_data_padded,
+        sampling_frequency=target_sampling_frequency,
+        method="iir",
     )
 
+    # Filter data using the fir low-pass filter
+    detrended_vertical_acceleration_signal = lowpass_filter(
+        drift_removed_acceleration, method="fir"
+    )
+
+    # Remove the padding from the detrended signal
     detrended_vertical_acceleration_signal_lpf_rmzp = (
         detrended_vertical_acceleration_signal[
             width_of_pad
@@ -970,6 +983,7 @@ def signal_decomposition_algorithm(
         ]
     )
 
+    # Integrate the detrended acceleration signal
     det_ver_acc_sig_LPInt = (
         scipy.integrate.cumulative_trapezoid(
             detrended_vertical_acceleration_signal_lpf_rmzp, initial="0"
@@ -977,15 +991,16 @@ def signal_decomposition_algorithm(
         / target_sampling_frequency
     )
 
-    # Perform a continuous wavelet transform on the siganl
-    scales = 9
-    wavelet = "gaus2"
-    sampling_period = 1 / target_sampling_frequency
-    coefficients, _ = pywt.cwt(
-        det_ver_acc_sig_LPInt, np.arange(1, scales + 1), wavelet, sampling_period
+    # Perform the continuous wavelet transform on the filtered acceleration data
+    smoothed_wavelet_result = apply_continuous_wavelet_transform(
+        det_ver_acc_sig_LPInt,
+        scales=9,
+        desired_scale=9,
+        wavelet="gaus2",
+        sampling_frequency=target_sampling_frequency,
     )
-    desired_scale = 9
-    smoothed_wavelet_result = coefficients[desired_scale - 1, :]
+
+    # Center the wavelet result around zero
     smoothed_wavelet_result = smoothed_wavelet_result - np.mean(smoothed_wavelet_result)
     smoothed_wavelet_result = np.array(smoothed_wavelet_result)
 
@@ -1002,14 +1017,15 @@ def signal_decomposition_algorithm(
     IC_seconds = indices_of_negative_peaks / target_sampling_frequency
 
     # Apply continuous wavelet transform
-    scales = 9
-    wavelet = "gaus2"
-    sampling_period = 1 / target_sampling_frequency
-    coefficients, _ = pywt.cwt(
-        smoothed_wavelet_result, np.arange(1, scales + 1), wavelet, sampling_period
+    accVLPIntCwt2 = apply_continuous_wavelet_transform(
+        smoothed_wavelet_result,
+        scales=9,
+        desired_scale=9,
+        wavelet="gaus2",
+        sampling_frequency=target_sampling_frequency,
     )
-    desired_scale = 9
-    accVLPIntCwt2 = coefficients[desired_scale - 1, :]
+
+    # Center the wavelet result around zero
     accVLPIntCwt2 = accVLPIntCwt2 - np.mean(accVLPIntCwt2)
     accVLPIntCwt2 = np.array(accVLPIntCwt2)
 
@@ -1022,7 +1038,7 @@ def signal_decomposition_algorithm(
     # Extract IC (indices of negative peaks)
     final_contact = ipks2[indx2]
 
-    # Convert IC to seconds
+    # Extract Foot-off Contact (FC) timings in seconds
     FC_seconds = final_contact / target_sampling_frequency
 
     return IC_seconds, FC_seconds

@@ -76,7 +76,6 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results=F
     )
 
     # Filter data using the fir low-pass filter
-    # filtered_acceleration = preprocessing.fir_lowpass_filter(drift_removed_acceleration)
     filtered_acceleration = preprocessing.lowpass_filter(
         drift_removed_acceleration, method="fir"
     )
