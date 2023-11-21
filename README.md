@@ -85,20 +85,11 @@ The `ChannelData` object is used to store the channel name, the channel type, th
 The full documentation can be found [here](https://neurogeriatricskiel.github.io/NGMT/).
 
 ## Installation
-After the first release, the toolbox can be installed via pip
-
-For now, the toolbox can be installed via the following steps:
-1. Clone the repository
-2. Create a virtual environment
-3. Install the requirements
-4. Install the toolbox
-
-For now please install the toolbox by cloning and install via poerty 
+The toolbox has been released on [pypi](https://pypi.org/project/ngmt/) and can be installed via pip:
 ```bash
-git clone https://github.com/neurogeriatricskiel/NGMT.git
-cd NGMT
-poetry install
+pip install ngmt
 ```
+It requires Python 3.10 or higher.
 
 ## Authors
 
