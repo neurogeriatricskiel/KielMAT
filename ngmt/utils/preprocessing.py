@@ -101,6 +101,7 @@ def lowpass_filter(signal, method="savgol", **kwargs):
         method (str): The filter method to use ("savgol", "butter", or "fir").
         param (**kwargs): Additional keyword arguments specific to the Savitzky-Golay filter method.
 
+
     Returns:
         filt_signal (numpy.ndarray): The filtered signal.
     """
@@ -239,6 +240,20 @@ def _iir_highpass_filter(signal, sampling_frequency=40):
     else:
         # Define filter coefficients based on your specific requirements
         pass
+
+    # Define the denominator coefficients as [1.0] to perform FIR filtering
+    denominator_coefficient = np.array(
+        [
+            1.0,
+        ]
+    )
+
+    # Apply the FIR low-pass filter using filtfilt
+    filtered_signal = scipy.signal.filtfilt(
+        numerator_coefficient, denominator_coefficient, filtered_signal
+    )
+
+    # Return the filtered signal
 
     return filtered_signal
 
