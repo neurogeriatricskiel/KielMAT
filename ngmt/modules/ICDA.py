@@ -6,10 +6,11 @@ import scipy.io
 import scipy.signal
 import scipy.ndimage
 from ngmt.utils import preprocessing
+from ngmt.config import cfg_colors
 
 
 def Initial_Contact_Detection(
-    imu_acceleration, gait_sequences, sampling_frequency, plot_results
+    imu_acceleration, gait_sequences, sampling_frequency=100, plot_results=False
 ):
     """
     Initial Contact Detection Algorithm (ICDA) performs Signal Decomposition
@@ -18,8 +19,8 @@ def Initial_Contact_Detection(
     Args:
         imu_acceleration (numpy.ndarray): IMU accelerometer data.
         gait_sequences (list): List of dictionaries containing gait sequence 'Start' and 'End' fields.
-        sampling_frequency (float): Sampling frequency of the accelerometer data.
-        plot_results (bool): Whether to plot the results.
+        sampling_frequency (float): Sampling frequency of the accelerometer data. Default is 100 Hz.
+        plot_results (bool): Whether to plot the results. Default is False.
 
     Returns:
         processed_output (list): List of dictionaries containing detected ICs and associated information.
@@ -86,15 +87,22 @@ def Initial_Contact_Detection(
         )
 
         # Convert ICs to sample indices
+        IC_all_signal = np.nan_to_num(IC_all_signal)
         IC_indices = np.round(IC_all_signal * sampling_frequency).astype(int)
 
         # Resample and filter accelerometer data
         accV_resampled = preprocessing.resample_interpolate(
             acc_vertical, sampling_frequency, target_sampling_frequency
         )
+        # Remove 40Hz drift from the filtered data
+        drift_removed_accV = preprocessing.highpass_filter(
+            signal=accV_resampled,
+            sampling_frequency=target_sampling_frequency,
+            method="iir",
+        )
 
         # Load filter designed for low SNR, impaired, asymmetric and slow gait
-        accV_filtered = preprocessing.fir_lowpass_filter(accV_resampled)
+        accV_filtered = preprocessing.lowpass_filter(drift_removed_accV, method="fir")
         accV_integral = (
             scipy.integrate.cumtrapz(accV_filtered) / target_sampling_frequency
         )
@@ -122,7 +130,12 @@ def Initial_Contact_Detection(
 
         # Plot results
         plt.figure(figsize=(10, 6))
-        plt.plot(np.arange(len(accV_processed)), accV_processed, "b", linewidth=3)
+        plt.plot(
+            np.arange(len(accV_processed)),
+            accV_processed,
+            linewidth=3,
+            color=cfg_colors["raw"][0],
+        )
         plt.plot(
             valid_IC_indices, accV_processed[valid_IC_indices], "ro", markersize=8
         )  # Plot ICs as red points
