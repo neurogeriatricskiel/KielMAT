@@ -13,11 +13,7 @@ ngmt\datasets\__pycache__
 
 ngmt\modules\gsd\__pycache__
 /.vscode
-<<<<<<< HEAD
 
 *.pyc
-=======
 /site/*
-
->>>>>>> b95f2456eb5ff52b4964a16bb29ff8b2d7f92f37
 /dist
