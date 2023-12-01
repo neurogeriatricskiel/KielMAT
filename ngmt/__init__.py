@@ -1,5 +1,7 @@
 # ngmt/__init__.py
 
 """
-This toolbox helps you process your motion data.
+NeuroGeriatrics Motion Toolbox
 """
+
+__version__ = "0.0.1"
