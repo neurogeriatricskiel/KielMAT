@@ -32,6 +32,9 @@ pytest = "^7.4.3"
 pywavelets = "^1.4.1"
 ipykernel = "^6.26.0"
 matplotlib = "^3.8.1"
+tpcp = "^0.27.0"
+qmt = "^0.2.4"
+vqf = "^2.0.0"
 
 [tool.poetry.extras]
 docs = ["mkdocs", "mkdocs-material", "pymdownx.superfences"]
