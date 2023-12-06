@@ -1,7 +1,7 @@
 [![build docs](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/mkdocs.yml/badge.svg)](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/mkdocs.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![GitHub issues](https://img.shields.io/github/issues/pynapple-org/pynapple)](https://github.com/pynapple-org/pynapple/issues)
-![GitHub contributors](https://img.shields.io/github/contributors/pynapple-org/pynapple)
+![GitHub issues](https://img.shields.io/github/issues-raw/neurogeriatricskiel/NGMT)
+![GitHub contributors](https://img.shields.io/github/contributors/neurogeriatricskiel/NGMT)
 
 # NGMT
 ![NeurogeriatricsLogo](docs/ng_logo.png)
