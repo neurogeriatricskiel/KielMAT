@@ -1,4 +1,4 @@
-name: Pylint
+name: lint-and-test
 
 on:
   # Trigger the workflow on push or pull request,
@@ -11,6 +11,30 @@ on:
       - main
 
 jobs:
+  test:
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+        os: [ windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies (no hmm)
+      run: |
+        python -m pip install --upgrade pip
+        pip install poetry
+        poetry config virtualenvs.in-project true
+        poetry install 
+    - name: Testing
+      run: |
+        poetry run pytest ngmt\test\test_calc.py
+
+        
   run-linters:
     name: Run linters
     runs-on: 	windows-latest
