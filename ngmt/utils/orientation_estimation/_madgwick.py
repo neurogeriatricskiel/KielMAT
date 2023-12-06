@@ -24,14 +24,14 @@ class BasicMadgwickAHRS:
     """Basic complementary Madgwick AHRS for inertial orientation estimation.
 
     Implements the basic Madgwick algorithm as proposed in [1]_, and perfoms sensor
-    fusion to estimate the current orientation of the earth frame relative to the 
+    fusion to estimate the current orientation of the earth frame relative to the
     sensor frame. The update can be based on accelerometer, gyroscope, and, if
     available, magnetometer readings.
 
 
-    .. [1]_ Madgwick, S. O. H., Harrison, A. J. L., & Vaidyanathan, R. (2011), 
-        Estimation of IMU and MARG orientation using a gradient descent algorithm, 
-        2011 IEEE International Conference on Rehabilitation Robotics, Zurich, 
+    .. [1]_ Madgwick, S. O. H., Harrison, A. J. L., & Vaidyanathan, R. (2011),
+        Estimation of IMU and MARG orientation using a gradient descent algorithm,
+        2011 IEEE International Conference on Rehabilitation Robotics, Zurich,
         Switzerland, pp. 1--7, doi: 10.1109/ICORR.2011.5975346
     """
 
@@ -40,7 +40,7 @@ class BasicMadgwickAHRS:
 
         Parameters:
         - Ts (float): The sampling time (s) of the readings.
-        - q0 (np.ndarray, optional): The initial orientation with shape (..., 4)        
+        - q0 (np.ndarray, optional): The initial orientation with shape (..., 4)
         """
         # Parse input args
         self._params = BasicMadgwickParams(**params)
@@ -74,7 +74,7 @@ class BasicMadgwickAHRS:
         Ts: Optional[float] = None,
     ):
         """Update the orientation estimate based on gyroscope and accelerometer readings.
-        
+
         Parameters:
         - gyr (np.ndarray): Input array of gyroscope readings with shape (3,).
         - acc (np.ndarray): Input array of accelerometer readings with shape (3,).
@@ -118,7 +118,7 @@ class BasicMadgwickAHRS:
         # Calculate the step
         step = J.T @ f
         if np.linalg.norm(step) != 0.0:
-            step /= np.linalg.norm(step) # type: ignore
+            step /= np.linalg.norm(step)  # type: ignore
 
         # Calculate weighted rate of change of orientation
         qDot = 0.5 * quatmultiply(q, np.asarray([0, wx, wy, wz])) - beta * step
@@ -138,7 +138,7 @@ class BasicMadgwickAHRS:
         Ts: Optional[float] = None,
     ):
         """Update the orientation estimate based on gyroscope, accelerometer and magnetometer readings.
-        
+
         Parameters:
         - gyr (np.ndarray): Input array of gyroscope readings with shape (3,).
         - acc (np.ndarray): Input array of accelerometer readings with shape (3,).
@@ -220,7 +220,7 @@ class BasicMadgwickAHRS:
         # Calculate the step
         step = J.T @ f
         if np.linalg.norm(step) != 0.0:
-            step /= np.linalg.norm(step) # type: ignore
+            step /= np.linalg.norm(step)  # type: ignore
 
         # Calculate weighted rate of change of orientation, Eqn (30)
         qDot = 0.5 * quatmultiply(q, np.asarray([0, wx, wy, wz])) - beta * step

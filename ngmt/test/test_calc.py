@@ -813,17 +813,25 @@ def test_max_peaks_between_zc():
     assert isinstance(test_signal, np.ndarray), "Input signal should be a NumPy array."
 
     # Check that the outputs are NumPy arrays
-    assert isinstance(pks, np.ndarray), "Signed max/min values between zero crossings (pks) should be a NumPy array."
-    assert isinstance(ipks, np.ndarray), "Locations of the peaks in the original vector (ipks) should be a NumPy array."
+    assert isinstance(
+        pks, np.ndarray
+    ), "Signed max/min values between zero crossings (pks) should be a NumPy array."
+    assert isinstance(
+        ipks, np.ndarray
+    ), "Locations of the peaks in the original vector (ipks) should be a NumPy array."
 
     # Check that the lengths of pks and ipks are consistent
     assert len(pks) == len(ipks), "Lengths of pks and ipks should be the same."
 
     # Check that ipks are within the valid range of indices for the input signal
-    assert np.all(ipks >= 0) and np.all(ipks < len(test_signal)), "Peak indices (ipks) should be within the valid range for the input signal."
+    assert np.all(ipks >= 0) and np.all(
+        ipks < len(test_signal)
+    ), "Peak indices (ipks) should be within the valid range for the input signal."
 
     # Check that the values in pks correspond to the correct values in the input signal
-    assert np.all(pks == test_signal[ipks - 1]), "Values in pks should correspond to the correct values in the input signal."
+    assert np.all(
+        pks == test_signal[ipks - 1]
+    ), "Values in pks should correspond to the correct values in the input signal."
 
 
 # Run the tests with pytest
