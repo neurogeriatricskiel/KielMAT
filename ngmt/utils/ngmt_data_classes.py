@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
-from typing import List, Optional
+import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+from typing import List, Optional
 
 VALID_CHANNEL_TYPES = {
     "ACCEL",
@@ -101,13 +101,53 @@ class EventData:
         name (List[str]): A list of event names.
         onset (List[float]): A list of event onset times.
         duration (List[float]): A list of event durations.
-        trial_type (Optional[List[str]]): An optional list of trial types (default is None).
     """
 
     name: List[str]
     onset: List[float]
     duration: List[float]
-    trial_type: Optional[List[str]] = None
+
+    # add empty lists for all attributes when not provided and dataclass is initiated
+    def __post_init__(self):
+        if self.name is None:
+            self.name = []
+        if self.onset is None:
+            self.onset = []
+        if self.duration is None:
+            self.duration = []
+
+    def add_events(self, name, onset, duration):
+        """
+        This function adds events to the EventData object.
+
+        Args:
+            name (str): name of the event
+            onset (float): onset of the event
+            duration (float): duration of the event
+
+        Returns:
+            self (EventData): An EventData object with the added event
+        """
+
+        # check if name is already present in the EventData object
+        if name in self.name:
+            raise ValueError(
+                f"Event with name '{name}' already present in EventData object."
+            )
+        
+        self.name.extend(name)
+        self.onset.extend(onset)
+        self.duration.extend(duration)
+
+        # sort the events by onset
+        # get indices of ascending order of onset
+        indices = np.argsort(self.onset)
+        # sort the lists by the indices
+        self.name = [self.name[i] for i in indices]
+        self.onset = [self.onset[i] for i in indices]
+        self.duration = [self.duration[i] for i in indices]
+
+        return self
 
 
 @dataclass
@@ -128,8 +168,8 @@ class RecordingData:
             channels in the data.
         start_time (float): The start time of the recording in seconds. 0 if no time
             stamps are provided from the system.
-        events (Optional[EventData]): An optional EventData object containing information
-            about events during the recording (default is None).
+        events [EventData]: An  EventData object containing information
+            about events during the recording (default is None for all inputs).
     """
 
     name: str
@@ -138,7 +178,7 @@ class RecordingData:
     times: np.ndarray
     channels: ChannelData
     start_time: float
-    events: Optional[EventData] = None
+    events: EventData = None
 
     def __post_init__(self):
         if len(self.times) != self.data.shape[0]:
@@ -189,6 +229,50 @@ class RecordingData:
         )
 
         return motion_data_clean_type
+    
+    def plot_events(self, event_types_oi, axes=None,):
+        """
+        This function plots the events of a given event type.
+
+        Parameters:
+            event_types_oi (str): event type
+
+        Returns:
+            None
+        """
+
+        # find the indices_type_oi of the events with the given event type
+        indices_type_oi = []
+        for index, event_type in enumerate(self.events.name):
+
+            # check if event_types_oi is single string or list of strings of length > 1
+            if isinstance(event_types_oi, str):
+
+                if event_type in event_types_oi:
+                    indices_type_oi.append(index)
+            
+            elif isinstance(event_types_oi, list) and len(event_types_oi) > 1:
+                    
+                    for event_type_oi in event_types_oi:
+                        if event_type_oi in event_type:
+                            indices_type_oi.append(index)
+
+                
+
+        # get the times of events
+        times_events = [self.events.onset[i] for i in indices_type_oi]
+
+        ax = axes if axes else plt.gca()
+
+        # plot the raw data
+        ax.plot(self.times, self.data, linewidth=1)
+        
+        # plot the events
+        for time_event in times_events:
+            ax.axvline(time_event, color="black", linewidth=1)
+        ax.set_xlabel('Time [s]')
+
+        return
 
 
 @dataclass
