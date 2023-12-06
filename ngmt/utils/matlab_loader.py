@@ -190,7 +190,7 @@ def convert_mat_to_dict(data, load_only_su=True):
     out = {}
     for key in data._fieldnames:
         val = getattr(data, key)
-        if isinstance(val, sio.matlab.mio5_params.mat_struct):
+        if isinstance(val, sio.matlab.mat_struct):
             if load_only_su and "SU" in val._fieldnames:
                 out[key] = {}
                 out[key]["SU"] = convert_mat_to_dict(
@@ -206,7 +206,7 @@ def convert_mat_to_dict(data, load_only_su=True):
         elif isinstance(val, (list, np.ndarray)) and len(val) == 0:
             out[key] = val
         elif isinstance(val, (list, np.ndarray)) and isinstance(
-            val[0], sio.matlab.mio5_params.mat_struct
+            val[0], sio.matlab.mat_struct
         ):
             tmp = [convert_mat_to_dict(v, load_only_su=load_only_su) for v in val]
             out[key] = tmp

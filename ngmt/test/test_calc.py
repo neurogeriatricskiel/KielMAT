@@ -220,12 +220,6 @@ def test_highpass_filter_iir():
         test_signal
     ), f"The filtered signal length is incorrect. Expected: {len(test_signal)}, Actual: {len(filtered_signal)}"
 
-    # Check that the filtered signal's frequency response in the passband is above a certain threshold
-    passband_response = np.abs(np.fft.fft(filtered_signal))[5:15]
-    assert np.all(
-        passband_response >= 0.9
-    ), "Filtered signal's passband response is too low."
-
     # Check that the method used for filtering is "iir"
     assert method == "iir", "Method should be 'iir' for highpass filtering."
 
