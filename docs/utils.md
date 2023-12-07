@@ -5,4 +5,4 @@ This part from the utilities documentation focuses on comon preprocessing steps.
 
 ::: utils.preprocessing
 
-::: utils.orientation_estimation
+::: utils.orientations_estimation._madgwick.BasicMadgwickAHRS
