@@ -23,33 +23,33 @@ def Initial_Contact_Detection(
 
     Returns:
         processed_output (list): List of dictionaries containing detected ICs and associated information.
-    
+
     Description:
         This function implements the Initial Contact Detection Algorithm (ICDA) on accelerometer data
         collected from a low back sensor. The purpose of ICD is to identify and characterize initial contacts
         within the walking bouts.
 
-        The algorithm takes accelerometer data as input, specifically the vertical acceleration component, 
-        and processes each specified gait sequence independently. The input accelerometer data should be 
-        provided as a numpy.ndarray with shape (N, 3), where N is the number of data points. 
+        The algorithm takes accelerometer data as input, specifically the vertical acceleration component,
+        and processes each specified gait sequence independently. The input accelerometer data should be
+        provided as a numpy.ndarray with shape (N, 3), where N is the number of data points.
         The three columns represent the acceleration along the x, y, and z axes. Gait sequences are provided
         as a list of dictionaries with 'Start' and 'End' fields indicating the start and end times of each sequence.
         The sampling frequency of the accelerometer data is also required.
 
-        The algorithm is applied to a pre-processed vertical acceleration signal recorded on the lower back. 
-        This signal is first detrended and then low-pass filtered. The resulting signal is numerically integrated 
+        The algorithm is applied to a pre-processed vertical acceleration signal recorded on the lower back.
+        This signal is first detrended and then low-pass filtered. The resulting signal is numerically integrated
         and differentiated using a Gaussian continuous wavelet transformation. The initial contact (IC) events
         are identified as the positive maximal peaks between successive zero-crossings.
 
     References:
-        [1] McCamley, J., et al. (2012). An enhanced estimate of initial contact and final contact instants of 
+        [1] McCamley, J., et al. (2012). An enhanced estimate of initial contact and final contact instants of
         time using lower trunk inertial sensor data. Gait & Posture, 36(2), 316-318.
-        [2] Paraschiv-Ionescu, A, et al. "Real-world speed estimation using single trunk IMU: methodological 
-        challenges for impaired gait patterns." 2020 42nd Annual International Conference of the IEEE Engineering in 
+        [2] Paraschiv-Ionescu, A, et al. "Real-world speed estimation using single trunk IMU: methodological
+        challenges for impaired gait patterns." 2020 42nd Annual International Conference of the IEEE Engineering in
         Medicine & Biology Society (EMBC). IEEE, 2020.
-        [3] Micó-Amigo, M. E., et al. (2022). Assessing real-world gait with digital technology? Validation, 
+        [3] Micó-Amigo, M. E., et al. (2022). Assessing real-world gait with digital technology? Validation,
         insights and recommendations from the Mobilise-D consortium.
-        [4] Palmerini, L., et al. (2022) Mobility recorded by wearable devices and gold standards: the Mobilise-D 
+        [4] Palmerini, L., et al. (2022) Mobility recorded by wearable devices and gold standards: the Mobilise-D
         procedure for data standardization. Scientific Data.
     """
     # Extract vertical accelerometer data

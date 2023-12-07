@@ -15,6 +15,7 @@ with pkg_resources.path(
 ) as mat_filter_coefficients_file:
     pass
 
+
 def resample_interpolate(
     input_signal, initial_sampling_frequency=100, target_sampling_frequency=40
 ):
@@ -234,6 +235,7 @@ def _iir_highpass_filter(signal, sampling_frequency=40):
     # Return the filtered signal
 
     return filtered_signal
+
 
 def apply_continuous_wavelet_transform(
     data, scales=10, desired_scale=10, wavelet="gaus2", sampling_frequency=40
