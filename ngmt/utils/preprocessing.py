@@ -15,28 +15,6 @@ with pkg_resources.path(
 ) as mat_filter_coefficients_file:
     pass
 
-
-def calculate_norm(input_data):
-    """
-    Calculate the norm of the input signal.
-
-    Args:
-    input_data (numpy.ndarray): Array containing data with three columns (x, y, z).
-
-    Returns:
-    numpy.ndarray: Array containing the calculated norm of the signal.
-    """
-    # Error handling for invalid input data
-    if input_data.shape[1] != 3:
-        raise ValueError("input_data should have three columns (x, y, z).")
-
-    signal_norm = np.sqrt(
-        input_data[:, 0] ** 2 + input_data[:, 1] ** 2 + input_data[:, 2] ** 2
-    )
-
-    return signal_norm
-
-
 def resample_interpolate(
     input_signal, initial_sampling_frequency=100, target_sampling_frequency=40
 ):
@@ -256,39 +234,6 @@ def _iir_highpass_filter(signal, sampling_frequency=40):
     # Return the filtered signal
 
     return filtered_signal
-
-
-def remove_40Hz_drift(signal):
-    """
-    Remove 40Hz drift from a signal using a high-pass filter.
-
-    This function applies a high-pass filter to remove low-frequency drift at 40Hz
-    from the input signal `signal`.
-
-    Args:
-        signal (array_like): The input signal.
-
-    Returns:
-        filtered_signal (ndarray): The filtered signal with removed drift.
-    """
-    # The numerator coefficient vector of the filter.
-    numerator_coefficient = np.array([1, -1])
-
-    # The denominator coefficient vector of the filter.
-    denominator_coefficient = np.array([1, -0.9748])
-
-    # Filter signal using high-pass filter
-    filtered_signal = scipy.signal.filtfilt(
-        numerator_coefficient,
-        denominator_coefficient,
-        signal,
-        axis=0,
-        padtype="odd",
-        padlen=3 * (max(len(numerator_coefficient), len(denominator_coefficient)) - 1),
-    )
-
-    return filtered_signal
-
 
 def apply_continuous_wavelet_transform(
     data, scales=10, desired_scale=10, wavelet="gaus2", sampling_frequency=40

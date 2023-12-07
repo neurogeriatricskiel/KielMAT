@@ -11,14 +11,17 @@ from ngmt.config import cfg_colors
 
 def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results=False):
     """
-    Perform Gait Sequence Detection (GSD) using low back accelerometer data.
+    Detects gait sequences based on identified steps in accelerometer data.
 
     Args:
         imu_acceleration (numpy.ndarray): Input accelerometer data (N, 3) for x, y, and z axes.
         sampling_frequency (float): Sampling frequency of the accelerometer data.
+        plot_results (bool, optional): If True, generates a plot showing the pre-processed acceleration data
+        and the detected gait sequences. Default is False.
 
     Returns:
-        GSD_Output (list): A list of dictionaries containing gait sequence information, including start and end times, and sampling frequency.
+        list: A list of dictionaries containing gait sequence information, including start and end times,
+        and sampling frequency.
 
     Description:
         This function performs Gait Sequence Detection (GSD) on accelerometer data
@@ -37,6 +40,21 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results=F
         If `plot_results` is set to True, the function will also generate a plot showing
         the pre-processed acceleration data and the detected gait sequences for
         visualization purposes. Default is False.
+
+    References:
+        [1] Pham et al. (2017). Validation of a Step Detection Algorithm during Straight Walking and Turning in Patients with Parkinson's
+        Disease and Older Adults Using an Inertial Measurement Unit at the Lower Back. Frontiers in Neurology, 8, 457.
+        https://doi.org/10.3389/fneur.2017.00457
+        [2] Hickey et al. (2017). Detecting free-living steps and walking bouts: validating an algorithm for macro gait analysis.
+        Physiological Measurement, 38(1). https://doi.org/10.1088/1361-6579/38/1/N1
+        [3] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer:
+        validity for children with cerebral palsy in daily life-like conditions. Journal of NeuroEngineering and Rehabilitation, 16(1), 24.
+        https://doi.org/10.1186/s12984-019-0494-z
+        [4] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using single trunk IMU: methodological challenges for impaired gait patterns.
+        Annual International Conference of the IEEE Engineering in Medicine and Biology Society. IEEE Engineering in Medicine and Biology Society.
+        https://doi.org/10.1109/EMBC44109.2020.9176281
+        [4] Micó-Amigo, et al. (2022). Assessing real-world gait with digital technology? Validation, insights and recommendations from the Mobilise-D consortium.
+        [5] Palmerini, L., et al. (2022). Mobility recorded by wearable devices and gold standards: the Mobilise-D procedure for data standardization. Scientific Data.
     """
     # Error handling for invalid input data
     if not isinstance(imu_acceleration, np.ndarray) or imu_acceleration.shape[1] != 3:
@@ -54,7 +72,7 @@ def Gait_Sequence_Detection(imu_acceleration, sampling_frequency, plot_results=F
     GSD_Output = {}
 
     # Calculate the norm of acceleration as acceleration_norm using x, y, and z components
-    acceleration_norm = preprocessing.calculate_norm(imu_acceleration)
+    acceleration_norm = np.linalg.norm(imu_acceleration, axis=1)
 
     # Resample acceleration_norm to target sampling frequency
     initial_sampling_frequency = sampling_frequency
