@@ -1,6 +1,7 @@
 # Import libraries
 import importlib.resources as pkg_resources
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.interpolate
 import scipy.signal
@@ -14,6 +15,7 @@ with pkg_resources.path(
     "ngmt.utils", "FIR_2_3Hz_40.mat"
 ) as mat_filter_coefficients_file:
     pass
+
 
 def resample_interpolate(
     input_signal, initial_sampling_frequency=100, target_sampling_frequency=40
@@ -70,15 +72,15 @@ def resample_interpolate(
     return resampled_signal
 
 
-def lowpass_filter(signal, method="savgol", **kwargs):
+def lowpass_filter(signal, method="savgol", order=None, **kwargs):
     """
     Apply a low-pass filter to the input signal.
 
     Args:
         signal (numpy.ndarray): The input signal to be filtered.
         method (str): The filter method to use ("savgol", "butter", or "fir").
-        param (**kwargs): Additional keyword arguments specific to the Savitzky-Golay filter method.
-
+        order (int): The order of the filter (applicable for "butter" method).
+        param (**kwargs): Additional keyword arguments specific to the Savitzky-Golay filter method or other methods.
 
     Returns:
         filt_signal (numpy.ndarray): The filtered signal.
@@ -116,6 +118,21 @@ def lowpass_filter(signal, method="savgol", **kwargs):
         filt_signal = scipy.signal.savgol_filter(
             signal, window_length, polynomial_order
         )
+        return filt_signal
+
+    elif method == "butter":
+        # Extract parameters specific to butterworth filter
+        cutoff_freq_hz = kwargs.get("cutoff_freq_hz", 100.0)
+        sampling_rate_hz = kwargs.get("sampling_rate_hz", 1000.0)
+
+        if order is None:
+            raise ValueError("For Butterworth filter, 'order' must be specified.")
+
+        # Apply butterworth lowpass filter
+        b, a = scipy.signal.butter(
+            order, cutoff_freq_hz, btype="low", analog=False, fs=sampling_rate_hz
+        )
+        filt_signal = scipy.signal.filtfilt(b, a, signal)
         return filt_signal
 
     elif method == "fir":
@@ -234,6 +251,7 @@ def _iir_highpass_filter(signal, sampling_frequency=40):
     # Return the filtered signal
 
     return filtered_signal
+
 
 def apply_continuous_wavelet_transform(
     data, scales=10, desired_scale=10, wavelet="gaus2", sampling_frequency=40
@@ -1002,3 +1020,65 @@ def signal_decomposition_algorithm(
     FC_seconds = final_contact / target_sampling_frequency
 
     return IC_seconds, FC_seconds
+
+
+# Function to classify activity levels based on accelerometer data
+def classify_physical_activity(
+    input_data,
+    sedentary_threshold=45,
+    light_threshold=100,
+    moderate_threshold=400,
+    epoch_duration=5,
+):
+    """
+    Classify activity levels based on processed Euclidean Norm Minus One (ENMO) values.
+
+    Args:
+        input_data (DataFrame): Input data with time index and accelerometer data (N, 3) for x, y, and z axes.
+        sedentary_threshold (float): Threshold for sedentary activity.
+        light_threshold (float): Threshold for light activity.
+        moderate_threshold (float): Threshold for moderate activity.
+        epoch_duration (int): Duration of each epoch in seconds.
+
+    Returns:
+        DataFrame: Processed data including time, averaged ENMO values base on epoch length, activity levels represented with 0 or 1.
+    """
+    # Check if input_data is a DataFrame
+    if not isinstance(input_data, pd.DataFrame):
+        raise ValueError("Input_data must be a pandas DataFrame.")
+
+    # Check if threshold values are valid numeric types
+    if not all(
+        isinstance(threshold, (int, float))
+        for threshold in [sedentary_threshold, light_threshold, moderate_threshold]
+    ):
+        raise ValueError("Threshold values must be numeric.")
+
+    # Check if epoch_duration is a positive integer
+    if not isinstance(epoch_duration, int) or epoch_duration <= 0:
+        raise ValueError("Epoch_duration must be a positive integer.")
+
+    # Group data by time in epochs and calculate the mean
+    processed_data = input_data.groupby(pd.Grouper(freq=f"{epoch_duration}S")).mean()
+
+    # Classify activity levels based on threshold values
+    processed_data["sedentary"] = (processed_data["acc"] < sedentary_threshold).astype(
+        int
+    )
+    processed_data["light"] = (
+        (sedentary_threshold <= processed_data["acc"])
+        & (processed_data["acc"] < light_threshold)
+    ).astype(int)
+    processed_data["moderate"] = (
+        (light_threshold <= processed_data["acc"])
+        & (processed_data["acc"] < moderate_threshold)
+    ).astype(int)
+    processed_data["vigorous"] = (processed_data["acc"] >= moderate_threshold).astype(
+        int
+    )
+
+    # Reset the index for the resulting DataFrame
+    processed_data.reset_index(inplace=True)
+
+    # Return a DataFrame with the time, averaged ENMO, and classes of sedentary, light, moderate and vigorous shown with 1 or 0.
+    return processed_data[["time", "acc", "sedentary", "light", "moderate", "vigorous"]]
