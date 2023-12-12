@@ -123,10 +123,30 @@ def Physical_Activity_Monitoring(
         hourly_average_data = hourly_average_data.unstack()
 
         # Plotting
-        fig, ax = plt.subplots(figsize=(10, 6))
+        fig, ax = plt.subplots(figsize=(14, 8))
 
-        # Choose the 'magma' colormap for coloring each day
-        colormap = plt.cm.get_cmap("magma", len(hourly_average_data.index))
+        # Choose the 'turbo' colormap for coloring each day
+        colormap = plt.cm.get_cmap("turbo", len(hourly_average_data.index))
+
+        # Plot thresholds
+        ax.axhline(
+            y=thresholds.get("sedentary_threshold", 45),
+            color="y",
+            linestyle="--",
+            label="Sedentary threshold",
+        )
+        ax.axhline(
+            y=thresholds.get("light_threshold", 100),
+            color="g",
+            linestyle="--",
+            label="Light physical activity threshold",
+        )
+        ax.axhline(
+            y=thresholds.get("moderate_threshold", 400),
+            color="r",
+            linestyle="--",
+            label="Moderate physical activity threshold",
+        )
 
         # Plot each day data with a different color
         for i, date in enumerate(hourly_average_data.index):
@@ -138,7 +158,7 @@ def Physical_Activity_Monitoring(
         plt.xlabel("Time (h)")
         plt.ylabel("Acceleration (mili-g)")
         plt.title("Hourly Averaged Euclidean Norm Minus One (ENMO) For Each Day")
-        plt.legend(title="Date", bbox_to_anchor=(1.05, 1), loc="upper left")
+        plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
         plt.tight_layout()
         plt.show()
 
