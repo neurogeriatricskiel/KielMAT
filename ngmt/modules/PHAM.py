@@ -134,7 +134,7 @@ def Physical_Activity_Monitoring(
             ax.plot(hourly_average_data.loc[date], label=str(date), color=color)
 
         # Customize plot appearance
-        plt.xticks(range(24), [str(i).zfill(2) + ":00" for i in range(24)])
+        plt.xticks(range(24), [str(i).zfill(2) + ":00" for i in range(24)], rotation=45)
         plt.xlabel("Time (h)")
         plt.ylabel("Acceleration (mili-g)")
         plt.title("Hourly Averaged Euclidean Norm Minus One (ENMO) For Each Day")
