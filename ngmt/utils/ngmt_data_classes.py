@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import List, Optional
+import pandas as pd
+from typing import List, Optional, Union, Sequence
 
 VALID_CHANNEL_TYPES = {
     "ACCEL",
@@ -101,22 +102,16 @@ class EventData:
         name (List[str]): A list of event names.
         onset (List[float]): A list of event onset times.
         duration (List[float]): A list of event durations.
+        event_type (Optional[Union[str, List[str]]]): A list of event types.
     """
 
-    name: List[str]
-    onset: List[float]
-    duration: List[float]
-
-    # add empty lists for all attributes when not provided and dataclass is initiated
-    def __post_init__(self):
-        if self.name is None:
-            self.name = []
-        if self.onset is None:
-            self.onset = []
-        if self.duration is None:
-            self.duration = []
-
-    def add_events(self, name, onset, duration):
+    def add_events(
+            self,
+            onset: Union[int, Sequence[int]],
+            duration: Union[int, Sequence[int]],
+            event_type: Union[str, Sequence[str]],
+            name: Optional[Union[str, Sequence[str]]]
+        ):
         """
         This function adds events to the EventData object.
 
