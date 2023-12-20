@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from typing import List, Optional, Union, Sequence
 
+# See: https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#restricted-keyword-list-for-channel-type
 VALID_CHANNEL_TYPES = {
     "ACCEL",
     "ANGACCEL",
@@ -17,6 +18,8 @@ VALID_CHANNEL_TYPES = {
     "POS",
     "VEL",
 }
+
+# See: https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#restricted-keyword-list-for-channel-component
 VALID_COMPONENT_TYPES = {"x", "y", "z", "quat_x", "quat_y", "quat_z", "quat_w", "n/a"}
 
 
