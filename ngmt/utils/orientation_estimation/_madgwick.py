@@ -25,7 +25,7 @@ class BasicMadgwickAHRS:
 
     Implements the basic Madgwick algorithm as proposed in [1]_, and perfoms sensor
     fusion to estimate the current orientation of the earth frame relative to the
-    sensor frame. The update can be based on accelerometer, gyroscope, and, if
+    sensor frame. The update is based on accelerometer, gyroscope, and, if
     available, magnetometer readings.
 
 
