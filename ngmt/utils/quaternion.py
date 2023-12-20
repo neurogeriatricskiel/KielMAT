@@ -278,3 +278,50 @@ def quatmultiply(
         # Switch channels and time axis back
         q3 = q3.T
     return q3
+
+
+def rotm2quat(
+    R: np.ndarray, scalar_first: bool = True, channels_last: bool = True
+) -> np.ndarray:
+    """Convert a 3x3 rotation matrix to a quaternion.
+
+    Source:
+    - https://github.com/dlaidig/broad/blob/6738875895e821afda12a5dd1b186092c6cff6a4/example_code/broad_utils.py#L136
+
+    Parameters:
+    - R (np.ndarray): A rotation matrix with shape (3, 3).
+    - scalar_first (bool, optional): If True, sets the first element as the scalar part.
+      If False, sets the last element as the scalar part is the last element. Default is True.
+    - channels_last (bool, optional): If True, assumes the channels are the last dimension.
+      If False, assumes the channels are the first dimension. Default is True.
+
+    Returns:
+    - np.ndarray: The quaternion corresponding to the rotation matrix.
+
+    Raises:
+    - AssertionError: If the shape of R is not (3, 3).
+
+    Notes:
+    - If q2 is None, this function performs self-multiplication (q1 * q1).
+    - The input arrays are cast to float before the computation.
+    - If channels_last is False, the input arrays are transposed to switch channels and time axis.
+    """
+    assert R.shape == (3, 3)
+
+    w_sq = (1 + R[0, 0] + R[1, 1] + R[2, 2]) / 4
+    x_sq = (1 + R[0, 0] - R[1, 1] - R[2, 2]) / 4
+    y_sq = (1 - R[0, 0] + R[1, 1] - R[2, 2]) / 4
+    z_sq = (1 - R[0, 0] - R[1, 1] + R[2, 2]) / 4
+
+    q = np.zeros((4,), float)
+    if scalar_first:
+        q[0] = np.sqrt(w_sq)
+        q[1] = np.copysign(np.sqrt(x_sq), R[2, 1] - R[1, 2])
+        q[2] = np.copysign(np.sqrt(y_sq), R[0, 2] - R[2, 0])
+        q[3] = np.copysign(np.sqrt(z_sq), R[1, 0] - R[0, 1])
+    else:
+        q[0] = np.copysign(np.sqrt(x_sq), R[2, 1] - R[1, 2])
+        q[1] = np.copysign(np.sqrt(y_sq), R[0, 2] - R[2, 0])
+        q[2] = np.copysign(np.sqrt(z_sq), R[1, 0] - R[0, 1])
+        q[3] = np.sqrt(w_sq)
+    return q
