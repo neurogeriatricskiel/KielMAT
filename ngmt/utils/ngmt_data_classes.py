@@ -109,12 +109,12 @@ class EventData:
     """
 
     def add_events(
-            self,
-            onset: Union[int, Sequence[int]],
-            duration: Union[int, Sequence[int]],
-            event_type: Union[str, Sequence[str]],
-            name: Optional[Union[str, Sequence[str]]]
-        ):
+        self,
+        onset: Union[int, Sequence[int]],
+        duration: Union[int, Sequence[int]],
+        event_type: Union[str, Sequence[str]],
+        name: Optional[Union[str, Sequence[str]]],
+    ):
         """
         This function adds events to the EventData object.
 
