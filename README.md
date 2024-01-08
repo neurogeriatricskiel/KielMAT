@@ -3,7 +3,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![GitHub issues](https://img.shields.io/github/issues-raw/neurogeriatricskiel/NGMT)
 ![GitHub contributors](https://img.shields.io/github/contributors/neurogeriatricskiel/NGMT)
-[![lint-and-test](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/pylint.yml/badge.svg)](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml)
+[![lint-and-test](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml/badge.svg)](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml)
 
 # NGMT
 ![NeurogeriatricsLogo](docs/ng_logo.png)
