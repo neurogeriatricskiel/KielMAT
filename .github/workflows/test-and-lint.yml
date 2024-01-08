@@ -35,6 +35,8 @@ jobs:
         poetry run pytest ngmt/test/test_calc.py --cov=ngmt --cov-report=xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       with:
         file: ./coverage.xml
         fail_ci_if_error: true # Optional: specify if CI should fail when Codecov runs into errors.
