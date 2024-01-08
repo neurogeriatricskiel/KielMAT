@@ -131,9 +131,6 @@ class EventData:
 
         # check if name is already present in the EventData object
         if name in self.name:
-
-
-            
             raise ValueError(
                 f"Event with name '{name}' already present in EventData object."
             )
