@@ -58,16 +58,17 @@ jobs:
       - name: Install Python dependencies
         run: pip install black
           
-      - name: Commit Black changes
+      - name: Run Black code formatter and commit changes
         run: |
           black .
-          git diff --exit-code || (
+          if [[ -n $(git diff --name-only) ]]; then
             git config --global user.name 'github-actions'
             git config --global user.email 'github-actions@github.com'
             git add -u
             git commit -m "Apply Black Formatting"
             git push
-          )
+          fi
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
