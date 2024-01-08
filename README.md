@@ -1,8 +1,9 @@
-[![lint-and-test](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/pylint.yml/badge.svg)](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml)
+[![codecov](https://codecov.io/gh/neurogeriatricskiel/NGMT/graph/badge.svg?token=L578RHZ699)](https://codecov.io/gh/neurogeriatricskiel/NGMT)
 [![build docs](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/mkdocs.yml/badge.svg)](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/mkdocs.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![GitHub issues](https://img.shields.io/github/issues-raw/neurogeriatricskiel/NGMT)
 ![GitHub contributors](https://img.shields.io/github/contributors/neurogeriatricskiel/NGMT)
+[![lint-and-test](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/pylint.yml/badge.svg)](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml)
 
 # NGMT
 ![NeurogeriatricsLogo](docs/ng_logo.png)
