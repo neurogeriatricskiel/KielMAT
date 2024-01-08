@@ -49,6 +49,7 @@ classDiagram
         onset: List[float]
         duration: List[float]
         trial_type: Optional[List[str]] = None
+        add_events()
     }
 
     class RecordingData {
@@ -59,6 +60,7 @@ classDiagram
         channels: ChannelData
         start_time: float
         pick_channel_types()
+        plot_events()
     }
 
     class MotionData {

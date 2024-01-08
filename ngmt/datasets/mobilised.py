@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from ..utils import matlab_loader as matlab_loader
-from ..utils.ngmt_data_classes import (
+from ..utils.data_classes import (
     FileInfo,
     EventData,
     ChannelData,

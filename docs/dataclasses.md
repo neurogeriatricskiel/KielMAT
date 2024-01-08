@@ -71,4 +71,4 @@ The `RecordingData` object can also contain information about events. The `Event
 
 The `ChannelData` object is used to store the channel name, the channel type, the channel units and the tracked point.
 
-::: utils.ngmt_data_classes
+::: utils.data_classes
