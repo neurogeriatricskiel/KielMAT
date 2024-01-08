@@ -24,7 +24,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies (no hmm)
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install poetry
@@ -32,12 +32,11 @@ jobs:
         poetry install 
     - name: Testing
       run: |
-        poetry run pytest ngmt\test\test_calc.py
+        poetry run pytest
         
   run-linters:
     name: Run linters
     runs-on: 	windows-latest
-
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v3
@@ -49,10 +48,20 @@ jobs:
 
       - name: Install Python dependencies
         run: pip install black
-
-      - name: Run linters
-        uses: wearerequired/lint-action@v2
-        with:
-          black: true
+          
+      - name: Commit Black changes
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          git add -u
+          git commit -m "black linting"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Run Black code formatter
+        run: black --check .
+        
+      
 
 
