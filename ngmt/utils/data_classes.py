@@ -229,7 +229,7 @@ class RecordingData:
         )
 
         return recording_data_clean_type
-    
+
     def pick_channels(self, channel_names_oi):
         """
         This function returns a trimmed version of the RecordingData
@@ -316,25 +316,23 @@ class RecordingData:
         ax.set_xlabel("Time [s]")
 
         return
-    
-    def detect_gait_sequence(self, sensor_id)
-        
+
+    def detect_gait_sequence(self, sensor_id):
         # check if sensor_id is a list of strings of length > 0
         if isinstance(sensor_id, list) and len(sensor_id) > 0:
             pass
         else:
-            raise ValueError(
-                f"sensor_id should be a list of strings of length > 0."
-            )
-        
+            raise ValueError(f"sensor_id should be a list of strings of length > 0.")
+
         # select acceleration data from recording
         acceleration_data = self.pick_channel_types(channel_type_oi="ACCEL")
         # select only lower back
-        acceleration_data_lower_back = acceleration_data.pick_channels(channel_names_oi=sensor_id)
+        acceleration_data_lower_back = acceleration_data.pick_channels(
+            channel_names_oi=sensor_id
+        )
         # get sampling frequency
         sampling_frequency = acceleration_data.sampling_frequency
 
-        
         # Use Gait_Sequence_Detection to detect gait sequence
         gait_sequences = GSDB.Gait_Sequence_Detection(
             imu_acceleration=acceleration_data_lower_back,
@@ -349,6 +347,8 @@ class RecordingData:
             event_type="gait_sequence",
             name="gait_sequence",
         )
+
+        return self
 
 
 @dataclass
