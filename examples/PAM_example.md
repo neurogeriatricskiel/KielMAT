@@ -1,8 +1,8 @@
-# PHysical Activity Monitoring (PHAM)
+# PHysical Activity Monitoring (PAM)
 
 This notebook will serve as a reference on how to use phyisical activity monitoring algortihm.
 
-The example illustrates how the physical activity monitoring (PHAM) algorithm is used to determine the intensity level of sedentary, light, moderate, and vigorous physical activities using body acceleration recorded with a triaxial accelerometer worn on the wrist. The physical activity monitoring algorithm is implemented in the main module `NGMT\ngmt\modules\PHAM.py`.
+The example illustrates how the physical activity monitoring (PAM) algorithm is used to determine the intensity level of sedentary, light, moderate, and vigorous physical activities using body acceleration recorded with a triaxial accelerometer worn on the wrist. The physical activity monitoring algorithm is implemented in the main module `NGMT\ngmt\modules\PAM.py`.
 
 The algorithm determines the intensity level of the physical activities based on the following steps. It starts by loading the input_data, which includes data with a time index along with accelerometer data (N, 3) for x, y, and z axes. The other input of the algorithm is sampling_frequency, which is in Hz, and the default value is 100. Another input of the algorithm is thresholds, which should be provided as a dictionary containing threshold values for physical activity detection. Epoch length, which is defined in seconds, is the next input of the algorithm, as shown with epoch_duration. The default value is 5 seconds. The last input of the algorithm is plot_results, which, if set to True, generates a plot showing the average Euclidean Norm Minus One (ENMO) per hour for each date. The default is True.
 
@@ -14,13 +14,13 @@ Finally, the algorithm takes the last steps to classify different levels of acti
 
 
 ## Import libraries
-The necessary libraries such as pandas, os and physical activity monitoring (PHAM) are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the 'ngmt' library and its dependencies if you haven't already.
+The necessary libraries such as pandas, os and physical activity monitoring (PAM) are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the 'ngmt' library and its dependencies if you haven't already.
 
 
 ```python
 import pandas as pd
 import numpy as np
-from ngmt.modules import PHAM
+from ngmt.modules import PAM
 import os
 ```
 
@@ -83,7 +83,7 @@ sampling_frequency = 100
 ```
 
 ## Apply the physical activity monitoring algorithm
-Now, we are running physical activity monitoring (PHAM) algorithm from main module (`NGMT.ngmt.modules.PHAM.Physical_Activity_Monitoring`). The inputs of the algorihm are as follows. The input_data, includes data with a time index along with accelerometer data (N, 3) for x, y, and z axes. The sampling_frequency is the sampling frequecy of the acceleration data which is defined in Hz, and the default value of it is 100 Hz. The next input, thresholds, are provided as a dictionary containing threshold values for physical activity detection. The epoch_duration is the epoch length in seconds and the default value is 5 seconds. The last input of the algorithm is plot_results, which, if set to True, generates a plot showing the average Euclidean Norm Minus One (ENMO) per hour for each day. The default is True.
+Now, we are running physical activity monitoring (PAM) algorithm from main module (`NGMT.ngmt.modules.PAM.Physical_Activity_Monitoring`). The inputs of the algorihm are as follows. The input_data, includes data with a time index along with accelerometer data (N, 3) for x, y, and z axes. The sampling_frequency is the sampling frequecy of the acceleration data which is defined in Hz, and the default value of it is 100 Hz. The next input, thresholds, are provided as a dictionary containing threshold values for physical activity detection. The epoch_duration is the epoch length in seconds and the default value is 5 seconds. The last input of the algorithm is plot_results, which, if set to True, generates a plot showing the average Euclidean Norm Minus One (ENMO) per hour for each day. The default is True.
 
 
 
@@ -91,7 +91,7 @@ Now, we are running physical activity monitoring (PHAM) algorithm from main modu
 
 ```python
 # Use Physical_Activity_Monitoring to classify physical activity levels
-phyam_results = PHAM.Physical_Activity_Monitoring(
+phyam_results = PAM.Physical_Activity_Monitoring(
     input_data=combined_data,
     sampling_frequency=100,
     thresholds={
@@ -106,7 +106,7 @@ phyam_results = PHAM.Physical_Activity_Monitoring(
 
 
     
-![png](PHAM_example_files/PHAM_example_6_0.png)
+![png](PAM_example_files/PAM_example_6_0.png)
     
 
 
