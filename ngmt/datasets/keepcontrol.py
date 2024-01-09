@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import os
 import sys
-from ..utils.ngmt_data_classes import (
+from ..utils.data_classes import (
     FileInfo,
     ChannelData,
     EventData,

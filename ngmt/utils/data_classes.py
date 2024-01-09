@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 from typing import List, Optional, Union, Sequence
 
+from ngmt.modules import GSDB
+
 # See: https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#restricted-keyword-list-for-channel-type
 VALID_CHANNEL_TYPES = {
     "ACCEL",
@@ -186,14 +188,14 @@ class RecordingData:
 
     def pick_channel_types(self, channel_type_oi):
         """
-        This function returns a trimmed version of the MotionData
+        This function returns a trimmed version of the RecordingData
         for a given channel type.
 
         Parameters:
             channel_type_oi (str): channel type
 
         Returns:
-            motion_data_clean_type (RecordingData): An object of class MotionData that includes
+            recording_data_clean_type (RecordingData): An object of class RecordingData that includes
                 FileInfo object with metadata from the file, a 1D numpy array
                 with time values, a list of channel names, and a 2D numpy array
                 with the time series data.
@@ -216,7 +218,7 @@ class RecordingData:
             units=[self.channels.units[index] for index in indices_type_oi],
         )
         # create a new MotionData object with the given channel type
-        motion_data_clean_type = RecordingData(
+        recording_data_clean_type = RecordingData(
             name=self.name,
             data=self.data[:, indices_type_oi],
             sampling_frequency=self.sampling_frequency,
@@ -226,7 +228,51 @@ class RecordingData:
             events=self.events,
         )
 
-        return motion_data_clean_type
+        return recording_data_clean_type
+
+    def pick_channels(self, channel_names_oi):
+        """
+        This function returns a trimmed version of the RecordingData
+        for a given channel type.
+
+        Parameters:
+            channel_names_oi (str): channel names or unique substring in channel names of interest
+
+        Returns:
+            recording_data_clean_type (RecordingData): An object of class RecordingData that includes
+                FileInfo object with metadata from the file, a 1D numpy array
+                with time values, a list of channel names, and a 2D numpy array
+                with the time series data.
+        """
+
+        # find the indices_type_oi of the channels with the given channel type
+        indices_type_oi = []
+        for index, channel_name in enumerate(self.channels.name):
+            if channel_name in channel_names_oi:
+                indices_type_oi.append(index)
+
+        # iterate through the indices_type_oi and create a new ChannelData object
+        channel_data_clean_type = ChannelData(
+            name=[self.channels.name[index] for index in indices_type_oi],
+            component=[self.channels.component[index] for index in indices_type_oi],
+            ch_type=[self.channels.ch_type[index] for index in indices_type_oi],
+            tracked_point=[
+                self.channels.tracked_point[index] for index in indices_type_oi
+            ],
+            units=[self.channels.units[index] for index in indices_type_oi],
+        )
+        # create a new MotionData object with the given channel type
+        recording_data_clean_type = RecordingData(
+            name=self.name,
+            data=self.data[:, indices_type_oi],
+            sampling_frequency=self.sampling_frequency,
+            times=self.times,
+            channels=channel_data_clean_type,
+            start_time=self.start_time,
+            events=self.events,
+        )
+
+        return recording_data_clean_type
 
     def plot_events(
         self,
@@ -270,6 +316,39 @@ class RecordingData:
         ax.set_xlabel("Time [s]")
 
         return
+
+    def detect_gait_sequence(self, sensor_id):
+        # check if sensor_id is a list of strings of length > 0
+        if isinstance(sensor_id, list) and len(sensor_id) > 0:
+            pass
+        else:
+            raise ValueError(f"sensor_id should be a list of strings of length > 0.")
+
+        # select acceleration data from recording
+        acceleration_data = self.pick_channel_types(channel_type_oi="ACCEL")
+        # select only lower back
+        acceleration_data_lower_back = acceleration_data.pick_channels(
+            channel_names_oi=sensor_id
+        )
+        # get sampling frequency
+        sampling_frequency = acceleration_data.sampling_frequency
+
+        # Use Gait_Sequence_Detection to detect gait sequence
+        gait_sequences = GSDB.Gait_Sequence_Detection(
+            imu_acceleration=acceleration_data_lower_back,
+            sampling_frequency=sampling_frequency,
+            plot_results=False,
+        )
+
+        # Add gait sequences to EventData object
+        self.events.add_events(
+            onset=gait_sequences["onset"],
+            duration=gait_sequences["duration"],
+            event_type="gait_sequence",
+            name="gait_sequence",
+        )
+
+        return self
 
 
 @dataclass

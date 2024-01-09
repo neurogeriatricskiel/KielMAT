@@ -14,3 +14,4 @@ examples/data/exDataGSDA.mat
 *.pyc
 /site/*
 /dist
+/.venv

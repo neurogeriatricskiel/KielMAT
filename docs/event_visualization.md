@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 from ngmt.modules import GSDB
 from ngmt.utils.importers import import_hasomed_imu
-from ngmt.utils.ngmt_data_classes import ChannelData, RecordingData
+from ngmt.utils.data_classes import ChannelData, RecordingData
 
 from ngmt.config import cfg_colors
 ```

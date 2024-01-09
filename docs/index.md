@@ -1,8 +1,12 @@
+[![codecov](https://codecov.io/gh/neurogeriatricskiel/NGMT/graph/badge.svg?token=L578RHZ699)](https://codecov.io/gh/neurogeriatricskiel/NGMT)
 [![build docs](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/mkdocs.yml/badge.svg)](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/mkdocs.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![GitHub issues](https://img.shields.io/github/issues-raw/neurogeriatricskiel/NGMT)
+![GitHub contributors](https://img.shields.io/github/contributors/neurogeriatricskiel/NGMT)
+[![lint-and-test](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml/badge.svg)](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml)
 
 # NGMT
-![NeurogeriatricsLogo](ng_logo.png)
+![NeurogeriatricsLogo](docs/ng_logo.png)
 
 Welcome to the NeuroGeriatricMotionToolbox (NGMT). We are a Python based toolbox for processing motion data.
 
@@ -45,6 +49,7 @@ classDiagram
         onset: List[float]
         duration: List[float]
         trial_type: Optional[List[str]] = None
+        add_events()
     }
 
     class RecordingData {
@@ -55,6 +60,7 @@ classDiagram
         channels: ChannelData
         start_time: float
         pick_channel_types()
+        plot_events()
     }
 
     class MotionData {
@@ -81,26 +87,12 @@ The `RecordingData` object can also contain information about events. The `Event
 
 The `ChannelData` object is used to store the channel name, the channel type, the channel units and the tracked point.
 
-## Documentation
-The full documentation can be found [here](https://neurogeriatricskiel.github.io/NGMT/).
-
 ## Installation
-After the first release, the toolbox can be installed via pip
-
-For now, the toolbox can be installed via the following steps:
-1. Clone the repository
-2. Create a virtual environment
-3. Install the requirements
-4. Install the toolbox
-
+The toolbox has been released on [pypi](https://pypi.org/project/ngmt/) and can be installed via pip:
 ```bash
-git clone https://github.com/neurogeriatricskiel/NGMT.git
-cd NeuroGeriatricMotionToolbox
-python -m venv venv_ngmt
-source venv_ngmt/bin/activate
-pip install -r environment.yml
-pip install -e .
+pip install ngmt
 ```
+It requires Python 3.10 or higher.
 
 ## Authors
 
