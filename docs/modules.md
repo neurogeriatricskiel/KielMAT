@@ -10,6 +10,6 @@ The Initial Contact Detection Algorithm (ICDA) performs Signal Decomposition on 
 
 ::: modules.ICDA
 
-The Physical Activity Monitoring (PHAM) module is a module that can be used to determine the intensity level of sedentary, light, moderate, and vigorous physical activities using body acceleration recorded with a triaxial accelerometer worn on the wrist.
+The Physical Activity Monitoring (PAM) module is a module that can be used to determine the intensity level of sedentary, light, moderate, and vigorous physical activities using body acceleration recorded with a triaxial accelerometer worn on the wrist.
 
-::: modules.PHAM
+::: modules.PAM

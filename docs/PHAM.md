@@ -1,8 +1,8 @@
-# PHysical Activity Monitoring (PHAM)
+# Physical Activity Monitoring (PAM)
 
 This notebook will serve as a reference on how to use phyisical activity monitoring algortihm.
 
-The example illustrates how the physical activity monitoring (PHAM) algorithm is used to determine the intensity level of sedentary, light, moderate, and vigorous physical activities using body acceleration recorded with a triaxial accelerometer worn on the wrist. The physical activity monitoring algorithm is implemented in the main module `NGMT\ngmt\modules\PHAM.py`.
+The example illustrates how the physical activity monitoring (PAM) algorithm is used to determine the intensity level of sedentary, light, moderate, and vigorous physical activities using body acceleration recorded with a triaxial accelerometer worn on the wrist. The physical activity monitoring algorithm is implemented in the main module `NGMT\ngmt\modules\PAM.py`.
 
 The algorithm determines the intensity level of the physical activities based on the following steps. It starts by loading the input_data, which includes data with a time index along with accelerometer data (N, 3) for x, y, and z axes. The other input of the algorithm is sampling_frequency, which is in Hz, and the default value is 100. Another input of the algorithm is thresholds, which should be provided as a dictionary containing threshold values for physical activity detection. Epoch length, which is defined in seconds, is the next input of the algorithm, as shown with epoch_duration. The default value is 5 seconds. The last input of the algorithm is plot_results, which, if set to True, generates a plot showing the average Euclidean Norm Minus One (ENMO) per hour for each date. The default is True.
 
@@ -12,4 +12,4 @@ The algorithm continues by classifying the intensity of the physical activities 
 
 Finally, the algorithm takes the last steps to classify different levels of activities along with the time spent on each activity level for each day. The algorithm also visualizes the averaged ENMO values for each day.
 
-::: modules.PHAM
+::: modules.PAM
