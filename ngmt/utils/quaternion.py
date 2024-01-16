@@ -283,9 +283,7 @@ def quatmultiply(
     return q3
 
 
-def rotm2quat(
-    R: np.ndarray, method: int | str = "auto"
-) -> np.ndarray:
+def rotm2quat(R: np.ndarray, method: int | str = "auto") -> np.ndarray:
     """Convert a 3x3 rotation matrix to a quaternion.
 
     Source:
@@ -320,9 +318,9 @@ def rotm2quat(
     z_sq = (1 - R[..., 0, 0] - R[..., 1, 1] + R[..., 2, 2]) / 4
 
     q = np.zeros(R.shape[:-2] + (4,), float)
-    if method == 'auto':  # use the largest value to avoid numerical problems
+    if method == "auto":  # use the largest value to avoid numerical problems
         methods = np.argmax(np.array([w_sq, x_sq, y_sq, z_sq]), axis=0)
-    elif method == 'copysign':
+    elif method == "copysign":
         q[..., 0] = np.sqrt(w_sq)
         q[..., 1] = np.copysign(np.sqrt(x_sq), R[..., 2, 1] - R[..., 1, 2])
         q[..., 2] = np.copysign(np.sqrt(y_sq), R[..., 0, 2] - R[..., 2, 0])
@@ -330,26 +328,26 @@ def rotm2quat(
     elif method not in (0, 1, 2, 3):
         raise RuntimeError('invalid method, must be "copysign", "auto", 0, 1, 2 or 3')
 
-    if method == 0 or method == 'auto':
-        ind = methods == 0 if method == 'auto' else slice(None)
+    if method == 0 or method == "auto":
+        ind = methods == 0 if method == "auto" else slice(None)
         q[ind, 0] = np.sqrt(w_sq[ind])
         q[ind, 1] = (R[ind, 2, 1] - R[ind, 1, 2]) / (4 * q[ind, 0])
         q[ind, 2] = (R[ind, 0, 2] - R[ind, 2, 0]) / (4 * q[ind, 0])
         q[ind, 3] = (R[ind, 1, 0] - R[ind, 0, 1]) / (4 * q[ind, 0])
-    if method == 1 or method == 'auto':
-        ind = methods == 1 if method == 'auto' else slice(None)
+    if method == 1 or method == "auto":
+        ind = methods == 1 if method == "auto" else slice(None)
         q[ind, 1] = np.sqrt(x_sq[ind])
         q[ind, 0] = (R[ind, 2, 1] - R[ind, 1, 2]) / (4 * q[ind, 1])
         q[ind, 2] = (R[ind, 1, 0] + R[ind, 0, 1]) / (4 * q[ind, 1])
         q[ind, 3] = (R[ind, 0, 2] + R[ind, 2, 0]) / (4 * q[ind, 1])
-    if method == 2 or method == 'auto':
-        ind = methods == 2 if method == 'auto' else slice(None)
+    if method == 2 or method == "auto":
+        ind = methods == 2 if method == "auto" else slice(None)
         q[ind, 2] = np.sqrt(y_sq[ind])
         q[ind, 0] = (R[ind, 0, 2] - R[ind, 2, 0]) / (4 * q[ind, 2])
         q[ind, 1] = (R[ind, 1, 0] + R[ind, 0, 1]) / (4 * q[ind, 2])
         q[ind, 3] = (R[ind, 2, 1] + R[ind, 1, 2]) / (4 * q[ind, 2])
-    if method == 3 or method == 'auto':
-        ind = methods == 3 if method == 'auto' else slice(None)
+    if method == 3 or method == "auto":
+        ind = methods == 3 if method == "auto" else slice(None)
         q[ind, 3] = np.sqrt(z_sq[ind])
         q[ind, 0] = (R[ind, 1, 0] - R[ind, 0, 1]) / (4 * q[ind, 3])
         q[ind, 1] = (R[ind, 0, 2] + R[ind, 2, 0]) / (4 * q[ind, 3])
@@ -358,9 +356,7 @@ def rotm2quat(
 
 
 def quat2rotm(
-    q: np.ndarray,
-    scalar_first: bool = True,
-    channels_last: bool = True
+    q: np.ndarray, scalar_first: bool = True, channels_last: bool = True
 ) -> np.ndarray:
     """
     Convert quaternion(s) to rotation matrix.
@@ -401,7 +397,7 @@ def quat2rotm(
     >>> quaternion = np.array([1.0, 0.0, 0.0, 0.0])
     >>> rotation_matrix = quat2rotm(quaternion)
     """
-    
+
     # Cast array to float
     q = np.asarray(q, float)
     assert q.shape[-1] == 4
@@ -419,13 +415,14 @@ def quat2rotm(
     R[..., 2, 2] = 1 - 2 * q[..., 1] ** 2 - 2 * q[..., 2] ** 2
     return R
 
+
 def quat2axang(q: np.ndarray) -> np.ndarray:
     """
     Convert a quaternion to axis-angle representation.
 
     Parameters:
     - q (np.ndarray): Input quaternion array of shape (..., 4).
-    
+
     Returns:
     - np.ndarray: Axis-angle representation array of shape (..., 4),
                   where the first three elements are the axis of rotation
@@ -447,7 +444,9 @@ def quat2axang(q: np.ndarray) -> np.ndarray:
     # Calculate the angle of rotation
     axang = np.zeros_like(q)
     axang[..., 3] = 2.0 * np.arccos(q[..., 0])
-    axang[..., :3] = np.where(np.sin(axang[..., 3] / 2.) > _EPS, 
-                              q[..., 1:] / np.sin(axang[..., 3] / 2.),
-                              np.array([0., 0., 1.]))
+    axang[..., :3] = np.where(
+        np.sin(axang[..., 3] / 2.0) > _EPS,
+        q[..., 1:] / np.sin(axang[..., 3] / 2.0),
+        np.array([0.0, 0.0, 1.0]),
+    )
     return axang
