@@ -1,127 +1,111 @@
-import os
 import numpy as np
-from ..utils import matlab_loader as matlab_loader
-from ..utils.data_classes import (
-    FileInfo,
-    EventData,
-    ChannelData,
-    RecordingData,
-    MotionData,
-)
+import pandas as pd
+import pathlib
+from ngmt.utils import matlab_loader
+from ngmt.utils.data_classes import NGMTRecording
 
-# Set dataset name
-_DATASET_NAME = "Mobilise-D"
 
-# Dictionary that maps sensor types to their corresponding units of measurement
-_MAP_UNITS = {
-    "Acc": "g",  # Accelerometer data: units of gravity ('g')
-    "Gyr": "deg/s",  # Gyroscope data: degrees per second ('deg/s')
-    "Mag": "microTesla",  # Magnetometer data: microteslas ('microTesla')
-    "Bar": "hPa",  # Barometer data: hectopascals ('hPa')
+# See: https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#restricted-keyword-list-for-channel-type
+MAP_CHANNEL_TYPES = {
+    "Acc": "ACCEL",
+    "Gyr": "ANGVEL",
+    "Mag": "MAGN",
+    "Bar": "BARO",
+    # "Temp": "TEMP"
 }
 
-_MAP_CHANNEL_NAMES = {"Acc": "ACCEL", "Gyr": "GYRO", "Mag": "MAGN", "Bar": "BARO"}
+MAP_CHANNEL_COMPONENTS = {
+    "Acc": ["x", "y", "z"],
+    "Gyr": ["x", "y", "z"],
+    "Mag": ["x", "y", "z"],
+    "Bar": ["n/a"],
+}
+
+# See: https://www.nature.com/articles/s41597-023-01930-9
+MAP_CHANNEL_UNITS = {
+    "Acc": "g", "Gyr": "deg/s", "Mag": "µT", "Bar": "hPa",  # "Temp": "deg C"
+}
 
 
-def load_file(file_path: str) -> RecordingData:
+def load_recording(
+        file_name: str | pathlib.Path,
+        tracking_systems: str | list[str],
+        tracked_points: str | list[str] | dict[str, str] | dict[str, list[str]]
+):
+    """Load a recording from the Mobilise-D dataset.
+    
+    Parameters
+    ----------
+    file_name: str | pathlib.Path
+        The absolute or relative path to the data file.
+    tracking_systems: str | list[str]
+        A string or list of strings of tracking systems for which data are to be returned.
+    tracked_points: str | list[str] | dict[str, str] | dict[str, list[str]]
+        Defines for which tracked points data are to be returned.
+        If a string or list of strings is provided, then these will be mapped to each requested tracking system.
+    
+    Returns
+    -------
+    _: NGMTRecording
+        An instance of the NGMTRecording dataclass.        
     """
-    Args:
-        file_path (str): Path to the data file (*.mat).
+    # Put tracking systems into a list
+    if isinstance(tracking_systems, str):
+        tracking_systems = [tracking_systems]
+    
+    # Tracked points will be a dictionary mapping
+    # each tracking system to a list of tracked points of interest
+    if isinstance(tracked_points, str):
+        tracked_points = [tracked_points]
+    if isinstance(tracked_points, list):
+        tracked_points = {tracksys: tracked_points for tracksys in tracking_systems}
+    for k, v in tracked_points.items():
+        if isinstance(v, str):
+            tracked_points[k] = [v]
+    
+    # Load data
+    data_dict = matlab_loader.load_matlab(file_name, top_level="data")
 
-    Returns:
-        RecordingData: An instance of a `RecordingData` object.
-    """
-    # Split path and filename
-    path_name, file_name = os.path.split(file_path)
-    sub_path_name, session_name = os.path.split(path_name)
-    _, sub_id = os.path.split(sub_path_name)
+    # Extract data for given tracking system
+    recording_data = dict()
+    channel_data = dict()
+    for tracksys in tracking_systems:
 
-    # Load data from the MATLAB file
-    data_dict = matlab_loader.load_matlab(file_path, top_level="data")
+        channel_data[tracksys] = {
+            "name": [], "type": [], "component": [], "tracked_point": [], 
+            "units": [], "sampling_frequency": []
+        }
 
-    # Set file info
-    file_info = FileInfo(
-        SubjectID=sub_id,
-        TaskName=session_name,
-        DatasetName=_DATASET_NAME,
-        FilePath=file_path,
-    )
+        data_arr = None
+        for tracked_point in data_dict["TimeMeasure1"]["Recording4"][tracksys].keys():
+            if tracked_point in tracked_points[tracksys]:
+                
+                for ch_type in data_dict["TimeMeasure1"]["Recording4"][tracksys][tracked_point].keys():
+                    if ch_type in MAP_CHANNEL_TYPES.keys():
+                        if data_arr is None:
+                            data_arr = data_dict["TimeMeasure1"]["Recording4"][tracksys][tracked_point][ch_type]
+                            
+                        else:
+                            data_arr = np.column_stack((data_arr, data_dict["TimeMeasure1"]["Recording4"][tracksys][tracked_point][ch_type]))
+                        channel_data[tracksys]["name"] += [f"{tracked_point}_{MAP_CHANNEL_TYPES[ch_type]}_{ch_comp}"
+                                                           for ch_comp in MAP_CHANNEL_COMPONENTS[ch_type]]
+                        channel_data[tracksys]["type"] += [ch_type for _ in range(len(MAP_CHANNEL_COMPONENTS[ch_type]))]
+                        channel_data[tracksys]["component"] += [ch_comp for ch_comp in MAP_CHANNEL_COMPONENTS[ch_type]]
+                        channel_data[tracksys]["tracked_point"] += [tracked_point for ch_comp in range(len(MAP_CHANNEL_COMPONENTS[ch_type]))]
+                        channel_data[tracksys]["units"] += [MAP_CHANNEL_UNITS[ch_type] for _ in range(len(MAP_CHANNEL_COMPONENTS[ch_type]))]
+                        channel_data[tracksys]["sampling_frequency"] += [
+                            data_dict["TimeMeasure1"]["Recording4"][tracksys][tracked_point]["Fs"][ch_type]
+                            for _ in range(len(MAP_CHANNEL_COMPONENTS[ch_type]))
+                        ]
 
-    # Load the data into a dictionary
-    data_dict = matlab_loader.load_matlab(file_name=file_path, top_level="data")
-    su_data = data_dict["TimeMeasure1"]["Recording4"]["SU"]
+        if data_arr is not None:
+            recording_data[tracksys] = pd.DataFrame(
+                data=data_arr, columns=channel_data[tracksys]["name"]
+            )
+        
+        channel_data[tracksys] = pd.DataFrame(channel_data[tracksys])
 
-    # Get data from the INDIP system
-    num_tracked_points = len(su_data.keys())
-    data = None
-    channels_dict = {
-        "name": [],
-        "component": [],
-        "ch_type": [],
-        "tracked_point": [],
-        "units": [],
-        "range": [],
-        "sampling_frequency": [],
-    }
-
-    # Loop over the tracked points
-    for i, tracked_point in zip(range(num_tracked_points), su_data.keys()):
-        # Loop over the channel types
-        for ch_type in su_data[tracked_point]["Fs"].keys():
-            # Get the corresponding sensor readings
-            readings = su_data[tracked_point][ch_type]
-
-            # Check dimensions of data array
-            if readings.ndim == 1:
-                readings = np.expand_dims(readings, axis=-1)
-
-            # Add info to channels data
-            comps = ["x", "y", "z"] if ch_type in ["Acc", "Gyr", "Mag"] else ["n/a"]
-            channels_dict["name"] += [
-                f"{tracked_point}_{_MAP_CHANNEL_NAMES[ch_type]}_{x}" for x in comps
-            ]
-            channels_dict["component"] += comps
-            channels_dict["ch_type"] += [
-                _MAP_CHANNEL_NAMES[ch_type] for _ in range(readings.shape[-1])
-            ]
-            channels_dict["tracked_point"] += [
-                tracked_point for _ in range(readings.shape[-1])
-            ]
-            channels_dict["units"] += [
-                _MAP_UNITS[ch_type] for _ in range(readings.shape[-1])
-            ]
-            channels_dict["sampling_frequency"] += [
-                su_data[tracked_point]["Fs"][ch_type] for _ in range(readings.shape[-1])
-            ]
-
-            # Add current readings to cumulative data array
-            if data is None:
-                data = readings
-            else:
-                data = np.concatenate((data, readings), axis=1)
-
-    # Generate ChannelData object
-    channel_data = ChannelData(
-        name=channels_dict["name"],
-        component=channels_dict["component"],
-        ch_type=channels_dict["ch_type"],
-        tracked_point=channels_dict["tracked_point"],
-        units=channels_dict["units"],
-        sampling_frequency=channels_dict["sampling_frequency"][0],
-    )
-
-    # Generate RecordingData object
-    recording_data = RecordingData(
-        name=f"{_DATASET_NAME}_TVS",
-        data=data,
-        sampling_frequency=channels_dict["sampling_frequency"][0],
-        times=su_data[tracked_point]["Timestamp"],
-        channels=channel_data,
-        start_time=su_data[tracked_point]["Timestamp"][0],
-    )
-
-    return MotionData(
-        data=[recording_data],
-        times=recording_data.times,
-        info=[file_info],
+    return NGMTRecording(
+        data=recording_data,
+        channels=channel_data
     )
