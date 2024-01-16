@@ -28,7 +28,7 @@ VALID_COMPONENT_TYPES = {"x", "y", "z", "quat_x", "quat_y", "quat_z", "quat_w", 
 @dataclass(kw_only=True)
 class NGMTRecording:
     """Dataclass to hold any data and associated infos for a NGMT recording.
-    
+
     Attributes:
         data (dict): The data is stored as a pandas DataFrame for each unique tracking system.
         channels (dict): The channels descriptions are stored as a pandas DataFrame for each unique tracking system.
@@ -36,12 +36,13 @@ class NGMTRecording:
         info (dict): The infos on the subject, task, and more, are stored as a nested dictionary.
         events_info (dict): The event infos are stored as a nested dictionary.
     """
+
     data: dict[str, pd.DataFrame]
     channels: dict[str, pd.DataFrame]
     info: None | dict[str, Any] = None
     events: None | dict[str, pd.DataFrame] = None
     events_info: None | dict[str, Any] = None
-    
+
 
 # @dataclass
 # class FileInfo:
