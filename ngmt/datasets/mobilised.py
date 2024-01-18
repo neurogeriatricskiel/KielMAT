@@ -39,17 +39,17 @@ def load_recording(
 
     Parameters
     ----------
-    file_name: str | pathlib.Path
+    file_name : str | pathlib.Path
         The absolute or relative path to the data file.
-    tracking_systems: str | list[str]
+    tracking_systems : str | list[str]
         A string or list of strings of tracking systems for which data are to be returned.
-    tracked_points: str | list[str] | dict[str, str] | dict[str, list[str]]
+    tracked_points : str | list[str] | dict[str, str] | dict[str, list[str]]
         Defines for which tracked points data are to be returned.
         If a string or list of strings is provided, then these will be mapped to each requested tracking system.
 
     Returns
     -------
-    _: NGMTRecording
+    _ : NGMTRecording
         An instance of the NGMTRecording dataclass.
     """
     # Put tracking systems into a list
