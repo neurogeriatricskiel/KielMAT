@@ -11,10 +11,9 @@ def main():
         tracking_systems=["imu", "omc"],
         tracked_points={
             "imu": ["pelvis", "sternum"],
-            "omc": [f"{lr}_{ap}sis" for ap in ["a", "p"] for lr in ["l", "r"]] + [
-                f"m_ster{i}" for i in range(1, 4)
-            ]
-        }
+            "omc": [f"{lr}_{ap}sis" for ap in ["a", "p"] for lr in ["l", "r"]]
+            + [f"m_ster{i}" for i in range(1, 4)],
+        },
     )
     return
 
