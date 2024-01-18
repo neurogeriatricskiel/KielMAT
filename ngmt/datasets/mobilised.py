@@ -8,7 +8,7 @@ from ngmt.utils.data_classes import NGMTRecording
 # See: https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#restricted-keyword-list-for-channel-type
 MAP_CHANNEL_TYPES = {
     "Acc": "ACCEL",
-    "Gyr": "ANGVEL",
+    "Gyr": "GYRO",
     "Mag": "MAGN",
     "Bar": "BARO",
     # "Temp": "TEMP"
