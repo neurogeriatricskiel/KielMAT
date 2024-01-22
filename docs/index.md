@@ -6,7 +6,7 @@
 [![lint-and-test](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml/badge.svg)](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml)
 
 # NGMT
-![NeurogeriatricsLogo](docs/ng_logo.png)
+![NeurogeriatricsLogo](ng_logo.png)
 
 Welcome to the NeuroGeriatricMotionToolbox (NGMT). We are a Python based toolbox for processing motion data.
 
@@ -16,6 +16,7 @@ The toolbox is aimed at a wide variety of motion researchers who want to use ope
 We have implemented a wide variety of functions to process motion data, such as:
 -   Gait sequence detection (GSD)
 -   Inital contact detection (ICD)
+-   Phisical activity monitoring (PAM)
 -   More to follow ...
 
 The idea is that various motion data can be loaded into our dedicated dataclasses which rely on principles from the [Motion-BIDS](https://bids-specification.readthedocs.io/en/latest/modality-specific-files/motion.html) standard.
