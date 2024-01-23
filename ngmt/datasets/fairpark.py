@@ -8,19 +8,18 @@ import polars as pl
 from ngmt.utils.data_classes import NGMTRecording
 
 
-SAMPLING_FREQ_HZ: float = 100.  # sampling frequency
+SAMPLING_FREQ_HZ: float = 100.0  # sampling frequency
 
-MAP_CHANNEL_UNITS = {
-    "ACCEL": "m/s^2",
-    "ANGVEL": "deg/s",
-    "MAGN": "Gauss"
-}
+MAP_CHANNEL_UNITS = {"ACCEL": "m/s^2", "ANGVEL": "deg/s", "MAGN": "Gauss"}
 
 
 def load_recording(
     file_name: str | pathlib.Path,
     tracking_systems: str | list[str] = ["imu"],
-    tracked_points: str | list[str] | dict[str, str] | dict[str, list[str]] = {"imu": "LARM"}
+    tracked_points: str
+    | list[str]
+    | dict[str, str]
+    | dict[str, list[str]] = {"imu": "LARM"},
 ) -> NGMTRecording:
     """Load a recording from the Keep Control validation study.
 
@@ -64,12 +63,20 @@ def load_recording(
         for x in ["x", "y", "z"]
     ] + ["year", "month", "day", "hour", "minute", "second"]
     df = pd.read_csv(file_name, header=None, sep=";", names=col_names)
-    timestamps = pd.to_datetime(df[["year", "month", "day", "hour", "minute", "second"]])
+    timestamps = pd.to_datetime(
+        df[["year", "month", "day", "hour", "minute", "second"]]
+    )
     df["timestamp"] = pd.date_range(
-        start=timestamps.iloc[0], periods=len(timestamps), freq=f"{int(1/SAMPLING_FREQ_HZ*1000)}ms"
+        start=timestamps.iloc[0],
+        periods=len(timestamps),
+        freq=f"{int(1/SAMPLING_FREQ_HZ*1000)}ms",
     )
     df.set_index(df["timestamp"], inplace=True, drop=True)
-    df.drop(labels=["year", "month", "day", "hour", "minute", "second", "timestamp"], axis=1, inplace=True)
+    df.drop(
+        labels=["year", "month", "day", "hour", "minute", "second", "timestamp"],
+        axis=1,
+        inplace=True,
+    )
 
     # Make the channel dictionary
     channels_dict = {
@@ -77,11 +84,14 @@ def load_recording(
         "type": [f"{s}" for s in ["ACCEL", "ANGVEL", "MAGN"] for _ in range(3)],
         "component": [f"{x}" for _ in range(3) for x in ["x", "y", "z"]],
         "tracked_point": [tracked_point for _ in range(len(df.columns))],
-        "units": [f"{MAP_CHANNEL_UNITS[s]}" for s in ["ACCEL", "ANGVEL", "MAGN"] for _ in range(3)],
-        "sampling_frequency": [SAMPLING_FREQ_HZ for _ in range(len(df.columns))]
+        "units": [
+            f"{MAP_CHANNEL_UNITS[s]}"
+            for s in ["ACCEL", "ANGVEL", "MAGN"]
+            for _ in range(3)
+        ],
+        "sampling_frequency": [SAMPLING_FREQ_HZ for _ in range(len(df.columns))],
     }
 
     return NGMTRecording(
-        data={"imu": df},
-        channels={"imu": pd.DataFrame(channels_dict)}
+        data={"imu": df}, channels={"imu": pd.DataFrame(channels_dict)}
     )
