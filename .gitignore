@@ -1,5 +1,6 @@
 # See: https://git-scm.com/docs/gitignore
 __pycache__/
+projects/
 /ngmt.egg-info
 
 my_messy_code/mytestconde.py
