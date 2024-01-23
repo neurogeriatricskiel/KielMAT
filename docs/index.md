@@ -16,7 +16,6 @@ The toolbox is aimed at a wide variety of motion researchers who want to use ope
 We have implemented a wide variety of functions to process motion data, such as:
 -   Gait sequence detection (GSD)
 -   Inital contact detection (ICD)
--   Phisical activity monitoring (PAM)
 -   More to follow ...
 
 The idea is that various motion data can be loaded into our dedicated dataclasses which rely on principles from the [Motion-BIDS](https://bids-specification.readthedocs.io/en/latest/modality-specific-files/motion.html) standard.
@@ -88,6 +87,9 @@ The `RecordingData` object can also contain information about events. The `Event
 
 The `ChannelData` object is used to store the channel name, the channel type, the channel units and the tracked point.
 
+## Documentation
+The full documentation can be found [here](https://neurogeriatricskiel.github.io/NGMT/).
+
 ## Installation
 The toolbox has been released on [pypi](https://pypi.org/project/ngmt/) and can be installed via pip:
 ```bash
@@ -98,3 +100,4 @@ It requires Python 3.10 or higher.
 ## Authors
 
 [Masoud Abedinifar](https://github.com/masoudabedinifar), [Clint Hansen](mailto:c.hansen@neurologie.uni-kiel.de), [Walter Maetzler](mailto:w.maetzler@neurologie.uni-kiel.de), [Robbin Romijnders](https://github.com/rmndrs89) & [Julius Welzel](https://github.com/JuliusWelzel)
+
