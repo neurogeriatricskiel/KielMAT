@@ -21,7 +21,7 @@ def load_recording(
     | dict[str, str]
     | dict[str, list[str]] = {"imu": "LARM"},
 ) -> NGMTRecording:
-    """Load a recording from the Keep Control validation study.
+    """Load a recording from the FAIRPARK study.
 
     Parameters
     ----------
