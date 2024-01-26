@@ -439,9 +439,9 @@ def calculate_envelope_activity(
             THR_SIG = noise + 0.50 * (
                 np.abs(threshold - noise)
             )  # Update the threshold using noise and threshold values.
-        THR_buf[
-            i
-        ] = THR_SIG  # Store the updated threshold value in the threshold buffer.
+        THR_buf[i] = (
+            THR_SIG  # Store the updated threshold value in the threshold buffer.
+        )
 
     if plot_results == 1:
         plt.figure()

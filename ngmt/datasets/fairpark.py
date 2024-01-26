@@ -16,10 +16,9 @@ MAP_CHANNEL_UNITS = {"ACCEL": "m/s^2", "ANGVEL": "deg/s", "MAGN": "Gauss"}
 def load_recording(
     file_name: str | pathlib.Path,
     tracking_systems: str | list[str] = ["imu"],
-    tracked_points: str
-    | list[str]
-    | dict[str, str]
-    | dict[str, list[str]] = {"imu": "LARM"},
+    tracked_points: str | list[str] | dict[str, str] | dict[str, list[str]] = {
+        "imu": "LARM"
+    },
 ) -> NGMTRecording:
     """Load a recording from the FAIRPARK study.
 

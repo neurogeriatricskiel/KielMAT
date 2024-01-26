@@ -1,4 +1,5 @@
 """Madgwick complementary filter"""
+
 from typing import Optional
 import numpy as np
 from dataclasses import dataclass, field
