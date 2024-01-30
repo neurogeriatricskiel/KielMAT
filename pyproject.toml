@@ -38,6 +38,7 @@ vqf = "^2.0.0"
 h5py = "^3.10.0"
 polars = "^0.20.5"
 seaborn = "^0.13.1"
+json-repair = "^0.8.0"
 
 [tool.poetry.extras]
 docs = ["mkdocs", "mkdocs-material", "pymdownx.superfences"]
