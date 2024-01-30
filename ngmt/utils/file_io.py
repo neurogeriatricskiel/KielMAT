@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 from json_repair import repair_json
 
+
 def get_unit_from_type(channel_types):
     """This function returns the unit of most common channel types automatically.
     For example ACCEL is always m/s^2, GYRO is always deg/s, MAG is always T, etc.
@@ -29,6 +30,7 @@ def get_unit_from_type(channel_types):
             units[i] = None
 
     return units
+
 
 def fix_json_file(file_path: str) -> None:
     """
