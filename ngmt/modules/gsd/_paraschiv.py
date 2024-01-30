@@ -2,80 +2,69 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import scipy.io
 import scipy.signal
-import scipy.ndimage
 from ngmt.utils import preprocessing
 from ngmt.config import cfg_colors
+
 
 class ParaschivIonescuGaitSequenceDetection:
     """
     Detects gait sequences based on identified steps in accelerometer data.
 
-    Args:
-        data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
-        sampling_frequency (float): Sampling frequency of the accelerometer data.
-        plot_results (bool, optional): If True, generates a plot showing the pre-processed acceleration data
-        and the detected gait sequences. Default is False.
+    Attributes:
+        target_sampling_freq_Hz (float): Target sampling frequency for resampling the data. Default is 40.
+        event_type (str): Type of the detected event. Default is 'gait sequence'.
+        tracking_systems (str): Tracking systems used. Default is 'SU'.
+        tracked_points (str): Tracked points on the body. Default is 'LowerBack'.
+        gait_sequences_ (pd.DataFrame): DataFrame containing gait sequence information in BIDS format.
 
-    Returns:
-        list: A list of dictionaries containing gait sequence information, including start and end times,
-        and sampling frequency.
+    Methods:
+        detect(data, sampling_freq_Hz, plot_results=False):
+            Detects gait sequences based on the input accelerometer data.
 
-    Description:
-        This function performs Gait Sequence Detection (GSD) on accelerometer data
-        collected from a low back sensor. The purpose of GSD is to identify and
-        characterize walking bouts or gait sequences within the input data.
+            Args:
+                data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
+                sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
+                plot_results (bool, optional): If True, generates a plot showing the pre-processed acceleration data
+                    and the detected gait sequences. Default is False.
 
-        The input accelerometer data should be provided as a pd.DataFrame with shape
-        (N, 3), where N is the number of data points. The three columns represent the
-        acceleration along the x, y, and z axes.
-
-        The function processes the input data through a series of signal processing steps
-        including resampling, filtering, wavelet transform, and peak detection to identify
-        gait sequences. The detected gait sequences are returned as a list of dictionaries
-        containing start and end times.
-
-        If `plot_results` is set to True, the function will also generate a plot showing
-        the pre-processed acceleration data and the detected gait sequences for
-        visualization purposes. Default is False.
+            Returns:
+                pd.DataFrame: DataFrame containing gait sequence information in BIDS format.
 
     Examples:
         Find sequences of gait in sensor signal
 
         >>> gsd = ParaschivIonescuGaitSequenceDetection()
-        >>> gsd.detect(data, sampling_freq_Hz=100, plot_results=True)
-        >>> gsd.gait_sequences_
-            gs_id  start     end
-        0   0       4.5      9.75 
-        1   1       90.225   100.525
+        >>> gait_sequences = gsd.detect(data, sampling_freq_Hz=100, plot_results=True)
+        >>> print(gait_sequences)
+              onset  duration    event_type  tracking_systems tracked_points
+        0   4.500     5.25     gait sequence      SU              LowerBack
+        1  90.225    10.30     gait sequence      SU              LowerBack
 
     References:
         [1] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer:
-        validity for children with cerebral palsy in daily life-like conditions. Journal of NeuroEngineering and Rehabilitation, 16(1), 24.
-        https://doi.org/10.1186/s12984-019-0494-z
+            validity for children with cerebral palsy in daily life-like conditions. Journal of NeuroEngineering and Rehabilitation, 16(1), 24.
+            https://doi.org/10.1186/s12984-019-0494-z
         [2] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using single trunk IMU: methodological challenges for impaired gait patterns.
-        Annual International Conference of the IEEE Engineering in Medicine and Biology Society. IEEE Engineering in Medicine and Biology Society.
-        https://doi.org/10.1109/EMBC44109.2020.9176281
+            Annual International Conference of the IEEE Engineering in Medicine and Biology Society. IEEE Engineering in Medicine and Biology Society.
+            https://doi.org/10.1109/EMBC44109.2020.9176281
     """
+
     def __init__(
         self,
         target_sampling_freq_Hz: float = 40,
-        event_type: str = 'gait sequences',
-        tracking_systems: str = 'SU',
-        tracked_points: str = 'LowerBack'
+        event_type: str = "gait sequence",
+        tracking_systems: str = "SU",
+        tracked_points: str = "LowerBack",
     ):
         self.target_sampling_freq_Hz = target_sampling_freq_Hz
         self.event_type = event_type
         self.tracking_systems = tracking_systems
         self.tracked_points = tracked_points
-        self.gait_sequences = None  # Initialize as None, will be set after gait sequence detection
+        self.gait_sequences = None  # Will be set after gait sequence detection
 
     def detect(
-        self,
-        data: pd.DataFrame,
-        sampling_freq_Hz: float,
-        plot_results: bool = False
+        self, data: pd.DataFrame, sampling_freq_Hz: float, plot_results: bool = False
     ) -> pd.DataFrame:
         """
         Detects gait sequences based on the input accelerometer data.
@@ -100,8 +89,6 @@ class ParaschivIonescuGaitSequenceDetection:
 
         if not isinstance(plot_results, bool):
             raise ValueError("Plot results must be a boolean (True or False).")
-        # Initialize the GSD_Output dictionary
-        GSD_Output = {}
 
         # Calculate the norm of acceleration
         acceleration_norm = np.linalg.norm(data, axis=1)
@@ -114,7 +101,10 @@ class ParaschivIonescuGaitSequenceDetection:
 
         # Applying low-pass Savitzky-Golay filter to smoothen the resampled data
         smoothed_acceleration = preprocessing.lowpass_filter(
-            resampled_acceleration, method="savgol", window_length=21, polynomial_order=7
+            resampled_acceleration,
+            method="savgol",
+            window_length=21,
+            polynomial_order=7,
         )
 
         # Remove 40Hz drift from the filtered data
@@ -144,12 +134,14 @@ class ParaschivIonescuGaitSequenceDetection:
         )
 
         # Perform continuous wavelet transform
-        further_smoothed_wavelet_result = preprocessing.apply_continuous_wavelet_transform(
-            smoothed_wavelet_result,
-            scales=10,
-            desired_scale=10,
-            wavelet="gaus2",
-            sampling_frequency=self.target_sampling_freq_Hz,
+        further_smoothed_wavelet_result = (
+            preprocessing.apply_continuous_wavelet_transform(
+                smoothed_wavelet_result,
+                scales=10,
+                desired_scale=10,
+                wavelet="gaus2",
+                sampling_frequency=self.target_sampling_freq_Hz,
+            )
         )
         further_smoothed_wavelet_result = further_smoothed_wavelet_result.T
 
@@ -162,7 +154,6 @@ class ParaschivIonescuGaitSequenceDetection:
         detected_activity_signal = filtered_signal
 
         # Compute the envelope of the processed acceleration data
-        envelope = []
         envelope, _ = preprocessing.calculate_envelope_activity(
             detected_activity_signal,
             int(round(self.target_sampling_freq_Hz)),
@@ -178,7 +169,10 @@ class ParaschivIonescuGaitSequenceDetection:
         if envelope.size > 0:
             index_ranges = preprocessing.find_consecutive_groups(envelope > 0)
             for j in range(len(index_ranges)):
-                if index_ranges[j, 1] - index_ranges[j, 0] <= 3 * self.target_sampling_freq_Hz:
+                if (
+                    index_ranges[j, 1] - index_ranges[j, 0]
+                    <= 3 * self.target_sampling_freq_Hz
+                ):
                     envelope[index_ranges[j, 0] : index_ranges[j, 1] + 1] = 0
                 else:
                     walking_bouts.extend(
@@ -218,7 +212,9 @@ class ParaschivIonescuGaitSequenceDetection:
             selected_signal = smoothed_wavelet_result
 
         # Detect mid-swing peaks
-        min_peaks, max_peaks = preprocessing.find_local_min_max(selected_signal, threshold)
+        min_peaks, max_peaks = preprocessing.find_local_min_max(
+            selected_signal, threshold
+        )
 
         # Find pulse trains in max_peaks and remove ones with steps less than 4
         pulse_trains_max = preprocessing.identify_pulse_trains(max_peaks)
@@ -280,7 +276,8 @@ class ParaschivIonescuGaitSequenceDetection:
 
         for j in range(filtered_walking_bouts_length):
             walking_labels[
-                filtered_walking_bouts[j]["start"] : filtered_walking_bouts[j]["end"] + 1
+                filtered_walking_bouts[j]["start"] : filtered_walking_bouts[j]["end"]
+                + 1
             ] = 1
 
         # Call the find_consecutive_groups function with the walking_labels variable
@@ -316,50 +313,56 @@ class ParaschivIonescuGaitSequenceDetection:
                         "fs": sampling_freq_Hz,
                     }
                 )
-            print("Gait sequence(s) detected.")
+            print(f"{n} gait sequence(s) detected.")
         else:
             print("No gait sequence(s) detected.")
 
         # Create a DataFrame from the gait sequence data
-        gait_sequences_ = pd.DataFrame(GSD_Output, columns=["Start", "End", "fs"])
+        gait_sequences_ = pd.DataFrame(GSD_Output)
+        gait_sequences_["onset"] = gait_sequences_["Start"]
+        gait_sequences_["duration"] = gait_sequences_["End"] - gait_sequences_["Start"]
+        gait_sequences_["event_type"] = self.event_type
+        gait_sequences_["tracking_systems"] = self.tracking_systems
+        gait_sequences_["tracked_points"] = self.tracked_points
 
-        # Reorder the columns
-        gait_sequences_ = gait_sequences_[["gs_id", "Start", "End"]]
+        # Select and reorder columns
+        gait_sequences_ = gait_sequences_[
+            ["onset", "duration", "event_type", "tracking_systems", "tracked_points"]
+        ]
 
         # Return gait_sequences_ as an output
         self.gait_sequences_ = gait_sequences_
 
         # Plot results if set to true
         if plot_results:
-            plt.figure(figsize=(10, 6))
+            plt.figure(figsize=(22, 14))
             plt.plot(
-                np.arange(len(detected_activity_signal)) / (60 * self.target_sampling_freq_Hz),
+                np.arange(len(detected_activity_signal))
+                / (60 * self.target_sampling_freq_Hz),
                 detected_activity_signal,
-                "b",
-                linewidth=3,
+                label="Pre-processed acceleration signal",
             )
-
-            plt.title("Detected activity and walking labels", fontsize=20)
-            plt.xlabel("Time (minutes)", fontsize=20)
-
-            plt.ylabel("Acceleration (g)", fontsize=20)
-
-            # Fill the area between start and end times
-            for sequence in GSD_Output:
-                start_time = sequence["Start"] / 60  # Convert to minutes
-                end_time = sequence["End"] / 60  # Convert to minutes
-                plt.axvline(start_time, color="g")
-                plt.axvline(end_time, color="r")
-                plt.axvspan(start_time, end_time, facecolor="grey", alpha=0.8)
-
+            plt.title("Detected gait sequences", fontsize=20)
             plt.legend(
                 [
                     "Pre-processed acceleration signal",
                 ],
                 fontsize=16,
             )
+            plt.xlabel("Time (minutes)", fontsize=20)
+            plt.ylabel("Acceleration (g)", fontsize=20)
 
-            plt.grid(True)
+            # Fill the area between start and end times
+            for index, sequence in gait_sequences_.iterrows():
+                onset = sequence["onset"] / 60  # Convert to minutes
+                end_time = (
+                    sequence["onset"] + sequence["duration"]
+                ) / 60  # Convert to minutes
+                plt.axvline(onset, color="g")
+                plt.axvspan(onset, end_time, facecolor="grey", alpha=0.8)
+
+            plt.legend(loc="best")
+            plt.grid(visible=None, which="both", axis="both")
             plt.xticks(fontsize=20)
             plt.yticks(fontsize=20)
             plt.show()
