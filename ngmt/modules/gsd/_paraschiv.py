@@ -343,12 +343,6 @@ class ParaschivIonescuGaitSequenceDetection:
                 label="Pre-processed acceleration signal",
             )
             plt.title("Detected gait sequences", fontsize=20)
-            plt.legend(
-                [
-                    "Pre-processed acceleration signal",
-                ],
-                fontsize=16,
-            )
             plt.xlabel("Time (minutes)", fontsize=20)
             plt.ylabel("Acceleration (g)", fontsize=20)
 
@@ -360,8 +354,11 @@ class ParaschivIonescuGaitSequenceDetection:
                 ) / 60  # Convert to minutes
                 plt.axvline(onset, color="g")
                 plt.axvspan(onset, end_time, facecolor="grey", alpha=0.8)
-
-            plt.legend(loc="best")
+            plt.legend(
+                ["Pre-processed acceleration signal", "Gait onset", "Gait duration"],
+                fontsize=20,
+                loc="best",
+            )
             plt.grid(visible=None, which="both", axis="both")
             plt.xticks(fontsize=20)
             plt.yticks(fontsize=20)
