@@ -1,5 +1,11 @@
 ---
 title: "NGMT: NeuroGeriatric Motion Toolbox - An Open-Source Python Toolbox to Analyze Neurological Motion Data from Various Recording Modalities"  
+tags:
+  - Python
+  - Motion capture
+  - Neurology
+  - Accelerometer
+  - Gyroscope
 authors:
   - name: Masoud Abedinifar^[corresponding author]   
     orcid: 0000-0002-4050-9835  
