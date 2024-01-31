@@ -24,4 +24,6 @@ bibliography: references.bib
 ---
 
 # Summary
-The analysis of human movement is a critical part of the neurological assessment.
+The analysis of human movement is a critical part of the neurological assessment [@micoamigo_2023].
+
+# References
