@@ -44,21 +44,21 @@ class NGMTRecording:
     events_info: None | dict[str, Any] = None
 
 
-    def add_events(self, tracking_sys: str, new_events: pd.DataFrame) -> None:
+    def add_events(self, tracking_system: str, new_events: pd.DataFrame) -> None:
         """Add events to the recording for a specific tracking system.
 
         Args:
-            tracking_sys (str): Tracking system for which events are to be added.
+            tracking_system (str): Tracking system for which events are to be added.
             new_events (pd.DataFrame): Events to be added in BIDS format.
         """
         if self.events is None:
             self.events = {}
         
-        if tracking_sys not in self.events:
-            self.events[tracking_sys] = new_events
+        if tracking_system not in self.events:
+            self.events[tracking_system] = new_events
         else:
-            existing_events = self.events[tracking_sys]
-            self.events[tracking_sys] = pd.concat([existing_events, new_events], ignore_index=True)
+            existing_events = self.events[tracking_system]
+            self.events[tracking_system] = pd.concat([existing_events, new_events], ignore_index=True)
 
 # @dataclass
 # class FileInfo:

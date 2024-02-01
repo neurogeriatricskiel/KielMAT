@@ -6,7 +6,6 @@ import scipy.signal
 from ngmt.utils import preprocessing
 from ngmt.config import cfg_colors
 
-
 class ParaschivIonescuGaitSequenceDetection:
     """
     Detects gait sequences based on identified steps in accelerometer data.
@@ -52,7 +51,7 @@ class ParaschivIonescuGaitSequenceDetection:
 
     def __init__(
         self,
-        target_sampling_freq_Hz: float = 40,
+        target_sampling_freq_Hz: float = 40.,
         event_type: str = "gait sequence",
         tracking_systems: str = "SU",
         tracked_points: str = "LowerBack",
@@ -61,7 +60,7 @@ class ParaschivIonescuGaitSequenceDetection:
         self.event_type = event_type
         self.tracking_systems = tracking_systems
         self.tracked_points = tracked_points
-        self.gait_sequences = None  # Will be set after gait sequence detection
+        self.gait_sequences_ = None
 
     def detect(
         self, data: pd.DataFrame, sampling_freq_Hz: float, plot_results: bool = False
@@ -364,4 +363,4 @@ class ParaschivIonescuGaitSequenceDetection:
             plt.yticks(fontsize=20)
             plt.show()
 
-            return self
+        return self
