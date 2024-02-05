@@ -12,7 +12,7 @@ The algorithm continues by classifying the intensity of the physical activities 
 
 Finally, the algorithm takes the last steps to classify different levels of activities along with the time spent on each activity level for each day. The algorithm also visualizes the averaged ENMO values for each day.
 
-::: modules.PAM
+::: modules.pam._pam
 =======
 
 ## Import libraries
