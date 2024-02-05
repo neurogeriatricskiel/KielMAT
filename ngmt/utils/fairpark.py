@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 
+
 def load_fairpark_data(data_folder_path):
     # Create an empty DataFrame to store the combined data
     combined_data = pd.DataFrame()

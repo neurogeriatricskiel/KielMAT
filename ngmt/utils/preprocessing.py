@@ -229,7 +229,14 @@ def _iir_highpass_filter(signal, sampling_frequency=40):
         denominator_coefficient = np.array([1, -0.9748])
 
         # Apply the FIR low-pass filter using filtfilt
-        filtered_signal = scipy.signal.filtfilt(numerator_coefficient, denominator_coefficient, signal, axis=0,        padtype="odd", padlen=3 * (max(len(numerator_coefficient), len(denominator_coefficient)) - 1),
+        filtered_signal = scipy.signal.filtfilt(
+            numerator_coefficient,
+            denominator_coefficient,
+            signal,
+            axis=0,
+            padtype="odd",
+            padlen=3
+            * (max(len(numerator_coefficient), len(denominator_coefficient)) - 1),
         )
     else:
         # Define filter coefficients based on your specific requirements
@@ -531,7 +538,7 @@ def find_local_min_max(signal, threshold=None):
 
     # Find positive peaks in the signal
     maxima_indices, _ = scipy.signal.find_peaks(signal)
-    
+
     # Find negative peaks in the inverted signal
     minima_indices, _ = scipy.signal.find_peaks(-signal)
 
@@ -1068,4 +1075,6 @@ def classify_physical_activity(
     processed_data.reset_index(inplace=True)
 
     # Return a DataFrame with the time, averaged ENMO, and classes of sedentary, light, moderate and vigorous shown with 1 or 0.
-    return processed_data[["time", "enmo", "sedentary", "light", "moderate", "vigorous"]]
+    return processed_data[
+        ["time", "enmo", "sedentary", "light", "moderate", "vigorous"]
+    ]
