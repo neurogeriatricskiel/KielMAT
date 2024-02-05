@@ -221,7 +221,7 @@ def _iir_highpass_filter(signal, sampling_frequency=40):
             "Invalid input data. The 'signal' must be a NumPy array, and 'sampling_frequency' must be a positive number."
         )
 
-    if sampling_frequency == 40.0:
+    if sampling_frequency == 40:
         # The numerator coefficient vector of the high-pass filter.
         numerator_coefficient = np.array([1, -1])
 
@@ -229,24 +229,11 @@ def _iir_highpass_filter(signal, sampling_frequency=40):
         denominator_coefficient = np.array([1, -0.9748])
 
         # Apply the FIR low-pass filter using filtfilt
-        filtered_signal = scipy.signal.filtfilt(
-            numerator_coefficient, denominator_coefficient, signal
+        filtered_signal = scipy.signal.filtfilt(numerator_coefficient, denominator_coefficient, signal, axis=0,        padtype="odd", padlen=3 * (max(len(numerator_coefficient), len(denominator_coefficient)) - 1),
         )
     else:
         # Define filter coefficients based on your specific requirements
         pass
-
-    # Define the denominator coefficients as [1.0] to perform FIR filtering
-    denominator_coefficient = np.array(
-        [
-            1.0,
-        ]
-    )
-
-    # Apply the FIR low-pass filter using filtfilt
-    filtered_signal = scipy.signal.filtfilt(
-        numerator_coefficient, denominator_coefficient, filtered_signal
-    )
 
     # Return the filtered signal
 
@@ -544,7 +531,7 @@ def find_local_min_max(signal, threshold=None):
 
     # Find positive peaks in the signal
     maxima_indices, _ = scipy.signal.find_peaks(signal)
-
+    
     # Find negative peaks in the inverted signal
     minima_indices, _ = scipy.signal.find_peaks(-signal)
 
@@ -1062,18 +1049,18 @@ def classify_physical_activity(
     processed_data = input_data.groupby(pd.Grouper(freq=f"{epoch_duration}S")).mean()
 
     # Classify activity levels based on threshold values
-    processed_data["sedentary"] = (processed_data["acc"] < sedentary_threshold).astype(
+    processed_data["sedentary"] = (processed_data["enmo"] < sedentary_threshold).astype(
         int
     )
     processed_data["light"] = (
-        (sedentary_threshold <= processed_data["acc"])
-        & (processed_data["acc"] < light_threshold)
+        (sedentary_threshold <= processed_data["enmo"])
+        & (processed_data["enmo"] < light_threshold)
     ).astype(int)
     processed_data["moderate"] = (
-        (light_threshold <= processed_data["acc"])
-        & (processed_data["acc"] < moderate_threshold)
+        (light_threshold <= processed_data["enmo"])
+        & (processed_data["enmo"] < moderate_threshold)
     ).astype(int)
-    processed_data["vigorous"] = (processed_data["acc"] >= moderate_threshold).astype(
+    processed_data["vigorous"] = (processed_data["enmo"] >= moderate_threshold).astype(
         int
     )
 
@@ -1081,4 +1068,4 @@ def classify_physical_activity(
     processed_data.reset_index(inplace=True)
 
     # Return a DataFrame with the time, averaged ENMO, and classes of sedentary, light, moderate and vigorous shown with 1 or 0.
-    return processed_data[["time", "acc", "sedentary", "light", "moderate", "vigorous"]]
+    return processed_data[["time", "enmo", "sedentary", "light", "moderate", "vigorous"]]
