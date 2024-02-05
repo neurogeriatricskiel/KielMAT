@@ -8,7 +8,7 @@ def load_fairpark_data(data_folder_path):
     # Iterate over all CSV files in the folder for each subject
     for file_name in os.listdir(data_folder_path):
         # Check if the file is a CSV file and has the expected prefix
-        if file_name.endswith(".csv") and file_name.startswith("sub-001_imu-LARM_"):
+        if file_name.endswith(".csv") and file_name.startswith("sub-023_imu-LARM_"):
             # Construct the full path to the CSV file
             file_path = os.path.join(data_folder_path, file_name)
 

@@ -1049,18 +1049,18 @@ def classify_physical_activity(
     processed_data = input_data.groupby(pd.Grouper(freq=f"{epoch_duration}S")).mean()
 
     # Classify activity levels based on threshold values
-    processed_data["sedentary"] = (processed_data["acc"] < sedentary_threshold).astype(
+    processed_data["sedentary"] = (processed_data["enmo"] < sedentary_threshold).astype(
         int
     )
     processed_data["light"] = (
-        (sedentary_threshold <= processed_data["acc"])
-        & (processed_data["acc"] < light_threshold)
+        (sedentary_threshold <= processed_data["enmo"])
+        & (processed_data["enmo"] < light_threshold)
     ).astype(int)
     processed_data["moderate"] = (
-        (light_threshold <= processed_data["acc"])
-        & (processed_data["acc"] < moderate_threshold)
+        (light_threshold <= processed_data["enmo"])
+        & (processed_data["enmo"] < moderate_threshold)
     ).astype(int)
-    processed_data["vigorous"] = (processed_data["acc"] >= moderate_threshold).astype(
+    processed_data["vigorous"] = (processed_data["enmo"] >= moderate_threshold).astype(
         int
     )
 
@@ -1068,4 +1068,4 @@ def classify_physical_activity(
     processed_data.reset_index(inplace=True)
 
     # Return a DataFrame with the time, averaged ENMO, and classes of sedentary, light, moderate and vigorous shown with 1 or 0.
-    return processed_data[["time", "acc", "sedentary", "light", "moderate", "vigorous"]]
+    return processed_data[["time", "enmo", "sedentary", "light", "moderate", "vigorous"]]
