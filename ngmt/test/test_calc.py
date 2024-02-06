@@ -1810,7 +1810,7 @@ def test_classify_physical_activity_valid_data():
     # Create a DataFrame with valid accelerometer data
     data = {
         "time": pd.date_range(start="2024-01-01", periods=100, freq="S"),
-        "acc": np.random.rand(100) * 500,  # Random accelerometer values
+        "enmo": np.random.rand(100) * 500,  # Random accelerometer values
     }
     input_data = pd.DataFrame(data)
 
@@ -1824,7 +1824,7 @@ def test_classify_physical_activity_valid_data():
     assert isinstance(result, pd.DataFrame), "Output should be a pandas DataFrame."
     assert set(result.columns) == {
         "time",
-        "acc",
+        "enmo",
         "sedentary",
         "light",
         "moderate",
@@ -1875,7 +1875,7 @@ def test_classify_physical_activity_valid_data():
     # Create a DataFrame with valid accelerometer data
     data = {
         "time": pd.date_range(start="2024-01-01", periods=100, freq="S"),
-        "acc": np.random.rand(100) * 500,  # Random accelerometer values
+        "enmo": np.random.rand(100) * 500,  # Random accelerometer values
     }
     input_data = pd.DataFrame(data)
 
@@ -1894,7 +1894,7 @@ def test_classify_physical_activity_invalid_threshold_values():
     invalid_data = pd.DataFrame(
         {
             "time": pd.date_range(start="2024-01-01", periods=100, freq="S"),
-            "acc": np.random.rand(100) * 500,
+            "enmo": np.random.rand(100) * 500,
         }
     )
 
@@ -1908,286 +1908,13 @@ def test_classify_physical_activity_negative_epoch_duration():
     invalid_data = pd.DataFrame(
         {
             "time": pd.date_range(start="2024-01-01", periods=100, freq="S"),
-            "acc": np.random.rand(100) * 500,
+            "enmo": np.random.rand(100) * 500,
         }
     )
 
     # Call the classify_physical_activity function with negative epoch_duration
     with pytest.raises(ValueError, match="Epoch_duration must be a positive integer."):
         classify_physical_activity(invalid_data, epoch_duration=-5)
-
-
-# Test function for the 'lowpass_filter' function
-def test_lowpass_filter():
-    """
-    Test for lowpass_filter function in the 'ngmt.utils.preprocessing' module.
-    """
-    # Test with inputs
-    input_signal = random_input_signal
-    method = "savgol"
-    window_length = 21
-    polynomial_order = 7
-
-    # Call the lowpass_filter function with the specified inputs
-    filtered_signal = lowpass_filter(
-        input_signal,
-        method=method,
-        window_length=window_length,
-        polynomial_order=polynomial_order,
-    )
-
-    # Assertions to be checked:
-    # Check that the input signal is a NumPy array
-    assert isinstance(input_signal, np.ndarray), "Input signal should be a NumPy array."
-
-    # Check that the method is valid
-    assert method in ["savgol", "fir"], "Method should be 'savgol' or 'fir'."
-
-    # Check that the window length is a positive odd integer
-    assert (
-        isinstance(window_length, int) and window_length % 2 != 0 and window_length > 0
-    ), "Window length should be a positive odd integer."
-
-    # Check that the polynomial order is a non-negative integer
-    assert (
-        isinstance(polynomial_order, int) and polynomial_order >= 0
-    ), "Polynomial order should be a non-negative integer."
-
-    # Check that the filtered signal is not empty
-    assert len(filtered_signal) > 0, "Filtered signal should not be empty."
-
-    # Check that the filtered signal has the same length as the input signal
-    assert len(filtered_signal) == len(
-        input_signal
-    ), "Filtered signal should have the same length as the input signal."
-
-    # Check that the filtered signal does not contain any NaN or Inf values
-    assert not np.isnan(
-        filtered_signal
-    ).any(), "The filtered signal contains NaN values."
-    assert not np.isinf(
-        filtered_signal
-    ).any(), "The filtered signal contains Inf values."
-
-    # Additional checks specific to the Savitzky-Golay filter method
-    if method == "savgol":
-        # Check that the window length is less than or equal to the length of the input signal
-        assert window_length <= len(
-            input_signal
-        ), "Window length should be less than or equal to the length of the input signal."
-
-        # Check that the polynomial order is less than or equal to the window length
-        assert (
-            polynomial_order <= window_length
-        ), "Polynomial order should be less than or equal to the window length."
-
-
-# Test function for the 'highpass_filter' function
-def test_highpass_filter():
-    """
-    Test for highpass_filter function in the 'ngmt.utils.preprocessing' module.
-    """
-    # Test with inputs
-    input_signal = random_input_signal
-    method = "iir"
-
-    # Call the highpass_filter function with the specified inputs
-    filtered_signal = highpass_filter(input_signal, method=method)
-
-    # Assertions to be checked:
-    # Check that the input signal is a NumPy array
-    assert isinstance(input_signal, np.ndarray), "Input signal should be a NumPy array."
-
-    # Check that the method is valid
-    assert method in ["iir"], "Method should be 'iir'."
-
-    # Check that the filtered signal is not empty
-    assert len(filtered_signal) > 0, "Filtered signal should not be empty."
-
-    # Check that the filtered signal has the same length as the input signal
-    assert len(filtered_signal) == len(
-        input_signal
-    ), "Filtered signal should have the same length as the input signal."
-
-    # Check that the filtered signal does not contain any NaN or Inf values
-    assert not np.isnan(
-        filtered_signal
-    ).any(), "The filtered signal contains NaN values."
-    assert not np.isinf(
-        filtered_signal
-    ).any(), "The filtered signal contains Inf values."
-
-
-# Test function for the 'apply_continuous_wavelet_transform' function
-def test_apply_continuous_wavelet_transform():
-    """
-    Test for apply_continuous_wavelet_transform function in the 'ngmt.utils.preprocessing' module.
-    """
-    # Test with inputs
-    input_signal = random_input_signal
-    scales = 10
-    desired_scale = 10
-    wavelet = "gaus2"
-    sampling_frequency = 100
-
-    # Call the apply_continuous_wavelet_transform function with the specified inputs
-    wavelet_transform_result = apply_continuous_wavelet_transform(
-        input_signal,
-        scales=scales,
-        desired_scale=desired_scale,
-        wavelet=wavelet,
-        sampling_frequency=sampling_frequency,
-    )
-
-    # Assertions to be checked:
-    # Check that the sampling frequency is positive
-    assert sampling_frequency > 0, "Sampling frequency should be greater than 0."
-
-    # Check that the wavelet transform result is not empty
-    assert (
-        len(wavelet_transform_result) > 0
-    ), "Wavelet transform result should not be empty."
-
-    # Check that the wavelet transform result has the same length as the input signal
-    assert len(wavelet_transform_result) == len(
-        input_signal
-    ), "Wavelet transform result should have the same length as the input signal."
-
-    # Check that the wavelet transform result does not contain any NaN or Inf values
-    assert not np.isnan(
-        wavelet_transform_result
-    ).any(), "The wavelet transform result contains NaN values."
-    assert not np.isinf(
-        wavelet_transform_result
-    ).any(), "The wavelet transform result contains Inf values."
-
-
-# Test function for the 'apply_successive_gaussian_filters' function
-def test_apply_successive_gaussian_filters():
-    """
-    Test for apply_successive_gaussian_filters function in the 'ngmt.utils.preprocessing' module.
-    """
-    # Test with inputs
-    input_signal = random_input_signal
-
-    # Call the apply_successive_gaussian_filters function with the specified input
-    filtered_signal = apply_successive_gaussian_filters(input_signal)
-
-    # Assertions to be checked:
-    # Check that the input signal is a NumPy array
-    assert isinstance(input_signal, np.ndarray), "Input signal should be a NumPy array."
-
-    # Check that the filtered signal is not empty
-    assert len(filtered_signal) > 0, "Filtered signal should not be empty."
-
-    # Check that the filtered signal has the same length as the input signal
-    assert len(filtered_signal) == len(
-        input_signal
-    ), "Filtered signal should have the same length as the input signal."
-
-    # Check that the filtered signal does not contain any NaN or Inf values
-    assert not np.isnan(
-        filtered_signal
-    ).any(), "The filtered signal contains NaN values."
-    assert not np.isinf(
-        filtered_signal
-    ).any(), "The filtered signal contains Inf values."
-
-
-# Test function for the 'calculate_envelope_activity' function
-def test_calculate_envelope_activity():
-    """
-    Test for calculate_envelope_activity function in the 'ngmt.utils.preprocessing' module.
-    """
-    # Test with inputs
-    input_signal = random_input_signal
-    window_size = 1
-    sampling_frequency = 100
-
-    # Call the calculate_envelope_activity function with the specified inputs
-    envelope, _ = calculate_envelope_activity(
-        input_signal, window_size, sampling_frequency, sampling_frequency, 0
-    )
-
-    # Assertions to be checked:
-    # Check that the input signal is a NumPy array
-    assert isinstance(input_signal, np.ndarray), "Input signal should be a NumPy array."
-
-    # Check that the window size is a positive integer
-    assert (
-        isinstance(window_size, int) and window_size > 0
-    ), "Window size should be a positive integer."
-
-    # Check that the sampling frequency is positive
-    assert sampling_frequency > 0, "Sampling frequency should be greater than 0."
-
-    # Check that the envelope is not empty
-    assert len(envelope) > 0, "Envelope should not be empty."
-
-    # Check that the envelope has the same length as the input signal
-    assert len(envelope) == len(
-        input_signal
-    ), "Envelope should have the same length as the input signal."
-
-    # Check that the envelope does not contain any NaN or Inf values
-    assert not np.isnan(envelope).any(), "The envelope contains NaN values."
-    assert not np.isinf(envelope).any(), "The envelope contains Inf values."
-
-
-# Test function for the 'find_consecutive_groups' function
-def test_find_consecutive_groups():
-    """
-    Test for find_consecutive_groups function in the 'ngmt.utils.preprocessing' module.
-    """
-    # Test with inputs
-    boolean_array = np.array([False, False, True, True, False, True, False])
-
-    # Call the find_consecutive_groups function with the specified input
-    indices = find_consecutive_groups(boolean_array)
-
-    # Assertions to be checked:
-    # Check that the boolean array is a NumPy array
-    assert isinstance(
-        boolean_array, np.ndarray
-    ), "Boolean array should be a NumPy array."
-
-    # Check that the indices are not empty
-    assert len(indices) > 0, "Indices should not be empty."
-
-    # Check that the indices have the correct shape
-    assert indices.shape[1] == 2, "Indices should have shape (n, 2)."
-
-    # Check that the indices are within the bounds of the boolean array
-    assert np.all(indices >= 0) and np.all(
-        indices < len(boolean_array)
-    ), "Indices should be within the bounds of the boolean array."
-
-    # Check that the consecutive groups are correct
-    expected_indices = np.array([[2, 3], [5, 5]])
-    npt.assert_equal(
-        indices, expected_indices, "Consecutive groups indices are not as expected."
-    )
-
-
-# Test function for the 'find_local_min_max' function
-def test_find_local_min_max():
-    """
-    Test for find_local_min_max function in the 'ngmt.utils.preprocessing' module.
-    """
-    # Test with inputs
-    input_signal = random_input_signal
-    threshold = 0.5
-
-    # Call the find_local_min_max function with the specified inputs
-    min_peaks, max_peaks = find_local_min_max(input_signal, threshold)
-
-    # Assertions to be checked:
-    # Check that the input signal is a NumPy array
-    assert isinstance(input_signal, np.ndarray), "Input signal should be a NumPy array."
-
-    # Check that the threshold is a number
-    assert isinstance(threshold, (int, float)), "Threshold should be a number."
-
 
 # Run the tests with pytest
 if __name__ == "__main__":
