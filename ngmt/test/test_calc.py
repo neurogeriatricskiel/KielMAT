@@ -2065,6 +2065,8 @@ def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
     # Check if onset values are within the expected range
     assert all(0 <= onset <= 6 for onset in icd_instance.initial_contacts_['onset'])
 
+
+
 # Run the tests with pytest
 if __name__ == "__main__":
     pytest.main()
