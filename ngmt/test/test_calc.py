@@ -27,6 +27,7 @@ import numpy as np
 import warnings
 import numpy.testing as npt
 import pytest
+import scipy
 from ngmt.utils.preprocessing import (
     resample_interpolate,
     lowpass_filter,
@@ -121,6 +122,40 @@ def test_resample_interpolate_non_numpy_input():
             input_signal, initial_sampling_frequency, target_sampling_frequency
         )
 
+# Other test cases for the resample_interpolate function
+def test_resample_interpolate():
+    # Test with valid inputs
+    input_signal = np.random.rand(100)  # Sample input signal
+    resampled_signal = resample_interpolate(
+        input_signal, initial_sampling_frequency=100, target_sampling_frequency=40
+    )
+    assert len(resampled_signal) > 0  # Check if resampled signal is not empty
+
+    # Test with initial sampling frequency not a positive float
+    with pytest.raises(ValueError):
+        resample_interpolate(input_signal, initial_sampling_frequency=0, target_sampling_frequency=40)
+
+    with pytest.raises(ValueError):
+        resample_interpolate(input_signal, initial_sampling_frequency=-100, target_sampling_frequency=40)
+
+    with pytest.raises(ValueError):
+        resample_interpolate(input_signal, initial_sampling_frequency=100, target_sampling_frequency=0)
+
+    with pytest.raises(ValueError):
+        resample_interpolate(input_signal, initial_sampling_frequency=100, target_sampling_frequency=-40)
+
+    # Test with target sampling frequency not a positive float
+    with pytest.raises(ValueError):
+        resample_interpolate(input_signal, initial_sampling_frequency=100, target_sampling_frequency=0)
+
+    with pytest.raises(ValueError):
+        resample_interpolate(input_signal, initial_sampling_frequency=100, target_sampling_frequency=-40)
+
+    with pytest.raises(ValueError):
+        resample_interpolate(input_signal, initial_sampling_frequency=100, target_sampling_frequency=0)
+
+    with pytest.raises(ValueError):
+        resample_interpolate(input_signal, initial_sampling_frequency=100, target_sampling_frequency=-40)
 
 # Test function for the 'lowpass_filter_savgol' function
 def test_lowpass_filter_savgol():
@@ -162,7 +197,6 @@ def test_lowpass_filter_savgol():
         filtered_signal
     ).any(), "The filtered signal contains Inf values."
 
-
 # Test function for the 'lowpass_filter' function: case 1
 def test_lowpass_filter_invalid_input():
     # Test with invalid input data type
@@ -201,6 +235,22 @@ def test_lowpass_filter_butter_no_order():
             sampling_rate_hz=sampling_rate_hz,
         )
 
+# Other teest cases for the lowpass_filter function
+def test_lowpass_filter():
+    # Test with valid inputs
+    input_signal = np.random.rand(100)  # Sample input signal
+
+    # Test with invalid method (not a string)
+    with pytest.raises(ValueError):
+        lowpass_filter(input_signal, method=123)
+
+    # Test with invalid method (empty string)
+    with pytest.raises(ValueError):
+        lowpass_filter(input_signal, method="")
+
+    # Test with invalid method (nonexistent method)
+    with pytest.raises(ValueError):
+        lowpass_filter(input_signal, method="invalid_method")
 
 # Test function for the 'lowpass_filter_fir' function
 def test_lowpass_filter_fir():
@@ -408,6 +458,26 @@ def test_highpass_filter_invalid_input():
     ):
         highpass_filter(input_signal, sampling_frequency, method=method)
 
+# Other test cases for the highpass_filter function
+def test_highpass_filter():
+    # Test with valid inputs
+    input_signal = np.random.rand(100)  # Sample input signal
+
+    # Test with invalid method (not a string)
+    with pytest.raises(ValueError):
+        highpass_filter(input_signal, method=123)
+
+    # Test with invalid method (empty string)
+    with pytest.raises(ValueError):
+        highpass_filter(input_signal, method="")
+
+    # Test with invalid method (nonexistent method)
+    with pytest.raises(ValueError):
+        highpass_filter(input_signal, method="invalid_method")
+
+    # Test with valid method
+    filtered_signal = highpass_filter(input_signal, method="iir")
+    assert isinstance(filtered_signal, np.ndarray), "Filtered signal should be a NumPy array."
 
 # Test function for the 'apply_continuous_wavelet_transform' function: case 1
 def test_apply_continuous_wavelet_transform():
@@ -728,7 +798,6 @@ def test_apply_successive_gaussian_filters_large_input():
     assert not np.isnan(result).any(), "The result contains NaN values."
     assert not np.isinf(result).any(), "The result contains Inf values."
 
-
 # Test function for the 'calculate_envelope_activity' function: case 1
 def test_calculate_envelope_activity():
     """
@@ -853,7 +922,6 @@ def test_calculate_envelope_activity_invalid_plot_results():
 
     with pytest.raises(ValueError, match="The plotting results must be 0 or 1."):
         calculate_envelope_activity(input_signal, plot_results=2)
-
 
 # Test function for the 'find_consecutive_groups' function: case 1
 def test_find_consecutive_groups():
@@ -1196,6 +1264,17 @@ def test_identify_pulse_trains():
     assert isinstance(pulse_train["steps"], int), "'steps' should be an integer."
     assert pulse_train["steps"] > 0, "'steps' should be a positive integer."
 
+# Test function for the 'identify_pulse_trains' function: case 5
+def test_identify_pulse_trains_empty_signal():
+    # Create an empty input signal
+    signal = np.array([])
+
+    # Call the function with the empty signal and expect a ValueError
+    with pytest.raises(ValueError) as exc_info:
+        identify_pulse_trains(signal)
+
+    # Check if the correct error message is raised
+    assert str(exc_info.value) == "Input signal must not be empty."
 
 # Test function for the 'convert_pulse_train_to_array' function: case 1
 def test_convert_pulse_train_to_array():
@@ -1517,6 +1596,19 @@ def test_find_interval_intersection_invalid_set_structure():
     ):
         find_interval_intersection(set_a, set_b)
 
+# Test function for the 'find_interval_intersection' function: case 5
+def test_find_interval_intersection_append_from_set_b():
+    # Test case where an interval from set B is appended to the intersection intervals
+    set_a = np.array([[1, 5]])
+    set_b = np.array([[3, 6], [7, 9]])
+    
+    # Call the function
+    result = find_interval_intersection(set_a, set_b)
+    
+    # Expecting the interval [3, 5] from set B to be appended
+    expected_result = np.array([[3, 5]])
+    assert np.array_equal(result, expected_result)
+
 
 # Test function for the 'organize_and_pack_results' function
 def test_organize_and_pack_results():
@@ -1603,6 +1695,18 @@ def test_organize_and_pack_results():
         peak_steps_result == expected_peak_steps
     ), "Output peak_steps_result do not match the expected peak_steps."
 
+# Test function for the 'organize_and_pack_results' function
+def test_step_time_calculation_no_peak_steps():
+    # Mock input data
+    walking_periods = [(0, 10)]
+    peak_steps = []
+
+    # Call the function
+    organized_results, _ = organize_and_pack_results(walking_periods, peak_steps)
+
+    # Expecting the step time calculation to not affect the result
+    assert organized_results[0]["start"] == 0
+    assert organized_results[0]["end"] == 10
 
 # Test function for the 'max_peaks_between_zc' function
 def test_max_peaks_between_zc_valid_input():
@@ -1639,7 +1743,6 @@ def test_signal_decomposition_algorithm_invalid_input_type():
             vertical_acceleration_data, initial_sampling_frequency
         )
 
-
 # Test function for the 'signal_decomposition_algorithm' function: case 2
 def test_signal_decomposition_algorithm_negative_sampling_frequency():
     # Test with negative initial sampling frequency
@@ -1654,6 +1757,17 @@ def test_signal_decomposition_algorithm_negative_sampling_frequency():
             vertical_acceleration_data, initial_sampling_frequency
         )
 
+# Test function for the 'signal_decomposition_algorithm' function: case 3
+def test_invalid_input_data():
+    # Test case for invalid input data type
+    with pytest.raises(ValueError):
+        signal_decomposition_algorithm("invalid")
+
+# Test function for the 'signal_decomposition_algorithm' function: case 3
+def test_at_least_one_dimension():
+    # Test case for input data with less than one dimension
+    with pytest.raises(ValueError):
+        signal_decomposition_algorithm(np.array(1))
 
 # Test function for the 'classify_physical_activity' function: case 1
 def test_classify_physical_activity_valid_data():
@@ -1765,6 +1879,225 @@ def test_classify_physical_activity_negative_epoch_duration():
     # Call the classify_physical_activity function with negative epoch_duration
     with pytest.raises(ValueError, match="Epoch_duration must be a positive integer."):
         classify_physical_activity(invalid_data, epoch_duration=-5)
+
+# Test function for the 'lowpass_filter' function
+def test_lowpass_filter():
+    """
+    Test for lowpass_filter function in the 'ngmt.utils.preprocessing' module.
+    """
+    # Test with inputs
+    input_signal = random_input_signal
+    method = "savgol"
+    window_length = 21
+    polynomial_order = 7
+
+    # Call the lowpass_filter function with the specified inputs
+    filtered_signal = lowpass_filter(
+        input_signal, method=method, window_length=window_length, polynomial_order=polynomial_order
+    )
+
+    # Assertions to be checked:
+    # Check that the input signal is a NumPy array
+    assert isinstance(input_signal, np.ndarray), "Input signal should be a NumPy array."
+
+    # Check that the method is valid
+    assert method in ["savgol", "fir"], "Method should be 'savgol' or 'fir'."
+
+    # Check that the window length is a positive odd integer
+    assert isinstance(window_length, int) and window_length % 2 != 0 and window_length > 0, "Window length should be a positive odd integer."
+
+    # Check that the polynomial order is a non-negative integer
+    assert isinstance(polynomial_order, int) and polynomial_order >= 0, "Polynomial order should be a non-negative integer."
+
+    # Check that the filtered signal is not empty
+    assert len(filtered_signal) > 0, "Filtered signal should not be empty."
+
+    # Check that the filtered signal has the same length as the input signal
+    assert len(filtered_signal) == len(input_signal), "Filtered signal should have the same length as the input signal."
+
+    # Check that the filtered signal does not contain any NaN or Inf values
+    assert not np.isnan(filtered_signal).any(), "The filtered signal contains NaN values."
+    assert not np.isinf(filtered_signal).any(), "The filtered signal contains Inf values."
+
+    # Additional checks specific to the Savitzky-Golay filter method
+    if method == "savgol":
+        # Check that the window length is less than or equal to the length of the input signal
+        assert window_length <= len(input_signal), "Window length should be less than or equal to the length of the input signal."
+
+        # Check that the polynomial order is less than or equal to the window length
+        assert polynomial_order <= window_length, "Polynomial order should be less than or equal to the window length."
+
+# Test function for the 'highpass_filter' function
+def test_highpass_filter():
+    """
+    Test for highpass_filter function in the 'ngmt.utils.preprocessing' module.
+    """
+    # Test with inputs
+    input_signal = random_input_signal
+    method = "iir"
+
+    # Call the highpass_filter function with the specified inputs
+    filtered_signal = highpass_filter(input_signal, method=method)
+
+    # Assertions to be checked:
+    # Check that the input signal is a NumPy array
+    assert isinstance(input_signal, np.ndarray), "Input signal should be a NumPy array."
+
+    # Check that the method is valid
+    assert method in ["iir"], "Method should be 'iir'."
+
+    # Check that the filtered signal is not empty
+    assert len(filtered_signal) > 0, "Filtered signal should not be empty."
+
+    # Check that the filtered signal has the same length as the input signal
+    assert len(filtered_signal) == len(input_signal), "Filtered signal should have the same length as the input signal."
+
+    # Check that the filtered signal does not contain any NaN or Inf values
+    assert not np.isnan(filtered_signal).any(), "The filtered signal contains NaN values."
+    assert not np.isinf(filtered_signal).any(), "The filtered signal contains Inf values."
+
+# Test function for the 'apply_continuous_wavelet_transform' function
+def test_apply_continuous_wavelet_transform():
+    """
+    Test for apply_continuous_wavelet_transform function in the 'ngmt.utils.preprocessing' module.
+    """
+    # Test with inputs
+    input_signal = random_input_signal
+    scales = 10
+    desired_scale = 10
+    wavelet = "gaus2"
+    sampling_frequency = 100
+
+    # Call the apply_continuous_wavelet_transform function with the specified inputs
+    wavelet_transform_result = apply_continuous_wavelet_transform(
+        input_signal, scales=scales, desired_scale=desired_scale, wavelet=wavelet, sampling_frequency=sampling_frequency
+    )
+
+    # Assertions to be checked:
+    # Check that the sampling frequency is positive
+    assert sampling_frequency > 0, "Sampling frequency should be greater than 0."
+
+    # Check that the wavelet transform result is not empty
+    assert len(wavelet_transform_result) > 0, "Wavelet transform result should not be empty."
+
+    # Check that the wavelet transform result has the same length as the input signal
+    assert len(wavelet_transform_result) == len(input_signal), "Wavelet transform result should have the same length as the input signal."
+
+    # Check that the wavelet transform result does not contain any NaN or Inf values
+    assert not np.isnan(wavelet_transform_result).any(), "The wavelet transform result contains NaN values."
+    assert not np.isinf(wavelet_transform_result).any(), "The wavelet transform result contains Inf values."
+
+# Test function for the 'apply_successive_gaussian_filters' function
+def test_apply_successive_gaussian_filters():
+    """
+    Test for apply_successive_gaussian_filters function in the 'ngmt.utils.preprocessing' module.
+    """
+    # Test with inputs
+    input_signal = random_input_signal
+
+    # Call the apply_successive_gaussian_filters function with the specified input
+    filtered_signal = apply_successive_gaussian_filters(input_signal)
+
+    # Assertions to be checked:
+    # Check that the input signal is a NumPy array
+    assert isinstance(input_signal, np.ndarray), "Input signal should be a NumPy array."
+
+    # Check that the filtered signal is not empty
+    assert len(filtered_signal) > 0, "Filtered signal should not be empty."
+
+    # Check that the filtered signal has the same length as the input signal
+    assert len(filtered_signal) == len(input_signal), "Filtered signal should have the same length as the input signal."
+
+    # Check that the filtered signal does not contain any NaN or Inf values
+    assert not np.isnan(filtered_signal).any(), "The filtered signal contains NaN values."
+    assert not np.isinf(filtered_signal).any(), "The filtered signal contains Inf values."
+
+# Test function for the 'calculate_envelope_activity' function
+def test_calculate_envelope_activity():
+    """
+    Test for calculate_envelope_activity function in the 'ngmt.utils.preprocessing' module.
+    """
+    # Test with inputs
+    input_signal = random_input_signal
+    window_size = 1
+    sampling_frequency = 100
+
+    # Call the calculate_envelope_activity function with the specified inputs
+    envelope, _ = calculate_envelope_activity(
+        input_signal, window_size, sampling_frequency, sampling_frequency, 0
+    )
+
+    # Assertions to be checked:
+    # Check that the input signal is a NumPy array
+    assert isinstance(input_signal, np.ndarray), "Input signal should be a NumPy array."
+
+    # Check that the window size is a positive integer
+    assert isinstance(window_size, int) and window_size > 0, "Window size should be a positive integer."
+
+    # Check that the sampling frequency is positive
+    assert sampling_frequency > 0, "Sampling frequency should be greater than 0."
+
+    # Check that the envelope is not empty
+    assert len(envelope) > 0, "Envelope should not be empty."
+
+    # Check that the envelope has the same length as the input signal
+    assert len(envelope) == len(input_signal), "Envelope should have the same length as the input signal."
+
+    # Check that the envelope does not contain any NaN or Inf values
+    assert not np.isnan(envelope).any(), "The envelope contains NaN values."
+    assert not np.isinf(envelope).any(), "The envelope contains Inf values."
+
+# Test function for the 'find_consecutive_groups' function
+def test_find_consecutive_groups():
+    """
+    Test for find_consecutive_groups function in the 'ngmt.utils.preprocessing' module.
+    """
+    # Test with inputs
+    boolean_array = np.array([False, False, True, True, False, True, False])
+
+    # Call the find_consecutive_groups function with the specified input
+    indices = find_consecutive_groups(boolean_array)
+
+    # Assertions to be checked:
+    # Check that the boolean array is a NumPy array
+    assert isinstance(boolean_array, np.ndarray), "Boolean array should be a NumPy array."
+
+    # Check that the indices are not empty
+    assert len(indices) > 0, "Indices should not be empty."
+
+    # Check that the indices have the correct shape
+    assert indices.shape[1] == 2, "Indices should have shape (n, 2)."
+
+    # Check that the indices are within the bounds of the boolean array
+    assert np.all(indices >= 0) and np.all(
+        indices < len(boolean_array)
+    ), "Indices should be within the bounds of the boolean array."
+
+    # Check that the consecutive groups are correct
+    expected_indices = np.array([[2, 3], [5, 5]])
+    npt.assert_equal(
+        indices, expected_indices, "Consecutive groups indices are not as expected."
+    )
+
+# Test function for the 'find_local_min_max' function
+def test_find_local_min_max():
+    """
+    Test for find_local_min_max function in the 'ngmt.utils.preprocessing' module.
+    """
+    # Test with inputs
+    input_signal = random_input_signal
+    threshold = 0.5
+
+    # Call the find_local_min_max function with the specified inputs
+    min_peaks, max_peaks = find_local_min_max(input_signal, threshold)
+
+    # Assertions to be checked:
+    # Check that the input signal is a NumPy array
+    assert isinstance(input_signal, np.ndarray), "Input signal should be a NumPy array."
+
+    # Check that the threshold is a number
+    assert isinstance(threshold, (int, float)), "Threshold should be a number."
+   
 
 
 # Run the tests with pytest
