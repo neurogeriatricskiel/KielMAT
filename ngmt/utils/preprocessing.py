@@ -269,8 +269,6 @@ def apply_continuous_wavelet_transform(
             raise ValueError("Input data must be a numpy.ndarray")
         if not isinstance(scales, int) or scales <= 0:
             raise ValueError("Scales must be a positive integer")
-        if not isinstance(wavelet, str):
-            raise ValueError("Wavelet must be a string")
         if not isinstance(sampling_frequency, (int, float)) or sampling_frequency <= 0:
             raise ValueError("Sampling frequency must be a positive number")
 
@@ -312,12 +310,6 @@ def apply_successive_gaussian_filters(data):
     filtered_signal = data
 
     for sigma, kernel_size, mode in zip(sigma_params, kernel_size_params, mode_params):
-        if sigma <= 0 or kernel_size <= 0:
-            raise ValueError("Sigma and kernel size must be positive values.")
-        if mode not in ["reflect", "constant", "nearest"]:
-            raise ValueError(
-                "Invalid mode. Supported modes are 'reflect', 'constant', and 'nearest'."
-            )
 
         gaussian_radius = (kernel_size - 1) / 2
         filtered_signal = scipy.ndimage.gaussian_filter1d(
@@ -847,12 +839,6 @@ def max_peaks_between_zc(input_signal):
         pks (numpy.ndarray): Signed max/min values between zero crossings.
         ipks (numpy.ndarray): Locations of the peaks in the original vector.
     """
-    # Error handling for invalid input data
-    if input_signal.shape[0] == 1:
-        raise ValueError("X must be a column vector")
-    if input_signal.size != len(input_signal):
-        raise ValueError("X must be a column vector")
-
     # Flatten the input vector to ensure it's 1D.
     input_signal = input_signal.flatten()
 

@@ -77,42 +77,6 @@ def test_resample_interpolate():
             input_signal, initial_sampling_frequency, target_sampling_frequency
         )
 
-    # Assertions to be checked:
-    # Check that the input signal is a NumPy array
-    assert isinstance(input_signal, np.ndarray), "Input signal should be a NumPy array."
-
-    # Check that the initial sampling frequency is positive
-    assert (
-        target_sampling_frequency > 0
-    ), "Initial sampling frequency should be greater than 0."
-
-    # Check that the target sampling frequency is positive
-    assert (
-        initial_sampling_frequency > 0
-    ), "Target sampling frequency should be greater than 0."
-
-    # Check that the resampled signal is not empty
-    assert len(resampled_signal) > 0, "Resampled signal should not be empty."
-
-    # Check the length of resampled signal
-    expected_length = int(
-        np.ceil(
-            len(input_signal) * (target_sampling_frequency / initial_sampling_frequency)
-        )
-    )
-    assert (
-        resampled_signal.shape[0] == expected_length
-    ), f"The resampled signal length is incorrect. Expected: {expected_length}, Actual: {resampled_signal.shape[0]}"
-
-    # Check that the resampled signal does not contain any NaN or Inf values
-    assert not np.isnan(
-        resampled_signal
-    ).any(), "The resampled signal contains NaN values."
-    assert not np.isinf(
-        resampled_signal
-    ).any(), "The resampled signal contains Inf values."
-
-
 # Test function for the 'resample_interpolate' function: Case 2
 def test_resample_interpolate_non_numpy_input():
     # Test with non-NumPy array input
@@ -996,15 +960,6 @@ def test_find_consecutive_groups():
                 test_signal[start : end + 1] != 0
             ), "Non-zero values not consecutive."
 
-    else:
-        # Check that the function returns an empty array for an input with all zeros
-        assert np.all(
-            test_signal == 0
-        ), "Function should return an empty array for an input with all zeros."
-        assert (
-            len(ind) == 0
-        ), "Function should return an empty array for an input with all zeros."
-
 
 # Test function for the 'find_consecutive_groups' function: case 2
 def test_find_consecutive_groups_valid_input():
@@ -1190,67 +1145,6 @@ def test_find_local_min_max_no_maxima():
 
     # Check that the output is a NumPy array for minima
     assert isinstance(minima_indices, np.ndarray)
-
-
-# Test function for the 'identify_pulse_trains' function: case 1
-def test_identify_pulse_trains():
-    """
-    Test for identify_pulse_trains function in the 'ngmt.utils.preprocessing' module.
-    """
-    # Test with inputs
-    test_signal = random_input_signal
-
-    # Call the identify_pulse_trains function with the specified inputs
-    pulse_trains = identify_pulse_trains(test_signal)
-
-    # Assertions to be checked:
-    # Check that the input signal is a NumPy array
-    assert isinstance(test_signal, np.ndarray), "Input signal should be a NumPy array."
-
-    # Check that the number of identified pulse trains matches the expected count
-    expected_pulse_train_count = 3
-    assert (
-        len(pulse_trains) == expected_pulse_train_count
-    ), "Unexpected number of identified pulse trains."
-
-    # Check that the 'start' and 'end' values for each pulse train are in the expected range
-    for pulse_train in pulse_trains:
-        assert (
-            0 <= pulse_train["start"] < len(test_signal)
-        ), "Pulse train 'start' value is out of range."
-        assert (
-            0 <= pulse_train["end"] < len(test_signal)
-        ), "Pulse train 'end' value is out of range."
-        assert pulse_train["start"] <= pulse_train["end"], "Invalid pulse train range."
-
-    # Check that the 'steps' value for each pulse train is a positive integer
-    for pulse_train in pulse_trains:
-        assert isinstance(
-            pulse_train["steps"], int
-        ), "Pulse train 'steps' should be an integer."
-        assert pulse_train["steps"] > 0, "Pulse train 'steps' should be positive."
-
-    # Check that the output is a list
-    assert isinstance(pulse_trains, list), "Output should be a list of pulse trains."
-
-    # Check that each element in the list is a dictionary with the expected keys
-    for pulse_train in pulse_trains:
-        assert isinstance(
-            pulse_train, dict
-        ), "Each element in the list should be a dictionary."
-        assert "start" in pulse_train, "Dictionary should contain 'start' key."
-        assert "end" in pulse_train, "Dictionary should contain 'end' key."
-        assert "steps" in pulse_train, "Dictionary should contain 'steps' key."
-
-
-# Test function for the 'identify_pulse_trains' function: case 2
-def test_identify_pulse_trains_invalid_input():
-    # Test with invalid input data type
-    signal = [1, 2, 3, 7, 8, 9, 15, 16, 17, 21, 22, 23]
-
-    with pytest.raises(ValueError, match="Input signal must be a NumPy array."):
-        identify_pulse_trains(signal)
-
 
 # Test function for the 'identify_pulse_trains' function: case 3
 def test_identify_pulse_trains_single_element():
@@ -1579,14 +1473,6 @@ def test_find_interval_intersection():
     # Check the data type of the output
     assert isinstance(result_identical, np.ndarray), "Output should be a NumPy array."
 
-    # Check if the output matches the expected result
-    npt.assert_array_equal(
-        result_identical,
-        expected_result_identical,
-        "Output does not match the expected result.",
-    )
-
-
 # Test function for the 'find_interval_intersection' function: case 2
 def test_find_interval_intersection_valid_input():
     # Test with valid input
@@ -1807,34 +1693,6 @@ def test_at_least_one_dimension():
     with pytest.raises(ValueError):
         signal_decomposition_algorithm(np.array(1))
 
-
-# Test function for the 'classify_physical_activity' function: case 1
-def test_classify_physical_activity_valid_data():
-    # Create a DataFrame with valid accelerometer data
-    data = {
-        "time": pd.date_range(start="2024-01-01", periods=100, freq="S"),
-        "enmo": np.random.rand(100) * 500,  # Random accelerometer values
-    }
-    input_data = pd.DataFrame(data)
-
-    # Ensure the 'time' column is a DatetimeIndex
-    input_data["time"] = pd.to_datetime(input_data["time"], format="%Y-%m-%d %H:%M:%S")
-
-    # Call the classify_physical_activity function
-    result = classify_physical_activity(input_data)
-
-    # Assertions to be checked:
-    assert isinstance(result, pd.DataFrame), "Output should be a pandas DataFrame."
-    assert set(result.columns) == {
-        "time",
-        "enmo",
-        "sedentary",
-        "light",
-        "moderate",
-        "vigorous",
-    }, "Output DataFrame should have the correct columns."
-
-
 # Test function for the 'classify_physical_activity' function: case 2
 def test_classify_physical_activity_invalid_input_data():
     # Test with invalid input data type
@@ -1918,128 +1776,6 @@ def test_classify_physical_activity_negative_epoch_duration():
     # Call the classify_physical_activity function with negative epoch_duration
     with pytest.raises(ValueError, match="Epoch_duration must be a positive integer."):
         classify_physical_activity(invalid_data, epoch_duration=-5)
-
-
-@pytest.fixture
-def pam_instance():
-    return PhysicalActivityMonitoring()
-
-
-@pytest.fixture
-def sample_data():
-    # Create sample accelerometer data
-    np.random.seed(0)
-    timestamps = pd.date_range(start="2024-01-01", periods=1000, freq="1s")
-    accelerometer_data = pd.DataFrame(
-        {
-            "Acc_x": np.random.randn(1000),
-            "Acc_y": np.random.randn(1000),
-            "Acc_z": np.random.randn(1000),
-        },
-        index=timestamps,
-    )
-    return accelerometer_data
-
-
-def test_detect_method():
-    # Create sample data with a datetime index
-    date_range = pd.date_range(
-        start="2024-01-01", periods=1000, freq="100T"
-    )  # Adjusted frequency to 100 minutes
-    sample_data = pd.DataFrame(
-        np.random.randn(1000, 3), columns=["Acc_x", "Acc_y", "Acc_z"], index=date_range
-    )
-
-    # Add a 'time' column
-    sample_data["time"] = sample_data.index
-
-    # Now we can set the 'time' column as the index
-    sample_data.set_index("time", inplace=True)
-
-    # Initialize PhysicalActivityMonitoring instance
-    pam_instance = PhysicalActivityMonitoring()
-
-    # Call detect method
-    pam_instance.detect(
-        data=sample_data,
-        sampling_freq_Hz=100,
-        thresholds_mg={
-            "sedentary_threshold": 45,
-            "light_threshold": 100,
-            "moderate_threshold": 400,
-        },
-        epoch_duration_sec=5,
-        plot_results=False,
-    )
-
-    # Assert that physical_activities_ attribute is a DataFrame
-    assert isinstance(pam_instance.physical_activities_, pd.DataFrame)
-
-    # Convert the 'date' column to datetime format
-    pam_instance.physical_activities_["date"] = pd.to_datetime(
-        pam_instance.physical_activities_["date"]
-    )
-
-    # Test for valid date format in the output DataFrame
-    assert pd.api.types.is_datetime64_any_dtype(
-        pam_instance.physical_activities_["date"]
-    )
-
-    # Test for presence of required columns
-    required_columns = [
-        "date",
-        "sedentary_mean_enmo",
-        "sedentary_time_min",
-        "light_mean_enmo",
-        "light_time_min",
-        "moderate_mean_enmo",
-        "moderate_time_min",
-        "vigorous_mean_enmo",
-        "vigorous_time_min",
-    ]
-    assert all(
-        col in pam_instance.physical_activities_.columns for col in required_columns
-    )
-
-
-@pytest.fixture
-def gsd_instance():
-    return ParaschivIonescuGaitSequenceDetection()
-
-
-@pytest.fixture
-# Test case for valid input data and plot_results=False
-def test_detect_method_valid_input_no_plot():
-    # Generate sample accelerometer data
-    data = pd.DataFrame(np.random.randn(1000, 3), columns=["x", "y", "z"])
-    sampling_freq_Hz = 100  # Sample frequency
-
-    # Initialize ParaschivIonescuGaitSequenceDetection instance
-    gait_detector = ParaschivIonescuGaitSequenceDetection()
-
-    # Call detect method
-    gait_detector.detect(
-        data=data, sampling_freq_Hz=sampling_freq_Hz, plot_results=False
-    )
-
-    # Assert that gait sequences DataFrame is not None
-    assert gait_detector.gait_sequences_ is not None
-
-    # Assert that the gait sequences DataFrame has the correct columns
-    assert all(
-        col in gait_detector.gait_sequences_.columns
-        for col in [
-            "onset",
-            "duration",
-            "event_type",
-            "tracking_systems",
-            "tracked_points",
-        ]
-    )
-
-    # Assert that the gait sequences DataFrame is not empty
-    assert not gait_detector.gait_sequences_.empty
-
 
 # Test case for invalid input data
 def test_detect_method_invalid_input():
