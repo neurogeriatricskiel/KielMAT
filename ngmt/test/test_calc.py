@@ -1916,6 +1916,7 @@ def test_classify_physical_activity_negative_epoch_duration():
     with pytest.raises(ValueError, match="Epoch_duration must be a positive integer."):
         classify_physical_activity(invalid_data, epoch_duration=-5)
 
+
 # Run the tests with pytest
 if __name__ == "__main__":
     pytest.main()
