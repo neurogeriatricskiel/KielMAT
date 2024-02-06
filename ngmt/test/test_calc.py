@@ -1919,33 +1919,42 @@ def test_classify_physical_activity_negative_epoch_duration():
     with pytest.raises(ValueError, match="Epoch_duration must be a positive integer."):
         classify_physical_activity(invalid_data, epoch_duration=-5)
 
+
 @pytest.fixture
 def pam_instance():
     return PhysicalActivityMonitoring()
+
 
 @pytest.fixture
 def sample_data():
     # Create sample accelerometer data
     np.random.seed(0)
-    timestamps = pd.date_range(start='2024-01-01', periods=1000, freq='1s')
-    accelerometer_data = pd.DataFrame({
-        'Acc_x': np.random.randn(1000),
-        'Acc_y': np.random.randn(1000),
-        'Acc_z': np.random.randn(1000),
-    }, index=timestamps)
+    timestamps = pd.date_range(start="2024-01-01", periods=1000, freq="1s")
+    accelerometer_data = pd.DataFrame(
+        {
+            "Acc_x": np.random.randn(1000),
+            "Acc_y": np.random.randn(1000),
+            "Acc_z": np.random.randn(1000),
+        },
+        index=timestamps,
+    )
     return accelerometer_data
 
 
 def test_detect_method():
     # Create sample data with a datetime index
-    date_range = pd.date_range(start='2024-01-01', periods=1000, freq='100T')  # Adjusted frequency to 100 minutes
-    sample_data = pd.DataFrame(np.random.randn(1000, 3), columns=['Acc_x', 'Acc_y', 'Acc_z'], index=date_range)
+    date_range = pd.date_range(
+        start="2024-01-01", periods=1000, freq="100T"
+    )  # Adjusted frequency to 100 minutes
+    sample_data = pd.DataFrame(
+        np.random.randn(1000, 3), columns=["Acc_x", "Acc_y", "Acc_z"], index=date_range
+    )
 
     # Add a 'time' column
-    sample_data['time'] = sample_data.index
+    sample_data["time"] = sample_data.index
 
     # Now we can set the 'time' column as the index
-    sample_data.set_index('time', inplace=True)
+    sample_data.set_index("time", inplace=True)
 
     # Initialize PhysicalActivityMonitoring instance
     pam_instance = PhysicalActivityMonitoring()
@@ -1960,51 +1969,77 @@ def test_detect_method():
             "moderate_threshold": 400,
         },
         epoch_duration_sec=5,
-        plot_results=False
+        plot_results=False,
     )
 
     # Assert that physical_activities_ attribute is a DataFrame
     assert isinstance(pam_instance.physical_activities_, pd.DataFrame)
 
     # Convert the 'date' column to datetime format
-    pam_instance.physical_activities_['date'] = pd.to_datetime(pam_instance.physical_activities_['date'])
+    pam_instance.physical_activities_["date"] = pd.to_datetime(
+        pam_instance.physical_activities_["date"]
+    )
 
     # Test for valid date format in the output DataFrame
-    assert pd.api.types.is_datetime64_any_dtype(pam_instance.physical_activities_['date'])
+    assert pd.api.types.is_datetime64_any_dtype(
+        pam_instance.physical_activities_["date"]
+    )
 
     # Test for presence of required columns
     required_columns = [
-        'date', 'sedentary_mean_enmo', 'sedentary_time_min',
-        'light_mean_enmo', 'light_time_min', 'moderate_mean_enmo',
-        'moderate_time_min', 'vigorous_mean_enmo', 'vigorous_time_min'
+        "date",
+        "sedentary_mean_enmo",
+        "sedentary_time_min",
+        "light_mean_enmo",
+        "light_time_min",
+        "moderate_mean_enmo",
+        "moderate_time_min",
+        "vigorous_mean_enmo",
+        "vigorous_time_min",
     ]
-    assert all(col in pam_instance.physical_activities_.columns for col in required_columns)
+    assert all(
+        col in pam_instance.physical_activities_.columns for col in required_columns
+    )
+
 
 @pytest.fixture
 def gsd_instance():
     return ParaschivIonescuGaitSequenceDetection()
 
+
 @pytest.fixture
 # Test case for valid input data and plot_results=False
 def test_detect_method_valid_input_no_plot():
     # Generate sample accelerometer data
-    data = pd.DataFrame(np.random.randn(1000, 3), columns=['x', 'y', 'z'])
+    data = pd.DataFrame(np.random.randn(1000, 3), columns=["x", "y", "z"])
     sampling_freq_Hz = 100  # Sample frequency
 
     # Initialize ParaschivIonescuGaitSequenceDetection instance
     gait_detector = ParaschivIonescuGaitSequenceDetection()
 
     # Call detect method
-    gait_detector.detect(data=data, sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
+    gait_detector.detect(
+        data=data, sampling_freq_Hz=sampling_freq_Hz, plot_results=False
+    )
 
     # Assert that gait sequences DataFrame is not None
     assert gait_detector.gait_sequences_ is not None
 
     # Assert that the gait sequences DataFrame has the correct columns
-    assert all(col in gait_detector.gait_sequences_.columns for col in ['onset', 'duration', 'event_type', 'tracking_systems', 'tracked_points'])
+    assert all(
+        col in gait_detector.gait_sequences_.columns
+        for col in [
+            "onset",
+            "duration",
+            "event_type",
+            "tracking_systems",
+            "tracked_points",
+        ]
+    )
 
     # Assert that the gait sequences DataFrame is not empty
     assert not gait_detector.gait_sequences_.empty
+
 
 # Test case for invalid input data
 def test_detect_method_invalid_input():
@@ -2019,26 +2054,31 @@ def test_detect_method_invalid_input():
     with pytest.raises(ValueError):
         gait_detector.detect(data=data, sampling_freq_Hz=sampling_freq_Hz)
 
+
 @pytest.fixture
 def sample_accelerometer_data():
     # Create sample accelerometer data
     np.random.seed(0)
-    timestamps = pd.date_range(start='2024-01-01', periods=1000, freq='1s')
-    accelerometer_data = pd.DataFrame({
-        'LowerBack_ACCEL_x': np.random.randn(1000),
-        'LowerBack_ACCEL_y': np.random.randn(1000),
-        'LowerBack_ACCEL_z': np.random.randn(1000),
-    }, index=timestamps)
+    timestamps = pd.date_range(start="2024-01-01", periods=1000, freq="1s")
+    accelerometer_data = pd.DataFrame(
+        {
+            "LowerBack_ACCEL_x": np.random.randn(1000),
+            "LowerBack_ACCEL_y": np.random.randn(1000),
+            "LowerBack_ACCEL_z": np.random.randn(1000),
+        },
+        index=timestamps,
+    )
     return accelerometer_data
+
 
 @pytest.fixture
 def sample_gait_sequences():
     # Create sample gait sequences DataFrame
-    gait_sequences = pd.DataFrame({
-        'onset': [1.5, 3.5, 5.5],
-        'duration': [0.5, 0.7, 0.6]
-    })
+    gait_sequences = pd.DataFrame(
+        {"onset": [1.5, 3.5, 5.5], "duration": [0.5, 0.7, 0.6]}
+    )
     return gait_sequences
+
 
 def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
     # Initialize ParaschivIonescuInitialContactDetection instance
@@ -2049,22 +2089,23 @@ def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
         data=sample_accelerometer_data,
         gait_sequences=sample_gait_sequences,
         sampling_freq_Hz=100,
-        plot_results=False
+        plot_results=False,
     )
 
     # Check if initial_contacts_ attribute is a DataFrame
     assert isinstance(icd_instance.initial_contacts_, pd.DataFrame)
 
     # Check the columns in the initial_contacts_ DataFrame
-    expected_columns = ['onset', 'event_type', 'tracking_systems', 'tracked_points']
-    assert all(col in icd_instance.initial_contacts_.columns for col in expected_columns)
+    expected_columns = ["onset", "event_type", "tracking_systems", "tracked_points"]
+    assert all(
+        col in icd_instance.initial_contacts_.columns for col in expected_columns
+    )
 
     # Check the data type of the 'onset' column
-    assert pd.api.types.is_float_dtype(icd_instance.initial_contacts_['onset'])
+    assert pd.api.types.is_float_dtype(icd_instance.initial_contacts_["onset"])
 
     # Check if onset values are within the expected range
-    assert all(0 <= onset <= 6 for onset in icd_instance.initial_contacts_['onset'])
-
+    assert all(0 <= onset <= 6 for onset in icd_instance.initial_contacts_["onset"])
 
 
 # Run the tests with pytest
