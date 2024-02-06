@@ -1810,7 +1810,7 @@ def test_classify_physical_activity_valid_data():
     # Create a DataFrame with valid accelerometer data
     data = {
         "time": pd.date_range(start="2024-01-01", periods=100, freq="S"),
-        "enmo": np.random.rand(100) * 500,  # Random accelerometer values
+        "acc": np.random.rand(100) * 500,  # Random accelerometer values
     }
     input_data = pd.DataFrame(data)
 
@@ -1824,7 +1824,7 @@ def test_classify_physical_activity_valid_data():
     assert isinstance(result, pd.DataFrame), "Output should be a pandas DataFrame."
     assert set(result.columns) == {
         "time",
-        "enmo",
+        "acc",
         "sedentary",
         "light",
         "moderate",
@@ -1875,7 +1875,7 @@ def test_classify_physical_activity_valid_data():
     # Create a DataFrame with valid accelerometer data
     data = {
         "time": pd.date_range(start="2024-01-01", periods=100, freq="S"),
-        "enmo": np.random.rand(100) * 500,  # Random accelerometer values
+        "acc": np.random.rand(100) * 500,  # Random accelerometer values
     }
     input_data = pd.DataFrame(data)
 
@@ -1894,7 +1894,7 @@ def test_classify_physical_activity_invalid_threshold_values():
     invalid_data = pd.DataFrame(
         {
             "time": pd.date_range(start="2024-01-01", periods=100, freq="S"),
-            "enmo": np.random.rand(100) * 500,
+            "acc": np.random.rand(100) * 500,
         }
     )
 
@@ -1908,7 +1908,7 @@ def test_classify_physical_activity_negative_epoch_duration():
     invalid_data = pd.DataFrame(
         {
             "time": pd.date_range(start="2024-01-01", periods=100, freq="S"),
-            "enmo": np.random.rand(100) * 500,
+            "acc": np.random.rand(100) * 500,
         }
     )
 
