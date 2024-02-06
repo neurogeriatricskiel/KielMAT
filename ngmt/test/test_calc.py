@@ -77,6 +77,7 @@ def test_resample_interpolate():
             input_signal, initial_sampling_frequency, target_sampling_frequency
         )
 
+
 # Test function for the 'resample_interpolate' function: Case 2
 def test_resample_interpolate_non_numpy_input():
     # Test with non-NumPy array input
@@ -1146,6 +1147,7 @@ def test_find_local_min_max_no_maxima():
     # Check that the output is a NumPy array for minima
     assert isinstance(minima_indices, np.ndarray)
 
+
 # Test function for the 'identify_pulse_trains' function: case 3
 def test_identify_pulse_trains_single_element():
     # Test with a single element in the input data
@@ -1473,6 +1475,7 @@ def test_find_interval_intersection():
     # Check the data type of the output
     assert isinstance(result_identical, np.ndarray), "Output should be a NumPy array."
 
+
 # Test function for the 'find_interval_intersection' function: case 2
 def test_find_interval_intersection_valid_input():
     # Test with valid input
@@ -1693,6 +1696,7 @@ def test_at_least_one_dimension():
     with pytest.raises(ValueError):
         signal_decomposition_algorithm(np.array(1))
 
+
 # Test function for the 'classify_physical_activity' function: case 2
 def test_classify_physical_activity_invalid_input_data():
     # Test with invalid input data type
@@ -1776,6 +1780,7 @@ def test_classify_physical_activity_negative_epoch_duration():
     # Call the classify_physical_activity function with negative epoch_duration
     with pytest.raises(ValueError, match="Epoch_duration must be a positive integer."):
         classify_physical_activity(invalid_data, epoch_duration=-5)
+
 
 # Test case for invalid input data
 def test_detect_method_invalid_input():
