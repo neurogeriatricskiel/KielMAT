@@ -35,15 +35,13 @@ class ParaschivIonescuInitialContactDetection:
         are identified as the positive maximal peaks between successive zero-crossings.
 
     Methods:
-        detect(data, gait_sequences, sampling_freq_Hz, plot_results):
+        detect(data, gait_sequences, sampling_freq_Hz):
             Detects initial contacts on the accelerometer signal.
 
             Args:
                 data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
                 gait_sequences (pd.DataFrame): Gait sequences detected using ParaschivIonescuGaitSequenceDetectionDataframe algorithm.
                 sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
-                plot_results (bool, optional): If True, generates a plot showing the pre-processed acceleration data
-                    and the detected gait sequences. Default is False.
 
             Returns:
                 self (pd.DataFrame): DataFrame containing initial contact information in BIDS format.
@@ -52,7 +50,7 @@ class ParaschivIonescuInitialContactDetection:
         Find initial contacts based on the detected gait sequence
 
         >>> icd = ParaschivIonescuInitialContactDetection()
-        >>> icd = icd.detect(data=acceleration_data, sampling_freq_Hz=100, plot_results=True)
+        >>> icd = icd.detect(data=acceleration_data, sampling_freq_Hz=100)
         >>> initial_contacts = icd.initial_contacts_
         >>> print(initial_contacts_)
                 onset   event_type       tracking_systems   tracked_points
@@ -97,7 +95,6 @@ class ParaschivIonescuInitialContactDetection:
         data: pd.DataFrame,
         gait_sequences: pd.DataFrame,
         sampling_freq_Hz: float = 100,
-        plot_results: bool = False,
     ) -> pd.DataFrame:
         """
         Detects initial contacts based on the input accelerometer data.
@@ -106,8 +103,6 @@ class ParaschivIonescuInitialContactDetection:
             data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
             gait_sequences (pd.DataFrame): Gait sequence calculated using ParaschivIonescuGaitSequenceDetectionDataframe algorithm.
             sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
-            plot_results (bool, optional): If True, generates a plot showing the pre-processed acceleration data
-                and the detected initial contacts. Default is False.
 
             Returns:
                 ParaschivIonescuInitialContactDetection: Returns an instance of the class.
@@ -118,6 +113,11 @@ class ParaschivIonescuInitialContactDetection:
                         - tracking_systems: Tracking systems used (default is 'SU').
                         - tracked_points: Tracked points on the body (default is 'LowerBack').
         """
+        # Check if data is empty
+        if data.empty:
+            self.initial_contacts_ = pd.DataFrame()
+            return  # Return without performing further processing
+        
         # Extract vertical accelerometer data
         acc_vertical = data["LowerBack_ACCEL_x"]
 
@@ -176,94 +176,5 @@ class ParaschivIonescuInitialContactDetection:
                 "tracked_points": self.tracked_points,
             }
         )
-
-        if plot_results:
-            # Combine ICs from all gait sequences into a single array
-            max_ic_count = max(len(ic_list) for ic_list in initial_contacts_["IC"])
-            initial_contacts_all_signals = np.full(
-                (len(initial_contacts_), max_ic_count), np.nan
-            )
-
-            # Fill IC_all_signal with ICs from each gait sequence
-            for i, ic_list in enumerate(initial_contacts_["IC"]):
-                initial_contacts_all_signals[i, : len(ic_list)] = ic_list
-
-            # Convert ICs to sample indices
-            initial_contacts_all_signals = np.nan_to_num(initial_contacts_all_signals)
-            ic_indices = np.round(
-                initial_contacts_all_signals * sampling_freq_Hz
-            ).astype(int)
-
-            # Resample and filter accelerometer data
-            accv_resampled = preprocessing.resample_interpolate(
-                acc_vertical.to_numpy(), sampling_freq_Hz, self.target_sampling_freq_Hz
-            )
-
-            # Remove 40Hz drift from the filtered data
-            accv_drift_removed = preprocessing.highpass_filter(
-                signal=accv_resampled,
-                sampling_frequency=self.target_sampling_freq_Hz,
-                method="iir",
-            )
-
-            # Load filter designed for low SNR, impaired, asymmetric and slow gait
-            accv_filtered = preprocessing.lowpass_filter(
-                accv_drift_removed, method="fir"
-            )
-            accv_integral = (
-                scipy.integrate.cumtrapz(accv_filtered) / self.target_sampling_freq_Hz
-            )
-
-            # Perform Continuous Wavelet Transform (CWT)
-            accv_cwt = preprocessing.apply_continuous_wavelet_transform(
-                accv_integral,
-                scales=9,
-                desired_scale=9,
-                wavelet="gaus2",
-                sampling_frequency=self.target_sampling_freq_Hz,
-            )
-
-            # Subtraction of the mean of the data from signal
-            accv_cwt = accv_cwt - np.mean(accv_cwt)
-
-            # Resample CWT results back to original sampling frequency
-            accv_processed = preprocessing.resample_interpolate(
-                accv_cwt, self.target_sampling_freq_Hz, sampling_freq_Hz
-            )
-
-            valid_ic_indices = ic_indices[
-                (ic_indices >= 0) & (ic_indices < len(accv_processed))
-            ]
-
-            # Convert sample indices to time in minutes
-            time_minutes = np.arange(len(accv_processed)) / (sampling_freq_Hz * 60)
-
-            # Convert valid_ic_indices to time in minutes
-            valid_ic_time_minutes = valid_ic_indices / (sampling_freq_Hz * 60)
-
-            # Plot results
-            plt.figure(figsize=(22, 14))
-            plt.plot(
-                time_minutes,
-                accv_processed,
-                linewidth=3,
-            )
-            plt.plot(
-                valid_ic_time_minutes,
-                accv_processed[valid_ic_indices],
-                "ro",
-                markersize=8,
-            )
-            plt.legend(
-                ["Processed vertical acceleration signal", "Initial Contacts"],
-                fontsize=20,
-            )
-            plt.xlabel("Time (minutes)", fontsize=20)
-            plt.ylabel("Amplitude", fontsize=20)
-            plt.grid(True)
-            plt.xticks(fontsize=20)
-            plt.yticks(fontsize=20)
-            plt.tight_layout()
-            plt.show()
 
         return self

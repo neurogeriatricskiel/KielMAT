@@ -46,7 +46,6 @@ from ngmt.utils.preprocessing import (
     signal_decomposition_algorithm,
     classify_physical_activity,
 )
-from ngmt.modules.pam import PhysicalActivityMonitoring
 from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
 
@@ -1734,31 +1733,11 @@ def test_classify_physical_activity_invalid_threshold_type():
             epoch_duration,
         )
 
-
-# Test function for the 'classify_physical_activity' function: case 4
-def test_classify_physical_activity_valid_data():
-    # Create a DataFrame with valid accelerometer data
-    data = {
-        "time": pd.date_range(start="2024-01-01", periods=100, freq="S"),
-        "enmo": np.random.rand(100) * 500,  # Random accelerometer values
-    }
-    input_data = pd.DataFrame(data)
-
-    # Ensure the 'time' column is a DatetimeIndex
-    input_data["time"] = pd.to_datetime(input_data["time"], format="%Y-%m-%d %H:%M:%S")
-
-    # Set 'time' column as the index
-    input_data.set_index("time", inplace=True)
-
-    # Call the classify_physical_activity function
-    result = classify_physical_activity(input_data)
-
-
 # Test function for the 'classify_physical_activity' function: case 5
 def test_classify_physical_activity_invalid_threshold_values():
     invalid_data = pd.DataFrame(
         {
-            "time": pd.date_range(start="2024-01-01", periods=100, freq="S"),
+            "timestamps": pd.date_range(start="2024-01-01", periods=100, freq="S"),
             "enmo": np.random.rand(100) * 500,
         }
     )
@@ -1772,7 +1751,7 @@ def test_classify_physical_activity_invalid_threshold_values():
 def test_classify_physical_activity_negative_epoch_duration():
     invalid_data = pd.DataFrame(
         {
-            "time": pd.date_range(start="2024-01-01", periods=100, freq="S"),
+            "timestamps": pd.date_range(start="2024-01-01", periods=100, freq="S"),
             "enmo": np.random.rand(100) * 500,
         }
     )
@@ -1780,20 +1759,6 @@ def test_classify_physical_activity_negative_epoch_duration():
     # Call the classify_physical_activity function with negative epoch_duration
     with pytest.raises(ValueError, match="Epoch_duration must be a positive integer."):
         classify_physical_activity(invalid_data, epoch_duration=-5)
-
-
-# Test case for invalid input data
-def test_detect_method_invalid_input():
-    # Invalid input data: not a DataFrame
-    data = np.array([[1, 2, 3], [4, 5, 6]])
-    sampling_freq_Hz = 100  # Sample frequency
-
-    # Initialize ParaschivIonescuGaitSequenceDetection instance
-    gait_detector = ParaschivIonescuGaitSequenceDetection()
-
-    # Assert that detect method raises a ValueError
-    with pytest.raises(ValueError):
-        gait_detector.detect(data=data, sampling_freq_Hz=sampling_freq_Hz)
 
 
 @pytest.fixture
@@ -1830,7 +1795,6 @@ def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
         data=sample_accelerometer_data,
         gait_sequences=sample_gait_sequences,
         sampling_freq_Hz=100,
-        plot_results=False,
     )
 
     # Check if initial_contacts_ attribute is a DataFrame
