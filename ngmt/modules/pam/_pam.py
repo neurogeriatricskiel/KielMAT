@@ -121,8 +121,11 @@ class PhysicalActivityMonitoring:
         if not isinstance(plot_results, bool):
             raise ValueError("Plot results must be a boolean (True or False).")
 
+        # Select accelerometer data columns and convert units from m/s^2 to g
+        data[["LARM_ACCEL_x", "LARM_ACCEL_y", "LARM_ACCEL_z"]] /= 9.81
+
         # Calculate Euclidean Norm (EN)
-        data["en"] = np.linalg.norm(data[["Acc_x", "Acc_y", "Acc_z"]], axis=1)
+        data["en"] = np.linalg.norm(data[["LARM_ACCEL_x", "LARM_ACCEL_y", "LARM_ACCEL_z"]], axis=1)
 
         # Apply 4th order low-pass Butterworth filter with the cutoff frequency of 20Hz
         data["en"] = preprocessing.lowpass_filter(
@@ -157,7 +160,7 @@ class PhysicalActivityMonitoring:
         )
 
         # Extract date from the datetime index
-        classified_processed_data["date"] = classified_processed_data["time"].dt.date
+        classified_processed_data["date"] = classified_processed_data["timestamp"].dt.date
 
         # Calculate time spent in each activity level for each epoch
         classified_processed_data["sedentary_time_min"] = (

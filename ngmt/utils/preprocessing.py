@@ -1062,5 +1062,5 @@ def classify_physical_activity(
 
     # Return a DataFrame with the time, averaged ENMO, and classes of sedentary, light, moderate and vigorous shown with 1 or 0.
     return processed_data[
-        ["time", "enmo", "sedentary", "light", "moderate", "vigorous"]
+        ["timestamp", "enmo", "sedentary", "light", "moderate", "vigorous"]
     ]
