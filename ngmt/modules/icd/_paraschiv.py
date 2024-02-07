@@ -117,7 +117,7 @@ class ParaschivIonescuInitialContactDetection:
         if data.empty:
             self.initial_contacts_ = pd.DataFrame()
             return  # Return without performing further processing
-        
+
         # Extract vertical accelerometer data
         acc_vertical = data["LowerBack_ACCEL_x"]
 

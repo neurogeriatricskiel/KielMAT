@@ -33,9 +33,9 @@ from matplotlib.testing.compare import compare_images
 # Test data
 num_samples = 50000  # Number of samples
 acceleration_data = {
-    'LowerBack_ACCEL_x': np.random.uniform(-2, 2, num_samples),
-    'LowerBack_ACCEL_y': np.random.uniform(-2, 2, num_samples),
-    'LowerBack_ACCEL_z': np.random.uniform(-2, 2, num_samples),
+    "LowerBack_ACCEL_x": np.random.uniform(-2, 2, num_samples),
+    "LowerBack_ACCEL_y": np.random.uniform(-2, 2, num_samples),
+    "LowerBack_ACCEL_z": np.random.uniform(-2, 2, num_samples),
 }
 acceleration_data = pd.DataFrame(acceleration_data)
 sampling_frequency = 100  # Sampling frequency
@@ -159,17 +159,19 @@ def test_plot_results_type():
             plot_results=invalid_plot_results,
         )
 
+
 # Tests for ParaschivIonescuInitialContactDetection
+
 
 def test_detect_empty_data():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
     icd = ParaschivIonescuInitialContactDetection()
-    
+
     # Call detect with an empty DataFrame instead of None
     icd.detect(data=pd.DataFrame(), gait_sequences=pd.DataFrame(), sampling_freq_Hz=100)
 
-    
+
 # Define test_detect_no_gait_sequences function
 def test_detect_no_gait_sequences():
     # Initialize the class
@@ -178,14 +180,19 @@ def test_detect_no_gait_sequences():
 
     # Create a DataFrame with only one column for each axis
     acceleration_data_single_axis = {
-        'LowerBack_ACCEL_x': np.random.uniform(-2, 2, num_samples),
-        'LowerBack_ACCEL_y': np.random.uniform(-2, 2, num_samples),
-        'LowerBack_ACCEL_z': np.random.uniform(-2, 2, num_samples),
+        "LowerBack_ACCEL_x": np.random.uniform(-2, 2, num_samples),
+        "LowerBack_ACCEL_y": np.random.uniform(-2, 2, num_samples),
+        "LowerBack_ACCEL_z": np.random.uniform(-2, 2, num_samples),
     }
     acceleration_data_single_axis = pd.DataFrame(acceleration_data_single_axis)
 
     # Call detect without gait sequences
-    icd.detect(data=acceleration_data_single_axis, gait_sequences=pd.DataFrame(), sampling_freq_Hz=100)
+    icd.detect(
+        data=acceleration_data_single_axis,
+        gait_sequences=pd.DataFrame(),
+        sampling_freq_Hz=100,
+    )
+
 
 def test_detect_no_plot():
     # Initialize the class
@@ -194,30 +201,40 @@ def test_detect_no_plot():
 
     # Create a DataFrame with only one column for each axis
     acceleration_data_single_axis = {
-        'LowerBack_ACCEL_x': np.random.uniform(-2, 2, num_samples),
-        'LowerBack_ACCEL_y': np.random.uniform(-2, 2, num_samples),
-        'LowerBack_ACCEL_z': np.random.uniform(-2, 2, num_samples),
+        "LowerBack_ACCEL_x": np.random.uniform(-2, 2, num_samples),
+        "LowerBack_ACCEL_y": np.random.uniform(-2, 2, num_samples),
+        "LowerBack_ACCEL_z": np.random.uniform(-2, 2, num_samples),
     }
     acceleration_data_single_axis = pd.DataFrame(acceleration_data_single_axis)
 
     # Call detect without gait sequences
-    icd.detect(data=acceleration_data_single_axis, gait_sequences=pd.DataFrame(), sampling_freq_Hz=100)
+    icd.detect(
+        data=acceleration_data_single_axis,
+        gait_sequences=pd.DataFrame(),
+        sampling_freq_Hz=100,
+    )
 
     # Check if initial_contacts_ is None
-    assert icd.initial_contacts_ is None, "Initial contacts should be None if no gait sequences are provided"
+    assert (
+        icd.initial_contacts_ is None
+    ), "Initial contacts should be None if no gait sequences are provided"
+
 
 # Test data
 num_samples = 50000  # Number of samples
 acceleration_data = {
-    'LARM_ACCEL_x': np.random.uniform(-2, 2, num_samples),
-    'LARM_ACCEL_y': np.random.uniform(-2, 2, num_samples),
-    'LARM_ACCEL_z': np.random.uniform(-2, 2, num_samples),
+    "LARM_ACCEL_x": np.random.uniform(-2, 2, num_samples),
+    "LARM_ACCEL_y": np.random.uniform(-2, 2, num_samples),
+    "LARM_ACCEL_z": np.random.uniform(-2, 2, num_samples),
 }
 acceleration_data = pd.DataFrame(acceleration_data)
 sampling_frequency = 100  # Sampling frequency
-time_index = pd.date_range(start='2024-02-07', periods=num_samples, freq=f'{1/sampling_frequency}S')
-acceleration_data['timestamp'] = time_index
-acceleration_data.set_index('timestamp', inplace=True)
+time_index = pd.date_range(
+    start="2024-02-07", periods=num_samples, freq=f"{1/sampling_frequency}S"
+)
+acceleration_data["timestamp"] = time_index
+acceleration_data.set_index("timestamp", inplace=True)
+
 
 # Tests for PhysicalActivityMonitoring
 def test_pam_detect():
@@ -316,6 +333,7 @@ def test_invalid_plot_results_type_pam():
             plot_results=invalid_plot_results,
         )
 
+
 def test_invalid_sampling_freq_type_error_handling():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -335,6 +353,7 @@ def test_invalid_sampling_freq_type_error_handling():
             plot_results=True,
         )
 
+
 def test_invalid_thresholds_type_error_handling():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -353,12 +372,14 @@ def test_invalid_thresholds_type_error_handling():
 
 def test_empty_input_data():
     # Define empty_data with required columns
-    empty_data = pd.DataFrame({
-        'LARM_ACCEL_x': [],
-        'LARM_ACCEL_y': [],
-        'LARM_ACCEL_z': [],
-    })
-    
+    empty_data = pd.DataFrame(
+        {
+            "LARM_ACCEL_x": [],
+            "LARM_ACCEL_y": [],
+            "LARM_ACCEL_z": [],
+        }
+    )
+
     # Initialize the PhysicalActivityMonitoring class
     pam = PhysicalActivityMonitoring()
 
@@ -366,10 +387,13 @@ def test_empty_input_data():
     with pytest.raises(ValueError):
         pam.detect(data=empty_data, sampling_freq_Hz=sampling_frequency)
 
+
 def test_single_data_point():
     pam = PhysicalActivityMonitoring()
-    single_data_point = pd.DataFrame({'LARM_ACCEL_x': [0], 'LARM_ACCEL_y': [1], 'LARM_ACCEL_z': [2]},
-                                     index=[pd.Timestamp('2024-02-07 00:00:00')])
+    single_data_point = pd.DataFrame(
+        {"LARM_ACCEL_x": [0], "LARM_ACCEL_y": [1], "LARM_ACCEL_z": [2]},
+        index=[pd.Timestamp("2024-02-07 00:00:00")],
+    )
     with pytest.raises(ValueError):
         pam.detect(data=single_data_point, sampling_freq_Hz=sampling_frequency)
 
@@ -435,7 +459,7 @@ def test_plot_results():
         sampling_freq_Hz=sampling_frequency,
         thresholds_mg=thresholds_mg,
         epoch_duration_sec=epoch_duration_sec,
-        plot_results=plot_results
+        plot_results=plot_results,
     )
 
     # Save the figure as a temporary file
@@ -447,7 +471,9 @@ def test_plot_results():
 
     # Cleanup the temporary file
     import os
+
     os.remove(temp_file)
+
 
 # Run the tests with pytest
 if __name__ == "__main__":

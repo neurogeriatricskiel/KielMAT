@@ -1733,6 +1733,7 @@ def test_classify_physical_activity_invalid_threshold_type():
             epoch_duration,
         )
 
+
 # Test function for the 'classify_physical_activity' function: case 5
 def test_classify_physical_activity_invalid_threshold_values():
     invalid_data = pd.DataFrame(
