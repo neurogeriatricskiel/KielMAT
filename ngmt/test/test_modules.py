@@ -161,8 +161,6 @@ def test_plot_results_type():
 
 
 # Tests for ParaschivIonescuInitialContactDetection
-
-
 def test_detect_empty_data():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
