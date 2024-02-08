@@ -221,7 +221,7 @@ def _iir_highpass_filter(signal, sampling_frequency=40):
             "Invalid input data. The 'signal' must be a NumPy array, and 'sampling_frequency' must be a positive number."
         )
 
-    if sampling_frequency == 40.0:
+    if sampling_frequency == 40:
         # The numerator coefficient vector of the high-pass filter.
         numerator_coefficient = np.array([1, -1])
 
@@ -230,23 +230,17 @@ def _iir_highpass_filter(signal, sampling_frequency=40):
 
         # Apply the FIR low-pass filter using filtfilt
         filtered_signal = scipy.signal.filtfilt(
-            numerator_coefficient, denominator_coefficient, signal
+            numerator_coefficient,
+            denominator_coefficient,
+            signal,
+            axis=0,
+            padtype="odd",
+            padlen=3
+            * (max(len(numerator_coefficient), len(denominator_coefficient)) - 1),
         )
     else:
         # Define filter coefficients based on your specific requirements
         pass
-
-    # Define the denominator coefficients as [1.0] to perform FIR filtering
-    denominator_coefficient = np.array(
-        [
-            1.0,
-        ]
-    )
-
-    # Apply the FIR low-pass filter using filtfilt
-    filtered_signal = scipy.signal.filtfilt(
-        numerator_coefficient, denominator_coefficient, filtered_signal
-    )
 
     # Return the filtered signal
 
@@ -275,8 +269,6 @@ def apply_continuous_wavelet_transform(
             raise ValueError("Input data must be a numpy.ndarray")
         if not isinstance(scales, int) or scales <= 0:
             raise ValueError("Scales must be a positive integer")
-        if not isinstance(wavelet, str):
-            raise ValueError("Wavelet must be a string")
         if not isinstance(sampling_frequency, (int, float)) or sampling_frequency <= 0:
             raise ValueError("Sampling frequency must be a positive number")
 
@@ -318,12 +310,6 @@ def apply_successive_gaussian_filters(data):
     filtered_signal = data
 
     for sigma, kernel_size, mode in zip(sigma_params, kernel_size_params, mode_params):
-        if sigma <= 0 or kernel_size <= 0:
-            raise ValueError("Sigma and kernel size must be positive values.")
-        if mode not in ["reflect", "constant", "nearest"]:
-            raise ValueError(
-                "Invalid mode. Supported modes are 'reflect', 'constant', and 'nearest'."
-            )
 
         gaussian_radius = (kernel_size - 1) / 2
         filtered_signal = scipy.ndimage.gaussian_filter1d(
@@ -853,12 +839,6 @@ def max_peaks_between_zc(input_signal):
         pks (numpy.ndarray): Signed max/min values between zero crossings.
         ipks (numpy.ndarray): Locations of the peaks in the original vector.
     """
-    # Error handling for invalid input data
-    if input_signal.shape[0] == 1:
-        raise ValueError("X must be a column vector")
-    if input_signal.size != len(input_signal):
-        raise ValueError("X must be a column vector")
-
     # Flatten the input vector to ensure it's 1D.
     input_signal = input_signal.flatten()
 
@@ -1062,18 +1042,18 @@ def classify_physical_activity(
     processed_data = input_data.groupby(pd.Grouper(freq=f"{epoch_duration}S")).mean()
 
     # Classify activity levels based on threshold values
-    processed_data["sedentary"] = (processed_data["acc"] < sedentary_threshold).astype(
+    processed_data["sedentary"] = (processed_data["enmo"] < sedentary_threshold).astype(
         int
     )
     processed_data["light"] = (
-        (sedentary_threshold <= processed_data["acc"])
-        & (processed_data["acc"] < light_threshold)
+        (sedentary_threshold <= processed_data["enmo"])
+        & (processed_data["enmo"] < light_threshold)
     ).astype(int)
     processed_data["moderate"] = (
-        (light_threshold <= processed_data["acc"])
-        & (processed_data["acc"] < moderate_threshold)
+        (light_threshold <= processed_data["enmo"])
+        & (processed_data["enmo"] < moderate_threshold)
     ).astype(int)
-    processed_data["vigorous"] = (processed_data["acc"] >= moderate_threshold).astype(
+    processed_data["vigorous"] = (processed_data["enmo"] >= moderate_threshold).astype(
         int
     )
 
@@ -1081,4 +1061,6 @@ def classify_physical_activity(
     processed_data.reset_index(inplace=True)
 
     # Return a DataFrame with the time, averaged ENMO, and classes of sedentary, light, moderate and vigorous shown with 1 or 0.
-    return processed_data[["time", "acc", "sedentary", "light", "moderate", "vigorous"]]
+    return processed_data[
+        ["timestamp", "enmo", "sedentary", "light", "moderate", "vigorous"]
+    ]
