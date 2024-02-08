@@ -225,7 +225,7 @@ class PhysicalActivityMonitoring:
             fig, ax = plt.subplots(figsize=(14, 8))
 
             # Choose the 'turbo' colormap for coloring each day
-            colormap = plt.cm.get_cmap("turbo", len(hourly_average_data.index))
+            colormap = plt.cm.turbo
 
             # Plot thresholds
             ax.axhline(
