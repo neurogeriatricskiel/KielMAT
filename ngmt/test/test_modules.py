@@ -385,6 +385,7 @@ def test_empty_input_data():
     with pytest.raises(ValueError):
         pam.detect(data=empty_data, sampling_freq_Hz=sampling_frequency)
 
+
 def test_pam_detect_full_coverage():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -423,7 +424,6 @@ def test_pam_detect_full_coverage():
     assert all(
         col in physical_activities_.columns for col in expected_columns
     ), "DataFrame should have the expected columns."
-
 
 
 # Run the tests with pytest
