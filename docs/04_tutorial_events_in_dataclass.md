@@ -2,7 +2,7 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Tue 08 Feb 2024
+**Last update:** Thu 08 Feb 2024
 
 ## Learning objectives
 By the end of this tutorial:
@@ -183,9 +183,8 @@ plt.tight_layout()
 plt.show()
 ```
 
-
     
-![png](04_tutorial_events_in_dataclass_files/04_tutorial_events_in_dataclass_8_0.png)
+![png](04_tutorial_events_in_dataclass_files/04_tutorial_events_in_dataclass_1.png)
     
 
 
@@ -349,9 +348,7 @@ plt.yticks(fontsize=14)
 plt.tight_layout()
 plt.show()
 ```
-
-
     
-![png](04_tutorial_events_in_dataclass_files/04_tutorial_events_in_dataclass_17_0.png)
+![png](04_tutorial_events_in_dataclass_files/04_tutorial_events_in_dataclass_2.png)
     
 

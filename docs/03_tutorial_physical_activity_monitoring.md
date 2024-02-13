@@ -83,7 +83,6 @@ Now, we are running the physical activity monitoring algorithm from the main mod
 - **Plot Results:** `plot_results`, if set to True, generates a plot showing the average Euclidean Norm Minus One (ENMO) per hour for each day. The default is True.
 
 
-
 ```python
 # Create an instance of the PhysicalActivityMonitoring class
 pam = PhysicalActivityMonitoring()
@@ -109,11 +108,6 @@ print(physical_activities)
 ```
 
 
-    
-![png](03_tutorial_physical_activity_monitoring_files/03_tutorial_physical_activity_monitoring_7_0.png)
-    
-
-
              date  sedentary_mean_enmo  sedentary_time_min  light_mean_enmo  \
     0  2016-10-05            19.220017               491.5        59.072274   
     
@@ -122,4 +116,7 @@ print(physical_activities)
     
        vigorous_time_min  
     0                0.0  
+    
+    
+![png](03_tutorial_physical_activity_monitoring_files/03_tutorial_physical_activity_monitoring_1.png)
     

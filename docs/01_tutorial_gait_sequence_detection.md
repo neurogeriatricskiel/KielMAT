@@ -52,7 +52,6 @@ The participant was assessed for 2.5 hours in the real-world while doing differe
 .. [`3`] Mazzà, Claudia, et al. "Technical validation of real-world monitoring of gait: a multicentric observational study." BMJ open 11.12 (2021): e050785. http://dx.doi.org/10.1136/bmjopen-2021-050785
 
 
-
 ```python
 # The 'file_path' variable holds the absolute path to the data file
 file_path = (
@@ -125,9 +124,8 @@ plt.grid(visible=None, which="both", axis="both")
 plt.show()
 ```
 
-
     
-![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_7_0.png)
+![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_1.png)
     
 
 
@@ -176,12 +174,9 @@ plt.grid(visible=None, which="both", axis="both")
 # Show the plot
 plt.show()
 ```
-
-
     
-![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_9_0.png)
+![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_2.png)
     
-
 
 ## Applying Paraschiv-Ionescu gait sequence detection algorithm
 Now, we are running Paraschiv-Ionescu gait sequence detection algorithm from gsd module [`NGMT.ngmt.modules.gsd._paraschiv.ParaschivIonescuGaitSequenceDetection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/gsd/_paraschiv.py) to detect gait sequences.  The inputs consist of accelerometer data (N, 3) for the x, y, and z axes, the initial sampling frequency of the data, and a plot option. Optionally, if the plot_results flag is set to True, a visualization plot is generated to display the preprocessed data and the detected gait sequences.
@@ -210,14 +205,6 @@ print(recording.events)
 ```
 
     86 gait sequence(s) detected.
-    
-
-
-    
-![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_11_1.png)
-    
-
-
     {'SU':        onset  duration     event_type tracking_systems tracked_points
     0      4.500     5.250  gait sequence               SU      LowerBack
     1     90.225    10.300  gait sequence               SU      LowerBack
@@ -233,6 +220,7 @@ print(recording.events)
     
     [86 rows x 5 columns]}
     
+![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_3.png)
 
 ## Plot gait sequence events
 In the following, the raw data of the lower back sensor is plotted with the detected events. The events are plotted as vertical lines. The events are:
@@ -290,9 +278,7 @@ plt.show()
     tracked_points          LowerBack
     Name: 0, dtype: object
     
-
-
     
-![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_13_1.png)
+![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_4.png)
     
 
