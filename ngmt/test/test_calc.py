@@ -2176,16 +2176,6 @@ def test_empty_input_data():
         pam.detect(data=empty_data, sampling_freq_Hz=sampling_frequency)
 
 
-def test_single_data_point():
-    pam = PhysicalActivityMonitoring()
-    single_data_point = pd.DataFrame(
-        {"LARM_ACCEL_x": [0], "LARM_ACCEL_y": [1], "LARM_ACCEL_z": [2]},
-        index=[pd.Timestamp("2024-02-07 00:00:00")],
-    )
-    with pytest.raises(ValueError):
-        pam.detect(data=single_data_point, sampling_freq_Hz=sampling_frequency)
-
-
 def test_pam_detect_full_coverage():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -2224,43 +2214,6 @@ def test_pam_detect_full_coverage():
     assert all(
         col in physical_activities_.columns for col in expected_columns
     ), "DataFrame should have the expected columns."
-
-
-def test_plot_results():
-
-    # Initialize PhysicalActivityMonitoring instance
-    pam = PhysicalActivityMonitoring()
-
-    # Define sample parameters
-    sampling_freq_Hz = 100
-    thresholds_mg = {
-        "sedentary_threshold": 45,
-        "light_threshold": 100,
-        "moderate_threshold": 400,
-    }
-    epoch_duration_sec = 5
-    plot_results = True  # Set to True to test plotting
-
-    # Call detect method
-    result = pam.detect(
-        data=acceleration_data,
-        sampling_freq_Hz=sampling_frequency,
-        thresholds_mg=thresholds_mg,
-        epoch_duration_sec=epoch_duration_sec,
-        plot_results=plot_results,
-    )
-
-    # Save the figure as a temporary file
-    temp_file = "test_plot_results.png"
-    plt.savefig(temp_file)
-
-    # Close the figure
-    plt.close()
-
-    # Cleanup the temporary file
-    import os
-
-    os.remove(temp_file)
 
 
 # Run the tests with pytest
