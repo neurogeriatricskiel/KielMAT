@@ -125,7 +125,7 @@ plt.show()
 ```
 
     
-![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_1.png)
+![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_files_1.png)
     
 
 
@@ -175,7 +175,7 @@ plt.grid(visible=None, which="both", axis="both")
 plt.show()
 ```
     
-![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_2.png)
+![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_files_2.png)
     
 
 ## Applying Paraschiv-Ionescu gait sequence detection algorithm
@@ -220,7 +220,7 @@ print(recording.events)
     
     [86 rows x 5 columns]}
     
-![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_3.png)
+![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_files_3.png)
 
 ## Plot gait sequence events
 In the following, the raw data of the lower back sensor is plotted with the detected events. The events are plotted as vertical lines. The events are:
@@ -279,6 +279,6 @@ plt.show()
     Name: 0, dtype: object
     
     
-![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_4.png)
+![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_files_4.png)
     
 
