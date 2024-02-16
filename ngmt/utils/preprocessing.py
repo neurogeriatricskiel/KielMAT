@@ -9,6 +9,8 @@ import scipy.io
 import scipy.integrate
 import scipy.ndimage
 import pywt
+import numpy.lib.stride_tricks
+
 
 # use the importlib.resources package to access the FIR_2_3Hz_40.mat file
 with pkg_resources.path(
@@ -122,15 +124,15 @@ def lowpass_filter(signal, method="savgol", order=None, **kwargs):
 
     elif method == "butter":
         # Extract parameters specific to butterworth filter
-        cutoff_freq_hz = kwargs.get("cutoff_freq_hz", 100.0)
-        sampling_rate_hz = kwargs.get("sampling_rate_hz", 1000.0)
+        cutoff_freq_hz = kwargs.get("cutoff_freq_hz", 5.0)
+        sampling_rate_hz = kwargs.get("sampling_rate_hz", 200.0)
 
         if order is None:
             raise ValueError("For Butterworth filter, 'order' must be specified.")
 
         # Apply butterworth lowpass filter
         b, a = scipy.signal.butter(
-            order, cutoff_freq_hz, btype="low", analog=False, fs=sampling_rate_hz
+            order, cutoff_freq_hz/(sampling_rate_hz/2), btype="low", analog=False, fs=sampling_rate_hz
         )
         filt_signal = scipy.signal.filtfilt(b, a, signal)
         return filt_signal
@@ -1064,3 +1066,147 @@ def classify_physical_activity(
     return processed_data[
         ["timestamp", "enmo", "sedentary", "light", "moderate", "vigorous"]
     ]
+
+
+# Function to estimate tilt angle
+def tilt_angle_estimation(data, sampling_frequency_hz):
+    """
+    Estimate tilt angle using simple method with gyro data.
+
+    Args:
+        data (ndarray, DataFrame): Array or DataFrame containing gyro data.
+        sampling_frequency_hz (float, int): Sampling frequency.
+
+    Returns:
+        tilt (ndarray): Tilt angle estimate (deg).
+    """
+    # Error handling for invalid input data
+    if isinstance(data, pd.DataFrame):
+        data = data.to_numpy()
+
+    # Check if data is a numpy array
+    if not isinstance(data, np.ndarray):
+        raise TypeError("Input data must be a numpy array or pandas DataFrame")
+
+    gyro_y = data[:, 1]
+    
+    # Integrate gyro data over time to estimate tilt
+    tilt_angle = -np.cumsum(gyro_y) / sampling_frequency_hz
+    
+    # Convert tilt angle from rad to deg
+    tilt_angle = tilt_angle * 180 / np.pi
+
+    return tilt_angle
+
+# Function for highpass filtering
+def highpass_filtering(signal, method="butter", order=1, **kwargs):
+    """
+    Apply a high-pass filter to the input signal using the specified method.
+
+    Args:
+        signal (np.ndarray): The input signal to be filtered.
+        method (str): The filter method to use ("butter").
+        order (int): The order of the filter (applicable for "butter" method).
+        **kwargs: Additional keyword arguments specific to the filtering method.
+    Returns:
+        np.ndarray: The filtered signal.
+
+    """
+    method = method.lower()
+
+    if method == "butter":
+        # Extract parameters specific to butterworth filter
+        cutoff_freq_hz = kwargs.get("cutoff_freq_hz", 0.001)
+        sampling_freq_hz = kwargs.get("sampling_rate_hz", 200.0)
+
+        # Apply butterworth lowpass filter
+        b, a = scipy.signal.butter(
+            order, cutoff_freq_hz/(sampling_freq_hz/2), btype="high", analog=False
+        )
+        filtered_signal = scipy.signal.filtfilt(b, a, signal)
+    
+    else:
+        raise ValueError(f"Unsupported filtering method: {method}")
+
+    return filtered_signal
+
+
+#  Function for denoising using wavelet decomposition
+def wavelet_decomposition(data, level, wavetype):
+    """
+    Denoise a signal using wavelet decomposition and reconstruction.
+
+    Args:
+        data (ndarray): Input signal to denoise.
+        level (int): Order of wavelet decomposition.
+        wavetype (str): Wavelet type to use.
+
+    Returns:
+        denoised_signal (ndarray): Denoised signal.
+    """
+    # Error handling for invalid input data
+    if not isinstance(data, np.ndarray):
+        raise ValueError("signal must be a numpy array.")
+    if not isinstance(level, int) or level <= 0:
+        raise ValueError("order must be a positive integer.")
+    if not isinstance(wavetype, str):
+        raise ValueError("wavetype must be a string.")
+
+    # Perform wavelet decomposition
+    coeffs = pywt.wavedec(data, wavetype, mode='smooth', level=level)
+    
+    # Zero out wavelet coefficients beyond specified order
+    for i in range(1, len(coeffs)):
+        if i != 0:  # Keep the first set of coefficients
+            coeffs[i][:] = 0
+
+    # Reconstruct signal from coefficients
+    denoised_signal = pywt.waverec(coeffs, wavetype, mode='smooth')
+
+    return denoised_signal
+
+
+# Function for computing moving variance
+def moving_var(data, window):
+    """
+    Compute the centered moving variance.
+
+    Args
+    data : numpy.ndarray
+        Data (int) : Data to take the moving variance on window
+        Window size (int) : Window size for the moving variance.
+
+    Returns
+        m_var (numpy.ndarray) : Moving variance
+    """
+
+    # Initialize an array to store the moving variance
+    m_var = np.zeros(data.shape)
+
+    # Ensure the window size is at least 2
+    if window < 2:
+        window = 2
+
+    # Convert window to int if it's a float
+    if isinstance(window, float):
+        window = int(window)
+        
+    # Calculate the padding required
+    pad = int(np.ceil(window / 2))
+
+    # Define the shape and strides for creating rolling windows
+    shape = data.shape[:-1] + (data.shape[-1] - window + 1, window)
+    strides = data.strides + (data.strides[-1],)
+    
+    # Create rolling windows from the input data
+    rw_seq = np.lib.stride_tricks.as_strided(data, shape=shape, strides=strides)
+
+    # Compute the variance along the rolling windows and store it in m_var
+    n = rw_seq.shape[0]
+    m_var[pad:pad + n] = np.var(rw_seq, axis=-1, ddof=1)
+
+    # Copy the variance values to the padding regions
+    m_var[:pad], m_var[pad + n:] = m_var[pad], m_var[-pad - 1]
+    
+    return m_var
+

@@ -50,9 +50,12 @@ from ngmt.utils.preprocessing import (
     max_peaks_between_zc,
     signal_decomposition_algorithm,
     classify_physical_activity,
+    tilt_angle_estimation,
+    highpass_filtering,
+    wavelet_decomposition,
+    moving_var
+
 )
-from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
-from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
 
 # Generate a random sinusoidal signal with varying amplitudes to use as an input in testing functions
 time = np.linspace(0, 100, 1000)  # Time vector from 0 to 100 with 1000 samples
@@ -2214,6 +2217,144 @@ def test_pam_detect_full_coverage():
     assert all(
         col in physical_activities_.columns for col in expected_columns
     ), "DataFrame should have the expected columns."
+
+
+# Test function for highpass_filtering function
+def test_highpass_filtering():
+    """
+    Test for highpass_filtering function in the 'ngmt.utils.preprocessing' module.
+    """
+    # Generate a random input signal
+    input_signal = np.random.randn(1000)
+    
+    # Test with Butterworth filter
+    filtered_signal = highpass_filtering(input_signal, method="butter", order=5, cutoff_freq_hz=0.5, sampling_rate_hz=1000)
+    
+    # Assertions
+    assert isinstance(filtered_signal, np.ndarray), "Filtered signal should be a NumPy array."
+    assert len(filtered_signal) == len(input_signal), "Filtered signal length should match input signal length."
+    assert not np.isnan(filtered_signal).any(), "Filtered signal contains NaN values."
+    assert not np.isinf(filtered_signal).any(), "Filtered signal contains infinite values."
+
+
+# Test function for highpass_filtering function: case of invalid method
+def test_highpass_filtering_invalid_method():
+    # Generate a random input signal
+    input_signal = np.random.randn(1000)
+    
+    # Test with invalid method
+    with pytest.raises(ValueError, match="Unsupported filtering method"):
+        highpass_filtering(input_signal, method="invalid_method")
+
+
+# Test function for wavelet_decomposition function
+def test_wavelet_decomposition():
+    """
+    Test for wavelet_decomposition function in the 'ngmt.utils.preprocessing' module.
+    """
+    # Generate a random input signal
+    input_signal = np.random.randn(1000)
+    
+    # Test with valid inputs
+    denoised_signal = wavelet_decomposition(input_signal, level=3, wavetype='haar')
+    
+    # Assertions
+    assert isinstance(denoised_signal, np.ndarray), "Denoised signal should be a NumPy array."
+    assert len(denoised_signal) == len(input_signal), "Denoised signal length should match input signal length."
+    assert not np.isnan(denoised_signal).any(), "Denoised signal contains NaN values."
+    assert not np.isinf(denoised_signal).any(), "Denoised signal contains infinite values."
+
+
+# Test function for moving_var function
+def test_moving_var():
+    """
+    Test for moving_var function in the 'ngmt.utils.preprocessing' module.
+    """
+    # Generate a random input signal
+    input_signal = np.random.randn(1000)
+    
+    # Test with valid inputs
+    moving_variance = moving_var(input_signal, window=10)
+    
+    # Assertions
+    assert isinstance(moving_variance, np.ndarray), "Moving variance should be a NumPy array."
+    assert len(moving_variance) == len(input_signal), "Moving variance length should match input signal length."
+    assert not np.isnan(moving_variance).any(), "Moving variance contains NaN values."
+    assert not np.isinf(moving_variance).any(), "Moving variance contains infinite values."
+
+# Test function for test_tilt_angle_estimation function
+def test_tilt_angle_estimation():
+    """
+    Test for tilt_angle_estimation function.
+    """
+    # Generate some sample gyro data
+    gyro_data = np.array([[0.1, 0.2, 0.3],
+                          [0.2, 0.3, 0.4],
+                          [0.3, 0.4, 0.5],
+                          [0.4, 0.5, 0.6]])
+
+    sampling_frequency_hz = 10  # Sampling frequency of 10 Hz
+
+    # Calculate expected tilt angle
+    expected_tilt_angle = np.array([-0.02, -0.05, -0.1, -0.18])  # Manually calculated
+
+    # Test tilt_angle_estimation function
+    tilt_angle = tilt_angle_estimation(gyro_data, sampling_frequency_hz)
+
+    # Assertions
+    assert isinstance(tilt_angle, np.ndarray), "Tilt angle should be a NumPy array."
+    assert len(tilt_angle) == len(gyro_data), "Tilt angle length should match input data length."
+
+    # Test with DataFrame input
+    gyro_df = pd.DataFrame(gyro_data)
+    tilt_angle_df = tilt_angle_estimation(gyro_df, sampling_frequency_hz)
+
+    # Assertions for DataFrame input
+    assert isinstance(tilt_angle_df, np.ndarray), "Tilt angle from DataFrame should be a NumPy array."
+    assert len(tilt_angle_df) == len(gyro_data), "Tilt angle length from DataFrame should match input data length."
+
+    # Test for invalid input type
+    with pytest.raises(TypeError, match="Input data must be a numpy array or pandas DataFrame"):
+        tilt_angle_estimation(list(gyro_data), sampling_frequency_hz)  # Passing a list instead of numpy array
+
+# Test function for test_PhysicalActivityMonitoring
+def test_PhysicalActivityMonitoring():
+    """
+    Test for PhysicalActivityMonitoring class.
+    """
+    # Generate some sample accelerometer data
+    num_samples = 50000  # Number of samples
+    acceleration_data = {
+        "LARM_ACCEL_x": np.random.uniform(-2, 2, num_samples),
+        "LARM_ACCEL_y": np.random.uniform(-2, 2, num_samples),
+        "LARM_ACCEL_z": np.random.uniform(-2, 2, num_samples),
+    }
+    acceleration_data = pd.DataFrame(acceleration_data)
+    sampling_frequency = 100  # Sampling frequency
+    time_index = pd.date_range(
+        start="2024-02-07", periods=num_samples, freq=f"{1/sampling_frequency}S"
+    )
+    acceleration_data["timestamp"] = time_index
+    acceleration_data.set_index("timestamp", inplace=True)
+
+    # Initialize PhysicalActivityMonitoring instance
+    pam = PhysicalActivityMonitoring()
+
+    # Test detect method
+    pam.detect(
+        data=acceleration_data,
+        sampling_freq_Hz=100,
+        thresholds_mg={
+            "sedentary_threshold": 45,
+            "light_threshold": 100,
+            "moderate_threshold": 400,
+        },
+        epoch_duration_sec=5,
+        plot_results=False
+    )
+
+    # Assertions for physical_activities_ attribute
+    assert isinstance(pam.physical_activities_, pd.DataFrame), "physical_activities_ should be a DataFrame."
 
 
 # Run the tests with pytest
