@@ -90,7 +90,7 @@ classDiagram
 ```
 
 > [!NOTE]  
-> In the examples you find a tutorial that explains the basics of the dataclass and how to work with them: [tutorial_basics](tutorial_basics.md).
+> In the examples you find a [tutorial (the basics of NGMT)](https://neurogeriatricskiel.github.io/NGMT/00_tutorial_basics/) that explains the basics of the dataclass and how to work with them.
 
 ## Documentation
 The full documentation can be found [here](https://neurogeriatricskiel.github.io/NGMT/).
