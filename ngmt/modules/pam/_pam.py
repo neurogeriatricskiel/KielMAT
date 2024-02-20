@@ -17,7 +17,7 @@ class PhysicalActivityMonitoring:
           sampling frequency (sampling_freq_Hz) is in Hz, with a default value of 100. Thresholds
           (thresholds_mg) are provided as a dictionary containing threshold values for physical
           activity detection in mg unit. The epoch duration (epoch_duration_sec) is defined in
-          seconds, with a default of 5 seconds. The last input is plot_results, which, if set to
+          seconds, with a default of 5 seconds. The last input is plot, which, if set to
           True, generates a plot showing the average Euclidean Norm Minus One (ENMO) per hour for
           each date. The default is True.
 
@@ -33,14 +33,14 @@ class PhysicalActivityMonitoring:
           > 400 mg.
 
         - Classify Activities: Classify different levels of activities and calculate the time spent
-          on each activity level for each day. If `plot_results` is True, the function generates a
+          on each activity level for each day. If `plot` is True, the function generates a
           plot showing the averaged ENMO values for each day.
 
     Attributes:
         physical_activities_ (pd.DataFrame): DataFrame containing physical activity information for each day.
 
     Methods:
-        detect(data, sampling_freq_Hz, thresholds_mg, epoch_duration_sec, plot_results):
+        detect(data, sampling_freq_Hz, thresholds_mg, epoch_duration_sec, plot):
             Detects gait sequences on the accelerometer signal.
 
         __init__():
@@ -59,7 +59,7 @@ class PhysicalActivityMonitoring:
                         "moderate_threshold": 400,
                     },
                     epoch_duration_sec=5,
-                    plot_results=True)
+                    plot=True)
             >>> physical_activities = pam.physical_activities_
             >>> print(physical_activities)
                            sedentary_mean_mg  sedentary_time_min  light_mean_mg  light_time_min  moderate_mean_mg  moderate_time_min  vigorous_mean_mg  vigorous_time_min
@@ -92,7 +92,7 @@ class PhysicalActivityMonitoring:
             "moderate_threshold": 400,
         },
         epoch_duration_sec: int = 5,
-        plot_results: bool = True,
+        plot: bool = True,
     ) -> pd.DataFrame:
         """
         Detects and classifies physical activity levels.
@@ -102,7 +102,7 @@ class PhysicalActivityMonitoring:
             sampling_freq_Hz (float): Sampling frequency of the accelerometer data (in Hertz).
             thresholds_mg (dict): Dictionary containing threshold values for physical activity detection.
             epoch_duration_sec (int): Duration of each epoch in seconds.
-            plot_results (bool): If True, generates a plot showing the average Euclidean Norm Minus One (ENMO). Default is True.
+            plot (bool): If True, generates a plot showing the average Euclidean Norm Minus One (ENMO). Default is True.
 
         Returns:
             pd.DataFrame: Contains date, sedentary_mean_mg, sedentary_time_min, light_mean_mg, light_time_min,
@@ -118,7 +118,7 @@ class PhysicalActivityMonitoring:
         if not isinstance(epoch_duration_sec, int) or epoch_duration_sec <= 0:
             raise ValueError("Epoch duration must be a positive integer.")
 
-        if not isinstance(plot_results, bool):
+        if not isinstance(plot, bool):
             raise ValueError("Plot results must be a boolean (True or False).")
 
         # Select accelerometer data columns and convert units from m/s^2 to g
@@ -211,8 +211,8 @@ class PhysicalActivityMonitoring:
         # Return gait_sequences_ as an output
         self.physical_activities_ = physical_activities_
 
-        # Plot results if set to true
-        if plot_results:
+        # Plot if set to true
+        if plot:
             # Group by date and hour to calculate the average ENMO for each hour
             hourly_average_data = processed_data.groupby(
                 [processed_data.index.date, processed_data.index.hour]
@@ -221,49 +221,6 @@ class PhysicalActivityMonitoring:
             # Reshape the data to have dates as rows, hours as columns, and average ENMO as values
             hourly_average_data = hourly_average_data.unstack()
 
-            # Plotting
-            fig, ax = plt.subplots(figsize=(14, 8))
-
-            # Choose the 'turbo' colormap for coloring each day
-            colormap = plt.cm.turbo
-
-            # Plot thresholds
-            ax.axhline(
-                y=thresholds_mg.get("sedentary_threshold", 45),
-                color="y",
-                linestyle="--",
-                label="Sedentary threshold",
-            )
-            ax.axhline(
-                y=thresholds_mg.get("light_threshold", 100),
-                color="g",
-                linestyle="--",
-                label="Light physical activity threshold",
-            )
-            ax.axhline(
-                y=thresholds_mg.get("moderate_threshold", 400),
-                color="r",
-                linestyle="--",
-                label="Moderate physical activity threshold",
-            )
-
-            # Plot each day data with a different color
-            for i, date in enumerate(hourly_average_data.index):
-                color = colormap(i)
-                ax.plot(hourly_average_data.loc[date], label=str(date), color=color)
-
-            # Customize plot appearance
-            plt.xticks(range(24), [str(i).zfill(2) for i in range(24)])
-            plt.xlabel("Time (h)", fontsize=16)
-            plt.ylabel("ENMO (mg)", fontsize=16)
-            plt.title(
-                "Hourly averaged ENMO for each day along with activity level thresholds"
-            )
-            plt.legend(loc="upper left", fontsize=16)
-            plt.grid(visible=None, which="both", axis="both")
-            plt.xticks(fontsize=16)
-            plt.yticks(fontsize=16)
-            plt.tight_layout()
-            plt.show()
+            preprocessing.pam_plot_results(hourly_average_data, thresholds_mg)
 
         return self

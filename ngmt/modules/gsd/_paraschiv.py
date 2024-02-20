@@ -377,35 +377,9 @@ class ParaschivIonescuGaitSequenceDetection:
         # Return gait_sequences_ as an output
         self.gait_sequences_ = gait_sequences_
 
-        # Plot results if set to true
+        # If Plot_results set to true
         if plot_results:
-            plt.figure(figsize=(22, 14))
-            plt.plot(
-                np.arange(len(detected_activity_signal))
-                / (60 * self.target_sampling_freq_Hz),
-                detected_activity_signal,
-                label="Pre-processed acceleration signal",
-            )
-            plt.title("Detected gait sequences", fontsize=20)
-            plt.xlabel("Time (minutes)", fontsize=20)
-            plt.ylabel("Acceleration (g)", fontsize=20)
 
-            # Fill the area between start and end times
-            for index, sequence in gait_sequences_.iterrows():
-                onset = sequence["onset"] / 60  # Convert to minutes
-                end_time = (
-                    sequence["onset"] + sequence["duration"]
-                ) / 60  # Convert to minutes
-                plt.axvline(onset, color="g")
-                plt.axvspan(onset, end_time, facecolor="grey", alpha=0.8)
-            plt.legend(
-                ["Pre-processed acceleration signal", "Gait onset", "Gait duration"],
-                fontsize=20,
-                loc="best",
-            )
-            plt.grid(visible=None, which="both", axis="both")
-            plt.xticks(fontsize=20)
-            plt.yticks(fontsize=20)
-            plt.show()
+            preprocessing.gsd_plot_results(self.target_sampling_freq_Hz, detected_activity_signal, gait_sequences_)
 
         return self

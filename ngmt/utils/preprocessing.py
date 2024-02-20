@@ -564,9 +564,6 @@ def identify_pulse_trains(signal):
             `steps`: The number of steps in the pulse train.
     """
     # Error handling for invalid input data
-    if not isinstance(signal, np.ndarray):
-        raise ValueError("Input signal must be a NumPy array.")
-
     if signal.size < 1:
         raise ValueError("Input signal must not be empty.")
 
@@ -1068,6 +1065,101 @@ def classify_physical_activity(
     ]
 
 
+# Function to plot results of the gait sequence detection algorithm
+def gsd_plot_results(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_):
+    """
+    Plot the detected gait sequences.
+
+    Args:
+        target_sampling_freq_Hz (float) : Target sampling frequency.
+        detected_activity_signal (np.array): Pre-processed acceleration signal.
+        gait_sequences_ (pd.DataFrame): Detected gait sequences.
+
+    Returns:
+        plot
+    """
+    plt.figure(figsize=(22, 14))
+    plt.plot(
+        np.arange(len(detected_activity_signal))
+        / (60 * target_sampling_freq_Hz),
+        detected_activity_signal,
+        label="Pre-processed acceleration signal",
+    )
+    plt.title("Detected gait sequences", fontsize=20)
+    plt.xlabel("Time (minutes)", fontsize=20)
+    plt.ylabel("Acceleration (g)", fontsize=20)
+
+    # Fill the area between start and end times
+    for index, sequence in gait_sequences_.iterrows():
+        onset = sequence["onset"] / 60  # Convert to minutes
+        end_time = (
+            sequence["onset"] + sequence["duration"]
+        ) / 60  # Convert to minutes
+        plt.axvline(onset, color="g")
+        plt.axvspan(onset, end_time, facecolor="grey", alpha=0.8)
+    plt.legend(
+        ["Pre-processed acceleration signal", "Gait onset", "Gait duration"],
+        fontsize=20,
+        loc="best",
+    )
+    plt.grid(visible=None, which="both", axis="both")
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+    plt.show()
+
+
+# Function to plot results of the physical activity monitoring algorithm
+def pam_plot_results(hourly_average_data, thresholds_mg):
+    """
+    Plots the hourly averaged ENMO for each day along with activity level thresholds.
+
+    Args:
+        hourly_average_data (pd.DataFrame): DataFrame containing hourly averaged ENMO values.
+        thresholds_mg (dict): Dictionary containing threshold values for physical activity detection.
+    """
+    # Plotting
+    fig, ax = plt.subplots(figsize=(14, 8))
+
+    # Choose the 'turbo' colormap for coloring each day
+    colormap = plt.cm.turbo
+
+    # Plot thresholds
+    ax.axhline(
+        y=thresholds_mg.get("sedentary_threshold", 45),
+        color="y",
+        linestyle="--",
+        label="Sedentary threshold",
+    )
+    ax.axhline(
+        y=thresholds_mg.get("light_threshold", 100),
+        color="g",
+        linestyle="--",
+        label="Light physical activity threshold",
+    )
+    ax.axhline(
+        y=thresholds_mg.get("moderate_threshold", 400),
+        color="r",
+        linestyle="--",
+        label="Moderate physical activity threshold",
+    )
+
+    # Plot each day data with a different color
+    for i, date in enumerate(hourly_average_data.index):
+        color = colormap(i)
+        ax.plot(hourly_average_data.loc[date], label=str(date), color=color)
+
+    # Customize plot appearance
+    plt.xticks(range(24), [str(i).zfill(2) for i in range(24)])
+    plt.xlabel("Time (h)", fontsize=16)
+    plt.ylabel("ENMO (mg)", fontsize=16)
+    plt.title("Hourly averaged ENMO for each day along with activity level thresholds")
+    plt.legend(loc="upper left", fontsize=16)
+    plt.grid(visible=None, which="both", axis="both")
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+    plt.tight_layout()
+    plt.show()
+
 # Function to estimate tilt angle
 def tilt_angle_estimation(data, sampling_frequency_hz):
     """
@@ -1092,44 +1184,8 @@ def tilt_angle_estimation(data, sampling_frequency_hz):
     
     # Integrate gyro data over time to estimate tilt
     tilt_angle = -np.cumsum(gyro_y) / sampling_frequency_hz
-    
-    # Convert tilt angle from rad to deg
-    tilt_angle = tilt_angle * 180 / np.pi
 
     return tilt_angle
-
-# Function for highpass filtering
-def highpass_filtering(signal, method="butter", order=1, **kwargs):
-    """
-    Apply a high-pass filter to the input signal using the specified method.
-
-    Args:
-        signal (np.ndarray): The input signal to be filtered.
-        method (str): The filter method to use ("butter").
-        order (int): The order of the filter (applicable for "butter" method).
-        **kwargs: Additional keyword arguments specific to the filtering method.
-    Returns:
-        np.ndarray: The filtered signal.
-
-    """
-    method = method.lower()
-
-    if method == "butter":
-        # Extract parameters specific to butterworth filter
-        cutoff_freq_hz = kwargs.get("cutoff_freq_hz", 0.001)
-        sampling_freq_hz = kwargs.get("sampling_rate_hz", 200.0)
-
-        # Apply butterworth lowpass filter
-        b, a = scipy.signal.butter(
-            order, cutoff_freq_hz/(sampling_freq_hz/2), btype="high", analog=False
-        )
-        filtered_signal = scipy.signal.filtfilt(b, a, signal)
-    
-    else:
-        raise ValueError(f"Unsupported filtering method: {method}")
-
-    return filtered_signal
-
 
 #  Function for denoising using wavelet decomposition
 def wavelet_decomposition(data, level, wavetype):
@@ -1164,7 +1220,6 @@ def wavelet_decomposition(data, level, wavetype):
     denoised_signal = pywt.waverec(coeffs, wavetype, mode='smooth')
 
     return denoised_signal
-
 
 # Function for computing moving variance
 def moving_var(data, window):
@@ -1209,4 +1264,170 @@ def moving_var(data, window):
     m_var[:pad], m_var[pad + n:] = m_var[pad], m_var[-pad - 1]
     
     return m_var
+
+# Attitude and Heading Reference Systems (AHRS) algorithm for 3D orientation and position estimation devices
+class AHRS:
+    def __init__(self, **kwargs):
+        """
+        Initialize the AHRS (Attitude and Heading Reference System) algorithm.
+
+        Args:
+        Ki (float): Ki parameter for the AHRS algorithm. Default is 0.
+        Kp (float): Kp parameter for the AHRS algorithm. Default is 200.
+        InitPeriod (float): Initial period for the AHRS algorithm. Default is 2.
+        sampling_period (float): Default sampling period. Default is 1/200.
+        """
+        # Quaternion of sensor relative to earth
+        self.Quaternion = np.array([1/np.sqrt(2), 0, -1/np.sqrt(2), 0])
+        
+        # Ki parameter for the AHRS algorithm
+        self.Ki = kwargs.get('Ki', 0)  
+        
+        # Kp parameter for the AHRS algorithm
+        self.Kp = kwargs.get('Kp', 200)  
+        
+        # Initial period for the AHRS algorithm
+        self.InitPeriod = kwargs.get('InitPeriod', 2)  
+        
+        # Default sampling period
+        self.sampling_period = kwargs.get('sampling_period', 1/200) if 'sampling_period' in kwargs else 1/200
+
+        # Private properties
+        self.q = np.array([1, 0, 0, 0])  # quaternion of Earth relative to sensor
+
+    def UpdateIMU(self, Accelerometer, Gyroscope, Magnetometer):
+        """
+        Update the AHRS state using IMU (Inertial Measurement Unit) sensor data.
+
+        Args:
+            Accelerometer (numpy.ndarray): Accelerometer readings in 3D space.
+            Gyroscope (numpy.ndarray): Gyroscope readings in 3D space.
+            Magnetometer (numpy.ndarray): Magnetometer readings in 3D space.
+        """
+        # Normalize accelerometer and magnetometer readings
+        Accelerometer /= np.linalg.norm(Accelerometer)
+        Magnetometer /= np.linalg.norm(Magnetometer)
+        
+        # Calculate magnetic field in Earth frame
+        h = self.quatProd(self.q, self.quatProd(np.array([0, Magnetometer[0], Magnetometer[1], Magnetometer[2]]), self.quatConj(self.q)))
+        
+        # Fix distortion in magnetic field
+        b = np.array([0, np.linalg.norm([h[1], h[2]]), 0, h[3]])
+        
+        # Calculate estimated gravity direction
+        v = np.array([2*(self.q[1]*self.q[3] - self.q[0]*self.q[2]),
+                      2*(self.q[0]*self.q[1] + self.q[2]*self.q[3]),
+                      self.q[0]**2 - self.q[1]**2 - self.q[2]**2 + self.q[3]**2])
+        
+        # Estimate magnetic field in Sensor frame based on sensor orientation
+        w = np.array([2*b[1]*(0.5 - self.q[1]**2 - self.q[2]**2) + 2*b[3]*(self.q[1]*self.q[3] + self.q[2]*self.q[0]),
+                      2*b[1]*(self.q[0]*self.q[1] - self.q[2]*self.q[3]) + 2*b[3]*(self.q[1]*self.q[2] + self.q[0]*self.q[3]),
+                      2*b[1]*(self.q[0]*self.q[2] + self.q[1]*self.q[3]) + 2*b[3]*(0.5 - self.q[1]**2 - self.q[2]**2)])
+        
+        # Calculate error using accelerometer, magnetometer, and estimated gravity and magnetic field
+        error = self.Kp * np.cross(Accelerometer, v) + self.Ki * np.cross(Magnetometer, w)
+        
+        # Calculate reference based on gyroscope and error
+        Ref = Gyroscope + error
+        
+        # Calculate rate of change of quaternion
+        pDot = 0.5 * self.quatProd(self.q, np.array([0, Ref[0], Ref[1], Ref[2]]))
+        
+        # Integrate rate of change of quaternion
+        self.q = self.q.astype(float) + pDot.astype(float) * self.sampling_period
+
+        # Normalize quaternion
+        self.q /= np.linalg.norm(self.q)
+        
+        # Update quaternion
+        self.Quaternion = self.quatConj(self.q)
+
+
+    def Reset(self):
+        """
+        Reset the AHRS state to its default values.
+        """
+        # Reset quaternion to default value
+        self.q = np.array([1, 0, 0, 0])
+
+    # Rotate vector by quaternion
+    def quatRotate(self, vIn, q):
+        """
+        Rotate a vector or an array of vectors using a quaternion.
+
+        Args:
+            vIn (numpy.ndarray): Input vector or array of shape (n, 3), where n is the number of vectors.
+            q (numpy.ndarray): Quaternion representing the rotation. Can be a 1D array with shape (4,) or a 2D array with shape (n, 4).
+
+        Returns:
+            numpy.ndarray: Rotated vector or array of vectors of shape (n, 3).
+        """
+        # Check input dimensions
+        if len(vIn.shape) != 2 or vIn.shape[1] != 3:
+            raise ValueError("Input vector must be a 2D array with shape (n, 3)")
+
+        if len(q.shape) == 1:  # If q is 1D
+            q = q.reshape(1, 4)  # Reshape to (1, 4)
+        elif len(q.shape) != 2 or q.shape[1] != 4:
+            raise ValueError("Quaternion q must be a 1D array with shape (4,) or a 2D array with shape (n, 4)")
+
+        # Compute the rotated vector
+        row, col = vIn.shape
+        v0XYZ = self.quatProd(self.quatProd(self.quatConj(q), np.hstack((np.zeros((row, 1)), vIn))), q)
+        vOut = v0XYZ[:, 1:4]
+        return vOut
+
+
+    # Quaternion product
+    @staticmethod
+    def quatProd(q1, q2):
+        """
+        Compute the quaternion product of two quaternions.
+
+        Args:
+            q1 (numpy.ndarray): First quaternion represented as a 1D array with shape (4,) or a 2D array with shape (n, 4).
+            q2 (numpy.ndarray): Second quaternion represented as a 1D array with shape (4,).
+
+        Returns:
+            numpy.ndarray: Quaternion product represented as a 1D array with shape (4,) if q1 is 1D or a 2D array with shape (n, 4) if q1 is 2D.
+        """
+        if len(q1.shape) == 1:  # If q1 is 1D
+            q1 = q1.reshape(1, 4)  # Reshape to (1, 4)
+
+        # Compute the quaternion product
+        q_product = np.zeros_like(q1)
+        q_product[:, 0] = q1[:, 0]*q2[0] - q1[:, 1]*q2[1] - q1[:, 2]*q2[2] - q1[:, 3]*q2[3]
+        q_product[:, 1] = q1[:, 0]*q2[1] + q1[:, 1]*q2[0] + q1[:, 2]*q2[3] - q1[:, 3]*q2[2]
+        q_product[:, 2] = q1[:, 0]*q2[2] - q1[:, 1]*q2[3] + q1[:, 2]*q2[0] + q1[:, 3]*q2[1]
+        q_product[:, 3] = q1[:, 0]*q2[3] + q1[:, 1]*q2[2] - q1[:, 2]*q2[1] + q1[:, 3]*q2[0]
+
+        if q_product.shape[0] == 1:
+            return q_product[0]  # If input had only one quaternion, return 1D array
+        else:
+            return q_product  # If input had multiple quaternions, return 2D array
+
+    # Quaternion conjugate
+    @staticmethod
+    def quatConj(q):
+        """
+        Compute the conjugate of a quaternion.
+
+        Parameters:
+        q (numpy.ndarray): Quaternion represented as a 2D array with shape (n, 4), where n is the number of quaternions.
+
+        Returns:
+        numpy.ndarray: Conjugate of the quaternion represented as a 2D array with shape (n, 4).
+        """
+        if len(q.shape) == 1:  # If input is a 1D array
+            qConj = np.zeros_like(q)
+            qConj[0] = q[0]
+            qConj[1:] = -q[1:]
+            return qConj
+        elif len(q.shape) == 2:  # If input is a 2D array
+            qConj = np.zeros_like(q)
+            qConj[:, 0] = q[:, 0]
+            qConj[:, 1:] = -q[:, 1:]
+            return qConj
+        else:
+            raise ValueError("Quaternion must be a 1D or 2D array with shape (4,) or (n, 4)")
 

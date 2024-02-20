@@ -28,8 +28,8 @@ import matplotlib.pyplot as plt
 from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
 from ngmt.modules.pam import PhysicalActivityMonitoring
-from matplotlib.testing.compare import compare_images
 
+## Module test
 # Test data
 num_samples = 50000  # Number of samples
 acceleration_data = {
@@ -218,6 +218,58 @@ def test_detect_no_plot():
     ), "Initial contacts should be None if no gait sequences are provided"
 
 
+@pytest.fixture
+def sample_accelerometer_data():
+    # Create sample accelerometer data
+    np.random.seed(0)
+    timestamps = pd.date_range(start="2024-01-01", periods=1000, freq="1s")
+    accelerometer_data = pd.DataFrame(
+        {
+            "LowerBack_ACCEL_x": np.random.randn(1000),
+            "LowerBack_ACCEL_y": np.random.randn(1000),
+            "LowerBack_ACCEL_z": np.random.randn(1000),
+        },
+        index=timestamps,
+    )
+    return accelerometer_data
+
+
+@pytest.fixture
+def sample_gait_sequences():
+    # Create sample gait sequences DataFrame
+    gait_sequences = pd.DataFrame(
+        {"onset": [1.5, 3.5, 5.5], "duration": [0.5, 0.7, 0.6]}
+    )
+    return gait_sequences
+
+
+def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
+    # Initialize ParaschivIonescuInitialContactDetection instance
+    icd_instance = ParaschivIonescuInitialContactDetection()
+
+    # Call detect method
+    icd_instance.detect(
+        data=sample_accelerometer_data,
+        gait_sequences=sample_gait_sequences,
+        sampling_freq_Hz=100,
+    )
+
+    # Check if initial_contacts_ attribute is a DataFrame
+    assert isinstance(icd_instance.initial_contacts_, pd.DataFrame)
+
+    # Check the columns in the initial_contacts_ DataFrame
+    expected_columns = ["onset", "event_type", "tracking_systems", "tracked_points"]
+    assert all(
+        col in icd_instance.initial_contacts_.columns for col in expected_columns
+    )
+
+    # Check the data type of the 'onset' column
+    assert pd.api.types.is_float_dtype(icd_instance.initial_contacts_["onset"])
+
+    # Check if onset values are within the expected range
+    assert all(0 <= onset <= 6 for onset in icd_instance.initial_contacts_["onset"])
+
+
 # Test data
 num_samples = 50000  # Number of samples
 acceleration_data = {
@@ -249,7 +301,7 @@ def test_pam_detect():
             "moderate_threshold": 400,
         },
         epoch_duration_sec=5,
-        plot_results=False,  # Set to False to avoid plotting for this test
+        plot=False,  # Set to False to avoid plotting for this test
     )
     physical_activities_ = pam.physical_activities_
 
@@ -328,7 +380,7 @@ def test_invalid_plot_results_type_pam():
                 "moderate_threshold": 400,
             },
             epoch_duration_sec=5,
-            plot_results=invalid_plot_results,
+            plot=invalid_plot_results,
         )
 
 
@@ -348,7 +400,7 @@ def test_invalid_sampling_freq_type_error_handling():
                 "moderate_threshold": 400,
             },
             epoch_duration_sec=5,
-            plot_results=True,
+            plot=True,
         )
 
 
@@ -364,7 +416,7 @@ def test_invalid_thresholds_type_error_handling():
             sampling_freq_Hz=sampling_frequency,
             thresholds_mg=invalid_thresholds,
             epoch_duration_sec=5,
-            plot_results=True,
+            plot=True,
         )
 
 
@@ -400,7 +452,7 @@ def test_pam_detect_full_coverage():
             "moderate_threshold": 400,
         },
         epoch_duration_sec=5,
-        plot_results=False,
+        plot=False,
     )
     physical_activities_ = pam.physical_activities_
 
@@ -424,6 +476,46 @@ def test_pam_detect_full_coverage():
     assert all(
         col in physical_activities_.columns for col in expected_columns
     ), "DataFrame should have the expected columns."
+
+
+# Test function for test_PhysicalActivityMonitoring
+def test_PhysicalActivityMonitoring():
+    """
+    Test for PhysicalActivityMonitoring class.
+    """
+    # Generate some sample accelerometer data
+    num_samples = 50000  # Number of samples
+    acceleration_data = {
+        "LARM_ACCEL_x": np.random.uniform(-2, 2, num_samples),
+        "LARM_ACCEL_y": np.random.uniform(-2, 2, num_samples),
+        "LARM_ACCEL_z": np.random.uniform(-2, 2, num_samples),
+    }
+    acceleration_data = pd.DataFrame(acceleration_data)
+    sampling_frequency = 100  # Sampling frequency
+    time_index = pd.date_range(
+        start="2024-02-07", periods=num_samples, freq=f"{1/sampling_frequency}S"
+    )
+    acceleration_data["timestamp"] = time_index
+    acceleration_data.set_index("timestamp", inplace=True)
+
+    # Initialize PhysicalActivityMonitoring instance
+    pam = PhysicalActivityMonitoring()
+
+    # Test detect method
+    pam.detect(
+        data=acceleration_data,
+        sampling_freq_Hz=100,
+        thresholds_mg={
+            "sedentary_threshold": 45,
+            "light_threshold": 100,
+            "moderate_threshold": 400,
+        },
+        epoch_duration_sec=5,
+        plot=False
+    )
+
+    # Assertions for physical_activities_ attribute
+    assert isinstance(pam.physical_activities_, pd.DataFrame), "physical_activities_ should be a DataFrame."
 
 
 # Run the tests with pytest

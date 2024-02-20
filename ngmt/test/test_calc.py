@@ -28,11 +28,6 @@ import warnings
 import numpy.testing as npt
 import pytest
 import scipy
-import matplotlib.pyplot as plt
-from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
-from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
-from ngmt.modules.pam import PhysicalActivityMonitoring
-from matplotlib.testing.compare import compare_images
 from ngmt.utils.preprocessing import (
     resample_interpolate,
     lowpass_filter,
@@ -51,10 +46,11 @@ from ngmt.utils.preprocessing import (
     signal_decomposition_algorithm,
     classify_physical_activity,
     tilt_angle_estimation,
-    highpass_filtering,
     wavelet_decomposition,
-    moving_var
-
+    moving_var,
+    gsd_plot_results,
+    pam_plot_results,
+    AHRS
 )
 
 # Generate a random sinusoidal signal with varying amplitudes to use as an input in testing functions
@@ -1769,484 +1765,6 @@ def test_classify_physical_activity_negative_epoch_duration():
     with pytest.raises(ValueError, match="Epoch_duration must be a positive integer."):
         classify_physical_activity(invalid_data, epoch_duration=-5)
 
-
-@pytest.fixture
-def sample_accelerometer_data():
-    # Create sample accelerometer data
-    np.random.seed(0)
-    timestamps = pd.date_range(start="2024-01-01", periods=1000, freq="1s")
-    accelerometer_data = pd.DataFrame(
-        {
-            "LowerBack_ACCEL_x": np.random.randn(1000),
-            "LowerBack_ACCEL_y": np.random.randn(1000),
-            "LowerBack_ACCEL_z": np.random.randn(1000),
-        },
-        index=timestamps,
-    )
-    return accelerometer_data
-
-
-@pytest.fixture
-def sample_gait_sequences():
-    # Create sample gait sequences DataFrame
-    gait_sequences = pd.DataFrame(
-        {"onset": [1.5, 3.5, 5.5], "duration": [0.5, 0.7, 0.6]}
-    )
-    return gait_sequences
-
-
-def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
-    # Initialize ParaschivIonescuInitialContactDetection instance
-    icd_instance = ParaschivIonescuInitialContactDetection()
-
-    # Call detect method
-    icd_instance.detect(
-        data=sample_accelerometer_data,
-        gait_sequences=sample_gait_sequences,
-        sampling_freq_Hz=100,
-    )
-
-    # Check if initial_contacts_ attribute is a DataFrame
-    assert isinstance(icd_instance.initial_contacts_, pd.DataFrame)
-
-    # Check the columns in the initial_contacts_ DataFrame
-    expected_columns = ["onset", "event_type", "tracking_systems", "tracked_points"]
-    assert all(
-        col in icd_instance.initial_contacts_.columns for col in expected_columns
-    )
-
-    # Check the data type of the 'onset' column
-    assert pd.api.types.is_float_dtype(icd_instance.initial_contacts_["onset"])
-
-    # Check if onset values are within the expected range
-    assert all(0 <= onset <= 6 for onset in icd_instance.initial_contacts_["onset"])
-
-
-## Module test
-# Test data
-num_samples = 50000  # Number of samples
-acceleration_data = {
-    "LowerBack_ACCEL_x": np.random.uniform(-2, 2, num_samples),
-    "LowerBack_ACCEL_y": np.random.uniform(-2, 2, num_samples),
-    "LowerBack_ACCEL_z": np.random.uniform(-2, 2, num_samples),
-}
-acceleration_data = pd.DataFrame(acceleration_data)
-sampling_frequency = 100  # Sampling frequency
-
-
-def test_gsd_detect():
-    # Initialize the class
-    gsd = ParaschivIonescuGaitSequenceDetection()
-
-    # Call the detect method
-    gsd.detect(data=acceleration_data, sampling_freq_Hz=sampling_frequency)
-    gait_sequences_ = gsd.gait_sequences_
-
-    # Assertions
-    assert isinstance(
-        gait_sequences_, pd.DataFrame
-    ), "Gait sequences should be a DataFrame."
-    assert (
-        "onset" in gait_sequences_.columns
-    ), "Gait sequences should have 'onset' column."
-    assert (
-        "duration" in gait_sequences_.columns
-    ), "Gait sequences should have 'duration' column."
-    assert (
-        "event_type" in gait_sequences_.columns
-    ), "Gait sequences should have 'event_type' column."
-    assert (
-        "tracking_systems" in gait_sequences_.columns
-    ), "Gait sequences should have 'tracking_systems' column."
-    assert (
-        "tracked_points" in gait_sequences_.columns
-    ), "Gait sequences should have 'tracked_points' column."
-
-
-def test_invalid_input_data():
-    # Initialize the class
-    gsd = ParaschivIonescuGaitSequenceDetection()
-
-    # Test with invalid input data
-    invalid_data = pd.DataFrame({"x": [1, 2, 3], "y": [4, 5, 6]})
-    with pytest.raises(ValueError):
-        gsd.detect(data=invalid_data, sampling_freq_Hz=sampling_frequency)
-
-
-def test_invalid_sampling_freq():
-    # Initialize the class
-    gsd = ParaschivIonescuGaitSequenceDetection()
-
-    # Test with invalid sampling frequency
-    invalid_sampling_freq = "invalid"
-    with pytest.raises(ValueError):
-        gsd.detect(data=acceleration_data, sampling_freq_Hz=invalid_sampling_freq)
-
-
-def test_gait_sequence_detection():
-    # Initialize the class
-    gsd = ParaschivIonescuGaitSequenceDetection()
-
-    # Call the detect method
-    gsd.detect(data=acceleration_data, sampling_freq_Hz=sampling_frequency)
-
-    # Check if gait_sequences_ attribute is a DataFrame
-    assert isinstance(
-        gsd.gait_sequences_, pd.DataFrame
-    ), "Gait sequences should be a DataFrame."
-
-    # Check if gait_sequences_ DataFrame has the expected columns
-    expected_columns = [
-        "onset",
-        "duration",
-        "event_type",
-        "tracking_systems",
-        "tracked_points",
-    ]
-    assert all(
-        col in gsd.gait_sequences_.columns for col in expected_columns
-    ), "Gait sequences DataFrame should have the expected columns."
-
-    # Check if all onset values are within the correct range
-    assert all(
-        onset >= 0 and onset <= acceleration_data.shape[0] / sampling_frequency
-        for onset in gsd.gait_sequences_["onset"]
-    ), "Onset values should be within the valid range."
-
-    # Check if all duration values are non-negative
-    assert all(
-        duration >= 0 for duration in gsd.gait_sequences_["duration"]
-    ), "Duration values should be non-negative."
-
-
-def test_invalid_input_data_type():
-    # Initialize the class
-    gsd = ParaschivIonescuGaitSequenceDetection()
-
-    # Test with invalid input data type
-    invalid_data = np.array([[1, 2, 3], [4, 5, 6]])
-    with pytest.raises(ValueError):
-        gsd.detect(data=invalid_data, sampling_freq_Hz=sampling_frequency)
-
-
-def test_invalid_sampling_freq_type():
-    # Initialize the class
-    gsd = ParaschivIonescuGaitSequenceDetection()
-
-    # Test with invalid sampling frequency type
-    invalid_sampling_freq = "invalid"
-    with pytest.raises(ValueError):
-        gsd.detect(data=acceleration_data, sampling_freq_Hz=invalid_sampling_freq)
-
-
-def test_plot_results_type():
-    # Initialize the class
-    gsd = ParaschivIonescuGaitSequenceDetection()
-
-    # Test with invalid plot_results type
-    invalid_plot_results = "invalid"
-    with pytest.raises(ValueError):
-        gsd.detect(
-            data=acceleration_data,
-            sampling_freq_Hz=sampling_frequency,
-            plot_results=invalid_plot_results,
-        )
-
-
-# Tests for ParaschivIonescuInitialContactDetection
-def test_detect_empty_data():
-    # Initialize the class
-    gsd = ParaschivIonescuGaitSequenceDetection()
-    icd = ParaschivIonescuInitialContactDetection()
-
-    # Call detect with an empty DataFrame instead of None
-    icd.detect(data=pd.DataFrame(), gait_sequences=pd.DataFrame(), sampling_freq_Hz=100)
-
-
-# Define test_detect_no_gait_sequences function
-def test_detect_no_gait_sequences():
-    # Initialize the class
-    gsd = ParaschivIonescuGaitSequenceDetection()
-    icd = ParaschivIonescuInitialContactDetection()
-
-    # Create a DataFrame with only one column for each axis
-    acceleration_data_single_axis = {
-        "LowerBack_ACCEL_x": np.random.uniform(-2, 2, num_samples),
-        "LowerBack_ACCEL_y": np.random.uniform(-2, 2, num_samples),
-        "LowerBack_ACCEL_z": np.random.uniform(-2, 2, num_samples),
-    }
-    acceleration_data_single_axis = pd.DataFrame(acceleration_data_single_axis)
-
-    # Call detect without gait sequences
-    icd.detect(
-        data=acceleration_data_single_axis,
-        gait_sequences=pd.DataFrame(),
-        sampling_freq_Hz=100,
-    )
-
-
-def test_detect_no_plot():
-    # Initialize the class
-    gsd = ParaschivIonescuGaitSequenceDetection()
-    icd = ParaschivIonescuInitialContactDetection()
-
-    # Create a DataFrame with only one column for each axis
-    acceleration_data_single_axis = {
-        "LowerBack_ACCEL_x": np.random.uniform(-2, 2, num_samples),
-        "LowerBack_ACCEL_y": np.random.uniform(-2, 2, num_samples),
-        "LowerBack_ACCEL_z": np.random.uniform(-2, 2, num_samples),
-    }
-    acceleration_data_single_axis = pd.DataFrame(acceleration_data_single_axis)
-
-    # Call detect without gait sequences
-    icd.detect(
-        data=acceleration_data_single_axis,
-        gait_sequences=pd.DataFrame(),
-        sampling_freq_Hz=100,
-    )
-
-    # Check if initial_contacts_ is None
-    assert (
-        icd.initial_contacts_ is None
-    ), "Initial contacts should be None if no gait sequences are provided"
-
-
-# Test data
-num_samples = 50000  # Number of samples
-acceleration_data = {
-    "LARM_ACCEL_x": np.random.uniform(-2, 2, num_samples),
-    "LARM_ACCEL_y": np.random.uniform(-2, 2, num_samples),
-    "LARM_ACCEL_z": np.random.uniform(-2, 2, num_samples),
-}
-acceleration_data = pd.DataFrame(acceleration_data)
-sampling_frequency = 100  # Sampling frequency
-time_index = pd.date_range(
-    start="2024-02-07", periods=num_samples, freq=f"{1/sampling_frequency}S"
-)
-acceleration_data["timestamp"] = time_index
-acceleration_data.set_index("timestamp", inplace=True)
-
-
-# Tests for PhysicalActivityMonitoring
-def test_pam_detect():
-    # Initialize the class
-    pam = PhysicalActivityMonitoring()
-
-    # Call the detect method
-    pam.detect(
-        data=acceleration_data,
-        sampling_freq_Hz=sampling_frequency,
-        thresholds_mg={
-            "sedentary_threshold": 45,
-            "light_threshold": 100,
-            "moderate_threshold": 400,
-        },
-        epoch_duration_sec=5,
-        plot_results=False,  # Set to False to avoid plotting for this test
-    )
-    physical_activities_ = pam.physical_activities_
-
-    # Assertions
-    assert isinstance(
-        physical_activities_, pd.DataFrame
-    ), "Physical activity information should be stored in a DataFrame."
-
-
-def test_invalid_sampling_freq_pam():
-    # Initialize the class
-    pam = PhysicalActivityMonitoring()
-
-    # Test with invalid sampling frequency
-    invalid_sampling_freq = "invalid"
-    with pytest.raises(ValueError):
-        pam.detect(
-            data=acceleration_data,
-            sampling_freq_Hz=invalid_sampling_freq,
-            thresholds_mg={
-                "sedentary_threshold": 45,
-                "light_threshold": 100,
-                "moderate_threshold": 400,
-            },
-            epoch_duration_sec=5,
-        )
-
-
-def test_invalid_thresholds_type():
-    # Initialize the class
-    pam = PhysicalActivityMonitoring()
-
-    # Test with invalid thresholds type
-    invalid_thresholds = "invalid"
-    with pytest.raises(ValueError):
-        pam.detect(
-            data=acceleration_data,
-            sampling_freq_Hz=sampling_frequency,
-            thresholds_mg=invalid_thresholds,
-            epoch_duration_sec=5,
-        )
-
-
-def test_invalid_epoch_duration():
-    # Initialize the class
-    pam = PhysicalActivityMonitoring()
-
-    # Test with invalid epoch duration
-    invalid_epoch_duration = -1
-    with pytest.raises(ValueError):
-        pam.detect(
-            data=acceleration_data,
-            sampling_freq_Hz=sampling_frequency,
-            thresholds_mg={
-                "sedentary_threshold": 45,
-                "light_threshold": 100,
-                "moderate_threshold": 400,
-            },
-            epoch_duration_sec=invalid_epoch_duration,
-        )
-
-
-def test_invalid_plot_results_type_pam():
-    # Initialize the class
-    pam = PhysicalActivityMonitoring()
-
-    # Test with invalid plot_results type
-    invalid_plot_results = "invalid"
-    with pytest.raises(ValueError):
-        pam.detect(
-            data=acceleration_data,
-            sampling_freq_Hz=sampling_frequency,
-            thresholds_mg={
-                "sedentary_threshold": 45,
-                "light_threshold": 100,
-                "moderate_threshold": 400,
-            },
-            epoch_duration_sec=5,
-            plot_results=invalid_plot_results,
-        )
-
-
-def test_invalid_sampling_freq_type_error_handling():
-    # Initialize the class
-    pam = PhysicalActivityMonitoring()
-
-    # Test with invalid sampling frequency type
-    invalid_sampling_freq = "invalid"
-    with pytest.raises(ValueError):
-        pam.detect(
-            data=acceleration_data,
-            sampling_freq_Hz=invalid_sampling_freq,
-            thresholds_mg={
-                "sedentary_threshold": 45,
-                "light_threshold": 100,
-                "moderate_threshold": 400,
-            },
-            epoch_duration_sec=5,
-            plot_results=True,
-        )
-
-
-def test_invalid_thresholds_type_error_handling():
-    # Initialize the class
-    pam = PhysicalActivityMonitoring()
-
-    # Test with invalid thresholds type
-    invalid_thresholds = "invalid"
-    with pytest.raises(ValueError):
-        pam.detect(
-            data=acceleration_data,
-            sampling_freq_Hz=sampling_frequency,
-            thresholds_mg=invalid_thresholds,
-            epoch_duration_sec=5,
-            plot_results=True,
-        )
-
-
-def test_empty_input_data():
-    # Define empty_data with required columns
-    empty_data = pd.DataFrame(
-        {
-            "LARM_ACCEL_x": [],
-            "LARM_ACCEL_y": [],
-            "LARM_ACCEL_z": [],
-        }
-    )
-
-    # Initialize the PhysicalActivityMonitoring class
-    pam = PhysicalActivityMonitoring()
-
-    # Call the detect method with empty_data
-    with pytest.raises(ValueError):
-        pam.detect(data=empty_data, sampling_freq_Hz=sampling_frequency)
-
-
-def test_pam_detect_full_coverage():
-    # Initialize the class
-    pam = PhysicalActivityMonitoring()
-
-    # Call the detect method with plot_results=False to avoid plotting
-    pam.detect(
-        data=acceleration_data,
-        sampling_freq_Hz=sampling_frequency,
-        thresholds_mg={
-            "sedentary_threshold": 45,
-            "light_threshold": 100,
-            "moderate_threshold": 400,
-        },
-        epoch_duration_sec=5,
-        plot_results=False,
-    )
-    physical_activities_ = pam.physical_activities_
-
-    # Assertions
-    assert isinstance(
-        physical_activities_, pd.DataFrame
-    ), "Physical activity information should be stored in a DataFrame."
-
-    # Check if the DataFrame has expected columns
-    expected_columns = [
-        "date",
-        "sedentary_mean_enmo",
-        "sedentary_time_min",
-        "light_mean_enmo",
-        "light_time_min",
-        "moderate_mean_enmo",
-        "moderate_time_min",
-        "vigorous_mean_enmo",
-        "vigorous_time_min",
-    ]
-    assert all(
-        col in physical_activities_.columns for col in expected_columns
-    ), "DataFrame should have the expected columns."
-
-
-# Test function for highpass_filtering function
-def test_highpass_filtering():
-    """
-    Test for highpass_filtering function in the 'ngmt.utils.preprocessing' module.
-    """
-    # Generate a random input signal
-    input_signal = np.random.randn(1000)
-    
-    # Test with Butterworth filter
-    filtered_signal = highpass_filtering(input_signal, method="butter", order=5, cutoff_freq_hz=0.5, sampling_rate_hz=1000)
-    
-    # Assertions
-    assert isinstance(filtered_signal, np.ndarray), "Filtered signal should be a NumPy array."
-    assert len(filtered_signal) == len(input_signal), "Filtered signal length should match input signal length."
-    assert not np.isnan(filtered_signal).any(), "Filtered signal contains NaN values."
-    assert not np.isinf(filtered_signal).any(), "Filtered signal contains infinite values."
-
-
-# Test function for highpass_filtering function: case of invalid method
-def test_highpass_filtering_invalid_method():
-    # Generate a random input signal
-    input_signal = np.random.randn(1000)
-    
-    # Test with invalid method
-    with pytest.raises(ValueError, match="Unsupported filtering method"):
-        highpass_filtering(input_signal, method="invalid_method")
-
-
 # Test function for wavelet_decomposition function
 def test_wavelet_decomposition():
     """
@@ -2317,44 +1835,126 @@ def test_tilt_angle_estimation():
     with pytest.raises(TypeError, match="Input data must be a numpy array or pandas DataFrame"):
         tilt_angle_estimation(list(gyro_data), sampling_frequency_hz)  # Passing a list instead of numpy array
 
-# Test function for test_PhysicalActivityMonitoring
-def test_PhysicalActivityMonitoring():
-    """
-    Test for PhysicalActivityMonitoring class.
-    """
-    # Generate some sample accelerometer data
-    num_samples = 50000  # Number of samples
-    acceleration_data = {
-        "LARM_ACCEL_x": np.random.uniform(-2, 2, num_samples),
-        "LARM_ACCEL_y": np.random.uniform(-2, 2, num_samples),
-        "LARM_ACCEL_z": np.random.uniform(-2, 2, num_samples),
-    }
-    acceleration_data = pd.DataFrame(acceleration_data)
-    sampling_frequency = 100  # Sampling frequency
-    time_index = pd.date_range(
-        start="2024-02-07", periods=num_samples, freq=f"{1/sampling_frequency}S"
-    )
-    acceleration_data["timestamp"] = time_index
-    acceleration_data.set_index("timestamp", inplace=True)
+# Test the initialization of AHRS class
+def test_ahrs_initialization():
+    ahrs = AHRS()
+    assert np.array_equal(ahrs.Quaternion, np.array([1/np.sqrt(2), 0, -1/np.sqrt(2), 0]))
+    assert ahrs.Ki == 0
+    assert ahrs.Kp == 200
+    assert ahrs.InitPeriod == 2
+    assert ahrs.sampling_period == 1/200
 
-    # Initialize PhysicalActivityMonitoring instance
-    pam = PhysicalActivityMonitoring()
+def test_ahrs_initialization_custom():
+    ahrs = AHRS(Ki=0.5, Kp=300, InitPeriod=3, sampling_period=0.005)
+    assert np.array_equal(ahrs.Quaternion, np.array([1/np.sqrt(2), 0, -1/np.sqrt(2), 0]))
+    assert ahrs.Ki == 0.5
+    assert ahrs.Kp == 300
+    assert ahrs.InitPeriod == 3
+    assert ahrs.sampling_period == 0.005
 
-    # Test detect method
-    pam.detect(
-        data=acceleration_data,
-        sampling_freq_Hz=100,
-        thresholds_mg={
-            "sedentary_threshold": 45,
-            "light_threshold": 100,
-            "moderate_threshold": 400,
-        },
-        epoch_duration_sec=5,
-        plot_results=False
-    )
+# Test the Reset method
+def test_ahrs_reset():
+    ahrs = AHRS()
+    ahrs.Reset()
+    assert np.array_equal(ahrs.q, np.array([1, 0, 0, 0]))
 
-    # Assertions for physical_activities_ attribute
-    assert isinstance(pam.physical_activities_, pd.DataFrame), "physical_activities_ should be a DataFrame."
+# Test the quatProd method
+def test_ahrs_quat_prod():
+    ahrs = AHRS()
+    q1 = np.array([[1, 0, 0, 0], [0, 1, 0, 0]])
+    q2 = np.array([1, 0, 0, 0]) 
+    result = ahrs.quatProd(q1, q2)
+    expected_result = np.array([[1, 0, 0, 0], [1, 0, 0, 0]])
+
+# Test the quatConj method
+def test_ahrs_quat_conj():
+    ahrs = AHRS()
+    q = np.array([[1, 0, 0, 0], [0, 1, 0, 0]])
+    result = ahrs.quatConj(q)
+
+# Test the initialization of AHRS class
+def test_ahrs_initialization():
+    ahrs = AHRS()
+    assert np.array_equal(ahrs.Quaternion, np.array([1/np.sqrt(2), 0, -1/np.sqrt(2), 0]))
+    assert ahrs.Ki == 0
+    assert ahrs.Kp == 200
+    assert ahrs.InitPeriod == 2
+    assert ahrs.sampling_period == 1/200
+
+def test_ahrs_initialization_custom():
+    ahrs = AHRS(Ki=0.5, Kp=300, InitPeriod=3, sampling_period=0.005)
+    assert np.array_equal(ahrs.Quaternion, np.array([1/np.sqrt(2), 0, -1/np.sqrt(2), 0]))
+    assert ahrs.Ki == 0.5
+    assert ahrs.Kp == 300
+    assert ahrs.InitPeriod == 3
+    assert ahrs.sampling_period == 0.005
+
+# Test the Reset method
+def test_ahrs_reset():
+    ahrs = AHRS()
+    ahrs.Reset()
+    assert np.array_equal(ahrs.q, np.array([1, 0, 0, 0]))
+
+# Test the quatConj method
+def test_ahrs_quat_conj():
+    ahrs = AHRS()
+    q = np.array([[1, 0, 0, 0], [0, 1, 0, 0]])
+    result = ahrs.quatConj(q)
+    expected_result = np.array([[1, 0, 0, 0], [0, -1, 0, 0]])
+    assert np.array_equal(result, expected_result)
+
+# Test the UpdateIMU method
+def test_ahrs_update_imu():
+    ahrs = AHRS()
+    # Define sample sensor data
+    Accelerometer = np.array([0.5, 0.5, 0.5])
+    Gyroscope = np.array([0.1, 0.1, 0.1])
+    Magnetometer = np.array([0.3, 0.3, 0.3])
+    # Update AHRS state
+    ahrs.UpdateIMU(Accelerometer, Gyroscope, Magnetometer)
+
+
+# Define sample data for testing
+target_sampling_freq_Hz = 100
+detected_activity_signal = np.random.rand(1000)
+gait_sequences_ = pd.DataFrame({
+    "onset": np.array([100, 300, 500]),
+    "duration": np.array([50, 60, 70])
+})
+hourly_average_data = pd.DataFrame(
+    np.random.rand(24, 7),
+    columns=pd.date_range(start="2024-01-01", periods=7),
+    index=np.arange(24)
+)
+thresholds_mg = {
+    "sedentary_threshold": 45,
+    "light_threshold": 100,
+    "moderate_threshold": 400
+}
+
+# Test gsd_plot_results without plotting
+def test_gsd_plot_results_without_plot(monkeypatch):
+    # Define a mock function for plt.show() that does nothing
+    def mock_show():
+        pass
+
+    # Monkeypatch plt.show() with the mock function
+    monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
+
+    # Call the function
+    gsd_plot_results(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_)
+
+# Test pam_plot_results without plotting
+def test_pam_plot_results_without_plot(monkeypatch):
+    # Define a mock function for plt.show() that does nothing
+    def mock_show():
+        pass
+
+    # Monkeypatch plt.show() with the mock function
+    monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
+
+    # Call the function
+    pam_plot_results(hourly_average_data, thresholds_mg)
 
 
 # Run the tests with pytest
