@@ -104,4 +104,4 @@ It requires Python 3.10 or higher.
 
 ## Authors
 
-[Masoud Abedinifar](https://github.com/masoudabedinifar), [Clint Hansen](mailto:c.hansen@neurologie.uni-kiel.de), [Walter Maetzler](mailto:w.maetzler@neurologie.uni-kiel.de), [Robbin Romijnders](https://github.com/rmndrs89) & [Julius Welzel](https://github.com/JuliusWelzel)
+[Masoud Abedinifar](https://github.com/masoudabedinifar), [Julius Welzel](https://github.com/JuliusWelzel), [Walter Maetzler](mailto:w.maetzler@neurologie.uni-kiel.de), [Clint Hansen](mailto:c.hansen@neurologie.uni-kiel.de) & [Robbin Romijnders](https://github.com/rmndrs89)
