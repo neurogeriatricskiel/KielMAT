@@ -9,15 +9,15 @@ repository = "https://github.com/neurogeriatricskiel/NGMT"
 documentation = "https://neurogeriatricskiel.github.io/NGMT"
 authors = [
     "Masoud Abedinifar <Masoud.Abedinifar@uksh.de>",
-    "Julius Welzel <j.welzel@neurologie.uni-kiel.de>"
+    "Julius Welzel <j.welzel@neurologie.uni-kiel.de>",
     "Walter Maetzler <w.maetzler@neurologie.uni-kiel.de>",
     "Clint Hansen <c.hansen@neurologie.uni-kiel.de>",
-    "Robbin Romijnders <r.romijnders@neurologie.uni-kiel.de>",
+    "Robbin Romijnders <r.romijnders@neurologie.uni-kiel.de>"
 ]
 maintainers = [
     "Masoud Abedinifar <Masoud.Abedinifar@uksh.de>",
-    "Julius Welzel <j.welzel@neurologie.uni-kiel.de>"
-    "Robbin Romijnders <r.romijnders@neurologie.uni-kiel.de>",
+    "Julius Welzel <j.welzel@neurologie.uni-kiel.de>",
+    "Robbin Romijnders <r.romijnders@neurologie.uni-kiel.de>"
 ]
 packages = [
     { include = "ngmt" },
