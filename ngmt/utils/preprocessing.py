@@ -132,7 +132,7 @@ def lowpass_filter(signal, method="savgol", order=None, **kwargs):
 
         # Apply butterworth lowpass filter
         b, a = scipy.signal.butter(
-            order, cutoff_freq_hz/(sampling_rate_hz/2), btype="low", analog=False, fs=sampling_rate_hz
+           N= order, Wn= cutoff_freq_hz/(sampling_rate_hz/2), btype="low", analog=False, fs=sampling_rate_hz
         )
         filt_signal = scipy.signal.filtfilt(b, a, signal)
         return filt_signal

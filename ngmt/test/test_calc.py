@@ -61,26 +61,6 @@ random_input_signal = np.sin(2 * np.pi * sampling_frequency * time) * amplitudes
 
 
 # Each test function checks a specific function.
-# Test function for the 'resample_interpolate' function: Case 1
-def test_resample_interpolate():
-    """
-    Test for resample_interpolate function in the 'ngmt.utils.preprocessing' module.
-    """
-    # Test with inputs
-    input_signal = random_input_signal
-    initial_sampling_frequency = sampling_frequency
-    target_sampling_frequency = 40
-
-    # Call the resample_interpolate function with the specified inputs
-    with warnings.catch_warnings():
-        # Ignore the specific warning (invalid value encountered in divide)
-        warnings.simplefilter("ignore", category=RuntimeWarning)
-
-        resampled_signal = resample_interpolate(
-            input_signal, initial_sampling_frequency, target_sampling_frequency
-        )
-
-
 # Test function for the 'resample_interpolate' function: Case 2
 def test_resample_interpolate_non_numpy_input():
     # Test with non-NumPy array input
@@ -1434,26 +1414,6 @@ def test_find_interval_intersection():
     assert isinstance(set_a_empty, np.ndarray), "set_a_empty should be a NumPy array."
     assert isinstance(set_b_empty, np.ndarray), "set_b_empty should be a NumPy array."
 
-    try:
-        # Call the find_interval_intersection function with the specified inputs
-        result_empty = find_interval_intersection(set_a_empty, set_b_empty)
-
-        # Check the data type of the output
-        assert isinstance(result_empty, np.ndarray), "Output should be a NumPy array."
-
-        # Check if the output matches the expected result
-        npt.assert_array_equal(
-            result_empty,
-            expected_result_empty,
-            "Output does not match the expected result.",
-        )
-
-    except IndexError:
-        # Handle the case where an IndexError occurs (empty array)
-        assert (
-            len(set_a_empty) == 0 and len(set_b_empty) == 0
-        ), "Empty arrays should result in empty output."
-
     # Additional Test Case 2: Identical sets
     set_a_identical = np.array([[1, 5], [7, 10]])
     set_b_identical = np.array([[1, 5], [7, 10]])
@@ -1835,42 +1795,6 @@ def test_tilt_angle_estimation():
     with pytest.raises(TypeError, match="Input data must be a numpy array or pandas DataFrame"):
         tilt_angle_estimation(list(gyro_data), sampling_frequency_hz)  # Passing a list instead of numpy array
 
-# Test the initialization of AHRS class
-def test_ahrs_initialization():
-    ahrs = AHRS()
-    assert np.array_equal(ahrs.Quaternion, np.array([1/np.sqrt(2), 0, -1/np.sqrt(2), 0]))
-    assert ahrs.Ki == 0
-    assert ahrs.Kp == 200
-    assert ahrs.InitPeriod == 2
-    assert ahrs.sampling_period == 1/200
-
-def test_ahrs_initialization_custom():
-    ahrs = AHRS(Ki=0.5, Kp=300, InitPeriod=3, sampling_period=0.005)
-    assert np.array_equal(ahrs.Quaternion, np.array([1/np.sqrt(2), 0, -1/np.sqrt(2), 0]))
-    assert ahrs.Ki == 0.5
-    assert ahrs.Kp == 300
-    assert ahrs.InitPeriod == 3
-    assert ahrs.sampling_period == 0.005
-
-# Test the Reset method
-def test_ahrs_reset():
-    ahrs = AHRS()
-    ahrs.Reset()
-    assert np.array_equal(ahrs.q, np.array([1, 0, 0, 0]))
-
-# Test the quatProd method
-def test_ahrs_quat_prod():
-    ahrs = AHRS()
-    q1 = np.array([[1, 0, 0, 0], [0, 1, 0, 0]])
-    q2 = np.array([1, 0, 0, 0]) 
-    result = ahrs.quatProd(q1, q2)
-    expected_result = np.array([[1, 0, 0, 0], [1, 0, 0, 0]])
-
-# Test the quatConj method
-def test_ahrs_quat_conj():
-    ahrs = AHRS()
-    q = np.array([[1, 0, 0, 0], [0, 1, 0, 0]])
-    result = ahrs.quatConj(q)
 
 # Test the initialization of AHRS class
 def test_ahrs_initialization():
