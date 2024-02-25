@@ -46,34 +46,34 @@ class PhysicalActivityMonitoring:
         __init__():
             Initializes the physical activity instance.
 
-        Examples:
-            Determines physical activity levels in the sensor signal.
+    Examples:
+        Determines physical activity levels in the sensor signal.
 
-            >>> pam = PhysicalActivityMonitoring()
-            >>> pam.detect(
-                    data=acceleration_data,
-                    sampling_freq_Hz=100,
-                    thresholds_mg={
-                        "sedentary_threshold": 45,
-                        "light_threshold": 100,
-                        "moderate_threshold": 400,
-                    },
-                    epoch_duration_sec=5,
-                    plot_results=True)
-            >>> physical_activities = pam.physical_activities_
-            >>> print(physical_activities)
-                           sedentary_mean_mg  sedentary_time_min  light_mean_mg  light_time_min  moderate_mean_mg  moderate_time_min  vigorous_mean_mg  vigorous_time_min
-            3/19/2018               23.48               733.08          60.78              72             146.2              21.58             730.34                0.58
-            3/20/2018               27.16               753.83          57.06           102.25            137.26               7.92             737.9                 0.42
+        >>> pam = PhysicalActivityMonitoring()
+        >>> pam.detect(
+                data=acceleration_data,
+                sampling_freq_Hz=100,
+                thresholds_mg={
+                    "sedentary_threshold": 45,
+                    "light_threshold": 100,
+                    "moderate_threshold": 400,
+                },
+                epoch_duration_sec=5,
+                plot_results=True)
+        >>> physical_activities = pam.physical_activities_
+        >>> print(physical_activities)
+                        sedentary_mean_mg  sedentary_time_min  light_mean_mg  light_time_min  moderate_mean_mg  moderate_time_min  vigorous_mean_mg  vigorous_time_min
+        3/19/2018               23.48               733.08          60.78              72             146.2              21.58             730.34                0.58
+        3/20/2018               27.16               753.83          57.06           102.25            137.26               7.92             737.9                 0.42
 
-        References:
-            [1] Doherty, Aiden, et al. (2017). Large scale population assessment of physical
-                activity using wrist-worn accelerometers: the UK biobank study. PloS one 12.2.
-                https://doi.org/10.1371/journal.pone.0169649
+    References:
+        [1] Doherty, Aiden, et al. (2017). Large scale population assessment of physical
+            activity using wrist-worn accelerometers: the UK biobank study. PloS one 12.2.
+            https://doi.org/10.1371/journal.pone.0169649
 
-            [2] Van Hees, Vincent T., et al. (2013). Separating movement and gravity components
-                in an acceleration signal and implications for the assessment of human daily physical
-                activity. PloS one 8.4. https://doi.org/10.1371/journal.pone.0061691
+        [2] Van Hees, Vincent T., et al. (2013). Separating movement and gravity components
+            in an acceleration signal and implications for the assessment of human daily physical
+            activity. PloS one 8.4. https://doi.org/10.1371/journal.pone.0061691
     """
 
     def __init__(self):

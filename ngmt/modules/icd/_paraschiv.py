@@ -31,14 +31,6 @@ class ParaschivIonescuInitialContactDetection:
         detect(data, gait_sequences, sampling_freq_Hz):
             Detects initial contacts on the accelerometer signal.
 
-            Args:
-                data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
-                gait_sequences (pd.DataFrame): Gait sequences detected using ParaschivIonescuGaitSequenceDetectionDataframe algorithm.
-                sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
-
-            Returns:
-                pd.DataFrame: DataFrame containing initial contact information in BIDS format.
-
     Examples:
         >>> icd = ParaschivIonescuInitialContactDetection()
         >>> icd.detect(data=acceleration_data, sampling_freq_Hz=100)
@@ -141,27 +133,4 @@ class ParaschivIonescuInitialContactDetection:
                 gait_seq["IC"] = []
 
         # Return the instance of the class
-        return self
-
-            # Append the information to the processed_output list
-            processed_output.append(gait_seq)
-
-        # Check if processed_output is not empty
-        if not processed_output:
-            print("No initial contacts detected.")
-            return pd.DataFrame()
-
-        # Create a DataFrame from the processed_output list
-        initial_contacts_ = pd.DataFrame(processed_output)
-
-        # Create a BIDS-compatible DataFrame with all onsets
-        self.initial_contacts_ = pd.DataFrame(
-            {
-                "onset": all_onsets,
-                "event_type": self.event_type,
-                "tracking_systems": self.tracking_systems,
-                "tracked_points": self.tracked_points,
-            }
-        )
-
         return self
