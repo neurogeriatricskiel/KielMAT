@@ -47,7 +47,6 @@ class ParaschivIonescuGaitSequenceDetection:
         [2] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using single trunk IMU...
     """
 
-
     def __init__(
         self,
         target_sampling_freq_Hz: float = 40.0,
