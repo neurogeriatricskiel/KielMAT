@@ -1,4 +1,3 @@
-# Import libraries
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -9,30 +8,24 @@ from ngmt.config import cfg_colors
 
 
 class ParaschivIonescuInitialContactDetection:
-    """
-    Performs Initial Contact Detection on lower back IMU accelerometer data for detecting initial contacts.
+    """Performs Initial Contact Detection on lower back IMU accelerometer data.
+
+    This class implements the Initial Contact Detection Algorithm on accelerometer
+    data collected from a low back sensor to identify and characterize initial
+    contacts within walking bouts.
+
+    The algorithm processes the vertical acceleration component of each specified
+    gait sequence independently. It is applied to a pre-processed vertical
+    acceleration signal recorded on the lower back, which is first detrended and
+    then low-pass filtered. The initial contact (IC) events are identified as the
+    positive maximal peaks between successive zero-crossings.
 
     Attributes:
-        target_sampling_freq_Hz (float): Target sampling frequency for resampling the data. Default is 40.
-        event_type (str): Type of the detected event. Default is 'initial contact'.
-        tracking_systems (str): Tracking systems used. Default is 'SU'.
-        tracked_points (str): Tracked points on the body. Default is 'LowerBack'.
+        target_sampling_freq_Hz (float): Target sampling frequency for resampling the data. Defaults to 40 Hz.
+        event_type (str): Type of the detected event. Defaults to 'initial contact'.
+        tracking_systems (str): Tracking systems used. Defaults to 'SU'.
+        tracked_points (str): Tracked points on the body. Defaults to 'LowerBack'.
         initial_contacts_ (pd.DataFrame): DataFrame containing initial contacts information in BIDS format.
-
-    Description:
-        This class implements the Initial Contact Detection Algorithm on accelerometer data
-        collected from a low back sensor. The purpose of ICD is to identify and characterize initial contacts
-        within walking bouts.
-
-        The algorithm takes accelerometer data as input, specifically the vertical acceleration component,
-        and processes each specified gait sequence independently. The sampling frequency of the accelerometer
-        data is also required. Initial contacts information are provided as a DataFrame with columns 'onset',
-        'event_type', 'tracking_systems', and 'tracked_points'.
-
-        The algorithm is applied to a pre-processed vertical acceleration signal recorded on the lower back.
-        This signal is first detrended and then low-pass filtered. The resulting signal is numerically integrated
-        and differentiated using a Gaussian continuous wavelet transformation. The initial contact (IC) events
-        are identified as the positive maximal peaks between successive zero-crossings.
 
     Methods:
         detect(data, gait_sequences, sampling_freq_Hz):
@@ -44,28 +37,19 @@ class ParaschivIonescuInitialContactDetection:
                 sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
 
             Returns:
-                self (pd.DataFrame): DataFrame containing initial contact information in BIDS format.
+                pd.DataFrame: DataFrame containing initial contact information in BIDS format.
 
     Examples:
-        Find initial contacts based on the detected gait sequence
-
         >>> icd = ParaschivIonescuInitialContactDetection()
-        >>> icd = icd.detect(data=acceleration_data, sampling_freq_Hz=100)
-        >>> initial_contacts = icd.initial_contacts_
-        >>> print(initial_contacts_)
-                onset   event_type       tracking_systems   tracked_points
-            0   5       initial contact  SU                 LowerBack
-            1   5.6     initial contact  SU                 LowerBack
+        >>> icd.detect(data=acceleration_data, sampling_freq_Hz=100)
+        >>> print(icd.initial_contacts_)
+               onset  event_type       tracking_systems  tracked_points
+            0  5      initial contact  SU                LowerBack
+            1  5.6    initial contact  SU                LowerBack
 
     References:
-        [1] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer:
-            validity for children with cerebral palsy in daily life-like conditions.
-            Journal of NeuroEngineering and Rehabilitation, 16(1), 24.
-            https://doi.org/10.1186/s12984-019-0494-z
-        [2] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using single trunk IMU:
-            methodological challenges for impaired gait patterns.
-            Annual International Conference of the IEEE Engineering in Medicine and Biology Society.
-            IEEE Engineering in Medicine and Biology Society. https://doi.org/10.1109/EMBC44109.2020.9176281
+        [1] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer...
+        [2] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using single trunk IMU...
     """
 
     def __init__(
@@ -155,6 +139,9 @@ class ParaschivIonescuInitialContactDetection:
                 print(f"Error: {e}")
                 initial_contacts = []
                 gait_seq["IC"] = []
+
+        # Return the instance of the class
+        return self
 
             # Append the information to the processed_output list
             processed_output.append(gait_seq)
