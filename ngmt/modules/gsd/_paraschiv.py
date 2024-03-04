@@ -111,13 +111,13 @@ class ParaschivIonescuGaitSequenceDetection:
             raise ValueError("Plot results must be a boolean (True or False).")
 
         # check if dt_data is a pandas Series with datetime values
-        if not isinstance(
+        if dt_data is not None and (not isinstance(
             dt_data, pd.Series
-        ) or not pd.api.types.is_datetime64_any_dtype(dt_data):
+        ) or not pd.api.types.is_datetime64_any_dtype(dt_data)):
             raise ValueError("dt_data must be a pandas Series with datetime values")
 
-        # check if dt_data is a series with the same length as data
-        if len(dt_data) != len(data):
+        # check if dt_data is provided and if it is a series with the same length as data
+        if dt_data is not None and len(dt_data) != len(data):
             raise ValueError("dt_data must be a series with the same length as data")
 
         # Calculate the norm of acceleration
