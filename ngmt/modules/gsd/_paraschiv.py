@@ -345,8 +345,6 @@ class ParaschivIonescuGaitSequenceDetection:
         else:
             print("No gait sequence(s) detected.")
 
-        
-        self.wb_idx = ind_Wk
         # Create a DataFrame from the gait sequence data
         gait_sequences_ = pd.DataFrame(GSD_Output)
         gait_sequences_["onset"] = gait_sequences_["Start"]
