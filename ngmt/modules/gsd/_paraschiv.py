@@ -109,9 +109,11 @@ class ParaschivIonescuGaitSequenceDetection:
 
         if not isinstance(plot_results, bool):
             raise ValueError("Plot results must be a boolean (True or False).")
-        
+
         # check if dt_data is a pandas Series with datetime values
-        if not isinstance(dt_data, pd.Series) or not pd.api.types.is_datetime64_any_dtype(dt_data):
+        if not isinstance(
+            dt_data, pd.Series
+        ) or not pd.api.types.is_datetime64_any_dtype(dt_data):
             raise ValueError("dt_data must be a pandas Series with datetime values")
 
         # check if dt_data is a series with the same length as data
@@ -345,7 +347,6 @@ class ParaschivIonescuGaitSequenceDetection:
         else:
             print("No gait sequence(s) detected.")
 
-        
         self.wb_idx = ind_Wk
         # Create a DataFrame from the gait sequence data
         gait_sequences_ = pd.DataFrame(GSD_Output)
@@ -359,7 +360,7 @@ class ParaschivIonescuGaitSequenceDetection:
         if ind_Wk.size > 0 and dt_data is not None:
             valid_indices = [index for index in ind_Wk[:, 0] if index < len(dt_data)]
             invalid_indices = len(ind_Wk[:, 0]) - len(valid_indices)
-            
+
             if invalid_indices > 0:
                 print(f"Warning: {invalid_indices} invalid index/indices found.")
 
@@ -369,14 +370,15 @@ class ParaschivIonescuGaitSequenceDetection:
             # Create a DataFrame from the gait sequence data
             gait_sequences_ = pd.DataFrame(GSD_Output)
             gait_sequences_["onset"] = gait_sequences_["Start"]
-            gait_sequences_["duration"] = gait_sequences_["End"] - gait_sequences_["Start"]
+            gait_sequences_["duration"] = (
+                gait_sequences_["End"] - gait_sequences_["Start"]
+            )
             gait_sequences_["event_type"] = self.event_type
             gait_sequences_["tracking_systems"] = self.tracking_systems
             gait_sequences_["tracked_points"] = self.tracked_points
 
             # If original datetime is available, update the 'onset' column
             gait_sequences_["onset"] = valid_dt_data.reset_index(drop=True)
-
 
         # Create a DataFrame from the gait sequence data
         gait_sequences_ = gait_sequences_[
@@ -391,7 +393,7 @@ class ParaschivIonescuGaitSequenceDetection:
             print("No plotting for datetime values.")
             plot_results = False
             return self
-        
+
         # Plot results if set to true
         if plot_results:
             plt.figure(figsize=(22, 14))
