@@ -71,7 +71,11 @@ class ParaschivIonescuGaitSequenceDetection:
         self.gait_sequences_ = None
 
     def detect(
-        self, data: pd.DataFrame, sampling_freq_Hz: float, plot_results: bool = False, dt_data: str = None
+        self,
+        data: pd.DataFrame,
+        sampling_freq_Hz: float,
+        plot_results: bool = False,
+        dt_data: str = None,
     ) -> pd.DataFrame:
         """
         Detects gait sequences based on the input accelerometer data.
