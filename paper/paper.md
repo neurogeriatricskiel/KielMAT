@@ -44,22 +44,42 @@ The NeuroGeriatric Motion Toolbox (NGMT) is an open-source Python-based toolbox 
 Human motion characterization is crucial for overall well-being, encompassing our physical, mental, and social dimensions. The increasing prevalence of mobility-limiting diseases, such as Parkinson's disease (PD), poses a serious burden on healthcare systems [@mahlknecht2013prevalence]. While motion data becomes more avaliable and the analysis of human movement is critical for neurological assessment [@micoamigo_2023], a lack of validated algorithms can be observed in the literature. Many studies often used not freely available software to extract data to extract features of motion, (such as step time) for research puposes. The development of easy-to-use and open-source code implementations is imperative for transparent data extraction in research and clinical settings. NGMT addresses this gap by providing diverse algorithms for human motion data analysis, catering to motion researchers and clinicians and promoting the utilization of open-source software build on FAIR data principles. The toolbox provides algorithms for gait sequence detection, initial contact detection, and physical activity monitoring, which are essential for the analysis of human motion data. The toolbox conceptual framework builds on FAIR data principles to encourage the use of open source software as well as facilitate data sharing and reproducibility in the field of human motion analysis.
 
 # Provided Functionality
-NGMT provides a comprehensive suite of algorithms for motion data processing in neuroscience and biomechanics, currently including implementations for gait sequence detection, initial contact detection, and physical activity monitoring. The toolbox offers practical examples demonstrating the application of currently implemented algorithms, focusing on gait sequence detection and initial contact detection. The toolbox utilizes IMU sensor data from clinical cohorts, such as those with congestive heart failure (CHF) [@micoamigo_2023]. Participants undergo real-world assessments, engaging in daily activities and specific tasks, including outdoor walking, navigating slopes and stairs, and moving between rooms.
+NGMT offers a comprehensive suite of algorithms for motion data processing in neuroscience and biomechanics. Currently, the toolbox includes implementations for gait sequence detection, initial contact detection, sit-to-stand and stand-to-sit detection, and physical activity monitoring. The workflow of algortihms is structured as follows:
 
-The data were processed using our gait sequence detection module, based on the Paraschiv-Ionescu algorithm[@paraschiv2019locomotion,@paraschiv2020real], to identify gait sequences within the time series. Subsequently, our initial contact detection module , also based on the Paraschiv-Ionescu algorithm [@paraschiv2019locomotion,@paraschiv2020real], was applied to identify initial contacts within the detected gait sequences. Utilizing lower back acceleration data from the Mobilise-D dataset, we demonstrate the accurate identification of gait events such as gait onset, gait duration, and initial contacts. NGMT offers practical examples demonstrating the application of currently implemented algorithms, focusing on gait sequence detection and initial contact detection. This example illustrates the practical application of our toolbox in analyzing human gait patterns which is shown in figure 1.
+1. **Loading Data:**
+  - The algorithms start by loading the raw sensor data as input.
+  - Data validation ensures adherence to the required format, typically a pandas DataFrame.
+  - Additional inputs, such as sampling frequency can be loaded to assist subsequent processing steps.
 
-![](figure_1.png){#fig:figure1}
-<div style="text-align:center;">
-<b>Figure 1:</b> Acceleration Data and Detected Gait Events using NGMT Modules
-</div>
+2. **Feature extraction:** 
+  - Advanced signal processing techniques are employed to extract relevant features from the input data.
+  - This step involves resampling input data, applying filters to remove noise and bias, performing wavelet transforms to enhance input signals, etc.
+  - Extract features such as active periods, local peaks, etc using preprocessed input data.
+  - Extracted features play a crucial role in identifying and characterizing events within the input data.
 
-In figure 1, we present a detailed analysis of acceleration data from the lower back, highlighting the key gait events detected by our modules. The green vertical line indicates the onset of a gait sequence, while the shaded gray region represents the duration of the gait sequence. Additionally, blue dashed lines denote the detected initial contacts within the gait sequence.
+3. **Event detection and visualization:** 
+  - Following feature extraction, the toolbox facilitates event detection and visualization.
+  - Specific events of interest, such as gait sequences, initial contacts, or postural transitions, physical activity levels are detected using predefined criteria or patterns.
+  - Detected events are annotated with timestamps or indices to enable further analysis.
+  - Visualization of detected events on the input data provides insights into their timing and duration.
+  - This aids in understanding the detected events and allows for further analysis or interpretation of results.
+
+By integrating data loading, preprocessing, feature extraction, event detection, and visualization into a unified framework, NGMT offers a comprehensive set of tools for analyzing human motion data across various domains and applications. The toolbox offers practical examples demonstrating the application of currently implemented algorithms.
 
 # State of the field
 With the growing avaliability of motion data data, there are implementations of open source algorithms avaliable for the processing of motion data. In Python there is the [GaitMap](https://gaitmap.readthedocs.io/en/latest/index.html) package which has a special focus on the processing of feet worn IMUs. The GaitLink package includes algorithms for ....
 For video based processing of motion data, there are a number of computer vision packages avaliable such as OpenCV, OpenPose, DeepLabCut, and others. However, the NGMT package is unique in that it is designed to be a comprehensive toolbox for the processing of motion data from a wide range of recording modalities, currently focusing on data from inertial measurement units and optical motion capture.
 
 # Example Use Case
+As a practical example, the toolbox utilizes lower back IMU sensor data from clinical cohorts, such as those with congestive heart failure (CHF) [@micoamigo_2023]. Participants undergo real-world assessments, engaging in daily activities and specific tasks, including outdoor walking, navigating slopes and stairs, and moving between rooms. The data was processed using gait sequence detection module, based on the Paraschiv-Ionescu algorithm[@paraschiv2019locomotion,@paraschiv2020real], to identify gait sequences within the time series. The algorithm processes the input data through a series of signal processing steps including resampling, filtering, wavelet transform, and peak detection to identify gait sequences. Then, the active periods, potentially corresponding to locomotion, are roughly detected and the statistical distribution of the amplitude of the peaks in these active periods is used to derive an adaptive threshold for detection of step-related peaks. Then, consecutive steps are associated to gait sequences Subsequently, initial contact detection module, which is also based on the Paraschiv-Ionescu algorithm [@paraschiv2019locomotion,@paraschiv2020real], was applied to identify initial contacts within the detected gait sequences. The algorithm is applied to a pre-processed vertical acceleration signal recorded on the lower back.
+This signal is first detrended and then low-pass filtered. The resulting signal is numerically integrated and differentiated using a Gaussian continuous wavelet transformation. Then, initial contact events are identified as the positive maximal peaks between successive zero-crossings. A representation of the practical application of the toolbox in detecting events on the input data is shown in Figure 1.
+
+![](figure_1.png){#fig:figure1}
+<div style="text-align:center;">
+<b>Figure 1:</b> Acceleration Data and Detected Gait Events using NGMT Modules
+</div>
+
+In figure [1](figure_1.png){#fig:figure1}, a detailed analysis of acceleration data from the lower back is presented, highlighting key gait events detected by NGMT's modules. The green vertical line indicates the onset of a gait sequence, while the shaded gray region represents the duration of the gait sequence. Additionally, blue dashed lines denote the detected initial contacts within the gait sequence.
 
 # Installation and usage
 The NGMT package is implemented in Python (>=3.10) and is freely available under a Non-Profit Open Software License version 3.0. The stable version of the package can be installed from PyPI.org using `pip install ngmt`. For developmental puposes, the toolbox can also be installed via GitHub. The documentation of the toolbox provides detailed instructions on [installation](https://neurogeriatricskiel.github.io/NGMT/#installation), [conceptual framework](https://neurogeriatricskiel.github.io/NGMT/#data-classes-conceptual-framework) and [tutorial notebooks](https://neurogeriatricskiel.github.io/NGMT/examples/) for basic usage and specific algorithms.
