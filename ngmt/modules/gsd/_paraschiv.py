@@ -111,9 +111,10 @@ class ParaschivIonescuGaitSequenceDetection:
             raise ValueError("Plot results must be a boolean (True or False).")
 
         # check if dt_data is a pandas Series with datetime values
-        if dt_data is not None and (not isinstance(
-            dt_data, pd.Series
-        ) or not pd.api.types.is_datetime64_any_dtype(dt_data)):
+        if dt_data is not None and (
+            not isinstance(dt_data, pd.Series)
+            or not pd.api.types.is_datetime64_any_dtype(dt_data)
+        ):
             raise ValueError("dt_data must be a pandas Series with datetime values")
 
         # check if dt_data is provided and if it is a series with the same length as data
