@@ -30,6 +30,7 @@ class ParaschivIonescuGaitSequenceDetection:
                 data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
                 sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
                 plot_results (bool, optional): If True, generates a plot of the pre-processed data and the detected gait sequences. Defaults to False.
+                dt_data (str, optional): Name of the original datetime in the input data. If original datetime is provided, the output onset will be based on that.
 
             Returns:
                 ParaschivIonescuGaitSequenceDetection: An instance of the class with the detected gait sequences stored in the 'gait_sequences_' attribute.
@@ -70,7 +71,7 @@ class ParaschivIonescuGaitSequenceDetection:
         self.gait_sequences_ = None
 
     def detect(
-        self, data: pd.DataFrame, sampling_freq_Hz: float, plot_results: bool = False
+        self, data: pd.DataFrame, sampling_freq_Hz: float, plot_results: bool = False, dt_data: str = None
     ) -> pd.DataFrame:
         """
         Detects gait sequences based on the input accelerometer data.
@@ -80,6 +81,7 @@ class ParaschivIonescuGaitSequenceDetection:
             sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
             plot_results (bool, optional): If True, generates a plot showing the pre-processed acceleration data
             and the detected gait sequences. Default is False.
+            dt_data (str, optional): Name of the original datetime in the input data. If original datetime is provided, the output onset will be based on that.
 
         Returns:
             ParaschivIonescuGaitSequenceDetection: Returns an instance of the class.
@@ -338,7 +340,17 @@ class ParaschivIonescuGaitSequenceDetection:
         gait_sequences_["tracking_systems"] = self.tracking_systems
         gait_sequences_["tracked_points"] = self.tracked_points
 
-        # Select and reorder columns
+        # If original datetime is available, update the 'onset' column
+        if dt_data is not None:
+            if dt_data in data.columns:
+                # Convert the onset and end times to datetime
+                gait_sequences_["time"] = data[dt_data].iloc[
+                    gait_sequences_["onset"].astype(int)
+                ]
+                # If real-time onset is available, update the 'onset' column
+                gait_sequences_["onset"] = gait_sequences_["time"]
+
+        # Create a DataFrame from the gait sequence data
         gait_sequences_ = gait_sequences_[
             ["onset", "duration", "event_type", "tracking_systems", "tracked_points"]
         ]
