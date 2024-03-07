@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from pathlib import Path
 from typing import Any, List, Optional, Union, Sequence
 
 # from ngmt.modules import GSDB
@@ -61,21 +62,39 @@ class NGMTRecording:
                 [existing_events, new_events], ignore_index=True
             )
 
-    def export_events(self, tracking_system: Optional[str] = None, file_path: str) -> None:
+    def export_events(self, tracking_system: Optional[str] = None, file_path: str, file_name: Optional[str] = None, bids_compatible: bool = False) -> None:
         """Export events for a specific tracking system to a file.
 
         Args:
             tracking_system (Optional[str]): Tracking system for which events are to be exported.
                 If None, events from all tracking systems will be exported (default is None).
-            file_path (str): Path to the file where events are to be exported.
+            file_path (str): Path to the directory where the file should be saved.
+            file_name (Optional[str]): Name of the file to be exported. If None, a default name will be used.
+            bids_compatible (bool): Flag indicating whether the exported file should be BIDS compatible (default is False).
         """
         if self.events is not None:
             if tracking_system is None:
                 all_events = pd.concat(self.events.values(), keys=self.events.keys(), names=['tracking_system'])
-                all_events.to_csv(file_path, index=False)
+                if file_name is None:
+                    file_name = "all_events.csv"
+                if bids_compatible:
+                    file_name = file_name.replace(".csv", "_events.tsv")
+                    file_path = Path(file_path).joinpath(file_name)
+                    all_events.to_csv(file_path, sep='\t', index=False)
+                else:
+                    file_path = Path(file_path).joinpath(file_name)
+                    all_events.to_csv(file_path, index=False)
             elif tracking_system in self.events:
-                self.events[tracking_system].to_csv(file_path, index=False)
-                
+                if file_name is None:
+                    file_name = f"{tracking_system}_events.csv"
+                if bids_compatible:
+                    file_name = file_name.replace(".csv", "_events.tsv")
+                    file_path = Path(file_path).joinpath(file_name)
+                    self.events[tracking_system].to_csv(file_path, sep='\t', index=False)
+                else:
+                    file_path = Path(file_path).joinpath(file_name)
+                    self.events[tracking_system].to_csv(file_path, index=False)
+
 # @dataclass
 # class FileInfo:
 #     """
