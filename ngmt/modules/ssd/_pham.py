@@ -43,7 +43,7 @@ class PhamSittoStandStandtoSitDetection:
             Args:
                 data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
                 sampling_freq_Hz (float, int): Sampling frequency of the signals.
-
+                plot_results (bool, optional): If True, generates a plot. Default is False.
             Returns:
                 PhamSittoStandStandtoSitDetection: Returns an instance of the class.
                     The postural transition information is stored in the 'postural_transitions' attribute,
@@ -98,7 +98,7 @@ class PhamSittoStandStandtoSitDetection:
         self.stand_to_sit_sit_to_stand_ = None
 
     def detect(
-        self, data: pd.DataFrame, sampling_freq_Hz: float
+        self, data: pd.DataFrame, sampling_freq_Hz: float, plot_results: bool = False
     ) -> pd.DataFrame:
         """
         Detects sit to stand and stand to sit based on the input acceleromete and gyro data.
@@ -106,6 +106,7 @@ class PhamSittoStandStandtoSitDetection:
         Args:
             data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
             sampling_freq_Hz (float): Sampling frequency of the input data.
+            plot_results (bool, optional): If True, generates a plot. Default is False.
 
             Returns:
                 PhamSittoStandStandtoSitDetection: Returns an instance of the class.
@@ -514,50 +515,10 @@ class PhamSittoStandStandtoSitDetection:
         # Assign the DataFrame to the 'postural_transitions_' attribute
         self.postural_transitions_ = postural_transitions_
 
-        # Figure 
-        fig = plt.figure(figsize=(21, 10))
+        # If Plot_results set to true
+        if plot_results:
 
-        # Subplot 1: Acceleration data
-        ax1 = plt.subplot(211)
-        for i in range(3):
-            ax1.plot(
-                np.arange(len(accel))/ sampling_freq_Hz,
-                accel[:,i],
-            )
-        for i in range(len(postural_transitions_)):
-            onset = postural_transitions_['onset'][i]
-            duration = postural_transitions_['duration'][i]
-            ax1.axvline(x=onset, color='r')
-            ax1.axvspan(onset, (onset + duration), color='grey')
-        ax1.set_title("Detected Postural Transitions", fontsize=20)
-        ax1.set_ylabel(f"Acceleration (g)", fontsize=14)
-        ax1.set_xlabel(f"Time (sec)", fontsize=14)
-        ax1.legend(["Acc 1", "Acc 2", "Acc 3", "Event oset", "Event duration"], loc="upper right", fontsize=14)
-        ax1.set_ylim(-2, 2.5)
-        plt.xticks(fontsize=14)
-        plt.yticks(fontsize=14)
-
-        # Subplot 2: Gyro data
-        ax2 = plt.subplot(212)
-        for i in range(3):
-            ax2.plot(
-                np.arange(len(gyro))/ sampling_freq_Hz,
-                gyro[:,i],
-            )
-        for i in range(len(postural_transitions_)):
-            onset = postural_transitions_['onset'][i]
-            duration = postural_transitions_['duration'][i]
-            ax2.axvline(x=onset, color='r')
-            ax2.axvspan(onset, (onset + duration), color='grey')
-        ax1.set_title("Detected Postural Transitions", fontsize=20)
-        ax2.set_ylabel(f"Gyro (deg/s)", fontsize=14)
-        ax2.set_xlabel(f"Time (sec)", fontsize=14)
-        ax2.legend(["Gyr 1", "Gyr 2", "Gyr 3", "Event oset", "Event duration"], loc="upper right", fontsize=14)
-        ax2.set_ylim(-200, 200)
-        plt.xticks(fontsize=14)
-        plt.yticks(fontsize=14)
-        fig.tight_layout()
-        plt.show()
+            preprocessing.pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz)
 
         # Return an instance of the class
         return self

@@ -203,7 +203,6 @@ class ParaschivIonescuGaitSequenceDetection:
             int(round(self.target_sampling_freq_Hz)),
             1,
             int(round(self.target_sampling_freq_Hz)),
-            0,
         )
 
         # Initialize a list for walking bouts
@@ -281,10 +280,10 @@ class ParaschivIonescuGaitSequenceDetection:
         # Check if walking_periods is empty
         if walking_periods is None:
             walking_bouts = []
-            MidSwing = []
+
         else:
             # Call the organize_and_pack_results function with walking_periods and MaxPeaks
-            walking_bouts, MidSwing = preprocessing.organize_and_pack_results(
+            walking_bouts, _ = preprocessing.organize_and_pack_results(
                 walking_periods, max_peaks
             )
             if walking_bouts:

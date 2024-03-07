@@ -211,15 +211,16 @@ class PhysicalActivityMonitoring:
         # Return gait_sequences_ as an output
         self.physical_activities_ = physical_activities_
 
+        # Group by date and hour to calculate the average ENMO for each hour
+        hourly_average_data = processed_data.groupby(
+            [processed_data.index.date, processed_data.index.hour]
+        )["enmo"].mean()
+
+        # Reshape the data to have dates as rows, hours as columns, and average ENMO as values
+        hourly_average_data = hourly_average_data.unstack()
+
         # Plot if set to true
         if plot:
-            # Group by date and hour to calculate the average ENMO for each hour
-            hourly_average_data = processed_data.groupby(
-                [processed_data.index.date, processed_data.index.hour]
-            )["enmo"].mean()
-
-            # Reshape the data to have dates as rows, hours as columns, and average ENMO as values
-            hourly_average_data = hourly_average_data.unstack()
 
             preprocessing.pam_plot_results(hourly_average_data, thresholds_mg)
 

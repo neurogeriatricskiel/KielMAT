@@ -240,9 +240,6 @@ def _iir_highpass_filter(signal, sampling_frequency=40):
             padlen=3
             * (max(len(numerator_coefficient), len(denominator_coefficient)) - 1),
         )
-    else:
-        # Define filter coefficients based on your specific requirements
-        pass
 
     # Return the filtered signal
 
@@ -322,7 +319,7 @@ def apply_successive_gaussian_filters(data):
 
 
 def calculate_envelope_activity(
-    input_signal, smooth_window=20, threshold_style=1, duration=20, plot_results=0
+    input_signal, smooth_window=20, threshold_style=1, duration=20
 ):
     """
     Calculate envelope-based activity detection using the Hilbert transform.
@@ -336,7 +333,6 @@ def calculate_envelope_activity(
         smooth_window (int): Window length for smoothing the envelope (default is 20).
         threshold_style (int): Threshold selection style: 0 for manual, 1 for automatic (default is 1).
         duration (int): Minimum duration of activity to be detected (default is 20).
-        plot_results (int): Set to 1 for plotting results, 0 otherwise (default is 0).
 
     Returns:
         tuple (ndarray, ndarray): A tuple containing:
@@ -356,9 +352,6 @@ def calculate_envelope_activity(
     if not isinstance(duration, (int)) or duration <= 0:
         raise ValueError("The duration must be a positive integer.")
 
-    if not plot_results == 0 or plot_results == 1:
-        raise ValueError("The plotting results must be 0 or 1.")
-
     # Calculate the analytical signal and get the envelope
     input_signal = input_signal.flatten()
     # Compute the analytic signal, using the Hilbert transform form scipy.signal.
@@ -374,14 +367,15 @@ def calculate_envelope_activity(
     env = env / np.max(env)  # Normalize the 'env' by dividing by its maximum value
 
     # Threshold the signal
-    if threshold_style == 0:
-        plt.plot(env)
-        plt.title("Select a threshold on the graph")
-        THR_SIG = plt.ginput(1)[0][1]
-        plt.close()
-    else:
-        THR_SIG = 4 * np.mean(env)
-
+    # if threshold_style == 0:
+    #     plt.plot(env)
+    #     plt.title("Select a threshold on the graph")
+    #     THR_SIG = plt.ginput(1)[0][1]
+    #     plt.close()
+    # else:
+    #     THR_SIG = 4 * np.mean(env)
+    THR_SIG = 4 * np.mean(env)
+    
     # Set noise and signal levels
     noise = np.mean(env) / 3  # noise level
 
@@ -431,38 +425,38 @@ def calculate_envelope_activity(
             THR_SIG  # Store the updated threshold value in the threshold buffer.
         )
 
-    if plot_results == 1:
-        plt.figure()
-        ax = plt.subplot(2, 1, 1)
-        plt.plot(input_signal)
-        plt.plot(np.where(alarm != 0, np.max(input_signal), 0), "r", linewidth=2.5)
-        plt.plot(THR_buf, "--g", linewidth=2.5)
-        plt.title("Raw Signal and detected Onsets of activity")
-        plt.legend(
-            ["Raw Signal", "Detected Activity in Signal", "Adaptive Threshold"],
-            loc="upper left",
-        )
-        plt.grid(True)
-        plt.axis("tight")
+    # if plot_results == 1:
+    #     plt.figure()
+    #     ax = plt.subplot(2, 1, 1)
+    #     plt.plot(input_signal)
+    #     plt.plot(np.where(alarm != 0, np.max(input_signal), 0), "r", linewidth=2.5)
+    #     plt.plot(THR_buf, "--g", linewidth=2.5)
+    #     plt.title("Raw Signal and detected Onsets of activity")
+    #     plt.legend(
+    #         ["Raw Signal", "Detected Activity in Signal", "Adaptive Threshold"],
+    #         loc="upper left",
+    #     )
+    #     plt.grid(True)
+    #     plt.axis("tight")
 
-        ax2 = plt.subplot(2, 1, 2)
-        plt.plot(env)
-        plt.plot(THR_buf, "--g", linewidth=2.5)
-        plt.plot(thres_buf, "--r", linewidth=2)
-        plt.plot(noise_buf, "--k", linewidth=2)
-        plt.title("Smoothed Envelope of the signal (Hilbert Transform)")
-        plt.legend(
-            [
-                "Smoothed Envelope of the signal (Hilbert Transform)",
-                "Adaptive Threshold",
-                "Activity level",
-                "Noise Level",
-            ]
-        )
-        plt.grid(True)
-        plt.axis("tight")
-        plt.tight_layout()
-        plt.show()
+    #     ax2 = plt.subplot(2, 1, 2)
+    #     plt.plot(env)
+    #     plt.plot(THR_buf, "--g", linewidth=2.5)
+    #     plt.plot(thres_buf, "--r", linewidth=2)
+    #     plt.plot(noise_buf, "--k", linewidth=2)
+    #     plt.title("Smoothed Envelope of the signal (Hilbert Transform)")
+    #     plt.legend(
+    #         [
+    #             "Smoothed Envelope of the signal (Hilbert Transform)",
+    #             "Adaptive Threshold",
+    #             "Activity level",
+    #             "Noise Level",
+    #         ]
+    #     )
+    #     plt.grid(True)
+    #     plt.axis("tight")
+    #     plt.tight_layout()
+    #     plt.show()
 
     return alarm, env
 
@@ -1200,14 +1194,6 @@ def wavelet_decomposition(data, level, wavetype):
     Returns:
         denoised_signal (ndarray): Denoised signal.
     """
-    # Error handling for invalid input data
-    if not isinstance(data, np.ndarray):
-        raise ValueError("signal must be a numpy array.")
-    if not isinstance(level, int) or level <= 0:
-        raise ValueError("order must be a positive integer.")
-    if not isinstance(wavetype, str):
-        raise ValueError("wavetype must be a string.")
-
     # Perform wavelet decomposition
     coeffs = pywt.wavedec(data, wavetype, mode='smooth', level=level)
     
@@ -1238,14 +1224,6 @@ def moving_var(data, window):
     # Initialize an array to store the moving variance
     m_var = np.zeros(data.shape)
 
-    # Ensure the window size is at least 2
-    if window < 2:
-        window = 2
-
-    # Convert window to int if it's a float
-    if isinstance(window, float):
-        window = int(window)
-        
     # Calculate the padding required
     pad = int(np.ceil(window / 2))
 
@@ -1294,7 +1272,7 @@ class AHRS:
 
         # Private properties
         self.q = np.array([1, 0, 0, 0])  # quaternion of Earth relative to sensor
-
+    
     def UpdateIMU(self, Accelerometer, Gyroscope, Magnetometer):
         """
         Update the AHRS state using IMU (Inertial Measurement Unit) sensor data.
@@ -1342,7 +1320,6 @@ class AHRS:
         # Update quaternion
         self.Quaternion = self.quatConj(self.q)
 
-
     def Reset(self):
         """
         Reset the AHRS state to its default values.
@@ -1350,8 +1327,8 @@ class AHRS:
         # Reset quaternion to default value
         self.q = np.array([1, 0, 0, 0])
 
-    # Rotate vector by quaternion
-    def quatRotate(self, vIn, q):
+    @staticmethod
+    def quatRotate(vIn, q):
         """
         Rotate a vector or an array of vectors using a quaternion.
 
@@ -1362,21 +1339,29 @@ class AHRS:
         Returns:
             numpy.ndarray: Rotated vector or array of vectors of shape (n, 3).
         """
-        # Check input dimensions
-        if len(vIn.shape) != 2 or vIn.shape[1] != 3:
-            raise ValueError("Input vector must be a 2D array with shape (n, 3)")
+        # Ensure q is a 2D array
+        if len(q.shape) == 1:
+            q = q.reshape(1, 4)
 
-        if len(q.shape) == 1:  # If q is 1D
-            q = q.reshape(1, 4)  # Reshape to (1, 4)
-        elif len(q.shape) != 2 or q.shape[1] != 4:
-            raise ValueError("Quaternion q must be a 1D array with shape (4,) or a 2D array with shape (n, 4)")
+        # Compute the conjugate of the quaternion
+        q_conj = AHRS.quatConj(q)
+
+        # Create a column of zeros for concatenation
+        zero_column = np.zeros((vIn.shape[0], 1))
+
+        # Concatenate the zero column with vIn
+        concatenated_array = np.hstack((zero_column, vIn))
 
         # Compute the rotated vector
-        row, col = vIn.shape
-        v0XYZ = self.quatProd(self.quatProd(self.quatConj(q), np.hstack((np.zeros((row, 1)), vIn))), q)
-        vOut = v0XYZ[:, 1:4]
-        return vOut
+        v_out = AHRS.quatProd(AHRS.quatProd(q_conj, concatenated_array), q)
 
+        # Extract the vector part of the result
+        if v_out.ndim == 2:
+            v_out = v_out[:, 1:]
+        else:
+            v_out = v_out[1:]
+
+        return v_out
 
     # Quaternion product
     @staticmethod
@@ -1391,20 +1376,20 @@ class AHRS:
         Returns:
             numpy.ndarray: Quaternion product represented as a 1D array with shape (4,) if q1 is 1D or a 2D array with shape (n, 4) if q1 is 2D.
         """
-        if len(q1.shape) == 1:  # If q1 is 1D
-            q1 = q1.reshape(1, 4)  # Reshape to (1, 4)
+        if q1.ndim == 1:
+            q1 = q1.reshape(1, 4)
+        if q2.ndim == 1:
+            q2 = q2.reshape(1, 4)
 
         # Compute the quaternion product
-        q_product = np.zeros_like(q1)
-        q_product[:, 0] = q1[:, 0]*q2[0] - q1[:, 1]*q2[1] - q1[:, 2]*q2[2] - q1[:, 3]*q2[3]
-        q_product[:, 1] = q1[:, 0]*q2[1] + q1[:, 1]*q2[0] + q1[:, 2]*q2[3] - q1[:, 3]*q2[2]
-        q_product[:, 2] = q1[:, 0]*q2[2] - q1[:, 1]*q2[3] + q1[:, 2]*q2[0] + q1[:, 3]*q2[1]
-        q_product[:, 3] = q1[:, 0]*q2[3] + q1[:, 1]*q2[2] - q1[:, 2]*q2[1] + q1[:, 3]*q2[0]
+        q_product = np.zeros((q1.shape[0], 4))
+        q_product[:, 0] = q1[:, 0]*q2[:, 0] - q1[:, 1]*q2[:, 1] - q1[:, 2]*q2[:, 2] - q1[:, 3]*q2[:, 3]
+        q_product[:, 1] = q1[:, 0]*q2[:, 1] + q1[:, 1]*q2[:, 0] + q1[:, 2]*q2[:, 3] - q1[:, 3]*q2[:, 2]
+        q_product[:, 2] = q1[:, 0]*q2[:, 2] - q1[:, 1]*q2[:, 3] + q1[:, 2]*q2[:, 0] + q1[:, 3]*q2[:, 1]
+        q_product[:, 3] = q1[:, 0]*q2[:, 3] + q1[:, 1]*q2[:, 2] - q1[:, 2]*q2[:, 1] + q1[:, 3]*q2[:, 0]
 
-        if q_product.shape[0] == 1:
-            return q_product[0]  # If input had only one quaternion, return 1D array
-        else:
-            return q_product  # If input had multiple quaternions, return 2D array
+        return q_product.squeeze() if q_product.shape[0] == 1 else q_product
+
 
     # Quaternion conjugate
     @staticmethod
@@ -1428,6 +1413,58 @@ class AHRS:
             qConj[:, 0] = q[:, 0]
             qConj[:, 1:] = -q[:, 1:]
             return qConj
-        else:
-            raise ValueError("Quaternion must be a 1D or 2D array with shape (4,) or (n, 4)")
+        
+# Function to plot results of the gait sequence detection algorithm
+def pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz):
+    """
+    Plot the detected postural transitions.
 
+    Args:
+
+    Returns:
+        plot
+    """
+    # Figure 
+    fig = plt.figure(figsize=(21, 10))
+
+    # Subplot 1: Acceleration data
+    ax1 = plt.subplot(211)
+    for i in range(3):
+        ax1.plot(
+            np.arange(len(accel))/ sampling_freq_Hz,
+            accel[:,i],
+        )
+    for i in range(len(postural_transitions_)):
+        onset = postural_transitions_['onset'][i]
+        duration = postural_transitions_['duration'][i]
+        ax1.axvline(x=onset, color='r')
+        ax1.axvspan(onset, (onset + duration), color='grey')
+    ax1.set_title("Detected Postural Transitions", fontsize=20)
+    ax1.set_ylabel(f"Acceleration (g)", fontsize=14)
+    ax1.set_xlabel(f"Time (sec)", fontsize=14)
+    ax1.legend(["Acc 1", "Acc 2", "Acc 3", "Event oset", "Event duration"], loc="upper right", fontsize=14)
+    ax1.set_ylim(-2, 2.5)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+
+    # Subplot 2: Gyro data
+    ax2 = plt.subplot(212)
+    for i in range(3):
+        ax2.plot(
+            np.arange(len(gyro))/ sampling_freq_Hz,
+            gyro[:,i],
+        )
+    for i in range(len(postural_transitions_)):
+        onset = postural_transitions_['onset'][i]
+        duration = postural_transitions_['duration'][i]
+        ax2.axvline(x=onset, color='r')
+        ax2.axvspan(onset, (onset + duration), color='grey')
+    ax1.set_title("Detected Postural Transitions", fontsize=20)
+    ax2.set_ylabel(f"Gyro (deg/s)", fontsize=14)
+    ax2.set_xlabel(f"Time (sec)", fontsize=14)
+    ax2.legend(["Gyr 1", "Gyr 2", "Gyr 3", "Event oset", "Event duration"], loc="upper right", fontsize=14)
+    ax2.set_ylim(-200, 200)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    fig.tight_layout()
+    plt.show()
