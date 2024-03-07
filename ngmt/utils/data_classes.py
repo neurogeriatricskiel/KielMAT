@@ -61,7 +61,21 @@ class NGMTRecording:
                 [existing_events, new_events], ignore_index=True
             )
 
+    def export_events(self, tracking_system: Optional[str] = None, file_path: str) -> None:
+        """Export events for a specific tracking system to a file.
 
+        Args:
+            tracking_system (Optional[str]): Tracking system for which events are to be exported.
+                If None, events from all tracking systems will be exported (default is None).
+            file_path (str): Path to the file where events are to be exported.
+        """
+        if self.events is not None:
+            if tracking_system is None:
+                all_events = pd.concat(self.events.values(), keys=self.events.keys(), names=['tracking_system'])
+                all_events.to_csv(file_path, index=False)
+            elif tracking_system in self.events:
+                self.events[tracking_system].to_csv(file_path, index=False)
+                
 # @dataclass
 # class FileInfo:
 #     """
