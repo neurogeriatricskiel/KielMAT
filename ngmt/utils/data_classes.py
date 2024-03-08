@@ -25,6 +25,15 @@ VALID_CHANNEL_TYPES = {
 # See: https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#restricted-keyword-list-for-channel-component
 VALID_COMPONENT_TYPES = {"x", "y", "z", "quat_x", "quat_y", "quat_z", "quat_w", "n/a"}
 
+# See https://bids-specification.readthedocs.io/en/stable/modality-agnostic-files.html#participants-file
+VALID_INFO_KEYS = {
+    'Subject',
+    'Session',
+    'Task',
+    'Tracking system',
+    'suffix',
+}
+
 
 @dataclass(kw_only=True)
 class NGMTRecording:
@@ -62,7 +71,35 @@ class NGMTRecording:
                 [existing_events, new_events], ignore_index=True
             )
 
-    def export_events(self, tracking_system: Optional[str] = None, file_path: str, file_name: Optional[str] = None, bids_compatible: bool = False) -> None:
+    def add_info(self, key: str, value: Any) -> None:
+        """Add information to the info dictionary.
+
+        Args:
+            key (str): The key for the information.
+            value (Any): The value of the information.
+        """
+        if self.info is None:
+            self.info = {}
+
+        # Check if the key belongs to a list of keywords
+        if key not in VALID_INFO_KEYS:
+            raise ValueError(f"Invalid info key '{key}'. Valid info keys are: {VALID_INFO_KEYS}")
+
+        # add the key-value pair to the info dictionary
+        self.info[key] = value
+
+        # Check if the value are lower case, if not, convert to lower case and give warning
+        if isinstance(value, str):
+            self.info[key] = value.lower()
+            print(f"Warning: The value of the key '{key}' should be lower case. Converted to lower case.")
+
+        # check if value contains underscore or space, if yes, remove and give warning
+        if "_" in value or " " in value:
+            self.info[key] = value.replace("_", "").replace(" ", "")
+            print(f"Warning: The value of the key '{key}' should not contain underscore or space. Removed underscore and space.")
+
+
+    def export_events(self, file_path: str, tracking_system: Optional[str] = None,  file_name: Optional[str] = None, bids_compatible: Optional[bool] = False) -> None:
         """Export events for a specific tracking system to a file.
 
         Args:
@@ -78,7 +115,17 @@ class NGMTRecording:
                 if file_name is None:
                     file_name = "all_events.csv"
                 if bids_compatible:
-                    file_name = file_name.replace(".csv", "_events.tsv")
+                    # Construct the filename using subject ID and task name
+                    subject_id = self.info.get('Subject', '')
+                    task_name = self.info.get('Task', '')
+                    # check if subject_id and task_name are present in the info dictionary
+                    if subject_id == None or task_name == None:
+                        raise ValueError("Subject ID and Task Name should be specified in the info dictionary.")
+                    file_name = f"sub-{subject_id}_task-{task_name}_events.csv"
+                    # check if session is present in the info dictionary
+                    session = self.info.get('Session')
+                    if session != None:
+                        file_name = f"sub-{subject_id}_ses-{session}_task-{task_name}_events.csv"
                     file_path = Path(file_path).joinpath(file_name)
                     all_events.to_csv(file_path, sep='\t', index=False)
                 else:
