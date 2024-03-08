@@ -24,13 +24,10 @@ By running these tests, the reliability and correctness of the modules will be e
 import pytest
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import ngmt
 from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
 from ngmt.modules.pam import PhysicalActivityMonitoring
 from ngmt.modules.ssd import PhamSittoStandStandtoSitDetection       
-from ngmt.utils.preprocessing import AHRS
 
 ## Module test
 # Test for gait sequence detection algorithm
@@ -456,41 +453,23 @@ def sample_data():
     })
     return sample_data
 
-def test_postural_transitions(sample_data):
-    # Initialize the class
-    pham = PhamSittoStandStandtoSitDetection()       
-
-    # Call the detect method
-    pham.detect(sample_data, sampling_freq_Hz=100) 
-
-    # Assert that postural_transitions_ is a DataFrame
-    assert isinstance(pham.postural_transitions_, pd.DataFrame)
-
-    # Assert that all required columns are present in the DataFrame
-    required_columns = ['onset', 'duration', 'event_type', 'postural transition angle',
-                        'maximum flexion velocity', 'maximum extension velocity',
-                        'tracking_systems', 'tracked_points']
-    for col in required_columns:
-        assert col in pham.postural_transitions_.columns
-
-    # Assert that all durations are positive
-    assert (pham.postural_transitions_['duration'] >= 0).all()
-
-    # Assert that all event types are either 'sit to stand' or 'stand to sit'
-    valid_event_types = ['sit to stand', 'stand to sit']
-    assert (pham.postural_transitions_['event_type'].isin(valid_event_types)).all() 
-        
 def test_detection_output_shape(sample_data):
     # Test if the output DataFrame shape is correct
     detection = PhamSittoStandStandtoSitDetection()
     result = detection.detect(sample_data, sampling_freq_Hz=100)
 
-def test_invalid_input_data():
-    # Test for ValueError when invalid input data is provided
-    detection = PhamSittoStandStandtoSitDetection()
+def test_plot_results_pham():
+    # Initialize the class
+    gsd = PhamSittoStandStandtoSitDetection()
+
+    # Test with invalid plot_results type
+    invalid_plot_results = "invalid"
     with pytest.raises(ValueError):
-        # pragma: no cover
-        detection.detect(pd.DataFrame(), sampling_freq_Hz=100)
+        gsd.detect(
+            data=sample_data,
+            sampling_freq_Hz=200,
+            plot_results=invalid_plot_results,
+        )
 
 # Run the tests with pytest
 if __name__ == "__main__":

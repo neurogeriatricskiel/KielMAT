@@ -450,3 +450,46 @@ def quat2axang(q: np.ndarray) -> np.ndarray:
         np.array([0.0, 0.0, 1.0]),
     )
     return axang
+
+
+def axang2rotm(axang: np.ndarray) -> np.ndarray:
+    """
+    Convert axis-angle representation to rotation matrix.
+
+    Parameters:
+    - axang (np.ndarray): Input array of axis-angle representations with shape (..., 4),
+                         where the first three elements are the axis of rotation
+                         and the last element is the angle of rotation in radians.
+
+    Returns:
+    - np.ndarray: Rotation matrix corresponding to the input axis-angle representations.
+
+    The function computes the rotation matrix using Rodrigues' rotation formula.
+    """
+
+    # Cast array to float
+    axang = np.asarray(axang, float)
+    assert axang.shape[-1] == 4
+
+    # Extract axis and angle
+    axis = axang[..., :3]
+    angle = axang[..., 3]
+
+    # Normalize axis
+    axis /= np.linalg.norm(axis, axis=-1, keepdims=True)
+
+    # Compute rotation matrix using Rodrigues' rotation formula
+    cos_theta = np.cos(angle)
+    sin_theta = np.sin(angle)
+    cross_prod_matrix = np.zeros((*axis.shape[:-1], 3, 3), dtype=float)
+    cross_prod_matrix[..., 0, 1] = -axis[..., 2]
+    cross_prod_matrix[..., 0, 2] = axis[..., 1]
+    cross_prod_matrix[..., 1, 0] = axis[..., 2]
+    cross_prod_matrix[..., 1, 2] = -axis[..., 0]
+    cross_prod_matrix[..., 2, 0] = -axis[..., 1]
+    cross_prod_matrix[..., 2, 1] = axis[..., 0]
+    rotation_matrix = np.eye(3, dtype=float) * cos_theta[..., None] + \
+                      sin_theta[..., None] * cross_prod_matrix + \
+                      (1 - cos_theta[..., None]) * np.einsum('...i,...j->...ij', axis, axis)
+
+    return rotation_matrix

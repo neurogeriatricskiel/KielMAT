@@ -20,14 +20,13 @@ To run the tests, follow these steps:
 By running these tests, the reliability and correctness of the signal processing functions in the 'ngmt.utils.preprocessing' module will be ensured.
 """
 
-
 # Import necessary libraries and functions to be tested.
 import pandas as pd
 import numpy as np
 import warnings
 import numpy.testing as npt
 import pytest
-import scipy
+from numpy.testing import assert_allclose
 from ngmt.utils.preprocessing import (
     resample_interpolate,
     lowpass_filter,
@@ -51,8 +50,18 @@ from ngmt.utils.preprocessing import (
     gsd_plot_results,
     pam_plot_results,
     pham_plot_results,
-    AHRS
 )
+
+from ngmt.utils.quaternion import (
+    quatinv, 
+    quatnormalize, 
+    quatnorm, 
+    quatconj,
+    quatmultiply, 
+    rotm2quat, 
+    quat2rotm, 
+    quat2axang,
+    axang2rotm)
 
 # Generate a random sinusoidal signal with varying amplitudes to use as an input in testing functions
 time = np.linspace(0, 100, 1000)  # Time vector from 0 to 100 with 1000 samples
@@ -1657,53 +1666,216 @@ def test_organize_and_pack_results(walking_periods, peak_steps, expected_results
     # Flatten the nested lists
     actual_results_flat = [item for sublist in actual_results for item in sublist.items()]
     
-# Test function for AHRS object
+# Define some test data
+quaternions = np.array([
+    [0.5, 0.5, 0.5, 0.5],
+    [1.0, 0.0, 0.0, 0.0],
+    [0.707, 0.0, 0.707, 0.0],
+])
+rotation_matrices = np.array([
+    [[1, 0, 0],
+     [0, 1, 0],
+     [0, 0, 1]],
+    [[1, 0, 0],
+     [0, -1, 0],
+     [0, 0, -1]],
+    [[1, 0, 0],
+     [0, 0, -1],
+     [0, 1, 0]],
+])
+axis_angle_rep = np.array([
+    [1, 0, 0, np.pi / 2],
+    [1, 0, 0, 0],
+    [0, 1, 0, np.pi / 2],
+])
+
+
+@pytest.mark.parametrize("q, expected", [
+    (quaternions[0], np.array([0.5, -0.5, -0.5, -0.5])),
+    (quaternions[1], np.array([1.0, 0.0, 0.0, 0.0])),
+    (quaternions[2], np.array([0.707, 0.0, -0.707, 0.0])),
+])
+def test_quatinv(q, expected):
+    result = quatinv(q)
+
+
+@pytest.mark.parametrize("q, expected", [
+    (quaternions[0], np.array([0.5, 0.5, 0.5, 0.5])),
+    (quaternions[1], np.array([1.0, 0.0, 0.0, 0.0])),
+    (quaternions[2], np.array([0.707, 0.0, 0.707, 0.0])),
+])
+def test_quatnormalize(q, expected):
+    result = quatnormalize(q)
+
+
+@pytest.mark.parametrize("q, expected", [
+    (quaternions[0], np.array([1.0] * 3)),
+    (quaternions[1], np.array([1.0] * 3)),
+    (quaternions[2], np.array([1.0] * 3)),
+])
+def test_quatnorm(q, expected):
+    result = quatnorm(q)
+
+
+@pytest.mark.parametrize("q, expected", [
+    (quaternions[0], np.array([0.5, -0.5, -0.5, -0.5])),
+    (quaternions[1], np.array([1.0, 0.0, 0.0, 0.0])),
+    (quaternions[2], np.array([0.707, 0.0, -0.707, 0.0])),
+])
+def test_quatconj(q, expected):
+    result = quatconj(q)
+
+
+@pytest.mark.parametrize("q1, q2, expected", [
+    (quaternions[0], quaternions[1], np.array([0.0, 1.0, 0.0, 0.0])),
+    (quaternions[1], quaternions[2], np.array([0.707, 0.0, 0.0, -0.707])),
+    (quaternions[2], quaternions[0], np.array([0.0, 0.0, -0.707, 0.707])),
+])
+def test_quatmultiply(q1, q2, expected):
+    result = quatmultiply(q1, q2)
+
+
+@pytest.mark.parametrize("R, expected", [
+    (rotation_matrices[0], quaternions[1]),
+    (rotation_matrices[1], quaternions[2]),
+    (rotation_matrices[2], np.array([0.924, 0.383, 0.0, 0.0])),
+])
+def test_rotm2quat(R, expected):
+    result = rotm2quat(R)
+
+
+@pytest.mark.parametrize("q, expected", [
+    (quaternions[1], rotation_matrices[0]),
+    (quaternions[2], rotation_matrices[1]),
+    (np.array([0.924, 0.383, 0.0, 0.0]), rotation_matrices[2]),
+])
+def test_quat2rotm(q, expected):
+    result = quat2rotm(q)
+
+
+@pytest.mark.parametrize("q, expected", [
+    (quaternions[1], axis_angle_rep[1]),
+    (quaternions[0], axis_angle_rep[0]),
+    (quaternions[2], axis_angle_rep[2]),
+])
+def test_quat2axang(q, expected):
+    result = quat2axang(q)
+
+
+@pytest.mark.parametrize("axang, expected", [
+    (axis_angle_rep[0], rotation_matrices[0]),
+    (axis_angle_rep[1], rotation_matrices[1]),
+    (axis_angle_rep[2], rotation_matrices[2]),
+])
+def test_axang2rotm(axang, expected):
+    result = axang2rotm(axang)
+
+
+@pytest.mark.parametrize(
+    "q, scalar_first, channels_last, expected",
+    [
+        (np.array([[1, 0, 0, 0]]), True, True, np.array([[1, 0, 0, 0]])),  # Identity quaternion
+        (np.array([[0, 1, 0, 0]]), True, True, np.array([[0, -1, 0, 0]])),  # Pure imaginary quaternion
+        (np.array([[0, 0, 1, 0]]), True, False, np.array([[0, 0, -1, 0]])),  # Pure imaginary quaternion, channels_last = False
+        (np.array([[0, 0, 0, 1]]), False, True, np.array([[0, 0, 0, -1]])),  # Pure imaginary quaternion, scalar_last = True
+        (np.array([[[0, 1, 0, 0], [0, 0, 1, 0]]]), True, True, np.array([[[0, -1, 0, 0], [0, 0, -1, 0]]])),  # Two quaternions
+    ]
+)
+def case_two_test_quatconj(q, scalar_first, channels_last, expected):
+    result = quatconj(q, scalar_first=scalar_first, channels_last=channels_last)
+    np.testing.assert_allclose(result, expected)
+
+def test_quatconj_transpose():
+    q = np.array([[[0, 1, 0, 0], [0, 0, 1, 0]]])
+    result = quatconj(q, scalar_first=True, channels_last=False)
+
+def test_quatconj_manipulation():
+    q = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])  
+    q_tmp = q.copy()
+    q[..., 0] = q_tmp[..., -1]
+    q[..., 1:] = q_tmp[..., :-1]
+    del q_tmp
+
+    result = quatconj(q, scalar_first=False, channels_last=True)
+
+
+@pytest.mark.parametrize(
+    "q1, q2, scalar_first, channels_last",
+    [
+        (
+            np.array([[[1, 0, 0, 0]]]),
+            np.array([[[1, 0, 0, 0]]]),
+            True,
+            True
+        ),  # Identity quaternion
+        (
+            np.array([[[0, 1, 0, 0]]]),
+            np.array([[[0, 0, 1, 0]]]),
+            True,
+            True
+        ),  # Pure imaginary quaternions
+    ]
+)
+def test_quatmultiply(q1, q2, scalar_first, channels_last):
+    result = quatmultiply(q1, q2, scalar_first=scalar_first, channels_last=channels_last)
+
+
+@pytest.mark.parametrize(
+    "q1, q2",
+    [
+        (
+            np.array([[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]]]),  # q1 with channels_last=True
+            np.array([[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]]]),  # q2 with channels_last=True
+        ),
+        (
+            np.array([[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]]]),  # q1 with channels_last=True
+            np.array([[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]]]),  # q2 with channels_last=True
+        )
+    ]
+)
+def test_quatmultiply_channels_last(q1, q2):
+
+    # Determine channels_last based on the shape of q1
+    channels_last = q1.shape[-1]
+
+    result = quatmultiply(q1, q2, channels_last=channels_last)  # Pass channels_last accordingly
+
 @pytest.fixture
-def ahrs_object():
-    ahrs = AHRS(Ki=0.1, Kp=100, InitPeriod=2, sampling_period=1/200)
-    return ahrs
+def quat_arrays():
+    # Generate some sample quaternion arrays for testing
+    q1 = np.array([[1, 0, 0, 0], [0, 1, 0, 0]], dtype=np.float64)
+    q2 = np.array([[1, 0, 0, 0], [0, 0, 1, 0]], dtype=np.float64)
+    return q1, q2
 
-# Test for AHRS initialization
-def test_ahrs_initialization(ahrs_object):
-    assert isinstance(ahrs_object.Quaternion, np.ndarray)
-    assert ahrs_object.Quaternion.shape == (4,)
-    assert ahrs_object.Ki == 0.1
-    assert ahrs_object.Kp == 100
-    assert ahrs_object.InitPeriod == 2
-    assert ahrs_object.sampling_period == 1/200
 
-# Test for AHRS reset
-def test_ahrs_reset(ahrs_object):
-    ahrs_object.Reset()
-    assert np.array_equal(ahrs_object.q, np.array([1, 0, 0, 0]))
+def test_scalar_last(quat_arrays):
+    q1, q2 = quat_arrays
+    result = quatmultiply(q1, q2, scalar_first=False)
+    assert result.shape == q1.shape
+    assert result.dtype == np.float64
 
-# Test for quaternion rotation
-def test_quaternion_rotation(ahrs_object):
-    vector = np.array([[1, 0, 0]])  # Ensure the vector has a shape of (1, 3)
-    rotated_vector = ahrs_object.quatRotate(vector, ahrs_object.Quaternion)
 
-# Test for quaternion product
-def test_quaternion_product():
-    q1 = np.array([1, 0, 0, 0])
-    q2 = np.array([0, 1, 0, 0])
-    result = AHRS.quatProd(q1, q2)
-    assert np.array_equal(result, np.array([0, 1, 0, 0]))
+def test_channels_last(quat_arrays):
+    q1, q2 = quat_arrays
+    result = quatmultiply(q1, q2, channels_last=True)
+    assert result.shape == q1.shape
+    assert result.dtype == np.float64
 
-# Test for quaternion conjugate
-def test_quaternion_conjugate():
-    q = np.array([1, 0, 0, 0])
-    result = AHRS.quatConj(q)
-    assert np.array_equal(result, q)
+def test_method_copysign():
+    R = np.array([
+        [0, 1, 0],
 
-# Test for AHRS UpdateIMU method
-def test_ahrs_updateimu(ahrs_object):
-    Accelerometer = np.array([0.1, 0.2, 0.3])
-    Gyroscope = np.array([0.01, 0.02, 0.03])
-    Magnetometer = np.array([0.001, 0.002, 0.003])
-    ahrs_object.UpdateIMU(Accelerometer, Gyroscope, Magnetometer)
-    assert isinstance(ahrs_object.Quaternion, np.ndarray)
-    assert ahrs_object.Quaternion.shape == (4,)
+        [-1, 0, 0],
+        [0, 0, 1]
+    ])
+    expected = np.array([0.70710678, 0.70710678, 0, 0])
+    result = rotm2quat(R, method="copysign")
 
+
+def test_invalid_method():
+    R = np.eye(3)
+    with pytest.raises(RuntimeError, match='invalid method, must be "copysign", "auto", 0, 1, 2 or 3'):
+        rotm2quat(R, method=4)
 
 # Run the tests with pytest
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.signal
 from ngmt.utils import preprocessing
+from ngmt.utils import quaternion
 from ngmt.config import cfg_colors
 
 
@@ -205,31 +206,25 @@ class PhamSittoStandStandtoSitDetection:
                 # If there is enough stationary data, perform sensor fusion using accelerometer and gyro data
                 # Initialize quaternion array for orientation estimation
                 quat = np.zeros((len(time), 4))
-                
-                # Initialize the AHRS (Attitude and Heading Reference Systems)
-                AHRSalgorithm = preprocessing.AHRS(SamplePeriod=sampling_period, Kp=1)
 
-                # Initial convergence: Update the AHRS using the mean accelerometer values over a certain period
-                # This helps in initializing the AHRS for accurate orientation estimation
+                # Initial convergence: Update the quaternion using the mean accelerometer values over a certain period
+                # This helps in initializing the orientation for accurate estimation
                 index_sel = np.arange(0, np.where(time >= time[0] + init_period)[0][0] + 1)
-                for _ in range(200):
-                    AHRSalgorithm.UpdateIMU([np.mean(accel[:,0][index_sel]), np.mean(accel[:,1][index_sel]), np.mean(accel[:,2][index_sel])], [0, 0, 0])
+                mean_accel = np.mean(accel[index_sel], axis=0)
+                quat[0] = quaternion.rotm2quat(np.eye(3) + quaternion.axang2rotm(mean_accel))
 
-                # Update the AHRS algorithm for all data points
-                for t in range(len(time)):
-                    # Adjust the AHRS algorithm parameters based on whether the sensor is stationary or not
-                    if stationary[t]:
-                        # Increase the proportional gain for stationary periods
-                        AHRSalgorithm.Kp = 2
-                    else:
-                         # Set the proportional gain to zero for non-stationary periods
-                        AHRSalgorithm.Kp = 0
-                    
-                    # Update the AHRS algorithm with accelerometer and gyro data at each time step
-                    AHRSalgorithm.UpdateIMU([accel[:,0][t], accel[:,1][t], accel[:,2][t]], [gyro[:,0][t], gyro[:,1][t], gyro[:,2][t]])
-                    
-                    # Store the quaternion orientation estimates
-                    quat[t, :] = AHRSalgorithm.Quaternion
+                # Update the quaternion for all data points
+                for t in range(1, len(time)):
+                    # Calculate the rotation matrix from gyroscope data
+                    dt = time[t] - time[t-1]
+                    ang_velocity = gyro[t] * dt
+                    delta_rot = quaternion.axang2rotm(ang_velocity)
+
+                    # Update the quaternion based on the rotation matrix
+                    quat[t] = quaternion.quatmultiply(quat[t - 1], quaternion.rotm2quat(delta_rot))
+
+                    # Normalize the quaternion to avoid drift
+                    quat[t] = quaternion.quatnormalize(quat[t])
             
                 # Analyze gyro data to detect peak velocities and directional changes
                 # Zero-crossing method is used to define the beginning and the end of a PT in the gyroscope signal
@@ -269,7 +264,7 @@ class PhamSittoStandStandtoSitDetection:
 
                 # Further analysis to distinguish between different types of postural transitions (sit-to-stand or stand-to-sit)
                 # Rotate body accelerations to Earth frame
-                acc = AHRSalgorithm.quatRotate(np.column_stack((accel[:,0], accel[:,1], accel[:,2])), quat)
+                acc = quaternion.rotm2quat(np.column_stack((accel[:,0], accel[:,1], accel[:,2])), quat)
                 
                 # Remove gravity from measurements
                 acc -= np.array([[0, 0, 1]] * len(time))
@@ -329,7 +324,7 @@ class PhamSittoStandStandtoSitDetection:
 
                 # Estimate vertical displacement and classify as actual PTs or Attempts
                 # Calculate vertical displacement
-                disp_z = np.round(pos[rs, 2] - pos[ls, 2], 2)
+                disp_z = pos[rs, 2] - pos[ls, 2]
                 
                 # Initialize flag for actual PTs
                 pt_actual_flag = np.zeros_like(local_peaks)
