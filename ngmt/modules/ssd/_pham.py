@@ -47,11 +47,14 @@ class PhamSittoStandStandtoSitDetection:
                 plot_results (bool, optional): If True, generates a plot. Default is False.
             Returns:
                 PhamSittoStandStandtoSitDetection: Returns an instance of the class.
-                    The postural transition information is stored in the 'postural_transitions' attribute,
+                    The postural transition information is stored in the 'postural_transitions_' attribute,
                     which is a pandas DataFrame in BIDS format with the following columns:
-                        - onset: Start time of the postural transition.
-                        - duration: Duration of the postural transition.
-                        - event_type: Type of the event (sit to stand or stand to sit).
+                        - onset: Start time of the postural transition [s].
+                        - duration: Duration of the postural transition [s].
+                        - event_type: Type of the event (sit to stand ot stand to sit).
+                        - postural transition angle: Angle of the postural transition in degree [°].
+                        - maximum flexion velocity: Maximum flexion velocity [°/s].
+                        - maximum extension velocity: Maximum extension velocity [°/s].
                         - tracking_systems: Tracking systems used (default is 'imu').
                         - tracked_points: Tracked points on the body (default is 'LowerBack').
 
@@ -61,13 +64,15 @@ class PhamSittoStandStandtoSitDetection:
             >>> pham = PhamSittoStandStandtoSitDetection()
             >>> pham.detect(
                     data=,
-                    sampling_freq_Hz=100,
+                    sampling_freq_Hz=200,
                     )
             >>> postural_transitions = pham.postural_transitions_
             >>> print(postural_transitions)
-                    onset   duration    event_type      tracking_systems    tracked_points
-                0   4.500   5.25        sit to satnd    imu                 LowerBack
-                1   90.225  10.30       stand to sit    imu                 LowerBack
+                    onset      duration    event_type       postural transition angle [°]   maximum flexion velocity [°/s]  maximum extension velocity [°/s]  tracking_systems    tracked_points
+                0   17.895     1.800       sit to stand     53.263562                       79                              8                                 imu                 LowerBack  
+                1   54.655     1.905       stand to sit     47.120448                       91                              120                               imu                 LowerBack  
+                2   56.020     1.090       sit to stand     23.524748                       62                              10                                imu                 LowerBack  
+                3   135.895    2.505       stand to sit     21.764146                       40                              65                                imu                 LowerBack  
 
         References:
             [1] Pham et al. (2018). Validation of a Lower Back "Wearable"-Based Sit-to-Stand and 
@@ -96,7 +101,7 @@ class PhamSittoStandStandtoSitDetection:
         self.accel_convert_unit = accel_convert_unit
         self.tracking_systems = tracking_systems
         self.tracked_points = tracked_points
-        self.stand_to_sit_sit_to_stand_ = None
+        self.postural_transitions_ = None
 
     def detect(
         self, data: pd.DataFrame, sampling_freq_Hz: float, plot_results: bool = False
@@ -111,11 +116,14 @@ class PhamSittoStandStandtoSitDetection:
 
             Returns:
                 PhamSittoStandStandtoSitDetection: Returns an instance of the class.
-                    The postural transition information is stored in the 'stand_to_sit_sit_to_stand' attribute,
+                    The postural transition information is stored in the 'postural_transitions_' attribute,
                     which is a pandas DataFrame in BIDS format with the following columns:
-                        - onset: Start time of the postural transition.
-                        - duration: Duration of the postural transition.
+                        - onset: Start time of the postural transition [s].
+                        - duration: Duration of the postural transition [s].
                         - event_type: Type of the event (sit to stand ot stand to sit).
+                        - postural transition angle: Angle of the postural transition in degree [°].
+                        - maximum flexion velocity: Maximum flexion velocity [°/s].
+                        - maximum extension velocity: Maximum extension velocity [°/s].
                         - tracking_systems: Tracking systems used (default is 'imu').
                         - tracked_points: Tracked points on the body (default is 'LowerBack').
         """
