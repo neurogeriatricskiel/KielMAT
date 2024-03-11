@@ -1,6 +1,7 @@
 # Tutorial: Physical Activity Monitoring
 
-**Author:** Masoud Abedinifar 
+**Author:** Masoud Abedinifar
+
 **Last update:** Tue 06 Feb 2024
 
 ## Learning objectives  
