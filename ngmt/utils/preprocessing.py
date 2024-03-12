@@ -9,7 +9,7 @@ import scipy.io
 import scipy.integrate
 import scipy.ndimage
 import pywt
-from ngmt.utils import quaternion 
+from ngmt.utils import quaternion
 
 
 # use the importlib.resources package to access the FIR_2_3Hz_40.mat file
@@ -132,7 +132,11 @@ def lowpass_filter(signal, method="savgol", order=None, **kwargs):
 
         # Apply butterworth lowpass filter
         b, a = scipy.signal.butter(
-           N= order, Wn= cutoff_freq_hz/(sampling_rate_hz/2), btype="low", analog=False, fs=sampling_rate_hz
+            N=order,
+            Wn=cutoff_freq_hz / (sampling_rate_hz / 2),
+            btype="low",
+            analog=False,
+            fs=sampling_rate_hz,
         )
         filt_signal = scipy.signal.filtfilt(b, a, signal)
         return filt_signal
@@ -375,7 +379,7 @@ def calculate_envelope_activity(
     # else:
     #     THR_SIG = 4 * np.mean(env)
     THR_SIG = 4 * np.mean(env)
-    
+
     # Set noise and signal levels
     noise = np.mean(env) / 3  # noise level
 
@@ -1060,7 +1064,9 @@ def classify_physical_activity(
 
 
 # Function to plot results of the gait sequence detection algorithm
-def gsd_plot_results(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_):
+def gsd_plot_results(
+    target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
+):
     """
     Plot the detected gait sequences.
 
@@ -1074,8 +1080,7 @@ def gsd_plot_results(target_sampling_freq_Hz, detected_activity_signal, gait_seq
     """
     plt.figure(figsize=(22, 14))
     plt.plot(
-        np.arange(len(detected_activity_signal))
-        / (60 * target_sampling_freq_Hz),
+        np.arange(len(detected_activity_signal)) / (60 * target_sampling_freq_Hz),
         detected_activity_signal,
         label="Pre-processed acceleration signal",
     )
@@ -1086,9 +1091,7 @@ def gsd_plot_results(target_sampling_freq_Hz, detected_activity_signal, gait_seq
     # Fill the area between start and end times
     for index, sequence in gait_sequences_.iterrows():
         onset = sequence["onset"] / 60  # Convert to minutes
-        end_time = (
-            sequence["onset"] + sequence["duration"]
-        ) / 60  # Convert to minutes
+        end_time = (sequence["onset"] + sequence["duration"]) / 60  # Convert to minutes
         plt.axvline(onset, color="g")
         plt.axvspan(onset, end_time, facecolor="grey", alpha=0.8)
     plt.legend(
@@ -1154,6 +1157,7 @@ def pam_plot_results(hourly_average_data, thresholds_mg):
     plt.tight_layout()
     plt.show()
 
+
 # Function to estimate tilt angle
 def tilt_angle_estimation(data, sampling_frequency_hz):
     """
@@ -1175,11 +1179,12 @@ def tilt_angle_estimation(data, sampling_frequency_hz):
         raise TypeError("Input data must be a numpy array or pandas DataFrame")
 
     gyro_y = data[:, 1]
-    
+
     # Integrate gyro data over time to estimate tilt
     tilt_angle = -np.cumsum(gyro_y) / sampling_frequency_hz
 
     return tilt_angle
+
 
 #  Function for denoising using wavelet decomposition
 def wavelet_decomposition(data, level, wavetype):
@@ -1195,17 +1200,18 @@ def wavelet_decomposition(data, level, wavetype):
         denoised_signal (ndarray): Denoised signal.
     """
     # Perform wavelet decomposition
-    coeffs = pywt.wavedec(data, wavetype, mode='smooth', level=level)
-    
+    coeffs = pywt.wavedec(data, wavetype, mode="smooth", level=level)
+
     # Zero out wavelet coefficients beyond specified order
     for i in range(1, len(coeffs)):
         if i != 0:  # Keep the first set of coefficients
             coeffs[i][:] = 0
 
     # Reconstruct signal from coefficients
-    denoised_signal = pywt.waverec(coeffs, wavetype, mode='smooth')
+    denoised_signal = pywt.waverec(coeffs, wavetype, mode="smooth")
 
     return denoised_signal
+
 
 # Function for computing moving variance
 def moving_var(data, window):
@@ -1230,19 +1236,20 @@ def moving_var(data, window):
     # Define the shape and strides for creating rolling windows
     shape = data.shape[:-1] + (data.shape[-1] - window + 1, window)
     strides = data.strides + (data.strides[-1],)
-    
+
     # Create rolling windows from the input data
     rw_seq = np.lib.stride_tricks.as_strided(data, shape=shape, strides=strides)
 
     # Compute the variance along the rolling windows and store it in m_var
     n = rw_seq.shape[0]
-    m_var[pad:pad + n] = np.var(rw_seq, axis=-1, ddof=1)
+    m_var[pad : pad + n] = np.var(rw_seq, axis=-1, ddof=1)
 
     # Copy the variance values to the padding regions
-    m_var[:pad], m_var[pad + n:] = m_var[pad], m_var[-pad - 1]
-    
+    m_var[:pad], m_var[pad + n :] = m_var[pad], m_var[-pad - 1]
+
     return m_var
-        
+
+
 # Function to plot results of the gait sequence detection algorithm
 def pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz):
     """
@@ -1257,25 +1264,29 @@ def pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz):
     Returns:
         Plot postural transitions
     """
-    # Figure 
+    # Figure
     fig = plt.figure(figsize=(21, 10))
 
     # Subplot 1: Acceleration data
     ax1 = plt.subplot(211)
     for i in range(3):
         ax1.plot(
-            np.arange(len(accel))/ sampling_freq_Hz,
-            accel[:,i],
+            np.arange(len(accel)) / sampling_freq_Hz,
+            accel[:, i],
         )
     for i in range(len(postural_transitions_)):
-        onset = postural_transitions_['onset'][i]
-        duration = postural_transitions_['duration'][i]
-        ax1.axvline(x=onset, color='r')
-        ax1.axvspan(onset, (onset + duration), color='grey')
+        onset = postural_transitions_["onset"][i]
+        duration = postural_transitions_["duration"][i]
+        ax1.axvline(x=onset, color="r")
+        ax1.axvspan(onset, (onset + duration), color="grey")
     ax1.set_title("Detected Postural Transitions", fontsize=20)
     ax1.set_ylabel(f"Acceleration (g)", fontsize=14)
     ax1.set_xlabel(f"Time (sec)", fontsize=14)
-    ax1.legend(["Acc 1", "Acc 2", "Acc 3", "Event oset", "Event duration"], loc="upper right", fontsize=14)
+    ax1.legend(
+        ["Acc 1", "Acc 2", "Acc 3", "Event oset", "Event duration"],
+        loc="upper right",
+        fontsize=14,
+    )
     ax1.set_ylim(-2, 2.5)
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
@@ -1284,26 +1295,41 @@ def pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz):
     ax2 = plt.subplot(212)
     for i in range(3):
         ax2.plot(
-            np.arange(len(gyro))/ sampling_freq_Hz,
-            gyro[:,i],
+            np.arange(len(gyro)) / sampling_freq_Hz,
+            gyro[:, i],
         )
     for i in range(len(postural_transitions_)):
-        onset = postural_transitions_['onset'][i]
-        duration = postural_transitions_['duration'][i]
-        ax2.axvline(x=onset, color='r')
-        ax2.axvspan(onset, (onset + duration), color='grey')
+        onset = postural_transitions_["onset"][i]
+        duration = postural_transitions_["duration"][i]
+        ax2.axvline(x=onset, color="r")
+        ax2.axvspan(onset, (onset + duration), color="grey")
     ax1.set_title("Detected Postural Transitions", fontsize=20)
     ax2.set_ylabel(f"Gyro (deg/s)", fontsize=14)
     ax2.set_xlabel(f"Time (sec)", fontsize=14)
-    ax2.legend(["Gyr 1", "Gyr 2", "Gyr 3", "Event oset", "Event duration"], loc="upper right", fontsize=14)
+    ax2.legend(
+        ["Gyr 1", "Gyr 2", "Gyr 3", "Event oset", "Event duration"],
+        loc="upper right",
+        fontsize=14,
+    )
     ax2.set_ylim(-200, 200)
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
     fig.tight_layout()
     plt.show()
 
+
 # Function to detect postural transitions based on stationary periods
-def process_postural_transitions_stationary_periods(time, accel, gyro, stationary, tilt_angle_deg, sampling_period, sampling_freq_Hz, init_period, local_peaks):
+def process_postural_transitions_stationary_periods(
+    time,
+    accel,
+    gyro,
+    stationary,
+    tilt_angle_deg,
+    sampling_period,
+    sampling_freq_Hz,
+    init_period,
+    local_peaks,
+):
     """
     Estimate orientation and analyze postural transitions based on sensor data.
 
@@ -1340,7 +1366,7 @@ def process_postural_transitions_stationary_periods(time, accel, gyro, stationar
     # Update the quaternion for all data points
     for t in range(1, len(time)):
         # Calculate the rotation matrix from gyroscope data
-        dt = time[t] - time[t-1]
+        dt = time[t] - time[t - 1]
         ang_velocity = gyro[t] * dt
         delta_rot = quaternion.axang2rotm(ang_velocity)
 
@@ -1352,19 +1378,19 @@ def process_postural_transitions_stationary_periods(time, accel, gyro, stationar
 
     # Analyze gyro data to detect peak velocities and directional changes
     # Zero-crossing method is used to define the beginning and the end of a PT in the gyroscope signal
-    iZeroCr = np.where((gyro[:,1][:-1] * gyro[:,1][1:]) < 0)[0]
+    iZeroCr = np.where((gyro[:, 1][:-1] * gyro[:, 1][1:]) < 0)[0]
 
     # Calculate the difference between consecutive values
-    gyrY_diff = np.diff(gyro[:,1])
+    gyrY_diff = np.diff(gyro[:, 1])
 
-    # Beginning of a PT was defined as the first zero crossing point of themedio-lateral angular 
+    # Beginning of a PT was defined as the first zero crossing point of themedio-lateral angular
     # velocity (gyro[:,1]) on the left side of the PT event, with negative slope.
     # Initialize left side indices with ones
     ls = np.ones_like(local_peaks)
 
     # Initialize right side indices with length of gyro data
     # rs = len(gyro[:,1]) * np.ones_like(local_peaks)
-    rs = np.full_like(local_peaks, len(gyro[:,1]))
+    rs = np.full_like(local_peaks, len(gyro[:, 1]))
     for i in range(len(local_peaks)):
         # Get the index of the current local peak
         pt = local_peaks[i]
@@ -1388,14 +1414,16 @@ def process_postural_transitions_stationary_periods(time, accel, gyro, stationar
 
     # Further analysis to distinguish between different types of postural transitions (sit-to-stand or stand-to-sit)
     # Rotate body accelerations to Earth frame
-    acc = quaternion.rotm2quat(np.column_stack((accel[:,0], accel[:,1], accel[:,2])), quat)
-    
+    acc = quaternion.rotm2quat(
+        np.column_stack((accel[:, 0], accel[:, 1], accel[:, 2])), quat
+    )
+
     # Remove gravity from measurements
     acc -= np.array([[0, 0, 1]] * len(time))
 
     # Convert acceletion data to m/s^2
     acc *= 9.81
-    
+
     # Calculate velocities
     vel = np.zeros_like(acc)
 
@@ -1428,35 +1456,37 @@ def process_postural_transitions_stationary_periods(time, accel, gyro, stationar
 
         # Enumerate time steps within the segment
         enum = np.arange(1, activeEnd[i] - activeStart[i] + 1)
-        
+
         # Calculate drift for each time step
-        drift = np.column_stack((enum * driftRate[0], enum * driftRate[1], enum * driftRate[2]))
+        drift = np.column_stack(
+            (enum * driftRate[0], enum * driftRate[1], enum * driftRate[2])
+        )
 
         # Store the drift for this segment
-        velDrift[activeStart[i]:activeEnd[i], :] = drift
-    
+        velDrift[activeStart[i] : activeEnd[i], :] = drift
+
     # Remove integral drift from velocity
     vel -= velDrift
-    
+
     # Compute translational position
     pos = np.zeros_like(vel)
 
-        # Iterate over time steps
+    # Iterate over time steps
     for t in range(1, len(pos)):
         # Integrate velocity to yield position
-        pos[t, :] = pos[t - 1, :] + vel[t, :] * sampling_period 
+        pos[t, :] = pos[t - 1, :] + vel[t, :] * sampling_period
 
     # Estimate vertical displacement and classify as actual PTs or Attempts
     # Calculate vertical displacement
     disp_z = pos[rs, 2] - pos[ls, 2]
-    
+
     # Initialize flag for actual PTs
     pt_actual_flag = np.zeros_like(local_peaks)
 
     for i in range(len(disp_z)):
         # Displacement greater than 10cm and less than 1m
         if 0.1 < abs(disp_z[i]) < 1:
-            # Flag as actual PT if displacement meets criteria 
+            # Flag as actual PT if displacement meets criteria
             pt_actual_flag[i] = 1
 
     # Initialize list for PT types
@@ -1466,20 +1496,20 @@ def process_postural_transitions_stationary_periods(time, accel, gyro, stationar
     for i in range(len(local_peaks)):
         if pt_actual_flag[i] == 1:
             if disp_z[i] == 0:
-                pt_type.append('NA')
+                pt_type.append("NA")
             elif disp_z[i] > 0:
-                pt_type.append('sit to stand')
+                pt_type.append("sit to stand")
             else:
-                pt_type.append('stand to sit')
+                pt_type.append("stand to sit")
         else:
-            pt_type.append('NA')
+            pt_type.append("NA")
 
     # Calculate maximum flexion velocity and maximum extension velocity
     flexion_max_vel = np.zeros_like(local_peaks)
     extension_max_vel = np.zeros_like(local_peaks)
     for i in range(len(local_peaks)):
-        flexion_max_vel[i] = max(abs(gyro[:,1][ls[i]:local_peaks[i]]))
-        extension_max_vel[i] = max(abs(gyro[:,1][local_peaks[i]:rs[i]]))
+        flexion_max_vel[i] = max(abs(gyro[:, 1][ls[i] : local_peaks[i]]))
+        extension_max_vel[i] = max(abs(gyro[:, 1][local_peaks[i] : rs[i]]))
 
     # Calculate PT angle
     pt_angle = np.abs(tilt_angle_deg[local_peaks] - tilt_angle_deg[ls])
@@ -1495,22 +1525,58 @@ def process_postural_transitions_stationary_periods(time, accel, gyro, stationar
 
     # Initialize PTs list
     # i.e., the participant was considered to perform a complete standing up or sitting down movement
-    PTs = [['Time[s]', 'Type', 'Angle[°]', 'Duration[s]', 'Max flexion velocity[°/s]',
-            'Max extension velocity[°/s]', 'Vertical displacement[m]']]
-    
+    PTs = [
+        [
+            "Time[s]",
+            "Type",
+            "Angle[°]",
+            "Duration[s]",
+            "Max flexion velocity[°/s]",
+            "Max extension velocity[°/s]",
+            "Vertical displacement[m]",
+        ]
+    ]
+
     # Initialize Attempts list
     # i.e., the participant was considered not to perform a complete PT, e.g., forward and backwards body motion
-    Attempts = [['Time[s]', 'Type', 'Angle[°]', 'Duration[s]', 'Max flexion velocity[°/s]',
-                'Max extension velocity[°/s]', 'Vertical displacement[m]']]
-    
+    Attempts = [
+        [
+            "Time[s]",
+            "Type",
+            "Angle[°]",
+            "Duration[s]",
+            "Max flexion velocity[°/s]",
+            "Max extension velocity[°/s]",
+            "Vertical displacement[m]",
+        ]
+    ]
+
     # Iterate over detected peaks
     for i in range(len(local_peaks)):
         if pt_actual_flag[i] == 1:
-            PTs.append([time_pt[i], pt_type[i], pt_angle[i], duration[i], flexion_max_vel[i],
-                        extension_max_vel[i], disp_z[i]]) # Append PT details to PTs list
+            PTs.append(
+                [
+                    time_pt[i],
+                    pt_type[i],
+                    pt_angle[i],
+                    duration[i],
+                    flexion_max_vel[i],
+                    extension_max_vel[i],
+                    disp_z[i],
+                ]
+            )  # Append PT details to PTs list
         else:
-            Attempts.append([time_pt[i], pt_type[i], pt_angle[i], duration[i], flexion_max_vel[i],
-                            extension_max_vel[i], disp_z[i]]) # Append PT details to Attempts list
+            Attempts.append(
+                [
+                    time_pt[i],
+                    pt_type[i],
+                    pt_angle[i],
+                    duration[i],
+                    flexion_max_vel[i],
+                    extension_max_vel[i],
+                    disp_z[i],
+                ]
+            )  # Append PT details to Attempts list
 
     # Extract postural transition information from PTs
     time_pt = [pt[0] for pt in PTs[1:]]

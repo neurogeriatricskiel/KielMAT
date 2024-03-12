@@ -488,8 +488,10 @@ def axang2rotm(axang: np.ndarray) -> np.ndarray:
     cross_prod_matrix[..., 1, 2] = -axis[..., 0]
     cross_prod_matrix[..., 2, 0] = -axis[..., 1]
     cross_prod_matrix[..., 2, 1] = axis[..., 0]
-    rotation_matrix = np.eye(3, dtype=float) * cos_theta[..., None] + \
-                      sin_theta[..., None] * cross_prod_matrix + \
-                      (1 - cos_theta[..., None]) * np.einsum('...i,...j->...ij', axis, axis)
+    rotation_matrix = (
+        np.eye(3, dtype=float) * cos_theta[..., None]
+        + sin_theta[..., None] * cross_prod_matrix
+        + (1 - cos_theta[..., None]) * np.einsum("...i,...j->...ij", axis, axis)
+    )
 
     return rotation_matrix

@@ -387,7 +387,6 @@ class ParaschivIonescuGaitSequenceDetection:
         # Return gait_sequences_ as an output
         self.gait_sequences_ = gait_sequences_
 
-
         # If Plot_results set to true
         # currently no plotting for datetime values
         if dt_data is not None and plot_results:
@@ -398,6 +397,8 @@ class ParaschivIonescuGaitSequenceDetection:
         # Plot results if set to true
         if plot_results:
 
-            preprocessing.gsd_plot_results(self.target_sampling_freq_Hz, detected_activity_signal, gait_sequences_)
+            preprocessing.gsd_plot_results(
+                self.target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
+            )
 
         return self

@@ -27,7 +27,7 @@ import pandas as pd
 from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
 from ngmt.modules.pam import PhysicalActivityMonitoring
-from ngmt.modules.ssd import PhamSittoStandStandtoSitDetection       
+from ngmt.modules.ssd import PhamSittoStandStandtoSitDetection
 
 ## Module test
 # Test for gait sequence detection algorithm
@@ -40,6 +40,7 @@ acceleration_data = {
 acceleration_data = pd.DataFrame(acceleration_data)
 sampling_frequency = 100  # Sampling frequency
 
+
 def test_gsd_detect():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
@@ -47,6 +48,7 @@ def test_gsd_detect():
     # Call the detect method
     gsd.detect(data=acceleration_data, sampling_freq_Hz=sampling_frequency)
     gait_sequences_ = gsd.gait_sequences_
+
 
 def test_invalid_sampling_freq():
     # Initialize the class
@@ -57,12 +59,14 @@ def test_invalid_sampling_freq():
     with pytest.raises(ValueError):
         gsd.detect(data=acceleration_data, sampling_freq_Hz=invalid_sampling_freq)
 
+
 def test_gait_sequence_detection():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
 
     # Call the detect method
     gsd.detect(data=acceleration_data, sampling_freq_Hz=sampling_frequency)
+
 
 def test_invalid_input_data_type():
     # Initialize the class
@@ -73,6 +77,7 @@ def test_invalid_input_data_type():
     with pytest.raises(ValueError):
         gsd.detect(data=invalid_data, sampling_freq_Hz=sampling_frequency)
 
+
 def test_invalid_sampling_freq_type():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
@@ -81,6 +86,7 @@ def test_invalid_sampling_freq_type():
     invalid_sampling_freq = "invalid"
     with pytest.raises(ValueError):
         gsd.detect(data=acceleration_data, sampling_freq_Hz=invalid_sampling_freq)
+
 
 def test_plot_results_type():
     # Initialize the class
@@ -95,6 +101,7 @@ def test_plot_results_type():
             plot_results=invalid_plot_results,
         )
 
+
 # Tests for initial contact detection algorithm
 def test_detect_empty_data():
     # Initialize the class
@@ -103,6 +110,7 @@ def test_detect_empty_data():
 
     # Call detect with an empty DataFrame instead of None
     icd.detect(data=pd.DataFrame(), gait_sequences=pd.DataFrame(), sampling_freq_Hz=100)
+
 
 # Define test_detect_no_gait_sequences function
 def test_detect_no_gait_sequences():
@@ -124,6 +132,7 @@ def test_detect_no_gait_sequences():
         gait_sequences=pd.DataFrame(),
         sampling_freq_Hz=100,
     )
+
 
 def test_detect_no_plot():
     # Initialize the class
@@ -166,6 +175,7 @@ def sample_accelerometer_data():
     )
     return accelerometer_data
 
+
 @pytest.fixture
 def sample_gait_sequences():
     # Create sample gait sequences DataFrame
@@ -173,6 +183,7 @@ def sample_gait_sequences():
         {"onset": [1.5, 3.5, 5.5], "duration": [0.5, 0.7, 0.6]}
     )
     return gait_sequences
+
 
 def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
     # Initialize ParaschivIonescuInitialContactDetection instance
@@ -200,6 +211,7 @@ def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
     # Check if onset values are within the expected range
     assert all(0 <= onset <= 6 for onset in icd_instance.initial_contacts_["onset"])
 
+
 # Tests for phyisical activity monitoring algorithm
 # Test data
 num_samples = 50000  # Number of samples
@@ -215,6 +227,7 @@ time_index = pd.date_range(
 )
 acceleration_data["timestamp"] = time_index
 acceleration_data.set_index("timestamp", inplace=True)
+
 
 def test_pam_detect():
     # Initialize the class
@@ -239,6 +252,7 @@ def test_pam_detect():
         physical_activities_, pd.DataFrame
     ), "Physical activity information should be stored in a DataFrame."
 
+
 def test_invalid_sampling_freq_pam():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -257,6 +271,7 @@ def test_invalid_sampling_freq_pam():
             epoch_duration_sec=5,
         )
 
+
 def test_invalid_thresholds_type():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -270,6 +285,7 @@ def test_invalid_thresholds_type():
             thresholds_mg=invalid_thresholds,
             epoch_duration_sec=5,
         )
+
 
 def test_invalid_epoch_duration():
     # Initialize the class
@@ -288,6 +304,7 @@ def test_invalid_epoch_duration():
             },
             epoch_duration_sec=invalid_epoch_duration,
         )
+
 
 def test_invalid_plot_results_type_pam():
     # Initialize the class
@@ -308,6 +325,7 @@ def test_invalid_plot_results_type_pam():
             plot=invalid_plot_results,
         )
 
+
 def test_invalid_sampling_freq_type_error_handling():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -327,6 +345,7 @@ def test_invalid_sampling_freq_type_error_handling():
             plot=True,
         )
 
+
 def test_invalid_thresholds_type_error_handling():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -341,6 +360,7 @@ def test_invalid_thresholds_type_error_handling():
             epoch_duration_sec=5,
             plot=True,
         )
+
 
 def test_empty_input_data():
     # Define empty_data with required columns
@@ -399,6 +419,7 @@ def test_pam_detect_full_coverage():
         col in physical_activities_.columns for col in expected_columns
     ), "DataFrame should have the expected columns."
 
+
 # Test function for test_PhysicalActivityMonitoring
 def test_PhysicalActivityMonitoring():
     """
@@ -432,31 +453,38 @@ def test_PhysicalActivityMonitoring():
             "moderate_threshold": 400,
         },
         epoch_duration_sec=5,
-        plot=False
+        plot=False,
     )
 
     # Assertions for physical_activities_ attribute
-    assert isinstance(pam.physical_activities_, pd.DataFrame), "physical_activities_ should be a DataFrame."
+    assert isinstance(
+        pam.physical_activities_, pd.DataFrame
+    ), "physical_activities_ should be a DataFrame."
+
 
 # Tests for sit to stand and stand to sit detection algorithm
 @pytest.fixture
 def sample_data():
     # Generate sample data
     num_samples = 50000  # Number of samples
-    sample_data = pd.DataFrame({
-        'Acc_X': np.random.uniform(-2, 2, num_samples),
-        'Acc_Y': np.random.uniform(-2, 2, num_samples),
-        'Acc_Z': np.random.uniform(-2, 2, num_samples),
-        'Gyro_X': np.random.uniform(-150, 150, num_samples),
-        'Gyro_Y': np.random.uniform(-150, 150, num_samples),
-        'Gyro_Z': np.random.uniform(-150, 150, num_samples)
-    })
+    sample_data = pd.DataFrame(
+        {
+            "Acc_X": np.random.uniform(-2, 2, num_samples),
+            "Acc_Y": np.random.uniform(-2, 2, num_samples),
+            "Acc_Z": np.random.uniform(-2, 2, num_samples),
+            "Gyro_X": np.random.uniform(-150, 150, num_samples),
+            "Gyro_Y": np.random.uniform(-150, 150, num_samples),
+            "Gyro_Z": np.random.uniform(-150, 150, num_samples),
+        }
+    )
     return sample_data
+
 
 def test_detection_output_shape(sample_data):
     # Test if the output DataFrame shape is correct
     detection = PhamSittoStandStandtoSitDetection()
     result = detection.detect(sample_data, sampling_freq_Hz=100)
+
 
 def test_plot_results_pham():
     # Initialize the class
@@ -470,8 +498,6 @@ def test_plot_results_pham():
             sampling_freq_Hz=200,
             plot_results=invalid_plot_results,
         )
-
-
 
 
 # Run the tests with pytest

@@ -52,15 +52,16 @@ from ngmt.utils.preprocessing import (
     process_postural_transitions_stationary_periods,
 )
 from ngmt.utils.quaternion import (
-    quatinv, 
-    quatnormalize, 
-    quatnorm, 
+    quatinv,
+    quatnormalize,
+    quatnorm,
     quatconj,
-    quatmultiply, 
-    rotm2quat, 
-    quat2rotm, 
+    quatmultiply,
+    rotm2quat,
+    quat2rotm,
     quat2axang,
-    axang2rotm)
+    axang2rotm,
+)
 
 
 # Generate a random sinusoidal signal with varying amplitudes to use as an input in testing functions
@@ -68,6 +69,7 @@ time = np.linspace(0, 100, 1000)  # Time vector from 0 to 100 with 1000 samples
 amplitudes = np.random.uniform(-3, 3, 1000)  # Random amplitudes between 3 and -3
 sampling_frequency = 100  # Sampling frequency
 random_input_signal = np.sin(2 * np.pi * sampling_frequency * time) * amplitudes
+
 
 # Each test function checks a specific function.
 # Test function for the 'resample_interpolate' function: Case 2
@@ -81,6 +83,7 @@ def test_resample_interpolate_non_numpy_input():
         resample_interpolate(
             input_signal, initial_sampling_frequency, target_sampling_frequency
         )
+
 
 # Other test cases for the resample_interpolate function
 def test_resample_interpolate():
@@ -133,6 +136,7 @@ def test_resample_interpolate():
             input_signal, initial_sampling_frequency=100, target_sampling_frequency=-40
         )
 
+
 # Test function for the 'lowpass_filter_savgol' function
 def test_lowpass_filter_savgol():
     """
@@ -173,6 +177,7 @@ def test_lowpass_filter_savgol():
         filtered_signal
     ).any(), "The filtered signal contains Inf values."
 
+
 # Test function for the 'lowpass_filter' function: case 1
 def test_lowpass_filter_invalid_input():
     # Test with invalid input data type
@@ -182,6 +187,7 @@ def test_lowpass_filter_invalid_input():
     with pytest.raises(ValueError, match="Input data must be a numpy.ndarray"):
         lowpass_filter(input_signal, method=method)
 
+
 # Test function for the 'lowpass_filter' function: case 2
 def test_lowpass_filter_invalid_method():
     # Test with invalid filter method
@@ -190,6 +196,7 @@ def test_lowpass_filter_invalid_method():
 
     with pytest.raises(ValueError, match="Invalid filter method specified"):
         lowpass_filter(input_signal, method=method)
+
 
 # Test function for the 'lowpass_filter' function: case 3
 def test_lowpass_filter_butter_no_order():
@@ -209,6 +216,7 @@ def test_lowpass_filter_butter_no_order():
             sampling_rate_hz=sampling_rate_hz,
         )
 
+
 # Other teest cases for the lowpass_filter function
 def test_lowpass_filter():
     # Test with valid inputs
@@ -225,6 +233,7 @@ def test_lowpass_filter():
     # Test with invalid method (nonexistent method)
     with pytest.raises(ValueError):
         lowpass_filter(input_signal, method="invalid_method")
+
 
 # Test function for the 'lowpass_filter_fir' function
 def test_lowpass_filter_fir():
@@ -266,6 +275,7 @@ def test_lowpass_filter_fir():
         filtered_signal
     ).any(), "The filtered signal contains Inf values."
 
+
 # Additional test cases for Savitzky-Golay filter
 def test_lowpass_filter_savgol_specific():
     """
@@ -288,6 +298,7 @@ def test_lowpass_filter_savgol_specific():
     assert len(filtered_signal) == len(
         test_signal
     ), "Filtered signal length is incorrect."
+
 
 # Additional test cases for Butterworth filter
 def test_lowpass_filter_butter_specific():
@@ -313,6 +324,7 @@ def test_lowpass_filter_butter_specific():
     assert len(filtered_signal) == len(
         test_signal
     ), "Filtered signal length is incorrect."
+
 
 # Test function for the 'highpass_filter_iir' function
 def test_highpass_filter_iir():
@@ -362,6 +374,7 @@ def test_highpass_filter_iir():
         filtered_signal
     ).any(), "Assertion Error: Filtered signal contains Inf values."
 
+
 # Test function for the '_iir_highpass_filter' function: case 1
 def test_iir_highpass_filter_invalid_input():
     # Test with invalid input data type
@@ -373,6 +386,7 @@ def test_iir_highpass_filter_invalid_input():
         match="Invalid input data. The 'signal' must be a NumPy array, and 'sampling_frequency' must be a positive number.",
     ):
         _iir_highpass_filter(input_signal, sampling_frequency)
+
 
 # Test function for the '_iir_highpass_filter' function: case 2
 def test_iir_highpass_filter():
@@ -413,6 +427,7 @@ def test_iir_highpass_filter():
         filtered_signal
     ).any(), "Assertion Error: Filtered signal contains Inf values."
 
+
 # Test function for the 'highpass_filter' function
 def test_highpass_filter_invalid_input():
     # Test with invalid input data type
@@ -425,6 +440,7 @@ def test_highpass_filter_invalid_input():
         match="Invalid input data. The 'signal' must be a NumPy array, and 'sampling_frequency' must be a positive number.",
     ):
         highpass_filter(input_signal, sampling_frequency, method=method)
+
 
 # Other test cases for the highpass_filter function
 def test_highpass_filter():
@@ -448,6 +464,7 @@ def test_highpass_filter():
     assert isinstance(
         filtered_signal, np.ndarray
     ), "Filtered signal should be a NumPy array."
+
 
 # Test function for the 'apply_continuous_wavelet_transform' function: case 1
 def test_apply_continuous_wavelet_transform():
@@ -533,6 +550,7 @@ def test_apply_continuous_wavelet_transform():
         wavelet_transform_result_negative is None
     ), "Function should handle negative scales or desired_scale and return None."
 
+
 # Test function for the 'apply_continuous_wavelet_transform' function: case 2
 def test_apply_continuous_wavelet_transform_valid_input():
     # Test with valid input
@@ -557,6 +575,7 @@ def test_apply_continuous_wavelet_transform_valid_input():
     assert not np.isnan(result).any(), "The result contains NaN values."
     assert not np.isinf(result).any(), "The result contains Inf values."
 
+
 # Test function for the 'apply_continuous_wavelet_transform' function: case 3
 def test_apply_continuous_wavelet_transform_invalid_input():
     # Test with invalid input data type
@@ -573,6 +592,7 @@ def test_apply_continuous_wavelet_transform_invalid_input():
     # Check that the result is None due to invalid input
     assert result is None
 
+
 # Test function for the 'apply_continuous_wavelet_transform' function: case 4
 def test_apply_continuous_wavelet_transform_exception_handling():
     # Test exception handling
@@ -588,6 +608,7 @@ def test_apply_continuous_wavelet_transform_exception_handling():
 
     # Check that the result is None due to the exception
     assert result is None
+
 
 # Test function for the 'apply_continuous_wavelet_transform' function: case 5
 def test_apply_continuous_wavelet_transform_large_input():
@@ -613,6 +634,7 @@ def test_apply_continuous_wavelet_transform_large_input():
     assert not np.isnan(result).any(), "The result contains NaN values."
     assert not np.isinf(result).any(), "The result contains Inf values."
 
+
 # Test function for the 'apply_continuous_wavelet_transform' function: case 6
 def test_apply_continuous_wavelet_transform_zero_sampling_frequency():
     # Test with zero sampling frequency
@@ -628,6 +650,7 @@ def test_apply_continuous_wavelet_transform_zero_sampling_frequency():
 
     # Check that the result is None due to zero sampling frequency
     assert result is None
+
 
 # Test function for the 'apply_successive_gaussian_filters' function: case 1
 def test_apply_successive_gaussian_filters():
@@ -692,6 +715,7 @@ def test_apply_successive_gaussian_filters():
         filtered_negative_sigma_signal, np.ndarray
     ), "Function should handle negative sigma and return None or NumPy array."
 
+
 # Test function for the 'apply_successive_gaussian_filters' function: case 2
 def test_apply_successive_gaussian_filters_valid_input():
     # Test with valid input
@@ -710,6 +734,7 @@ def test_apply_successive_gaussian_filters_valid_input():
     assert not np.isnan(result).any(), "The result contains NaN values."
     assert not np.isinf(result).any(), "The result contains Inf values."
 
+
 # Test function for the 'apply_successive_gaussian_filters' function: case 3
 def test_apply_successive_gaussian_filters_invalid_input():
     # Test with invalid input data type
@@ -718,6 +743,7 @@ def test_apply_successive_gaussian_filters_invalid_input():
     with pytest.raises(ValueError, match="NumPy array"):
         apply_successive_gaussian_filters(input_data)
 
+
 # Test function for the 'apply_successive_gaussian_filters' function: case 4
 def test_apply_successive_gaussian_filters_empty_input():
     # Test with empty input data
@@ -725,6 +751,7 @@ def test_apply_successive_gaussian_filters_empty_input():
 
     with pytest.raises(ValueError, match="Input data must not be empty."):
         apply_successive_gaussian_filters(input_data)
+
 
 # Test function for the 'apply_successive_gaussian_filters' function: case 5
 def test_apply_successive_gaussian_filters_large_input():
@@ -744,6 +771,7 @@ def test_apply_successive_gaussian_filters_large_input():
     assert not np.isnan(result).any(), "The result contains NaN values."
     assert not np.isinf(result).any(), "The result contains Inf values."
 
+
 # Test function for the 'calculate_envelope_activity' function: case 1
 def test_calculate_envelope_activity():
     """
@@ -760,6 +788,7 @@ def test_calculate_envelope_activity():
         test_signal, smooth_window, threshold_style, duration
     )
 
+
 # Test function for the 'calculate_envelope_activity' function: case 2
 def test_calculate_envelope_activity_invalid_input():
     # Test with invalid input data type
@@ -767,6 +796,7 @@ def test_calculate_envelope_activity_invalid_input():
 
     with pytest.raises(ValueError, match="Input signal should be a NumPy array."):
         calculate_envelope_activity(input_signal)
+
 
 # Test function for the 'calculate_envelope_activity' function: case 3
 def test_calculate_envelope_activity_invalid_window_length():
@@ -778,6 +808,7 @@ def test_calculate_envelope_activity_invalid_window_length():
     ):
         calculate_envelope_activity(input_signal, smooth_window=-20)
 
+
 # Test function for the 'calculate_envelope_activity' function: case 4
 def test_calculate_envelope_activity_invalid_threshold_style():
     # Test with invalid threshold_style value
@@ -788,6 +819,7 @@ def test_calculate_envelope_activity_invalid_threshold_style():
     ):
         calculate_envelope_activity(input_signal, threshold_style=-1)
 
+
 # Test function for the 'calculate_envelope_activity' function: case 5
 def test_calculate_envelope_activity_invalid_duration():
     # Test with invalid duration value
@@ -795,6 +827,7 @@ def test_calculate_envelope_activity_invalid_duration():
 
     with pytest.raises(ValueError, match="The duration must be a positive integer."):
         calculate_envelope_activity(input_signal, duration=0)
+
 
 # Test function for the 'find_consecutive_groups' function: case 1
 def test_find_consecutive_groups():
@@ -839,6 +872,7 @@ def test_find_consecutive_groups():
                 test_signal[start : end + 1] != 0
             ), "Non-zero values not consecutive."
 
+
 # Test function for the 'find_consecutive_groups' function: case 2
 def test_find_consecutive_groups_valid_input():
     # Test with valid input
@@ -860,6 +894,7 @@ def test_find_consecutive_groups_valid_input():
     expected_result = np.array([[1, 2], [5, 7], [11, 11], [13, 14]])
     np.testing.assert_array_equal(ind, expected_result)
 
+
 # Test function for the 'find_consecutive_groups' function: case 3
 def test_find_consecutive_groups_empty_input():
     # Test with empty input data
@@ -868,6 +903,7 @@ def test_find_consecutive_groups_empty_input():
     with pytest.raises(ValueError, match="Input data must not be empty."):
         find_consecutive_groups(input_signal)
 
+
 # Test function for the 'find_consecutive_groups' function: case 4
 def test_find_consecutive_groups_invalid_input():
     # Test with invalid input data type
@@ -875,6 +911,7 @@ def test_find_consecutive_groups_invalid_input():
 
     with pytest.raises(ValueError, match="Input data must be a NumPy array."):
         find_consecutive_groups(input_signal)
+
 
 # Test function for the 'find_consecutive_groups' function: case 5
 def test_find_consecutive_groups_single_value():
@@ -896,6 +933,7 @@ def test_find_consecutive_groups_single_value():
     # Check the correctness of the output
     expected_result = np.array([[3, 3]])
     np.testing.assert_array_equal(ind, expected_result)
+
 
 # Test function for the 'find_consecutive_groups' function: case 6
 def test_find_consecutive_groups_large_input():
@@ -920,6 +958,7 @@ def test_find_consecutive_groups_large_input():
     # Check the correctness of the output
     expected_result = np.array([[100, 199], [300, 399], [700, 799]])
     np.testing.assert_array_equal(ind, expected_result)
+
 
 # Test function for the 'find_local_min_max' function: case 1
 def test_find_local_min_max():
@@ -973,6 +1012,7 @@ def test_find_local_min_max():
         maxima_indices
     ).any(), "The indices of local maxima contains Inf values."
 
+
 # Test function for the 'find_local_min_max' function: case 2
 def test_find_local_min_max_empty_input():
     # Test with empty input data
@@ -981,6 +1021,7 @@ def test_find_local_min_max_empty_input():
     with pytest.raises(ValueError, match="Input signal must not be empty."):
         find_local_min_max(signal)
 
+
 # Test function for the 'find_local_min_max' function: case 2
 def test_find_local_min_max_invalid_input():
     # Test with invalid input data type
@@ -988,6 +1029,7 @@ def test_find_local_min_max_invalid_input():
 
     with pytest.raises(ValueError, match="Input signal must be a NumPy array."):
         find_local_min_max(signal)
+
 
 # Test function for the 'find_local_min_max' function: case 3
 def test_find_local_min_max_no_minima():
@@ -1002,6 +1044,7 @@ def test_find_local_min_max_no_minima():
     # Check that the output is a NumPy array for maxima
     assert isinstance(maxima_indices, np.ndarray)
 
+
 # Test function for the 'find_local_min_max' function: case 4
 def test_find_local_min_max_no_maxima():
     # Test with no maxima
@@ -1015,6 +1058,7 @@ def test_find_local_min_max_no_maxima():
     # Check that the output is a NumPy array for minima
     assert isinstance(minima_indices, np.ndarray)
 
+
 # Test function for the 'identify_pulse_trains' function: case 3
 def test_identify_pulse_trains_single_element():
     # Test with a single element in the input data
@@ -1024,6 +1068,7 @@ def test_identify_pulse_trains_single_element():
 
     # Check that the output is an empty list
     assert pulse_trains == []
+
 
 # Test function for the 'identify_pulse_trains' function: case 4
 def test_identify_pulse_trains():
@@ -1056,6 +1101,7 @@ def test_identify_pulse_trains():
     assert isinstance(pulse_train["steps"], int), "'steps' should be an integer."
     assert pulse_train["steps"] > 0, "'steps' should be a positive integer."
 
+
 # Test function for the 'identify_pulse_trains' function: case 5
 def test_identify_pulse_trains_empty_signal():
     # Create an empty input signal
@@ -1067,6 +1113,7 @@ def test_identify_pulse_trains_empty_signal():
 
     # Check if the correct error message is raised
     assert str(exc_info.value) == "Input signal must not be empty."
+
 
 # Test function for the 'convert_pulse_train_to_array' function: case 1
 def test_convert_pulse_train_to_array():
@@ -1153,6 +1200,7 @@ def test_convert_pulse_train_to_array():
     ):
         convert_pulse_train_to_array(invalid_list_missing_end)
 
+
 # Test function for the 'convert_pulse_train_to_array' function: case 2
 def test_convert_pulse_train_to_array_valid_input():
     # Test with valid input
@@ -1175,6 +1223,7 @@ def test_convert_pulse_train_to_array_valid_input():
     expected_array = np.array([[1, 3], [7, 9], [15, 17], [21, 23]], dtype=np.uint64)
     np.testing.assert_array_equal(array_representation, expected_array)
 
+
 # Test function for the 'convert_pulse_train_to_array' function: case 3
 def test_convert_pulse_train_to_array_empty_input():
     # Test with empty input list
@@ -1182,6 +1231,7 @@ def test_convert_pulse_train_to_array_empty_input():
 
     with pytest.raises(ValueError, match="Input list is empty."):
         convert_pulse_train_to_array(pulse_train_list)
+
 
 # Test function for the 'convert_pulse_train_to_array' function: case 4
 def test_convert_pulse_train_to_array_invalid_input_type():
@@ -1193,6 +1243,7 @@ def test_convert_pulse_train_to_array_invalid_input_type():
     ):
         convert_pulse_train_to_array(pulse_train_list)
 
+
 # Test function for the 'convert_pulse_train_to_array' function: case 5
 def test_convert_pulse_train_to_array_invalid_element_type():
     # Test with invalid element type in the list
@@ -1202,6 +1253,7 @@ def test_convert_pulse_train_to_array_invalid_element_type():
         ValueError, match="Each element in the list should be a dictionary."
     ):
         convert_pulse_train_to_array(pulse_train_list)
+
 
 # Test function for the 'convert_pulse_train_to_array' function: case 6
 def test_convert_pulse_train_to_array_missing_keys():
@@ -1213,6 +1265,7 @@ def test_convert_pulse_train_to_array_missing_keys():
     ):
         convert_pulse_train_to_array(pulse_train_list)
 
+
 # Test function for the 'convert_pulse_train_to_array' function: case 7
 def test_convert_pulse_train_to_array_invalid_key_names():
     # Test with dictionaries having invalid key names
@@ -1222,6 +1275,7 @@ def test_convert_pulse_train_to_array_invalid_key_names():
         ValueError, match="Each dictionary should contain 'start' and 'end' keys."
     ):
         convert_pulse_train_to_array(pulse_train_list)
+
 
 # Test function for the 'find_interval_intersection' function: case 1
 def test_find_interval_intersection():
@@ -1312,6 +1366,7 @@ def test_find_interval_intersection():
     # Check the data type of the output
     assert isinstance(result_identical, np.ndarray), "Output should be a NumPy array."
 
+
 # Test function for the 'find_interval_intersection' function: case 2
 def test_find_interval_intersection_valid_input():
     # Test with valid input
@@ -1330,6 +1385,7 @@ def test_find_interval_intersection_valid_input():
     expected_result = np.array([[2, 4], [8, 9], [11, 12]])
     np.testing.assert_array_equal(intersection_intervals, expected_result)
 
+
 # Test function for the 'find_interval_intersection' function: case 3
 def test_find_interval_intersection_invalid_input_type():
     # Test with invalid input types
@@ -1338,6 +1394,7 @@ def test_find_interval_intersection_invalid_input_type():
 
     with pytest.raises(ValueError, match="Both input sets should be NumPy arrays."):
         find_interval_intersection(set_a, set_b)
+
 
 # Test function for the 'find_interval_intersection' function: case 4
 def test_find_interval_intersection_invalid_set_structure():
@@ -1350,6 +1407,7 @@ def test_find_interval_intersection_invalid_set_structure():
         match="Input sets should have two columns, indicating start and end points.",
     ):
         find_interval_intersection(set_a, set_b)
+
 
 # Test function for the 'find_interval_intersection' function: case 5
 def test_find_interval_intersection_append_from_set_b():
@@ -1364,6 +1422,7 @@ def test_find_interval_intersection_append_from_set_b():
     expected_result = np.array([[3, 5]])
     assert np.array_equal(result, expected_result)
 
+
 # Test function for the 'organize_and_pack_results' function
 def test_step_time_calculation_no_peak_steps():
     # Mock input data
@@ -1376,6 +1435,7 @@ def test_step_time_calculation_no_peak_steps():
     # Expecting the step time calculation to not affect the result
     assert organized_results[0]["start"] == 0
     assert organized_results[0]["end"] == 10
+
 
 # Test function for the 'max_peaks_between_zc' function
 def test_max_peaks_between_zc_valid_input():
@@ -1397,6 +1457,7 @@ def test_max_peaks_between_zc_valid_input():
     pks_retrieved = input_signal[ipks.astype(int) - 1]
     assert np.all(pks == pks_retrieved)
 
+
 # Test function for the 'signal_decomposition_algorithm' function: case 1
 def test_signal_decomposition_algorithm_invalid_input_type():
     # Test with invalid input type
@@ -1410,6 +1471,7 @@ def test_signal_decomposition_algorithm_invalid_input_type():
         signal_decomposition_algorithm(
             vertical_acceleration_data, initial_sampling_frequency
         )
+
 
 # Test function for the 'signal_decomposition_algorithm' function: case 2
 def test_signal_decomposition_algorithm_negative_sampling_frequency():
@@ -1425,17 +1487,20 @@ def test_signal_decomposition_algorithm_negative_sampling_frequency():
             vertical_acceleration_data, initial_sampling_frequency
         )
 
+
 # Test function for the 'signal_decomposition_algorithm' function: case 3
 def test_invalid_input_data():
     # Test case for invalid input data type
     with pytest.raises(ValueError):
         signal_decomposition_algorithm("invalid")
 
+
 # Test function for the 'signal_decomposition_algorithm' function: case 3
 def test_at_least_one_dimension():
     # Test case for input data with less than one dimension
     with pytest.raises(ValueError):
         signal_decomposition_algorithm(np.array(1))
+
 
 # Test function for the 'classify_physical_activity' function: case 2
 def test_classify_physical_activity_invalid_input_data():
@@ -1455,6 +1520,7 @@ def test_classify_physical_activity_invalid_input_data():
             epoch_duration,
         )
 
+
 # Test function for the 'classify_physical_activity' function: case 3
 def test_classify_physical_activity_invalid_threshold_type():
     # Test with invalid threshold type
@@ -1472,6 +1538,7 @@ def test_classify_physical_activity_invalid_threshold_type():
             moderate_threshold,
             epoch_duration,
         )
+
 
 # Test function for the 'classify_physical_activity' function: case 5
 def test_classify_physical_activity_invalid_threshold_values():
@@ -1500,6 +1567,7 @@ def test_classify_physical_activity_negative_epoch_duration():
     with pytest.raises(ValueError, match="Epoch_duration must be a positive integer."):
         classify_physical_activity(invalid_data, epoch_duration=-5)
 
+
 # Test function for wavelet_decomposition function
 def test_wavelet_decomposition():
     """
@@ -1507,15 +1575,22 @@ def test_wavelet_decomposition():
     """
     # Generate a random input signal
     input_signal = np.random.randn(1000)
-    
+
     # Test with valid inputs
-    denoised_signal = wavelet_decomposition(input_signal, level=3, wavetype='haar')
-    
+    denoised_signal = wavelet_decomposition(input_signal, level=3, wavetype="haar")
+
     # Assertions
-    assert isinstance(denoised_signal, np.ndarray), "Denoised signal should be a NumPy array."
-    assert len(denoised_signal) == len(input_signal), "Denoised signal length should match input signal length."
+    assert isinstance(
+        denoised_signal, np.ndarray
+    ), "Denoised signal should be a NumPy array."
+    assert len(denoised_signal) == len(
+        input_signal
+    ), "Denoised signal length should match input signal length."
     assert not np.isnan(denoised_signal).any(), "Denoised signal contains NaN values."
-    assert not np.isinf(denoised_signal).any(), "Denoised signal contains infinite values."
+    assert not np.isinf(
+        denoised_signal
+    ).any(), "Denoised signal contains infinite values."
+
 
 # Test function for moving_var function
 def test_moving_var():
@@ -1524,15 +1599,22 @@ def test_moving_var():
     """
     # Generate a random input signal
     input_signal = np.random.randn(1000)
-    
+
     # Test with valid inputs
     moving_variance = moving_var(input_signal, window=10)
-    
+
     # Assertions
-    assert isinstance(moving_variance, np.ndarray), "Moving variance should be a NumPy array."
-    assert len(moving_variance) == len(input_signal), "Moving variance length should match input signal length."
+    assert isinstance(
+        moving_variance, np.ndarray
+    ), "Moving variance should be a NumPy array."
+    assert len(moving_variance) == len(
+        input_signal
+    ), "Moving variance length should match input signal length."
     assert not np.isnan(moving_variance).any(), "Moving variance contains NaN values."
-    assert not np.isinf(moving_variance).any(), "Moving variance contains infinite values."
+    assert not np.isinf(
+        moving_variance
+    ).any(), "Moving variance contains infinite values."
+
 
 # Test function for test_tilt_angle_estimation function
 def test_tilt_angle_estimation():
@@ -1540,10 +1622,9 @@ def test_tilt_angle_estimation():
     Test for tilt_angle_estimation function.
     """
     # Generate some sample gyro data
-    gyro_data = np.array([[0.1, 0.2, 0.3],
-                          [0.2, 0.3, 0.4],
-                          [0.3, 0.4, 0.5],
-                          [0.4, 0.5, 0.6]])
+    gyro_data = np.array(
+        [[0.1, 0.2, 0.3], [0.2, 0.3, 0.4], [0.3, 0.4, 0.5], [0.4, 0.5, 0.6]]
+    )
 
     sampling_frequency_hz = 10  # Sampling frequency of 10 Hz
 
@@ -1555,38 +1636,49 @@ def test_tilt_angle_estimation():
 
     # Assertions
     assert isinstance(tilt_angle, np.ndarray), "Tilt angle should be a NumPy array."
-    assert len(tilt_angle) == len(gyro_data), "Tilt angle length should match input data length."
+    assert len(tilt_angle) == len(
+        gyro_data
+    ), "Tilt angle length should match input data length."
 
     # Test with DataFrame input
     gyro_df = pd.DataFrame(gyro_data)
     tilt_angle_df = tilt_angle_estimation(gyro_df, sampling_frequency_hz)
 
     # Assertions for DataFrame input
-    assert isinstance(tilt_angle_df, np.ndarray), "Tilt angle from DataFrame should be a NumPy array."
-    assert len(tilt_angle_df) == len(gyro_data), "Tilt angle length from DataFrame should match input data length."
+    assert isinstance(
+        tilt_angle_df, np.ndarray
+    ), "Tilt angle from DataFrame should be a NumPy array."
+    assert len(tilt_angle_df) == len(
+        gyro_data
+    ), "Tilt angle length from DataFrame should match input data length."
 
     # Test for invalid input type
-    with pytest.raises(TypeError, match="Input data must be a numpy array or pandas DataFrame"):
-        tilt_angle_estimation(list(gyro_data), sampling_frequency_hz)  # Passing a list instead of numpy array
+    with pytest.raises(
+        TypeError, match="Input data must be a numpy array or pandas DataFrame"
+    ):
+        tilt_angle_estimation(
+            list(gyro_data), sampling_frequency_hz
+        )  # Passing a list instead of numpy array
+
 
 # Test gsd_plot_results without plotting
 # Sample data for testing
 target_sampling_freq_Hz = 100
 detected_activity_signal = np.random.rand(1000)
-gait_sequences_ = pd.DataFrame({
-    "onset": np.array([100, 300, 500]),
-    "duration": np.array([50, 60, 70])
-})
+gait_sequences_ = pd.DataFrame(
+    {"onset": np.array([100, 300, 500]), "duration": np.array([50, 60, 70])}
+)
 hourly_average_data = pd.DataFrame(
     np.random.rand(24, 7),
     columns=pd.date_range(start="2024-01-01", periods=7),
-    index=np.arange(24)
+    index=np.arange(24),
 )
 thresholds_mg = {
     "sedentary_threshold": 45,
     "light_threshold": 100,
-    "moderate_threshold": 400
+    "moderate_threshold": 400,
 }
+
 
 # Test function for gsd_plot_results without plotting
 def test_gsd_plot_results_without_plot(monkeypatch):
@@ -1600,6 +1692,7 @@ def test_gsd_plot_results_without_plot(monkeypatch):
     # Call the function
     gsd_plot_results(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_)
 
+
 # Test function for pam_plot_results without plotting
 def test_pam_plot_results_without_plot(monkeypatch):
     # Define a mock function for plt.show() that does nothing
@@ -1612,24 +1705,22 @@ def test_pam_plot_results_without_plot(monkeypatch):
     # Call the function
     pam_plot_results(hourly_average_data, thresholds_mg)
 
+
 # Test function for test_pham_plot_results
 def test_pham_plot_results(monkeypatch):
     # Generate sample data
     np.random.seed(0)
     accel = np.random.randn(100, 3)
     gyro = np.random.randn(100, 3)
-    
+
     # Ensure 'onset' and 'duration' arrays have the same length
     onset = np.arange(10, 90, 20)
     duration = [5] * len(onset)
-    
-    postural_transitions_ = pd.DataFrame({
-        'onset': onset,
-        'duration': duration
-    })
-    
+
+    postural_transitions_ = pd.DataFrame({"onset": onset, "duration": duration})
+
     sampling_freq_Hz = 100
-    
+
     # Define a mock function for plt.show() that does nothing
     def mock_show():
         pass
@@ -1640,150 +1731,243 @@ def test_pham_plot_results(monkeypatch):
     # Call the function
     pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz)
 
+
 # Test function for test_organize_and_pack_results
-@pytest.mark.parametrize("walking_periods, peak_steps, expected_results", [
-    # Test case 1
-    (
-        [(0, 20)],  # Walking periods
-        [2, 6, 10, 12, 15, 20],  # Peak steps
-        [{'start': -2, 'end': 22, 'steps': 6, 'mid_swing': [2, 6, 10, 12, 15, 20]}]  # Expected results
-    ),
-    
-    # Test case 2
-    (
-        [(0, 15), (16, 30)],  # Walking periods
-        [0, 2, 6, 10, 12, 15, 20, 25, 26, 28, 30],  # Peak steps
-        [{'start': -1, 'end': 31, 'steps': 11, 'mid_swing': [0, 2, 6, 10, 12, 15, 20, 25, 26, 28, 30]}]  # Expected results
-    )
-])
+@pytest.mark.parametrize(
+    "walking_periods, peak_steps, expected_results",
+    [
+        # Test case 1
+        (
+            [(0, 20)],  # Walking periods
+            [2, 6, 10, 12, 15, 20],  # Peak steps
+            [
+                {
+                    "start": -2,
+                    "end": 22,
+                    "steps": 6,
+                    "mid_swing": [2, 6, 10, 12, 15, 20],
+                }
+            ],  # Expected results
+        ),
+        # Test case 2
+        (
+            [(0, 15), (16, 30)],  # Walking periods
+            [0, 2, 6, 10, 12, 15, 20, 25, 26, 28, 30],  # Peak steps
+            [
+                {
+                    "start": -1,
+                    "end": 31,
+                    "steps": 11,
+                    "mid_swing": [0, 2, 6, 10, 12, 15, 20, 25, 26, 28, 30],
+                }
+            ],  # Expected results
+        ),
+    ],
+)
 # Test function for test_organize_and_pack_results
 def test_organize_and_pack_results(walking_periods, peak_steps, expected_results):
     # Call the function and get the actual results
-    actual_results, actual_peak_steps = organize_and_pack_results(walking_periods, peak_steps)
-    
+    actual_results, actual_peak_steps = organize_and_pack_results(
+        walking_periods, peak_steps
+    )
+
     # Sort the peak steps in the actual results
     actual_peak_steps.sort()
-    
+
     # Flatten the nested lists
-    actual_results_flat = [item for sublist in actual_results for item in sublist.items()]
-    
+    actual_results_flat = [
+        item for sublist in actual_results for item in sublist.items()
+    ]
+
+
 # Define some test data
-quaternions = np.array([
-    [0.5, 0.5, 0.5, 0.5],  # Quaternion 1
-    [1.0, 0.0, 0.0, 0.0],  # Quaternion 2
-    [0.707, 0.0, 0.707, 0.0],  # Quaternion 3
-])
-rotation_matrices = np.array([
-    [[1, 0, 0],  # Rotation Matrix 1
-     [0, 1, 0],
-     [0, 0, 1]],
-    [[1, 0, 0],  # Rotation Matrix 2
-     [0, -1, 0],
-     [0, 0, -1]],
-    [[1, 0, 0],  # Rotation Matrix 3
-     [0, 0, -1],
-     [0, 1, 0]],
-])
-axis_angle_rep = np.array([
-    [1, 0, 0, np.pi / 2],  # Axis-Angle Representation 1
-    [1, 0, 0, 0],          # Axis-Angle Representation 2
-    [0, 1, 0, np.pi / 2],  # Axis-Angle Representation 3
-])
+quaternions = np.array(
+    [
+        [0.5, 0.5, 0.5, 0.5],  # Quaternion 1
+        [1.0, 0.0, 0.0, 0.0],  # Quaternion 2
+        [0.707, 0.0, 0.707, 0.0],  # Quaternion 3
+    ]
+)
+rotation_matrices = np.array(
+    [
+        [[1, 0, 0], [0, 1, 0], [0, 0, 1]],  # Rotation Matrix 1
+        [[1, 0, 0], [0, -1, 0], [0, 0, -1]],  # Rotation Matrix 2
+        [[1, 0, 0], [0, 0, -1], [0, 1, 0]],  # Rotation Matrix 3
+    ]
+)
+axis_angle_rep = np.array(
+    [
+        [1, 0, 0, np.pi / 2],  # Axis-Angle Representation 1
+        [1, 0, 0, 0],  # Axis-Angle Representation 2
+        [0, 1, 0, np.pi / 2],  # Axis-Angle Representation 3
+    ]
+)
+
 
 # Test function for quatinv function
-@pytest.mark.parametrize("q, expected", [
-    (quaternions[0], np.array([0.5, -0.5, -0.5, -0.5])),  # Test case 1
-    (quaternions[1], np.array([1.0, 0.0, 0.0, 0.0])),    # Test case 2
-    (quaternions[2], np.array([0.707, 0.0, -0.707, 0.0])),  # Test case 3
-])
+@pytest.mark.parametrize(
+    "q, expected",
+    [
+        (quaternions[0], np.array([0.5, -0.5, -0.5, -0.5])),  # Test case 1
+        (quaternions[1], np.array([1.0, 0.0, 0.0, 0.0])),  # Test case 2
+        (quaternions[2], np.array([0.707, 0.0, -0.707, 0.0])),  # Test case 3
+    ],
+)
 def test_quatinv(q, expected):
     result = quatinv(q)
 
+
 # Test function for quatnormalize function
-@pytest.mark.parametrize("q, expected", [
-    (quaternions[0], np.array([0.5, 0.5, 0.5, 0.5])),  # Test case 1
-    (quaternions[1], np.array([1.0, 0.0, 0.0, 0.0])),  # Test case 2
-    (quaternions[2], np.array([0.707, 0.0, 0.707, 0.0])),  # Test case 3
-])
+@pytest.mark.parametrize(
+    "q, expected",
+    [
+        (quaternions[0], np.array([0.5, 0.5, 0.5, 0.5])),  # Test case 1
+        (quaternions[1], np.array([1.0, 0.0, 0.0, 0.0])),  # Test case 2
+        (quaternions[2], np.array([0.707, 0.0, 0.707, 0.0])),  # Test case 3
+    ],
+)
 def test_quatnormalize(q, expected):
     result = quatnormalize(q)
 
+
 # Test function for quatnorm function
-@pytest.mark.parametrize("q, expected", [
-    (quaternions[0], np.array([1.0] * 3)),  # Test case 1
-    (quaternions[1], np.array([1.0] * 3)),  # Test case 2
-    (quaternions[2], np.array([1.0] * 3)),  # Test case 3
-])
+@pytest.mark.parametrize(
+    "q, expected",
+    [
+        (quaternions[0], np.array([1.0] * 3)),  # Test case 1
+        (quaternions[1], np.array([1.0] * 3)),  # Test case 2
+        (quaternions[2], np.array([1.0] * 3)),  # Test case 3
+    ],
+)
 def test_quatnorm(q, expected):
     result = quatnorm(q)
 
+
 # Test function for quatconj function
-@pytest.mark.parametrize("q, expected", [
-    (quaternions[0], np.array([0.5, -0.5, -0.5, -0.5])),  # Test case 1
-    (quaternions[1], np.array([1.0, 0.0, 0.0, 0.0])),    # Test case 2
-    (quaternions[2], np.array([0.707, 0.0, -0.707, 0.0])),  # Test case 3
-])
+@pytest.mark.parametrize(
+    "q, expected",
+    [
+        (quaternions[0], np.array([0.5, -0.5, -0.5, -0.5])),  # Test case 1
+        (quaternions[1], np.array([1.0, 0.0, 0.0, 0.0])),  # Test case 2
+        (quaternions[2], np.array([0.707, 0.0, -0.707, 0.0])),  # Test case 3
+    ],
+)
 def test_quatconj(q, expected):
     result = quatconj(q)
 
+
 # Test function for quatmultiply function
-@pytest.mark.parametrize("q1, q2, expected", [
-    (quaternions[0], quaternions[1], np.array([0.0, 1.0, 0.0, 0.0])),  # Test case 1
-    (quaternions[1], quaternions[2], np.array([0.707, 0.0, 0.0, -0.707])),  # Test case 2
-    (quaternions[2], quaternions[0], np.array([0.0, 0.0, -0.707, 0.707])),  # Test case 3
-])
+@pytest.mark.parametrize(
+    "q1, q2, expected",
+    [
+        (quaternions[0], quaternions[1], np.array([0.0, 1.0, 0.0, 0.0])),  # Test case 1
+        (
+            quaternions[1],
+            quaternions[2],
+            np.array([0.707, 0.0, 0.0, -0.707]),
+        ),  # Test case 2
+        (
+            quaternions[2],
+            quaternions[0],
+            np.array([0.0, 0.0, -0.707, 0.707]),
+        ),  # Test case 3
+    ],
+)
 def test_quatmultiply(q1, q2, expected):
     result = quatmultiply(q1, q2)
 
+
 # Test function for rotm2quat function
-@pytest.mark.parametrize("R, expected", [
-    (rotation_matrices[0], quaternions[1]),  # Test case 1
-    (rotation_matrices[1], quaternions[2]),  # Test case 2
-    (rotation_matrices[2], np.array([0.924, 0.383, 0.0, 0.0])),  # Test case 3
-])
+@pytest.mark.parametrize(
+    "R, expected",
+    [
+        (rotation_matrices[0], quaternions[1]),  # Test case 1
+        (rotation_matrices[1], quaternions[2]),  # Test case 2
+        (rotation_matrices[2], np.array([0.924, 0.383, 0.0, 0.0])),  # Test case 3
+    ],
+)
 def test_rotm2quat(R, expected):
     result = rotm2quat(R)
 
+
 # Test function for quat2rotm function
-@pytest.mark.parametrize("q, expected", [
-    (quaternions[1], rotation_matrices[0]),  # Test case 1
-    (quaternions[2], rotation_matrices[1]),  # Test case 2
-    (np.array([0.924, 0.383, 0.0, 0.0]), rotation_matrices[2]),  # Test case 3
-])
+@pytest.mark.parametrize(
+    "q, expected",
+    [
+        (quaternions[1], rotation_matrices[0]),  # Test case 1
+        (quaternions[2], rotation_matrices[1]),  # Test case 2
+        (np.array([0.924, 0.383, 0.0, 0.0]), rotation_matrices[2]),  # Test case 3
+    ],
+)
 def test_quat2rotm(q, expected):
     result = quat2rotm(q)
 
+
 # Test function for quat2axang function
-@pytest.mark.parametrize("q, expected", [
-    (quaternions[1], axis_angle_rep[1]),  # Test case 1
-    (quaternions[0], axis_angle_rep[0]),  # Test case 2
-    (quaternions[2], axis_angle_rep[2]),  # Test case 3
-])
+@pytest.mark.parametrize(
+    "q, expected",
+    [
+        (quaternions[1], axis_angle_rep[1]),  # Test case 1
+        (quaternions[0], axis_angle_rep[0]),  # Test case 2
+        (quaternions[2], axis_angle_rep[2]),  # Test case 3
+    ],
+)
 def test_quat2axang(q, expected):
     result = quat2axang(q)
 
+
 # Test function for axang2rotm function
-@pytest.mark.parametrize("axang, expected", [
-    (axis_angle_rep[0], rotation_matrices[0]),  # Test case 1
-    (axis_angle_rep[1], rotation_matrices[1]),  # Test case 2
-    (axis_angle_rep[2], rotation_matrices[2]),  # Test case 3
-])
+@pytest.mark.parametrize(
+    "axang, expected",
+    [
+        (axis_angle_rep[0], rotation_matrices[0]),  # Test case 1
+        (axis_angle_rep[1], rotation_matrices[1]),  # Test case 2
+        (axis_angle_rep[2], rotation_matrices[2]),  # Test case 3
+    ],
+)
 def test_axang2rotm(axang, expected):
     result = axang2rotm(axang)
+
 
 # Test function for quatconj function with different configurations
 @pytest.mark.parametrize(
     "q, scalar_first, channels_last, expected",
     [
-        (np.array([[1, 0, 0, 0]]), True, True, np.array([[1, 0, 0, 0]])),  # Identity quaternion
-        (np.array([[0, 1, 0, 0]]), True, True, np.array([[0, -1, 0, 0]])),  # Pure imaginary quaternion
-        (np.array([[0, 0, 1, 0]]), True, False, np.array([[0, 0, -1, 0]])),  # Pure imaginary quaternion, channels_last = False
-        (np.array([[0, 0, 0, 1]]), False, True, np.array([[0, 0, 0, -1]])),  # Pure imaginary quaternion, scalar_last = True
-        (np.array([[[0, 1, 0, 0], [0, 0, 1, 0]]]), True, True, np.array([[[0, -1, 0, 0], [0, 0, -1, 0]]])),  # Two quaternions
-    ]
+        (
+            np.array([[1, 0, 0, 0]]),
+            True,
+            True,
+            np.array([[1, 0, 0, 0]]),
+        ),  # Identity quaternion
+        (
+            np.array([[0, 1, 0, 0]]),
+            True,
+            True,
+            np.array([[0, -1, 0, 0]]),
+        ),  # Pure imaginary quaternion
+        (
+            np.array([[0, 0, 1, 0]]),
+            True,
+            False,
+            np.array([[0, 0, -1, 0]]),
+        ),  # Pure imaginary quaternion, channels_last = False
+        (
+            np.array([[0, 0, 0, 1]]),
+            False,
+            True,
+            np.array([[0, 0, 0, -1]]),
+        ),  # Pure imaginary quaternion, scalar_last = True
+        (
+            np.array([[[0, 1, 0, 0], [0, 0, 1, 0]]]),
+            True,
+            True,
+            np.array([[[0, -1, 0, 0], [0, 0, -1, 0]]]),
+        ),  # Two quaternions
+    ],
 )
 def case_two_test_quatconj(q, scalar_first, channels_last, expected):
     result = quatconj(q, scalar_first=scalar_first, channels_last=channels_last)
+
 
 # Test function for quatconj function
 def test_quatconj_transpose():
@@ -1791,14 +1975,16 @@ def test_quatconj_transpose():
     q = np.array([[[0, 1, 0, 0], [0, 0, 1, 0]]])
     result = quatconj(q, scalar_first=True, channels_last=False)
 
+
 def test_quatconj_manipulation():
     """Test quatconj with quaternion manipulation."""
-    q = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])  
+    q = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])
     q_tmp = q.copy()
     q[..., 0] = q_tmp[..., -1]
     q[..., 1:] = q_tmp[..., :-1]
     del q_tmp
     result = quatconj(q, scalar_first=False, channels_last=True)
+
 
 # Test function for quatmultiply function with different configurations
 @pytest.mark.parametrize(
@@ -1812,48 +1998,60 @@ def test_quatconj_manipulation():
             np.array([[[0, 1, 0, 0]]]),
             np.array([[[0, 0, 1, 0]]]),
         ),  # Pure imaginary quaternions
-    ]
+    ],
 )
 def test_quatmultiply(q1, q2):
     result = quatmultiply(q1, q2)
+
 
 # Test function for quatmultiply function with channels_last=True
 @pytest.mark.parametrize(
     "q1, q2",
     [
         (
-            np.array([[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]]]),  # q1 with channels_last=True
-            np.array([[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]]]),  # q2 with channels_last=True
+            np.array(
+                [[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]]]
+            ),  # q1 with channels_last=True
+            np.array(
+                [[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]]]
+            ),  # q2 with channels_last=True
         ),
         (
-            np.array([[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]]]),  # q1 with channels_last=True
-            np.array([[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]]]),  # q2 with channels_last=True
-        )
-    ]
+            np.array(
+                [[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]]]
+            ),  # q1 with channels_last=True
+            np.array(
+                [[[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]]]
+            ),  # q2 with channels_last=True
+        ),
+    ],
 )
 def test_quatmultiply_channels_last(q1, q2):
 
     # Determine channels_last based on the shape of q1
     channels_last = q1.shape[-1]
 
-    result = quatmultiply(q1, q2, channels_last=channels_last)  # Pass channels_last accordingly
+    result = quatmultiply(
+        q1, q2, channels_last=channels_last
+    )  # Pass channels_last accordingly
+
 
 # Test function for rotm2quat function with different methods
 def test_method_copysign():
     """Test rotm2quat with method 'copysign'."""
-    R = np.array([
-        [0, 1, 0],
-        [-1, 0, 0],
-        [0, 0, 1]
-    ])
+    R = np.array([[0, 1, 0], [-1, 0, 0], [0, 0, 1]])
     expected = np.array([0.70710678, 0.70710678, 0, 0])
     result = rotm2quat(R, method="copysign")
+
 
 def test_invalid_method():
     """Test rotm2quat with an invalid method."""
     R = np.eye(3)
-    with pytest.raises(RuntimeError, match='invalid method, must be "copysign", "auto", 0, 1, 2 or 3'):
+    with pytest.raises(
+        RuntimeError, match='invalid method, must be "copysign", "auto", 0, 1, 2 or 3'
+    ):
         rotm2quat(R, method=4)
+
 
 # Test cases for quatmultiply function
 @pytest.mark.parametrize(
@@ -1877,25 +2075,27 @@ def test_quatmultiply(q1_shape, q2_shape, scalar_first, channels_last):
         q2 = np.random.rand(*q2_shape[:-1], 4)
 
     # Call the quatmultiply function
-    result = quatmultiply(q1, q2, scalar_first=scalar_first, channels_last=channels_last)
-    
+    result = quatmultiply(
+        q1, q2, scalar_first=scalar_first, channels_last=channels_last
+    )
+
     # Check if channels and time axis are switched back when channels_last is False
     if not channels_last:
         assert result.shape == q1.T.shape  # Check the shape after transpose
 
+
 # Test function for axang2rotm function
-@pytest.mark.parametrize("axang, expected", [
-    (np.array([0.15, 0.25, 0.35, 0.0]), np.eye(3)),  # Test case with correct shape
-])
+@pytest.mark.parametrize(
+    "axang, expected",
+    [
+        (np.array([0.15, 0.25, 0.35, 0.0]), np.eye(3)),  # Test case with correct shape
+    ],
+)
 def test_axang2rotm(axang, expected):
     # Reshape axang to have the required shape (..., 4)
     axang = axang.reshape(-1, 4)
     result = axang2rotm(axang)
     assert np.allclose(result, expected)
-
-
-
-
 
 
 # Run the tests with pytest

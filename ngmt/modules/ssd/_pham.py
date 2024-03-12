@@ -21,15 +21,15 @@ class PhamSittoStandStandtoSitDetection:
     Description:
         The algorithm finds sit to stand and stand to sit using acceleration and gyro signals from lower back IMU sensor.
 
-        The accelerometer and gyroscope data are preprocessed and the stationary periods of 
-        the lower back are identified. 
-        
-        These stationary periods are used to estimate the tilt angle with respect to the horizontal plane. 
-        They were smoothed by using discrete wavelet transformation and the start and end of 
-        the postural transitions are identified. 
+        The accelerometer and gyroscope data are preprocessed and the stationary periods of
+        the lower back are identified.
 
-        The sensor orientation during the postural transitions are estimated using the quaternion 
-        (estimated from accelerometer and gyroscope data) to estimate the vertical displacement of the lower back. 
+        These stationary periods are used to estimate the tilt angle with respect to the horizontal plane.
+        They were smoothed by using discrete wavelet transformation and the start and end of
+        the postural transitions are identified.
+
+        The sensor orientation during the postural transitions are estimated using the quaternion
+        (estimated from accelerometer and gyroscope data) to estimate the vertical displacement of the lower back.
 
         Based on the extent of vertical displacement, postural transitions were classified as “effective postural transitions
         and “postural transitions attempts,” and the direction of the postural transitions was defined.
@@ -69,21 +69,21 @@ class PhamSittoStandStandtoSitDetection:
             >>> postural_transitions = pham.postural_transitions_
             >>> print(postural_transitions)
                     onset      duration    event_type       postural transition angle [°]   maximum flexion velocity [°/s]  maximum extension velocity [°/s]  tracking_systems    tracked_points
-                0   17.895     1.800       sit to stand     53.263562                       79                              8                                 imu                 LowerBack  
-                1   54.655     1.905       stand to sit     47.120448                       91                              120                               imu                 LowerBack  
-                2   56.020     1.090       sit to stand     23.524748                       62                              10                                imu                 LowerBack  
-                3   135.895    2.505       stand to sit     21.764146                       40                              65                                imu                 LowerBack  
+                0   17.895     1.800       sit to stand     53.263562                       79                              8                                 imu                 LowerBack
+                1   54.655     1.905       stand to sit     47.120448                       91                              120                               imu                 LowerBack
+                2   56.020     1.090       sit to stand     23.524748                       62                              10                                imu                 LowerBack
+                3   135.895    2.505       stand to sit     21.764146                       40                              65                                imu                 LowerBack
 
         References:
-            [1] Pham et al. (2018). Validation of a Lower Back "Wearable"-Based Sit-to-Stand and 
-            Stand-to-Sit Algorithm for Patients With Parkinson's Disease and Older Adults in a Home-Like 
+            [1] Pham et al. (2018). Validation of a Lower Back "Wearable"-Based Sit-to-Stand and
+            Stand-to-Sit Algorithm for Patients With Parkinson's Disease and Older Adults in a Home-Like
             Environment. Frontiers in Neurology, 9, 652. https://doi.org/10.3389/fneur.2018.00652
     """
 
     def __init__(
         self,
         cutoff_freq_hz: float = 5.0,
-        accel_convert_unit = 9.81,
+        accel_convert_unit=9.81,
         tracking_systems: str = "imu",
         tracked_points: str = "LowerBack",
     ):
@@ -133,22 +133,24 @@ class PhamSittoStandStandtoSitDetection:
             )
 
         # Calculate sampling period
-        sampling_period = 1/sampling_freq_Hz
+        sampling_period = 1 / sampling_freq_Hz
 
-        # Select acceleration data and convert it to numpy array format 
+        # Select acceleration data and convert it to numpy array format
         accel = data.iloc[:, 0:3].copy()
         accel = accel.to_numpy()
 
-        # Select gyro data and convert it to numpy array format 
+        # Select gyro data and convert it to numpy array format
         gyro = data.iloc[:, 3:6].copy()
         gyro = gyro.to_numpy()
 
         # Calculate timestamps to use in next calculation
-        time = np.arange(1, len(accel[:, 0] ) + 1) * sampling_period
+        time = np.arange(1, len(accel[:, 0]) + 1) * sampling_period
 
         # Estimate tilt angle in deg
-        tilt_angle_deg = preprocessing.tilt_angle_estimation(data = gyro, sampling_frequency_hz = sampling_freq_Hz) 
-        
+        tilt_angle_deg = preprocessing.tilt_angle_estimation(
+            data=gyro, sampling_frequency_hz=sampling_freq_Hz
+        )
+
         # Convert tilt angle to rad
         tilt_angle_rad = np.deg2rad(tilt_angle_deg)
 
@@ -156,40 +158,48 @@ class PhamSittoStandStandtoSitDetection:
         tilt_sin = np.sin(tilt_angle_rad)
 
         # Apply wavelet decomposition with level of 3
-        tilt_dwt_3 = preprocessing.wavelet_decomposition(data = tilt_sin, level = 3, wavetype='coif5')
+        tilt_dwt_3 = preprocessing.wavelet_decomposition(
+            data=tilt_sin, level=3, wavetype="coif5"
+        )
 
         # Apply wavelet decomposition with level of 10
-        tilt_dwt_10 = preprocessing.wavelet_decomposition(data = tilt_sin, level = 10, wavetype='coif5')
+        tilt_dwt_10 = preprocessing.wavelet_decomposition(
+            data=tilt_sin, level=10, wavetype="coif5"
+        )
 
-        # Calculate difference 
+        # Calculate difference
         tilt_dwt = tilt_dwt_3 - tilt_dwt_10
 
         # Find peaks in denoised tilt signal:  peaks of the tilt_dwt signal with magnitude and prominence >0.1 were defined as PT events
         local_peaks, _ = scipy.signal.find_peaks(tilt_dwt, height=0.2, prominence=0.2)
 
         # Calculate the norm of acceleration
-        acceleration_norm = np.sqrt(accel[:,0] ** 2 + accel[:,1] ** 2 + accel[:,2] ** 2)
+        acceleration_norm = np.sqrt(
+            accel[:, 0] ** 2 + accel[:, 1] ** 2 + accel[:, 2] ** 2
+        )
 
         # Calculate absolute value of the acceleration signal
         acceleration_norm = np.abs(acceleration_norm)
-       
+
         # Detect stationary parts of the signal based on the deifned threshold
         stationary_1 = acceleration_norm < 0.05
         stationary_1 = (stationary_1).astype(int)
 
         # Compute the variance of the moving window acceleration
-        accel_var = preprocessing.moving_var(data = acceleration_norm, window = sampling_freq_Hz)
-        
+        accel_var = preprocessing.moving_var(
+            data=acceleration_norm, window=sampling_freq_Hz
+        )
+
         # Calculate stationary_2 from acceleration variance
         threshold = 10**-2
         stationary_2 = accel_var <= threshold
         stationary_2 = (accel_var <= threshold).astype(int)
 
         # Calculate stationary of gyro variance
-        gyro_norm = np.sqrt(gyro[:,0] ** 2 + gyro[:,1] ** 2 + gyro[:,2] ** 2)
+        gyro_norm = np.sqrt(gyro[:, 0] ** 2 + gyro[:, 1] ** 2 + gyro[:, 2] ** 2)
 
         # Compute the variance of the moving window of gyro
-        gyro_var = preprocessing.moving_var(data = gyro_norm, window = sampling_freq_Hz)
+        gyro_var = preprocessing.moving_var(data=gyro_norm, window=sampling_freq_Hz)
 
         # Calculate stationary of gyro variance
         stationary_3 = gyro_var <= threshold
@@ -209,37 +219,52 @@ class PhamSittoStandStandtoSitDetection:
         # The thresholds are determined based on the training data set.
         init_period = 0.1
 
-        if np.sum(stationary[:int(sampling_freq_Hz*init_period)]) >= 200: # If the process is stationary in the first 2s
-                # If there is enough stationary data, perform sensor fusion using accelerometer and gyro data
-                time_pt, pt_type, pt_angle, duration, flexion_max_vel, extension_max_vel = preprocessing.process_postural_transitions_stationary_periods(
-                time, accel, gyro, stationary, tilt_angle_deg, sampling_period, sampling_freq_Hz, init_period, local_peaks)
-                
-                # Create a DataFrame with postural transition information
-                postural_transitions_ = pd.DataFrame({
-                    'onset': time_pt,
-                    'duration': duration,
-                    'event_type': pt_type,
-                    'postural transition angle': pt_angle,
-                    'maximum flexion velocity': flexion_max_vel,
-                    'maximum extension velocity': extension_max_vel,
-                    'tracking_systems': self.tracking_systems,
-                    'tracked_points': self.tracked_points
-                })
+        if (
+            np.sum(stationary[: int(sampling_freq_Hz * init_period)]) >= 200
+        ):  # If the process is stationary in the first 2s
+            # If there is enough stationary data, perform sensor fusion using accelerometer and gyro data
+            time_pt, pt_type, pt_angle, duration, flexion_max_vel, extension_max_vel = (
+                preprocessing.process_postural_transitions_stationary_periods(
+                    time,
+                    accel,
+                    gyro,
+                    stationary,
+                    tilt_angle_deg,
+                    sampling_period,
+                    sampling_freq_Hz,
+                    init_period,
+                    local_peaks,
+                )
+            )
+
+            # Create a DataFrame with postural transition information
+            postural_transitions_ = pd.DataFrame(
+                {
+                    "onset": time_pt,
+                    "duration": duration,
+                    "event_type": pt_type,
+                    "postural transition angle": pt_angle,
+                    "maximum flexion velocity": flexion_max_vel,
+                    "maximum extension velocity": extension_max_vel,
+                    "tracking_systems": self.tracking_systems,
+                    "tracked_points": self.tracked_points,
+                }
+            )
 
         else:
             # Handle cases where there is not enough stationary data
             # Find indices where the product of consecutive changes sign, indicating a change in direction
-            iZeroCr = np.where((gyro[:,1][:-1] * gyro[:,1][1:]) < 0)[0]
+            iZeroCr = np.where((gyro[:, 1][:-1] * gyro[:, 1][1:]) < 0)[0]
 
             # Calculate the difference between consecutive values
-            gyrY_diff = np.diff(gyro[:,1])
+            gyrY_diff = np.diff(gyro[:, 1])
 
             # Initialize arrays to store left and right indices for each local peak
             # Initialize left side indices with ones
             ls = np.ones_like(local_peaks)
 
             # Initialize right side indices with length of gyro data
-            rs = len(gyro[:,1]) * np.ones_like(local_peaks)
+            rs = len(gyro[:, 1]) * np.ones_like(local_peaks)
 
             # Loop through each local peak
             for i in range(len(local_peaks)):
@@ -259,9 +284,12 @@ class PhamSittoStandStandtoSitDetection:
                 for j in range(len(dist2peak_ls) - 1, -1, -1):
                     # Check if slope is down and the left side not too close to the peak (more than 200ms)
                     if gyrY_diff[pt + dist2peak_ls[j]] < 0 and -dist2peak_ls[j] > 25:
-                        if j > 0: # Make sure dist2peak_ls[j] exist
+                        if j > 0:  # Make sure dist2peak_ls[j] exist
                             # If the left side peak is far enough or small enough
-                            if (dist2peak_ls[j] - dist2peak_ls[j - 1]) >= 25 or (tilt_angle_deg[pt + dist2peak_ls[j - 1]] - tilt_angle_deg[pt + dist2peak_ls[j]]) > 1:
+                            if (dist2peak_ls[j] - dist2peak_ls[j - 1]) >= 25 or (
+                                tilt_angle_deg[pt + dist2peak_ls[j - 1]]
+                                - tilt_angle_deg[pt + dist2peak_ls[j]]
+                            ) > 1:
                                 # Store the index of the left side
                                 ls[i] = pt + dist2peak_ls[j]
                                 break
@@ -272,31 +300,33 @@ class PhamSittoStandStandtoSitDetection:
                     if gyrY_diff[pt + dist2peak_rs[j]] < 0 and dist2peak_rs[j] > 25:
                         rs[i] = pt + dist2peak_rs[j]
                         break
-            
+
             # Initialize list for PT types
             pt_type = []
 
             # Distinguish between different types of postural transitions
             for i in range(len(local_peaks)):
-                gyro_temp = gyro[:,1][ls[i]:rs[i]]
+                gyro_temp = gyro[:, 1][ls[i] : rs[i]]
                 min_peak = np.min(gyro_temp)
                 max_peak = np.max(gyro_temp)
                 if (abs(min_peak) - max_peak) > 0.5:
-                    pt_type.append('sit to stand')
+                    pt_type.append("sit to stand")
                 else:
-                    pt_type.append('stand to sit')
-            
+                    pt_type.append("stand to sit")
+
             # Calculate maximum flexion velocity and maximum extension velocity
             flexion_max_vel = np.zeros_like(local_peaks)
             extension_max_vel = np.zeros_like(local_peaks)
             for i in range(len(local_peaks)):
-                flexion_max_vel[i] = max(abs(gyro[:,1][ls[i]:local_peaks[i]]))
-                extension_max_vel[i] = max(abs(gyro[:,1][local_peaks[i]:rs[i]]))
-                
+                flexion_max_vel[i] = max(abs(gyro[:, 1][ls[i] : local_peaks[i]]))
+                extension_max_vel[i] = max(abs(gyro[:, 1][local_peaks[i] : rs[i]]))
+
             # Calculate PT angle
             pt_angle = np.abs(tilt_angle_deg[local_peaks] - tilt_angle_deg[ls])
             if ls[0] == 1:
-                pt_angle[0] = abs(tilt_angle_deg[local_peaks[0]] - tilt_angle_deg[rs[0]])
+                pt_angle[0] = abs(
+                    tilt_angle_deg[local_peaks[0]] - tilt_angle_deg[rs[0]]
+                )
 
             # Calculate duration of each PT
             duration = (rs - ls) / sampling_freq_Hz
@@ -310,20 +340,28 @@ class PhamSittoStandStandtoSitDetection:
         pt_type = [pt_type[idx] for idx, val in enumerate(pt_type) if i[idx]]
         pt_angle = pt_angle[i]
         duration = duration[i]
-        flexion_max_vel = [flexion_max_vel[idx] for idx, val in enumerate(flexion_max_vel) if i[idx]]
-        extension_max_vel = [extension_max_vel[idx] for idx, val in enumerate(extension_max_vel) if i[idx]]
+        flexion_max_vel = [
+            flexion_max_vel[idx] for idx, val in enumerate(flexion_max_vel) if i[idx]
+        ]
+        extension_max_vel = [
+            extension_max_vel[idx]
+            for idx, val in enumerate(extension_max_vel)
+            if i[idx]
+        ]
 
         # Create a DataFrame with postural transition information
-        postural_transitions_ = pd.DataFrame({
-            'onset': time_pt,
-            'duration': duration,
-            'event_type': pt_type,
-            'postural transition angle': pt_angle,
-            'maximum flexion velocity': flexion_max_vel,
-            'maximum extension velocity': extension_max_vel,
-            'tracking_systems': self.tracking_systems,
-            'tracked_points': self.tracked_points
-        })
+        postural_transitions_ = pd.DataFrame(
+            {
+                "onset": time_pt,
+                "duration": duration,
+                "event_type": pt_type,
+                "postural transition angle": pt_angle,
+                "maximum flexion velocity": flexion_max_vel,
+                "maximum extension velocity": extension_max_vel,
+                "tracking_systems": self.tracking_systems,
+                "tracked_points": self.tracked_points,
+            }
+        )
 
         # Assign the DataFrame to the 'postural_transitions_' attribute
         self.postural_transitions_ = postural_transitions_
@@ -331,7 +369,9 @@ class PhamSittoStandStandtoSitDetection:
         # If Plot_results set to true
         if plot_results:
 
-            preprocessing.pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz)
+            preprocessing.pham_plot_results(
+                accel, gyro, postural_transitions_, sampling_freq_Hz
+            )
 
         # Return an instance of the class
         return self
