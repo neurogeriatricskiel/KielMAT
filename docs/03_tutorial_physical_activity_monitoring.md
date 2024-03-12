@@ -1,7 +1,8 @@
 # Tutorial: Physical Activity Monitoring
 
-**Author:** Masoud Abedinifar 
-**Last update:** Tue 06 Feb 2024
+**Author:** Masoud Abedinifar
+
+**Last update:** Mon 11 Mar 2024
 
 ## Learning objectives  
 By the end of this tutorial, you will be able to:  
@@ -108,15 +109,9 @@ print(physical_activities)
 ```
 
 
-             date  sedentary_mean_enmo  sedentary_time_min  light_mean_enmo  \
-    0  2016-10-05            19.220017               491.5        59.072274   
-    
-       light_time_min  moderate_mean_enmo  moderate_time_min  vigorous_mean_enmo  \
-    0      122.166667          129.411442               26.5                 NaN   
-    
-       vigorous_time_min  
-    0                0.0  
-    
-    
+                date                sedentary_mean_enmo  sedentary_time_min  light_mean_enmo  light_time_min  moderate_mean_enmo  moderate_time_min  vigorous_mean_enmo  vigorous_time_min
+    0           2016-10-05 19.22    19.22                491.5               59.07            122.16          129.41              26.5               NaN                 0.0   
+
+
 ![png](03_tutorial_physical_activity_monitoring_files/03_tutorial_physical_activity_monitoring_1.png)
     

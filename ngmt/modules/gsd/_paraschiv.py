@@ -190,7 +190,6 @@ class ParaschivIonescuGaitSequenceDetection:
             int(round(self.target_sampling_freq_Hz)),
             1,
             int(round(self.target_sampling_freq_Hz)),
-            0,
         )
 
         # Initialize a list for walking bouts
@@ -268,10 +267,10 @@ class ParaschivIonescuGaitSequenceDetection:
         # Check if walking_periods is empty
         if walking_periods is None:
             walking_bouts = []
-            MidSwing = []
+
         else:
             # Call the organize_and_pack_results function with walking_periods and MaxPeaks
-            walking_bouts, MidSwing = preprocessing.organize_and_pack_results(
+            walking_bouts, _ = preprocessing.organize_and_pack_results(
                 walking_periods, max_peaks
             )
             if walking_bouts:
@@ -388,6 +387,8 @@ class ParaschivIonescuGaitSequenceDetection:
         # Return gait_sequences_ as an output
         self.gait_sequences_ = gait_sequences_
 
+
+        # If Plot_results set to true
         # currently no plotting for datetime values
         if dt_data is not None and plot_results:
             print("No plotting for datetime values.")
@@ -396,33 +397,7 @@ class ParaschivIonescuGaitSequenceDetection:
 
         # Plot results if set to true
         if plot_results:
-            plt.figure(figsize=(22, 14))
-            plt.plot(
-                np.arange(len(detected_activity_signal))
-                / (60 * self.target_sampling_freq_Hz),
-                detected_activity_signal,
-                label="Pre-processed acceleration signal",
-            )
-            plt.title("Detected gait sequences", fontsize=20)
-            plt.xlabel("Time (minutes)", fontsize=20)
-            plt.ylabel("Acceleration (g)", fontsize=20)
 
-            # Fill the area between start and end times
-            for index, sequence in gait_sequences_.iterrows():
-                onset = sequence["onset"] / 60  # Convert to minutes
-                end_time = (
-                    sequence["onset"] + sequence["duration"]
-                ) / 60  # Convert to minutes
-                plt.axvline(onset, color="g")
-                plt.axvspan(onset, end_time, facecolor="grey", alpha=0.8)
-            plt.legend(
-                ["Pre-processed acceleration signal", "Gait onset", "Gait duration"],
-                fontsize=20,
-                loc="best",
-            )
-            plt.grid(visible=None, which="both", axis="both")
-            plt.xticks(fontsize=20)
-            plt.yticks(fontsize=20)
-            plt.show()
+            preprocessing.gsd_plot_results(self.target_sampling_freq_Hz, detected_activity_signal, gait_sequences_)
 
         return self
