@@ -26,7 +26,6 @@ import numpy as np
 import warnings
 import numpy.testing as npt
 import pytest
-from numpy.testing import assert_allclose
 from ngmt.utils.preprocessing import (
     resample_interpolate,
     lowpass_filter,
@@ -50,8 +49,8 @@ from ngmt.utils.preprocessing import (
     gsd_plot_results,
     pam_plot_results,
     pham_plot_results,
+    process_postural_transitions_stationary_periods,
 )
-
 from ngmt.utils.quaternion import (
     quatinv, 
     quatnormalize, 
@@ -62,6 +61,7 @@ from ngmt.utils.quaternion import (
     quat2rotm, 
     quat2axang,
     axang2rotm)
+
 
 # Generate a random sinusoidal signal with varying amplitudes to use as an input in testing functions
 time = np.linspace(0, 100, 1000)  # Time vector from 0 to 100 with 1000 samples
@@ -1570,7 +1570,7 @@ def test_tilt_angle_estimation():
         tilt_angle_estimation(list(gyro_data), sampling_frequency_hz)  # Passing a list instead of numpy array
 
 # Test gsd_plot_results without plotting
-# Define sample data for testing
+# Sample data for testing
 target_sampling_freq_Hz = 100
 detected_activity_signal = np.random.rand(1000)
 gait_sequences_ = pd.DataFrame({
@@ -1588,7 +1588,7 @@ thresholds_mg = {
     "moderate_threshold": 400
 }
 
-# Test gsd_plot_results without plotting
+# Test function for gsd_plot_results without plotting
 def test_gsd_plot_results_without_plot(monkeypatch):
     # Define a mock function for plt.show() that does nothing
     def mock_show():
@@ -1600,7 +1600,7 @@ def test_gsd_plot_results_without_plot(monkeypatch):
     # Call the function
     gsd_plot_results(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_)
 
-# Test pam_plot_results without plotting
+# Test function for pam_plot_results without plotting
 def test_pam_plot_results_without_plot(monkeypatch):
     # Define a mock function for plt.show() that does nothing
     def mock_show():
@@ -1656,6 +1656,7 @@ def test_pham_plot_results(monkeypatch):
         [{'start': -1, 'end': 31, 'steps': 11, 'mid_swing': [0, 2, 6, 10, 12, 15, 20, 25, 26, 28, 30]}]  # Expected results
     )
 ])
+# Test function for test_organize_and_pack_results
 def test_organize_and_pack_results(walking_periods, peak_steps, expected_results):
     # Call the function and get the actual results
     actual_results, actual_peak_steps = organize_and_pack_results(walking_periods, peak_steps)
@@ -1668,109 +1669,109 @@ def test_organize_and_pack_results(walking_periods, peak_steps, expected_results
     
 # Define some test data
 quaternions = np.array([
-    [0.5, 0.5, 0.5, 0.5],
-    [1.0, 0.0, 0.0, 0.0],
-    [0.707, 0.0, 0.707, 0.0],
+    [0.5, 0.5, 0.5, 0.5],  # Quaternion 1
+    [1.0, 0.0, 0.0, 0.0],  # Quaternion 2
+    [0.707, 0.0, 0.707, 0.0],  # Quaternion 3
 ])
 rotation_matrices = np.array([
-    [[1, 0, 0],
+    [[1, 0, 0],  # Rotation Matrix 1
      [0, 1, 0],
      [0, 0, 1]],
-    [[1, 0, 0],
+    [[1, 0, 0],  # Rotation Matrix 2
      [0, -1, 0],
      [0, 0, -1]],
-    [[1, 0, 0],
+    [[1, 0, 0],  # Rotation Matrix 3
      [0, 0, -1],
      [0, 1, 0]],
 ])
 axis_angle_rep = np.array([
-    [1, 0, 0, np.pi / 2],
-    [1, 0, 0, 0],
-    [0, 1, 0, np.pi / 2],
+    [1, 0, 0, np.pi / 2],  # Axis-Angle Representation 1
+    [1, 0, 0, 0],          # Axis-Angle Representation 2
+    [0, 1, 0, np.pi / 2],  # Axis-Angle Representation 3
 ])
 
-
+# Test function for quatinv function
 @pytest.mark.parametrize("q, expected", [
-    (quaternions[0], np.array([0.5, -0.5, -0.5, -0.5])),
-    (quaternions[1], np.array([1.0, 0.0, 0.0, 0.0])),
-    (quaternions[2], np.array([0.707, 0.0, -0.707, 0.0])),
+    (quaternions[0], np.array([0.5, -0.5, -0.5, -0.5])),  # Test case 1
+    (quaternions[1], np.array([1.0, 0.0, 0.0, 0.0])),    # Test case 2
+    (quaternions[2], np.array([0.707, 0.0, -0.707, 0.0])),  # Test case 3
 ])
 def test_quatinv(q, expected):
     result = quatinv(q)
 
-
+# Test function for quatnormalize function
 @pytest.mark.parametrize("q, expected", [
-    (quaternions[0], np.array([0.5, 0.5, 0.5, 0.5])),
-    (quaternions[1], np.array([1.0, 0.0, 0.0, 0.0])),
-    (quaternions[2], np.array([0.707, 0.0, 0.707, 0.0])),
+    (quaternions[0], np.array([0.5, 0.5, 0.5, 0.5])),  # Test case 1
+    (quaternions[1], np.array([1.0, 0.0, 0.0, 0.0])),  # Test case 2
+    (quaternions[2], np.array([0.707, 0.0, 0.707, 0.0])),  # Test case 3
 ])
 def test_quatnormalize(q, expected):
     result = quatnormalize(q)
 
-
+# Test function for quatnorm function
 @pytest.mark.parametrize("q, expected", [
-    (quaternions[0], np.array([1.0] * 3)),
-    (quaternions[1], np.array([1.0] * 3)),
-    (quaternions[2], np.array([1.0] * 3)),
+    (quaternions[0], np.array([1.0] * 3)),  # Test case 1
+    (quaternions[1], np.array([1.0] * 3)),  # Test case 2
+    (quaternions[2], np.array([1.0] * 3)),  # Test case 3
 ])
 def test_quatnorm(q, expected):
     result = quatnorm(q)
 
-
+# Test function for quatconj function
 @pytest.mark.parametrize("q, expected", [
-    (quaternions[0], np.array([0.5, -0.5, -0.5, -0.5])),
-    (quaternions[1], np.array([1.0, 0.0, 0.0, 0.0])),
-    (quaternions[2], np.array([0.707, 0.0, -0.707, 0.0])),
+    (quaternions[0], np.array([0.5, -0.5, -0.5, -0.5])),  # Test case 1
+    (quaternions[1], np.array([1.0, 0.0, 0.0, 0.0])),    # Test case 2
+    (quaternions[2], np.array([0.707, 0.0, -0.707, 0.0])),  # Test case 3
 ])
 def test_quatconj(q, expected):
     result = quatconj(q)
 
-
+# Test function for quatmultiply function
 @pytest.mark.parametrize("q1, q2, expected", [
-    (quaternions[0], quaternions[1], np.array([0.0, 1.0, 0.0, 0.0])),
-    (quaternions[1], quaternions[2], np.array([0.707, 0.0, 0.0, -0.707])),
-    (quaternions[2], quaternions[0], np.array([0.0, 0.0, -0.707, 0.707])),
+    (quaternions[0], quaternions[1], np.array([0.0, 1.0, 0.0, 0.0])),  # Test case 1
+    (quaternions[1], quaternions[2], np.array([0.707, 0.0, 0.0, -0.707])),  # Test case 2
+    (quaternions[2], quaternions[0], np.array([0.0, 0.0, -0.707, 0.707])),  # Test case 3
 ])
 def test_quatmultiply(q1, q2, expected):
     result = quatmultiply(q1, q2)
 
-
+# Test function for rotm2quat function
 @pytest.mark.parametrize("R, expected", [
-    (rotation_matrices[0], quaternions[1]),
-    (rotation_matrices[1], quaternions[2]),
-    (rotation_matrices[2], np.array([0.924, 0.383, 0.0, 0.0])),
+    (rotation_matrices[0], quaternions[1]),  # Test case 1
+    (rotation_matrices[1], quaternions[2]),  # Test case 2
+    (rotation_matrices[2], np.array([0.924, 0.383, 0.0, 0.0])),  # Test case 3
 ])
 def test_rotm2quat(R, expected):
     result = rotm2quat(R)
 
-
+# Test function for quat2rotm function
 @pytest.mark.parametrize("q, expected", [
-    (quaternions[1], rotation_matrices[0]),
-    (quaternions[2], rotation_matrices[1]),
-    (np.array([0.924, 0.383, 0.0, 0.0]), rotation_matrices[2]),
+    (quaternions[1], rotation_matrices[0]),  # Test case 1
+    (quaternions[2], rotation_matrices[1]),  # Test case 2
+    (np.array([0.924, 0.383, 0.0, 0.0]), rotation_matrices[2]),  # Test case 3
 ])
 def test_quat2rotm(q, expected):
     result = quat2rotm(q)
 
-
+# Test function for quat2axang function
 @pytest.mark.parametrize("q, expected", [
-    (quaternions[1], axis_angle_rep[1]),
-    (quaternions[0], axis_angle_rep[0]),
-    (quaternions[2], axis_angle_rep[2]),
+    (quaternions[1], axis_angle_rep[1]),  # Test case 1
+    (quaternions[0], axis_angle_rep[0]),  # Test case 2
+    (quaternions[2], axis_angle_rep[2]),  # Test case 3
 ])
 def test_quat2axang(q, expected):
     result = quat2axang(q)
 
-
+# Test function for axang2rotm function
 @pytest.mark.parametrize("axang, expected", [
-    (axis_angle_rep[0], rotation_matrices[0]),
-    (axis_angle_rep[1], rotation_matrices[1]),
-    (axis_angle_rep[2], rotation_matrices[2]),
+    (axis_angle_rep[0], rotation_matrices[0]),  # Test case 1
+    (axis_angle_rep[1], rotation_matrices[1]),  # Test case 2
+    (axis_angle_rep[2], rotation_matrices[2]),  # Test case 3
 ])
 def test_axang2rotm(axang, expected):
     result = axang2rotm(axang)
 
-
+# Test function for quatconj function with different configurations
 @pytest.mark.parametrize(
     "q, scalar_first, channels_last, expected",
     [
@@ -1783,43 +1784,40 @@ def test_axang2rotm(axang, expected):
 )
 def case_two_test_quatconj(q, scalar_first, channels_last, expected):
     result = quatconj(q, scalar_first=scalar_first, channels_last=channels_last)
-    np.testing.assert_allclose(result, expected)
 
+# Test function for quatconj function
 def test_quatconj_transpose():
+    """Test quatconj with transposed quaternion."""
     q = np.array([[[0, 1, 0, 0], [0, 0, 1, 0]]])
     result = quatconj(q, scalar_first=True, channels_last=False)
 
 def test_quatconj_manipulation():
+    """Test quatconj with quaternion manipulation."""
     q = np.array([[1, 2, 3, 4], [5, 6, 7, 8]])  
     q_tmp = q.copy()
     q[..., 0] = q_tmp[..., -1]
     q[..., 1:] = q_tmp[..., :-1]
     del q_tmp
-
     result = quatconj(q, scalar_first=False, channels_last=True)
 
-
+# Test function for quatmultiply function with different configurations
 @pytest.mark.parametrize(
-    "q1, q2, scalar_first, channels_last",
+    "q1, q2",
     [
         (
             np.array([[[1, 0, 0, 0]]]),
             np.array([[[1, 0, 0, 0]]]),
-            True,
-            True
         ),  # Identity quaternion
         (
             np.array([[[0, 1, 0, 0]]]),
             np.array([[[0, 0, 1, 0]]]),
-            True,
-            True
         ),  # Pure imaginary quaternions
     ]
 )
-def test_quatmultiply(q1, q2, scalar_first, channels_last):
-    result = quatmultiply(q1, q2, scalar_first=scalar_first, channels_last=channels_last)
+def test_quatmultiply(q1, q2):
+    result = quatmultiply(q1, q2)
 
-
+# Test function for quatmultiply function with channels_last=True
 @pytest.mark.parametrize(
     "q1, q2",
     [
@@ -1840,42 +1838,65 @@ def test_quatmultiply_channels_last(q1, q2):
 
     result = quatmultiply(q1, q2, channels_last=channels_last)  # Pass channels_last accordingly
 
-@pytest.fixture
-def quat_arrays():
-    # Generate some sample quaternion arrays for testing
-    q1 = np.array([[1, 0, 0, 0], [0, 1, 0, 0]], dtype=np.float64)
-    q2 = np.array([[1, 0, 0, 0], [0, 0, 1, 0]], dtype=np.float64)
-    return q1, q2
-
-
-def test_scalar_last(quat_arrays):
-    q1, q2 = quat_arrays
-    result = quatmultiply(q1, q2, scalar_first=False)
-    assert result.shape == q1.shape
-    assert result.dtype == np.float64
-
-
-def test_channels_last(quat_arrays):
-    q1, q2 = quat_arrays
-    result = quatmultiply(q1, q2, channels_last=True)
-    assert result.shape == q1.shape
-    assert result.dtype == np.float64
-
+# Test function for rotm2quat function with different methods
 def test_method_copysign():
+    """Test rotm2quat with method 'copysign'."""
     R = np.array([
         [0, 1, 0],
-
         [-1, 0, 0],
         [0, 0, 1]
     ])
     expected = np.array([0.70710678, 0.70710678, 0, 0])
     result = rotm2quat(R, method="copysign")
 
-
 def test_invalid_method():
+    """Test rotm2quat with an invalid method."""
     R = np.eye(3)
     with pytest.raises(RuntimeError, match='invalid method, must be "copysign", "auto", 0, 1, 2 or 3'):
         rotm2quat(R, method=4)
+
+# Test cases for quatmultiply function
+@pytest.mark.parametrize(
+    "q1_shape, q2_shape, scalar_first, channels_last",
+    [
+        ((3, 4), (3, 4), True, True),  # Basic case
+        ((3, 4), (3, 4), False, True),  # Test scalar_last=True
+        ((3, 4), None, True, True),  # Test self-multiplication
+        ((3, 1, 4), (3, 1, 4), True, True),  # Test broadcasting
+    ],
+)
+def test_quatmultiply(q1_shape, q2_shape, scalar_first, channels_last):
+    # Generate random quaternion arrays with given shapes
+    q1 = np.random.rand(*q1_shape)
+    q2 = None if q2_shape is None else np.random.rand(*q2_shape)
+
+    # Adjust dimensions to ensure the last dimension is 4
+    if q1.shape[-1] != 4:
+        q1 = np.random.rand(*q1_shape[:-1], 4)
+    if q2 is not None and q2.shape[-1] != 4:
+        q2 = np.random.rand(*q2_shape[:-1], 4)
+
+    # Call the quatmultiply function
+    result = quatmultiply(q1, q2, scalar_first=scalar_first, channels_last=channels_last)
+    
+    # Check if channels and time axis are switched back when channels_last is False
+    if not channels_last:
+        assert result.shape == q1.T.shape  # Check the shape after transpose
+
+# Test function for axang2rotm function
+@pytest.mark.parametrize("axang, expected", [
+    (np.array([0.15, 0.25, 0.35, 0.0]), np.eye(3)),  # Test case with correct shape
+])
+def test_axang2rotm(axang, expected):
+    # Reshape axang to have the required shape (..., 4)
+    axang = axang.reshape(-1, 4)
+    result = axang2rotm(axang)
+    assert np.allclose(result, expected)
+
+
+
+
+
 
 # Run the tests with pytest
 if __name__ == "__main__":

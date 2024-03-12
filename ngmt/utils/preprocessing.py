@@ -9,7 +9,7 @@ import scipy.io
 import scipy.integrate
 import scipy.ndimage
 import pywt
-import numpy.lib.stride_tricks
+from ngmt.utils import quaternion 
 
 
 # use the importlib.resources package to access the FIR_2_3Hz_40.mat file
@@ -1246,12 +1246,16 @@ def moving_var(data, window):
 # Function to plot results of the gait sequence detection algorithm
 def pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz):
     """
-    Plot the detected postural transitions.
+    Plot results of the gait sequence detection algorithm.
 
     Args:
+        accel (ndarray): Array of acceleration data.
+        gyro (ndarray): Array of gyroscope data.
+        postural_transitions_ (DataFrame): DataFrame containing postural transition information.
+        sampling_freq_Hz (float): Sampling frequency in Hertz.
 
     Returns:
-        plot
+        Plot postural transitions
     """
     # Figure 
     fig = plt.figure(figsize=(21, 10))
@@ -1297,3 +1301,224 @@ def pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz):
     plt.yticks(fontsize=14)
     fig.tight_layout()
     plt.show()
+
+# Function to detect postural transitions based on stationary periods
+def process_postural_transitions_stationary_periods(time, accel, gyro, stationary, tilt_angle_deg, sampling_period, sampling_freq_Hz, init_period, local_peaks):
+    """
+    Estimate orientation and analyze postural transitions based on sensor data.
+
+    Args:
+        time (ndarray): Array of timestamps.
+        accel (ndarray): Array of accelerometer data (3D).
+        gyro (ndarray): Array of gyroscope data (3D).
+        stationary (ndarray): Array indicating stationary periods.
+        tilt_angle_deg (ndarray): Array of tilt angle data.
+        sampling_period (float): Sampling period in seconds.
+        sampling_freq_Hz (float): Sampling frequency in Hz.
+        init_period (float): Initialization period in seconds.
+        local_peaks (ndarray): Array of indices indicating local peaks.
+
+    Returns:
+        tuple: A tuple containing:
+            time_pt (list): List of peak times.
+            pt_type (list): List of postural transition types.
+            pt_angle (list): List of postural transition angles.
+            duration (list): List of postural transition durations.
+            flexion_max_vel (list): List of maximum flexion velocities.
+            extension_max_vel (list): List of maximum extension velocities.
+    """
+    # If there is enough stationary data, perform sensor fusion using accelerometer and gyro data
+    # Initialize quaternion array for orientation estimation
+    quat = np.zeros((len(time), 4))
+
+    # Initial convergence: Update the quaternion using the mean accelerometer values over a certain period
+    # This helps in initializing the orientation for accurate estimation
+    index_sel = np.arange(0, np.where(time >= time[0] + init_period)[0][0] + 1)
+    mean_accel = np.mean(accel[index_sel], axis=0)
+    quat[0] = quaternion.rotm2quat(np.eye(3) + quaternion.axang2rotm(mean_accel))
+
+    # Update the quaternion for all data points
+    for t in range(1, len(time)):
+        # Calculate the rotation matrix from gyroscope data
+        dt = time[t] - time[t-1]
+        ang_velocity = gyro[t] * dt
+        delta_rot = quaternion.axang2rotm(ang_velocity)
+
+        # Update the quaternion based on the rotation matrix
+        quat[t] = quaternion.quatmultiply(quat[t - 1], quaternion.rotm2quat(delta_rot))
+
+        # Normalize the quaternion to avoid drift
+        quat[t] = quaternion.quatnormalize(quat[t])
+
+    # Analyze gyro data to detect peak velocities and directional changes
+    # Zero-crossing method is used to define the beginning and the end of a PT in the gyroscope signal
+    iZeroCr = np.where((gyro[:,1][:-1] * gyro[:,1][1:]) < 0)[0]
+
+    # Calculate the difference between consecutive values
+    gyrY_diff = np.diff(gyro[:,1])
+
+    # Beginning of a PT was defined as the first zero crossing point of themedio-lateral angular 
+    # velocity (gyro[:,1]) on the left side of the PT event, with negative slope.
+    # Initialize left side indices with ones
+    ls = np.ones_like(local_peaks)
+
+    # Initialize right side indices with length of gyro data
+    # rs = len(gyro[:,1]) * np.ones_like(local_peaks)
+    rs = np.full_like(local_peaks, len(gyro[:,1]))
+    for i in range(len(local_peaks)):
+        # Get the index of the current local peak
+        pt = local_peaks[i]
+
+        # Calculate distances to all zero-crossing points relative to the peak
+        dist2peak = iZeroCr - pt
+
+        # Extract distances to zero-crossing points on the left side of the peak
+        dist2peak_ls = dist2peak[dist2peak < 0]
+
+        # Extract distances to zero-crossing points on the right side of the peak
+        dist2peak_rs = dist2peak[dist2peak > 0]
+
+        # Iterate over distances to zero-crossing points on the left side of the peak (in reverse order)
+        for j in range(len(dist2peak_ls) - 1, -1, -1):
+            # Check if slope is down and the left side not too close to the peak (more than 200ms)
+            if gyrY_diff[pt + dist2peak_ls[j]] < 0 and -dist2peak_ls[j] > 25:
+                # Store the index of the left side
+                ls[i] = pt + dist2peak_ls[j]
+                break
+
+    # Further analysis to distinguish between different types of postural transitions (sit-to-stand or stand-to-sit)
+    # Rotate body accelerations to Earth frame
+    acc = quaternion.rotm2quat(np.column_stack((accel[:,0], accel[:,1], accel[:,2])), quat)
+    
+    # Remove gravity from measurements
+    acc -= np.array([[0, 0, 1]] * len(time))
+
+    # Convert acceletion data to m/s^2
+    acc *= 9.81
+    
+    # Calculate velocities
+    vel = np.zeros_like(acc)
+
+    # Iterate over time steps
+    for t in range(1, len(vel)):
+        # Integrate acceleration to calculate velocity
+        vel[t, :] = vel[t - 1, :] + acc[t, :] * sampling_period
+        if stationary[t] == 1:
+            # Force zero velocity when stationary
+            vel[t, :] = [0, 0, 0]
+
+    # Compute and remove integral drift
+    velDrift = np.zeros_like(vel)
+
+    # Indices where stationary changes to non-stationary
+    activeStart = np.where(np.diff(stationary) == -1)[0]
+
+    # Indices where non-stationary changes to stationary
+    activeEnd = np.where(np.diff(stationary) == 1)[0]
+    if activeStart[0] > activeEnd[0]:
+        # Ensure start from index 0 if starts non-stationary
+        activeStart = np.insert(activeStart, 0, 0)
+
+    if activeStart[-1] > activeEnd[-1]:
+        # Ensure last segment ends properly
+        activeEnd = np.append(activeEnd, len(stationary))
+    for i in range(len(activeEnd)):
+        # Calculate drift rate
+        driftRate = vel[activeEnd[i] - 1] / (activeEnd[i] - activeStart[i])
+
+        # Enumerate time steps within the segment
+        enum = np.arange(1, activeEnd[i] - activeStart[i] + 1)
+        
+        # Calculate drift for each time step
+        drift = np.column_stack((enum * driftRate[0], enum * driftRate[1], enum * driftRate[2]))
+
+        # Store the drift for this segment
+        velDrift[activeStart[i]:activeEnd[i], :] = drift
+    
+    # Remove integral drift from velocity
+    vel -= velDrift
+    
+    # Compute translational position
+    pos = np.zeros_like(vel)
+
+        # Iterate over time steps
+    for t in range(1, len(pos)):
+        # Integrate velocity to yield position
+        pos[t, :] = pos[t - 1, :] + vel[t, :] * sampling_period 
+
+    # Estimate vertical displacement and classify as actual PTs or Attempts
+    # Calculate vertical displacement
+    disp_z = pos[rs, 2] - pos[ls, 2]
+    
+    # Initialize flag for actual PTs
+    pt_actual_flag = np.zeros_like(local_peaks)
+
+    for i in range(len(disp_z)):
+        # Displacement greater than 10cm and less than 1m
+        if 0.1 < abs(disp_z[i]) < 1:
+            # Flag as actual PT if displacement meets criteria 
+            pt_actual_flag[i] = 1
+
+    # Initialize list for PT types
+    pt_type = []
+
+    # Distinguish between different types of postural transitions
+    for i in range(len(local_peaks)):
+        if pt_actual_flag[i] == 1:
+            if disp_z[i] == 0:
+                pt_type.append('NA')
+            elif disp_z[i] > 0:
+                pt_type.append('sit to stand')
+            else:
+                pt_type.append('stand to sit')
+        else:
+            pt_type.append('NA')
+
+    # Calculate maximum flexion velocity and maximum extension velocity
+    flexion_max_vel = np.zeros_like(local_peaks)
+    extension_max_vel = np.zeros_like(local_peaks)
+    for i in range(len(local_peaks)):
+        flexion_max_vel[i] = max(abs(gyro[:,1][ls[i]:local_peaks[i]]))
+        extension_max_vel[i] = max(abs(gyro[:,1][local_peaks[i]:rs[i]]))
+
+    # Calculate PT angle
+    pt_angle = np.abs(tilt_angle_deg[local_peaks] - tilt_angle_deg[ls])
+    if ls[0] == 0:
+        # Adjust angle for the first PT if necessary
+        pt_angle[0] = np.abs(tilt_angle_deg[local_peaks[0]] - tilt_angle_deg[rs[0]])
+
+    # Calculate duration of each PT
+    duration = (rs - ls) / sampling_freq_Hz
+
+    # Convert peak times to integers
+    time_pt = time[local_peaks]
+
+    # Initialize PTs list
+    # i.e., the participant was considered to perform a complete standing up or sitting down movement
+    PTs = [['Time[s]', 'Type', 'Angle[°]', 'Duration[s]', 'Max flexion velocity[°/s]',
+            'Max extension velocity[°/s]', 'Vertical displacement[m]']]
+    
+    # Initialize Attempts list
+    # i.e., the participant was considered not to perform a complete PT, e.g., forward and backwards body motion
+    Attempts = [['Time[s]', 'Type', 'Angle[°]', 'Duration[s]', 'Max flexion velocity[°/s]',
+                'Max extension velocity[°/s]', 'Vertical displacement[m]']]
+    
+    # Iterate over detected peaks
+    for i in range(len(local_peaks)):
+        if pt_actual_flag[i] == 1:
+            PTs.append([time_pt[i], pt_type[i], pt_angle[i], duration[i], flexion_max_vel[i],
+                        extension_max_vel[i], disp_z[i]]) # Append PT details to PTs list
+        else:
+            Attempts.append([time_pt[i], pt_type[i], pt_angle[i], duration[i], flexion_max_vel[i],
+                            extension_max_vel[i], disp_z[i]]) # Append PT details to Attempts list
+
+    # Extract postural transition information from PTs
+    time_pt = [pt[0] for pt in PTs[1:]]
+    pt_type = [pt[1] for pt in PTs[1:]]
+    pt_angle = [pt[2] for pt in PTs[1:]]
+    duration = [pt[3] for pt in PTs[1:]]
+    flexion_max_vel = [pt[4] for pt in PTs[1:]]
+    extension_max_vel = [pt[5] for pt in PTs[1:]]
+
+    # Return the necessary outputs
+    return time_pt, pt_type, pt_angle, duration, flexion_max_vel, extension_max_vel
