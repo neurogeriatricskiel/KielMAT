@@ -11,5 +11,9 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: 3.x
+
       - run: pip install mkdocs pymdown-extensions mkdocstrings mkdocs-material mkdocs-material-extensions mkdocstrings-python mkdocs-jupyter mkdocs-autorefs
+      
+      - run: python -c "import shutil; shutil.copy('README.md', 'docs/index.md')"  # Adjust paths as needed
+
       - run: mkdocs gh-deploy --force --clean --verbose

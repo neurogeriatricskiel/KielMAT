@@ -6,7 +6,7 @@
 [![lint-and-test](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml/badge.svg)](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml)
 
 # NGMT
-![NeurogeriatricsLogo](docs/ng_logo.png)
+![NeurogeriatricsLogo](ng_logo.png)
 
 Welcome to the NeuroGeriatricMotionToolbox (NGMT). We are a Python based toolbox for processing motion data.
 
@@ -90,7 +90,7 @@ classDiagram
 ```
 
 > [!NOTE]  
-> In the examples you find a tutorial that explains the basics of the dataclass and how to work with them: `examples/tutorial_basics.ipynb`.
+> In the examples you find a [tutorial (the basics of NGMT)](https://neurogeriatricskiel.github.io/NGMT/00_tutorial_basics/) that explains the basics of the dataclass and how to work with them.
 
 ## Documentation
 The full documentation can be found [here](https://neurogeriatricskiel.github.io/NGMT/).
@@ -104,4 +104,4 @@ It requires Python 3.10 or higher.
 
 ## Authors
 
-[Masoud Abedinifar](https://github.com/masoudabedinifar), [Clint Hansen](mailto:c.hansen@neurologie.uni-kiel.de), [Walter Maetzler](mailto:w.maetzler@neurologie.uni-kiel.de), [Robbin Romijnders](https://github.com/rmndrs89) & [Julius Welzel](https://github.com/JuliusWelzel)
+[Masoud Abedinifar](https://github.com/masoudabedinifar), [Julius Welzel](https://github.com/JuliusWelzel), [Walter Maetzler](mailto:w.maetzler@neurologie.uni-kiel.de), [Clint Hansen](mailto:c.hansen@neurologie.uni-kiel.de) & [Robbin Romijnders](https://github.com/rmndrs89)

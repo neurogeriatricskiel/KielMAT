@@ -1,15 +1,20 @@
 This part of the project documentation focuses on
 the avaliable **modules**.
 
+## ParaschivIonescuGaitSequenceDetection
 
 The Gait Sequence Detection algorithm module detects gait sequences based on identified steps in accelerometer data.
 
-::: modules.gsd._paraschiv
+::: modules.gsd._paraschiv.ParaschivIonescuGaitSequenceDetection
+
+## ParaschivIonescuInitialContactDetection
 
 The Initial Contact Detection algorithm performs signal decomposition on low back IMU accelerometer data for detecting initial contacts.
 
-::: modules.icd._paraschiv
+::: modules.icd._paraschiv.ParaschivIonescuInitialContactDetection
+
+## PhysicalActivityMonitoring
 
 The Physical Activity Monitoring module is a module that can be used to determine the intensity level of sedentary, light, moderate, and vigorous physical activities using body acceleration recorded with a triaxial accelerometer worn on the wrist.
 
-::: modules.pam._pam
+::: modules.pam._pam.PhysicalActivityMonitoring
