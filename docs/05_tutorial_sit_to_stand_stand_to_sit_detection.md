@@ -1,5 +1,3 @@
-<div style="text-align: justify">
-
 # Tutorial: Sit to Stand and Stand to Sit Detection
 
 **Author:** Masoud Abedinifar
