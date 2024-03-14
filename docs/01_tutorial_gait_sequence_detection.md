@@ -2,10 +2,11 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Tue 06 Feb 2024
+**Last update:** Thu 14 Mar 2024
 
 ## Learning objectives
 By the end of this tutorial:
+
 - You can load data from a recording that belongs to one of the available datasets,
 - Apply the Paraschiv-Ionescu gait sequence detection algorithm to accelerometer data.  
 - Visualize the results of gait sequence detection.  
@@ -15,22 +16,22 @@ By the end of this tutorial:
 
 This example can be referenced by citing the package.
 
-The example illustrates how the Paraschiv-Ionescu gait sequence detection algorithm is used to detect gait sequences using body acceleration recorded with a triaxial accelerometer worn or fixed on the lower back. The gait sequence detection algorithm is implemented using [`ngmt.modules.gsd._paraschiv`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/gsd/_paraschiv.py). This algorithm is based on the research of Paraschiv-Ionescu et al [1-2].
+The example illustrates how the Paraschiv-Ionescu gait sequence detection algorithm is used to detect gait sequences using body acceleration recorded with a triaxial accelerometer worn or fixed on the lower back. The gait sequence detection algorithm is implemented using [`ngmt.modules.gsd._paraschiv`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/gsd/_paraschiv.py). This algorithm is based on the research of Paraschiv-Ionescu et al [`1`-`2`].
 
 The algorithm detects gait sequences based on identified steps. It starts by loading the accelerometer data, which includes three columns corresponding to the acceleration signals across the x, y, and z axes, along with the sampling frequency of the data. To simplify the analysis, the norm of acceleration across the x, y, and z axes is computed. Next, the signal is resampled at a 40 Hz sampling frequency using interpolation. Smoothing is then applied through a Savitzky-Golay filter and a Finite Impulse Response (FIR) low-pass filter to remove noise and drifts from the signal. The continuous wavelet transform is applied to capture gait-related features, followed by additional smoothing using successive Gaussian-weighted filters. The processed data is then analyzed to detect gait sequences.
 
 The algorithm continues by identifying the envelope of the processed acceleration signal. Active periods of the signal are identified using the Hilbert envelope. The statistical distribution of the amplitude of the peaks in these active periods is used to derive an adaptive threshold. In case the Hilbert envelope algorithm fails to detect active periods, a fixed threshold value (0.15 g) is used for peak detection in the signal. Mid-swing peaks are detected based on this threshold. Pulse trains in the local maximum and minimum of the peaks are identified, with those having fewer than four steps filtered out. The intersection of pulse trains from local maximum and minimum peaks is detected as walking periods. These periods are then organized and grouped to update the start and end times of detected walking bouts.
 
-Next, the algorithm takes the last steps to detect walking bouts in the signal. For this purpose, walking bouts with five or more steps are detected, and their start and end times are added to the list. Walking labels are generated as an array of zeros, and the intervals corresponding to the walking bouts are labeled as 1. Groups of consecutive zeros in the walking labels are identified, and if breaks between walking bouts are less than three seconds, they are merged. The output is then constructed as a DataFrame containing gait sequence information in BIDS format. If gait sequences are found, the output is printed; otherwise, a message indicating that no gait sequences are detected is displayed.
+Next, the algorithm takes the last steps to detect walking bouts in the signal. For this purpose, walking bouts with five or more steps are detected, and their start and end times are added to the list. Walking labels are generated as an array of zeros, and the intervals corresponding to the walking bouts are labeled as 1. Groups of consecutive zeros in the walking labels are identified, and if breaks between walking bouts are less than three seconds, they are merged. The output is then constructed as a DataFrame containing gait sequence information in BIDS format with columns `onset`, `duration`, `event_type`, `tracking_systems`, and `tracked_points`. If gait sequences are found, the output is printed; otherwise, a message indicating that no gait sequences are detected is displayed.
 
 #### References
-[1] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer: validity for children with cerebral palsy in daily life-like conditions. Journal of NeuroEngineering and Rehabilitation, 16(1), 24. https://doi.org/10.1186/s12984-019-0494-z
+[`1`] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer: validity for children with cerebral palsy in daily life-like conditions. Journal of NeuroEngineering and Rehabilitation, 16(1), 24. https://doi.org/10.1186/s12984-019-0494-z
 
-[2] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using a single trunk IMU: methodological challenges for impaired gait patterns. Annual International Conference of the IEEE Engineering in Medicine and Biology Society. IEEE Engineering in Medicine and Biology Society. https://doi.org/10.1109/EMBC44109.2020.9176281
+[`2`] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using a single trunk IMU: methodological challenges for impaired gait patterns. Annual International Conference of the IEEE Engineering in Medicine and Biology Society. IEEE Engineering in Medicine and Biology Society. https://doi.org/10.1109/EMBC44109.2020.9176281
 
 
-## Import libraries
-The necessary libraries such as numpy, matplotlib.pyplot, dataset, and Paraschiv-Ionescu gait sequence detection algorithms are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the 'ngmt' library and its dependencies if you haven't already.
+## Import Libraries
+The necessary libraries such as numpy, matplotlib.pyplot, dataset, and Paraschiv-Ionescu gait sequence detection algorithms are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the `ngmt` library and its dependencies if you haven't already.
 
 
 ```python
@@ -99,7 +100,7 @@ for i in range(3):
         time_in_minute,
         acceleration_data[f"LowerBack_ACCEL_{chr(120 + i)}"],
         color=colors[i],
-        label=f"Acc {i + 1}",
+        label=f"Acc {'xyz'[i]}",
     )
 
 # Add labels and legends
@@ -125,7 +126,7 @@ plt.show()
 ```
 
     
-![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_files_1.png)
+![](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_files_1.png)
     
 
 
@@ -146,7 +147,7 @@ for i in range(3):
         time_seconds,
         acceleration_data[f"LowerBack_ACCEL_{chr(120 + i)}"],
         color=colors[i],
-        label=f"Acc {i + 1}",
+        label=f"Acc {'xyz'[i]}",
     )
 
 # Add labels and legends
@@ -156,7 +157,7 @@ plt.legend(fontsize=18)
 
 # Add a title
 plt.title(
-    "Accelerometer data from lower-back IMU sensor for Congestive Heart Failure (CHF) cohort",
+    "Accelerometer data from lower-back IMU sensor for  CHF cohort",
     fontsize=30,
 )
 
@@ -175,13 +176,17 @@ plt.grid(visible=None, which="both", axis="both")
 plt.show()
 ```
     
-![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_files_2.png)
+![](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_files_2.png)
     
 
-## Applying Paraschiv-Ionescu gait sequence detection algorithm
-Now, we are running Paraschiv-Ionescu gait sequence detection algorithm from gsd module [`NGMT.ngmt.modules.gsd._paraschiv.ParaschivIonescuGaitSequenceDetection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/gsd/_paraschiv.py) to detect gait sequences.  The inputs consist of accelerometer data (N, 3) for the x, y, and z axes, the initial sampling frequency of the data, and a plot option. Optionally, if the plot_results flag is set to True, a visualization plot is generated to display the preprocessed data and the detected gait sequences.
+## Applying Paraschiv-Ionescu Gait Sequence Detection Algorithm
+Now, we are running Paraschiv-Ionescu gait sequence detection algorithm from gsd module [`NGMT.ngmt.modules.gsd._paraschiv.ParaschivIonescuGaitSequenceDetection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/gsd/_paraschiv.py) to detect gait sequences.
 
-The onset is represented with the vertical green line and the grey area represents the duration of gait sequence detected by the algorithm.
+In order to apply gait sequence detection algorithm, an instance of the ParaschivIonescuGaitSequenceDetection class is created using the constructor, `ParaschivIonescuGaitSequenceDetection()`. The `gsd` variable holds the instance, allowing us to access its methods. The inputs of the algorithm are as follows:
+
+- **Input Data:** `data` consist of accelerometer data (N, 3) for the x, y, and z axes in pandas Dataframe format.
+- **Sampling Frequency:** `sampling_freq_Hz` is the sampling frequency of the data, defined in Hz, with a default value of 100 Hz.
+- **Plot Results:** `plot_results`, if set to True, generates a plot showing the detected gait sequences on the data. The default is False. The onset is represented with the vertical green line and the grey area represents the duration of gait sequence detected by the algorithm.
 
 
 ```python
@@ -205,25 +210,26 @@ print(recording.events)
 ```
 
     86 gait sequence(s) detected.
-    {'SU':        onset  duration     event_type tracking_systems tracked_points
-    0      4.500     5.250  gait sequence               SU      LowerBack
-    1     90.225    10.300  gait sequence               SU      LowerBack
-    2    106.075     5.600  gait sequence               SU      LowerBack
-    3    116.225    10.350  gait sequence               SU      LowerBack
-    4    141.275     5.850  gait sequence               SU      LowerBack
-    ..       ...       ...            ...              ...            ...
-    81  7617.150     4.150  gait sequence               SU      LowerBack
-    82  7679.425    10.625  gait sequence               SU      LowerBack
-    83  8090.625     4.200  gait sequence               SU      LowerBack
-    84  8149.850     5.050  gait sequence               SU      LowerBack
-    85  8184.875    21.450  gait sequence               SU      LowerBack
+    {'SU': onset    duration    event_type      tracking_systems  tracked_points
+    0      4.5      5.25        gait sequence   SU                LowerBack
+    1      90.22    10.3        gait sequence   SU                LowerBack
+    2      106.07   5.6         gait sequence   SU                LowerBack
+    3      116.22   10.35       gait sequence   SU                LowerBack
+    4      141.27   5.85        gait sequence   SU                LowerBack
+    ..     ...      ...         ...             ...               ...
+    81     7617.15  4.15        gait sequence   SU                LowerBack
+    82     7679.42  10.62       gait sequence   SU                LowerBack
+    83     8090.62  4.2         gait sequence   SU                LowerBack
+    84     8149.85  5.05        gait sequence   SU                LowerBack
+    85     8184.87  21.45       gait sequence   SU                LowerBack
     
     [86 rows x 5 columns]}
     
-![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_files_3.png)
+![](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_files_3.png)
 
-## Plot gait sequence events
+## Detailed Visualization of the Detected Gait Sequences
 In the following, the raw data of the lower back sensor is plotted with the detected events. The events are plotted as vertical lines. The events are:
+
 - **Gait onset**: Start of the gait sequence
 - **Gait duration**: Duration of the gait sequence
 
@@ -244,7 +250,7 @@ for i in range(3):
         time_seconds,
         acceleration_data[f"LowerBack_ACCEL_{chr(120 + i)}"],
         color=colors[i],
-        label=f"Acc {i + 1}",
+        label=f"Acc {'xyz'[i]}",
     )
 
 # Plot the first element of gait sequences
@@ -271,14 +277,14 @@ plt.show()
 ```
 
     First gait sequence:
-     onset                         4.5
-    duration                     5.25
-    event_type          gait sequence
-    tracking_systems               SU
-    tracked_points          LowerBack
+    onset                            4.5
+    duration                         5.25
+    event_type                       gait sequence
+    tracking_systems                 SU
+    tracked_points                   LowerBack
     Name: 0, dtype: object
     
     
-![png](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_files_4.png)
+![](01_tutorial_gait_sequence_detection_files/01_tutorial_gait_sequence_detection_files_4.png)
     
 

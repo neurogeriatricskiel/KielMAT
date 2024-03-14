@@ -2,10 +2,11 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Tue 06 Feb 2024
+**Last update:** Thu 14 Mar 2024
 
 ## Learning objectives
 By the end of this tutorial:
+
 - You can load data from a recording that belongs to one of the available datasets,
 - Apply the Paraschiv-Ionescu initial contact detection algorithm to accelerometer data.  
 - Visualize the results of initial contact detection.  
@@ -15,18 +16,18 @@ By the end of this tutorial:
 
 This example can be referenced by citing the package.
 
-The example illustrates how the Paraschiv initial contact detection algorithm is used to detect initial contacts using body acceleration recorded with a triaxial accelerometer worn or fixed on the lower back. The initial contact detection algorithm is implemented in the main module [`ngmt.modules.icd._paraschiv`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/icd/_paraschiv.py).
+The example illustrates how the Paraschiv initial contact detection algorithm is used to detect initial contacts using body acceleration recorded with a triaxial accelerometer worn or fixed on the lower back. The initial contact detection algorithm is implemented in the main module [`ngmt.modules.icd._paraschiv`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/icd/_paraschiv.py). This algorithm is based on the research of Paraschiv-Ionescu et al [`1`-`2`].
 
-The algorithm takes accelerometer data as input, specifically the vertical acceleration component, and processes each specified gait sequence independently. The algorithm requires the start and duration of each gait sequence, in the format provided by the Paraschiv-Ionescu gait sequence detection algorithm ([`ngmt.modules.gsd._paraschiv`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/gsd/_paraschiv.py)). The sampling frequency of the accelerometer data is also required as another input. Detected gait sequence information is provided as a DataFrame, which consists of the onset and duration of the gait sequences. For each gait sequence, the algorithm applies the Signal Decomposition algorithm for initial contacts. The algorithm handles multiple gait sequences and ensures uniform output by padding the initial contacts lists with NaN values to match the length of the sequence with the maximum number of initial contacts detected among all sequences. Finally, initial contacts information is provided as a DataFrame with columns 'onset', 'event_type', 'tracking_systems', and 'tracked_points'.
+The algorithm takes accelerometer data as input, specifically the vertical acceleration component, and processes each specified gait sequence independently. The algorithm requires the start and duration of each gait sequence, in the format provided by the Paraschiv-Ionescu gait sequence detection algorithm ([`ngmt.modules.gsd._paraschiv`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/gsd/_paraschiv.py)). The sampling frequency of the accelerometer data is also required as another input. Detected gait sequence information is provided as a DataFrame, which consists of the onset and duration of the gait sequences. For each gait sequence, the algorithm applies the Signal Decomposition algorithm for initial contacts. The algorithm handles multiple gait sequences and ensures uniform output by padding the initial contacts lists with NaN values to match the length of the sequence with the maximum number of initial contacts detected among all sequences. Finally, initial contacts information is provided as a DataFrame with columns `onset`, `event_type`, `tracking_systems`, and `tracked_points`.
 
 #### References
-[1] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer: validity for children with cerebral palsy in daily life-like conditions. Journal of NeuroEngineering and Rehabilitation, 16(1), 24. https://doi.org/10.1186/s12984-019-0494-z
+[`1`] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer: validity for children with cerebral palsy in daily life-like conditions. Journal of NeuroEngineering and Rehabilitation, 16(1), 24. https://doi.org/10.1186/s12984-019-0494-z
 
-[2] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using a single trunk IMU: methodological challenges for impaired gait patterns. Annual International Conference of the IEEE Engineering in Medicine and Biology Society. IEEE Engineering in Medicine and Biology Society. https://doi.org/10.1109/EMBC44109.2020.9176281
+[`2`] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using a single trunk IMU: methodological challenges for impaired gait patterns. Annual International Conference of the IEEE Engineering in Medicine and Biology Society. IEEE Engineering in Medicine and Biology Society. https://doi.org/10.1109/EMBC44109.2020.9176281
 
 
-## Import libraries
-The necessary libraries such as numpy, matplotlib.pyplot, dataset (mobilised), Paraschiv-Ionescu gait sequence detection, and Paraschiv-Ionescu initial contact detection algorithms are imported from their corresponding modules. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the 'ngmt' library and its dependencies if you haven't already.
+## Import Libraries
+The necessary libraries such as numpy, matplotlib.pyplot, dataset (mobilised), Paraschiv-Ionescu gait sequence detection, and Paraschiv-Ionescu initial contact detection algorithms are imported from their corresponding modules. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the `ngmt` library and its dependencies if you haven't already.
 
 
 ```python
@@ -42,7 +43,7 @@ from ngmt.config import cfg_colors
 
 To implement the Paraschiv-Ionescu initial contact algorithm, we load example data from a congestive heart failure (CHF) cohort, which is publicly available on the Zenodo repository [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7547125.svg)](https://doi.org/10.5281/zenodo.7547125). 
 
-The participant was assessed for 2.5 hours in the real-world while doing different daily life activities and also was asked to perform specific tasks such as outdoor walking, walking up and down a slope and stairs and moving from one room to another [`1`].
+The participant was assessed for 2.5 hours in the real-world while doing different daily life activities and also was asked to perform specific tasks such as outdoor walking, walking up and down a slope and stairs and moving from one room to another [`3`].
 
 #### Refertences
 
@@ -96,7 +97,7 @@ for i in range(3):
         time_in_minute,
         acceleration_data[f"LowerBack_ACCEL_{chr(120 + i)}"],
         color=colors[i],
-        label=f"Acc {i + 1}",
+        label=f"Acc {'xyz'[i]}",
     )
 
 # Add labels and legends
@@ -106,7 +107,7 @@ plt.legend(fontsize=18)
 
 # Add a title with a specified font size
 plt.title(
-    "Accelerometer data from lower-back IMU sensor for Congestive Heart Failure (CHF) cohort",
+    "Accelerometer data from lower-back IMU sensor for CHF cohort",
     fontsize=30,
 )
 
@@ -121,7 +122,7 @@ plt.grid(visible=None, which="both", axis="both")
 plt.show()
 ```
     
-![png](02_tutorial_initial_contact_detection_files/02_tutorial_initial_contact_detection_files_1.png)
+![](02_tutorial_initial_contact_detection_files/02_tutorial_initial_contact_detection_files_1.png)
     
 
 Let's zoom in on specific time periods in the data, particularly the first 10 seconds, where clear blinks are evident.
@@ -141,7 +142,7 @@ for i in range(3):
         time_seconds,
         acceleration_data[f"LowerBack_ACCEL_{chr(120 + i)}"],
         color=colors[i],
-        label=f"Acc {i + 1}",
+        label=f"Acc {'xyz'[i]}",
     )
 
 # Add labels and legends
@@ -170,11 +171,17 @@ plt.grid(visible=None, which="both", axis="both")
 plt.show()
 ```
  
-![png](02_tutorial_initial_contact_detection_files/02_tutorial_initial_contact_detection_files_2.png)
+![](02_tutorial_initial_contact_detection_files/02_tutorial_initial_contact_detection_files_2.png)
     
 
-## Applying Paraschiv-Ionescu initial contact detection algorithm
-Now, we are running Paraschiv-Ionescu initial contact detection algorithm from icd module [`NGMT.ngmt.modules.icd._paraschiv.ParaschivIonescuInitialContactDetection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/icd/_paraschiv.py) to detect initial contacts throughout the detected gait sequences. The first inputs is acceleration data which consist of accelerometer data (N, 3) for the x, y, and z axes. The second input is gait sequences which was detected by Paraschiv gait sequence detection ([`NGMT.ngmt.modules.gsd._paraschiv.ParaschivIonescuGaitSequenceDetection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/gsd/_paraschiv.py)). They were detected using gait sequence detection algorithm using [`NGMT.ngmt.modules.gsd._paraschiv.ParaschivIonescuGaitSequenceDetection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/gsd/_paraschiv.p). The other inputs of the function are the initial sampling frequency of the accelerometer data and a plot option.
+## Applying Paraschiv-Ionescu Initial Contact Detection Algorithm
+Now, we are running Paraschiv-Ionescu initial contact detection algorithm from icd module [`NGMT.ngmt.modules.icd._paraschiv.ParaschivIonescuInitialContactDetection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/icd/_paraschiv.py) to detect initial contacts throughout the detected gait sequences. For this purpose, we have to first apply Paraschiv-Ionescu gait sequences detection algorithm to identify gait sequences using acceleration data. The gait sequences are detected by Paraschiv gait sequence detection ([`NGMT.ngmt.modules.gsd._paraschiv.ParaschivIonescuGaitSequenceDetection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/gsd/_paraschiv.py)).
+
+Then, in order to apply Paraschiv-Ionescu initial contact detection algorithm, an instance of the ParaschivIonescuInitialContactDetection class is created using the constructor, `ParaschivIonescuInitialContactDetection()`. The `icd` variable holds the instance, allowing us to access its methods. The inputs of Paraschiv-Ionescu initial contact detection algorithm are as follows:
+
+- **Input Data:** `data` consist of accelerometer data (N, 3) for the x, y, and z axes in pandas Dataframe format.
+- **Gait Sequences:** `gait_sequences`, consist of gait sequences detected by Paraschiv gait sequence detection ([`NGMT.ngmt.modules.gsd._paraschiv.ParaschivIonescuGaitSequenceDetection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/gsd/_paraschiv.py)).
+- **Sampling Frequency:** `sampling_freq_Hz` is the sampling frequency of the data, defined in Hz, with a default value of 100 Hz.
 
 
 ```python
@@ -213,25 +220,25 @@ recording.add_events(tracking_system=tracking_sys, new_events=initial_contacts_e
 # Print events types including both detected gait sequences and initial contacts
 print(recording.events)
 ```
-    86 gait sequence(s) detected.
-    {'SU':          onset  duration       event_type tracking_systems tracked_points
-    0        4.500      5.25    gait sequence               SU      LowerBack
-    1       90.225     10.30    gait sequence               SU      LowerBack
-    2      106.075      5.60    gait sequence               SU      LowerBack
-    3      116.225     10.35    gait sequence               SU      LowerBack
-    4      141.275      5.85    gait sequence               SU      LowerBack
-    ...        ...       ...              ...              ...            ...
-    3533  8203.200       NaN  initial contact               SU      LowerBack
-    3534  8203.675       NaN  initial contact               SU      LowerBack
-    3535  8204.325       NaN  initial contact               SU      LowerBack
-    3536  8205.425       NaN  initial contact               SU      LowerBack
-    3537  8206.100       NaN  initial contact               SU      LowerBack
+    {'SU':   onset    duration   event_type         tracking_systems    tracked_points
+    0        4.5      5.25       gait sequence      SU                  LowerBack
+    1        90.225   10.3       gait sequence      SU                  LowerBack
+    2        106.07   5.6        gait sequence      SU                  LowerBack
+    3        116.22   10.35      gait sequence      SU                  LowerBack
+    4        141.27   5.85       gait sequence      SU                  LowerBack
+    ...      ...      ...        ...                ...                 ...
+    3533     8203.2   NaN        initial contact    SU                  LowerBack
+    3534     8203.67  NaN        initial contact    SU                  LowerBack
+    3535     8204.32  NaN        initial contact    SU                  LowerBack
+    3536     8205.42  NaN        initial contact    SU                  LowerBack
+    3537     8206.1   NaN        initial contact    SU                  LowerBack
 
     [3538 rows x 5 columns]}
     
     
-## Plot initial contact events
+## Visualization of the Detected Initial Contacts
 In the following, the raw data of the lower back sensor is plotted with the detected events. The events are plotted as vertical lines. The events are:
+
 - **Gait onset**: Start of the gait sequence
 - **Gait duration**: Duration of the gait sequence
 - **Initial contacts**: Initial contacts
@@ -267,7 +274,7 @@ for i in range(3):
         time_seconds,
         acceleration_data[f"LowerBack_ACCEL_{chr(120 + i)}"],
         color=colors[i],
-        label=f"Acc {i + 1}",
+        label=f"Acc {'xyz'[i]}",
     )
 
 # Plot the first element of gait sequences
@@ -302,20 +309,21 @@ plt.show()
 ```
 
     First Gait Sequence:
-    onset                         4.5
-    duration                     5.25
-    event_type          gait sequence
-    tracking_systems               SU
-    tracked_points          LowerBack
+    onset (s)                        4.5
+    duration (s)                     5.25
+    event_type                       gait sequence
+    tracking_systems                 SU
+    tracked_points                   LowerBack
     Name: 0, dtype: object
 
-    Initial Contacts within the First Gait Sequence:    onset       event_type tracking_systems tracked_points
-    0  5.000  initial contact               SU      LowerBack
-    1  5.600  initial contact               SU      LowerBack
-    2  6.525  initial contact               SU      LowerBack
-    3  7.000  initial contact               SU      LowerBack
-    4  7.600  initial contact               SU      LowerBack
-    5  8.225  initial contact               SU      LowerBack
+    Initial Contacts within the First Gait Sequence:    
+        onset   event_type          tracking_systems    tracked_points
+    0   5       initial contact     SU                  LowerBack
+    1   5.6     initial contact     SU                  LowerBack
+    2   6.525   initial contact     SU                  LowerBack
+    3   7       initial contact     SU                  LowerBack
+    4   7.6     initial contact     SU                  LowerBack
+    5   8.225   initial contact     SU                  LowerBack
     
 
-![png](02_tutorial_initial_contact_detection_files/02_tutorial_initial_contact_detection_files_3.png)
+![](02_tutorial_initial_contact_detection_files/02_tutorial_initial_contact_detection_files_3.png)

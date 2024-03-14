@@ -7,4 +7,4 @@ This part from the utilities documentation focuses on comon preprocessing steps.
 
 # Orientation estimation
 
-::: utils.orientation_estimation._madgwick
+::: utils.quaternion

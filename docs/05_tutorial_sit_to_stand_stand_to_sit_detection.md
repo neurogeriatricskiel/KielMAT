@@ -2,7 +2,7 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Mon 11 Mar 2024
+**Last update:** Thu 14 Mar 2024
 
 ## Learning objectives  
 By the end of this tutorial:
@@ -16,7 +16,7 @@ By the end of this tutorial:
 
 This example can be referenced by citing the package.
 
-The example illustrates how to use Pham Sit to Stand and Stand to Sit Detection algorithm to identify sit to stand and stand to sit movements using body acceleration and gyro data recorded with a lower back IMU sensor. The sit to stand and stand to sit detection algorithm is implemented using [`ngmt.modules.ssd._pham`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/ssd/_pham.py). This algorithm is based on the research of Pham et al [1].
+The example illustrates how to use Pham Sit to Stand and Stand to Sit Detection algorithm to identify sit to stand and stand to sit movements using body acceleration and gyro data recorded with a lower back IMU sensor. The sit to stand and stand to sit detection algorithm is implemented using [`ngmt.modules.ssd._pham`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/ssd/_pham.py). This algorithm is based on the research of Pham et al [`1`].
 
 This algorithm aims to detect postural transitions (e.g., sit-to-stand or stand-to-sit movements) using accelerometer and gyroscope data collected from a lower back inertial measurement unit (IMU) sensor. This algorithm is designed to be robust in detecting sit-to-stand and stand-to-sit transitions using inertial sensor data and provides detailed information about these transitions.
 
@@ -29,10 +29,10 @@ Finally, the detected postural transitions are classified as either sit-to-stand
 If requested (plot_results set to True), it generates plots of the accelerometer and gyroscope data along with the detected postural transitions.
 
 #### References
-[1] Pham et al. (2018). Validation of a Lower Back "Wearable"-Based Sit-to-Stand and  Stand-to-Sit Algorithm for Patients With Parkinson's Disease and Older Adults in a Home-Like  Environment. Frontiers in Neurology, 9, 652. https://doi.org/10.3389/fneur.2018.00652
+[`1`] Pham et al. (2018). Validation of a Lower Back "Wearable"-Based Sit-to-Stand and  Stand-to-Sit Algorithm for Patients With Parkinson's Disease and Older Adults in a Home-Like  Environment. Frontiers in Neurology, 9, 652. https://doi.org/10.3389/fneur.2018.00652
 
 ## Import libraries
-The necessary libraries such as numpy, matplotlib.pyplot, dataset and PhamSittoStandStandtoSitDetection sit to stand and stand to sit detection algortihm are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the 'ngmt' library and its dependencies if you haven't already.
+The necessary libraries such as numpy, matplotlib.pyplot, dataset and PhamSittoStandStandtoSitDetection sit to stand and stand to sit detection algortihm are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the `ngmt` library and its dependencies if you haven't already.
 
 
 ```python
@@ -61,17 +61,20 @@ tracked_points = {tracking_sys: ["pelvis"]}
 recording = keepcontrol.load_recording(
     file_name=file_path, tracking_systems=[tracking_sys], tracked_points=tracked_points
 )
-```
-#### Print acceleration data
 
-```python
 # Load lower back acceleration data
 acceleration_data = recording.data[tracking_sys][
     ["pelvis_ACC_x", "pelvis_ACC_y", "pelvis_ACC_z"]
 ]
 
-# Print acceleration data
+# Load lower back gyro data
+gyro_data = recording.data[tracking_sys][
+    ["pelvis_ANGVEL_x", "pelvis_ANGVEL_y", "pelvis_ANGVEL_z"]
+]
+
+# Print acceleration and gyro data
 print(f"acceleration_data (g): {acceleration_data}")
+print(f"gyro_data (deg/s): {gyro_data}")
 ```
 acceleration_data (g):
 
@@ -90,17 +93,6 @@ acceleration_data (g):
 
 [84594 rows x 3 columns]
 
-#### Print gyro data
-
-```python
-# Load lower back gyro data
-gyro_data = recording.data[tracking_sys][
-    ["pelvis_ANGVEL_x", "pelvis_ANGVEL_y", "pelvis_ANGVEL_z"]
-]
-
-# Print gyro data
-print(f"gyro_data (deg/s): {gyro_data}")
-```
 gyro_data (deg/s):        
 
                         pelvis_ANGVEL_x     pelvis_ANGVEL_y     pelvis_ANGVEL_z
@@ -118,7 +110,7 @@ gyro_data (deg/s):
 
 [84594 rows x 3 columns]
 
-#### Print sampling frequency of data
+#### Load and show sampling frequency of the data
 
 ```python
 # Get the corresponding sampling frequency directly from the recording
