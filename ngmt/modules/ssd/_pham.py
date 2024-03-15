@@ -8,31 +8,31 @@ from ngmt.config import cfg_colors
 
 class PhamSittoStandStandtoSitDetection:
     """
-    This algorithm aims to detect postural transitions (e.g., sit-to-stand or stand-to-sit movements) 
-    using accelerometer and gyroscope data collected from a lower back inertial measurement unit (IMU) 
-    sensor. 
-    
-    The algorithm is designed to be robust in detecting sit-to-stand and stand-to-sit transitions 
-    using inertial sensor data and provides detailed information about these transitions. It starts by 
-    loading the accelerometer and gyro data, which includes three columns corresponding to the acceleration 
-    and gyro signals across the x, y, and z axes, along with the sampling frequency of the data. It first 
-    checks the validity of the input data. Then, it calculates the sampling period, selects accelerometer 
-    and gyro data. Tilt angle estimation is performed using gyro data. The tilt angle is decomposed using 
-    wavelet transformation to identify stationary periods. Stationary periods are detected using accelerometer 
-    variance and gyro variance.Then, peaks in the wavelet-transformed tilt signal are detected as potential 
+    This algorithm aims to detect postural transitions (e.g., sit-to-stand or stand-to-sit movements)
+    using accelerometer and gyroscope data collected from a lower back inertial measurement unit (IMU)
+    sensor.
+
+    The algorithm is designed to be robust in detecting sit-to-stand and stand-to-sit transitions
+    using inertial sensor data and provides detailed information about these transitions. It starts by
+    loading the accelerometer and gyro data, which includes three columns corresponding to the acceleration
+    and gyro signals across the x, y, and z axes, along with the sampling frequency of the data. It first
+    checks the validity of the input data. Then, it calculates the sampling period, selects accelerometer
+    and gyro data. Tilt angle estimation is performed using gyro data. The tilt angle is decomposed using
+    wavelet transformation to identify stationary periods. Stationary periods are detected using accelerometer
+    variance and gyro variance.Then, peaks in the wavelet-transformed tilt signal are detected as potential
     postural transition events.
 
-    If there's enough stationary data, further processing is done to estimate the orientation using 
-    quaternions and to identify the beginning and end of postural transitions using gyro data. Otherwise, 
-    if there's insufficient stationary data, direction changes in gyro data are used to infer postural 
+    If there's enough stationary data, further processing is done to estimate the orientation using
+    quaternions and to identify the beginning and end of postural transitions using gyro data. Otherwise,
+    if there's insufficient stationary data, direction changes in gyro data are used to infer postural
     transitions.
 
-    Finally, the detected postural transitions are classified as either sit-to-stand or stand-to-sit 
-    based on gyro data characteristics and other criteria. The detected postural transitions along with 
-    their characteristics (onset time, duration, event type, angle, maximum flexion/extension velocity, 
+    Finally, the detected postural transitions are classified as either sit-to-stand or stand-to-sit
+    based on gyro data characteristics and other criteria. The detected postural transitions along with
+    their characteristics (onset time, duration, event type, angle, maximum flexion/extension velocity,
     tracking systems, and tracked points) are stored in a pandas DataFrame (postural_transitions_ attribute).
 
-    If requested (plot_results set to True), it generates plots of the accelerometer and gyroscope data 
+    If requested (plot_results set to True), it generates plots of the accelerometer and gyroscope data
     along with the detected postural transitions.
 
     Attributes:
@@ -40,7 +40,7 @@ class PhamSittoStandStandtoSitDetection:
         accel_convert_unit (float): Conevrsion of acceleration unit from g to m/s^2
         tracking_systems (str, optional): Tracking systems used. Default is 'imu'.
         tracked_points (str, optional): Tracked points on the body. Default is 'LowerBack'.
-    
+
     Methods:
         detect(data, sampling_freq_Hz):
             Detects  sit to stand and stand to sit using accelerometer and gyro signals.
@@ -49,9 +49,9 @@ class PhamSittoStandStandtoSitDetection:
                 data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
                 sampling_freq_Hz (float, int): Sampling frequency of the signals.
                 plot_results (bool, optional): If True, generates a plot. Default is False.
-            
+
             Returns:
-                PhamSittoStandStandtoSitDetection: an instance of the class with the detected gait sequences 
+                PhamSittoStandStandtoSitDetection: an instance of the class with the detected gait sequences
                 stored in the 'postural_transitions_' attribute.
 
     Examples:
