@@ -30,9 +30,9 @@ class ParaschivIonescuGaitSequenceDetection:
     are detected, and their start and end times are added to the list. Walking labels are generated as an array of zeros, and the intervals
     corresponding to the walking bouts are labeled as 1. Groups of consecutive zeros in the walking labels are identified, and if breaks
     between walking bouts are less than three seconds, they are merged. If gait sequences are found, the output is printed; otherwise, a
-    message indicating that no gait sequences are detected is displayed. 
+    message indicating that no gait sequences are detected is displayed.
 
-    Finally, the gait sequence information is stored in the 'gait_sequences_' attribute in BIDS compatible format with columns `onset`, 
+    Finally, the gait sequence information is stored in the 'gait_sequences_' attribute in BIDS compatible format with columns `onset`,
     `duration`, `event_type`, `tracking_systems`, and `tracked_points` as Pandas DataFrame.
 
     Attributes:
@@ -49,7 +49,7 @@ class ParaschivIonescuGaitSequenceDetection:
             dt_data (str, optional): Name of the original datetime in the input data. If original datetime is provided, the output onset will be based on that.
 
         Returns:
-            ParaschivIonescuGaitSequenceDetection: 
+            ParaschivIonescuGaitSequenceDetection:
                 which is a pandas DataFrame in BIDS format with the following columns:
             onset: Start time of the gait sequence.
             duration: Duration of the gait sequence.
