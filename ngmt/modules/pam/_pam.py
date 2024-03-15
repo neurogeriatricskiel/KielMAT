@@ -7,7 +7,7 @@ from ngmt.utils import preprocessing
 
 class PhysicalActivityMonitoring:
     """
-    The algortihm monitors physical activity levels based on accelerometer data. It determines the 
+    The algortihm monitors physical activity levels based on accelerometer data. It determines the
     intensity level of physical activities based on accelerometer signals using the following steps:
 
     - Load Data: Includes a time index and accelerometer data (N, 3) for x, y, and z axes. The
@@ -48,7 +48,7 @@ class PhysicalActivityMonitoring:
             plot (bool): If True, generates a plot showing the average Euclidean Norm Minus One (ENMO). Default is True.
 
         Returns:
-            PhysicalActivityMonitoring: An instance of the class with the physical activity levels information stored 
+            PhysicalActivityMonitoring: An instance of the class with the physical activity levels information stored
             in the 'physical_activities_' attribute.
 
     Examples:
