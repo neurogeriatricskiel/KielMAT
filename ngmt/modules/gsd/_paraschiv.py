@@ -11,29 +11,29 @@ class ParaschivIonescuGaitSequenceDetection:
     """
     The Paraschiv-Ionescu gait sequence detection algorithm identifies gait sequences in accelerometer data from a lower back sensor.
 
-    The algorithm detects gait sequences based on identified steps. It starts by loading the accelerometer data, which includes three 
-    columns corresponding to the acceleration signals across the x, y, and z axes, along with the sampling frequency of the data. To 
-    simplify the analysis, the norm of acceleration is computed. Next, the signal is resampled at a 40 Hz sampling frequency using 
-    interpolation. Smoothing is then applied through a Savitzky-Golay filter and a Finite Impulse Response (FIR) low-pass filter to 
-    remove noise and drifts from the signal. The continuous wavelet transform is applied to capture gait-related features, followed by 
+    The algorithm detects gait sequences based on identified steps. It starts by loading the accelerometer data, which includes three
+    columns corresponding to the acceleration signals across the x, y, and z axes, along with the sampling frequency of the data. To
+    simplify the analysis, the norm of acceleration is computed. Next, the signal is resampled at a 40 Hz sampling frequency using
+    interpolation. Smoothing is then applied through a Savitzky-Golay filter and a Finite Impulse Response (FIR) low-pass filter to
+    remove noise and drifts from the signal. The continuous wavelet transform is applied to capture gait-related features, followed by
     additional smoothing using successive Gaussian-weighted filters. The processed data is then analyzed to detect gait sequences.
 
-    The algorithm continues by identifying the envelope of the processed acceleration signal. Active periods of the signal are identified 
-    using the Hilbert envelope. The statistical distribution of the amplitude of the peaks in these active periods is used to derive an 
-    adaptive threshold. In case the Hilbert envelope algorithm fails to detect active periods, a fixed threshold value (0.15 g) is used 
-    for peak detection in the signal. Mid-swing peaks are detected based on this threshold. Pulse trains in the local maximum and minimum 
-    of the peaks are identified, with those having fewer than four steps filtered out. The intersection of pulse trains from local maximum 
-    and minimum peaks is detected as walking periods. These periods are then organized and grouped to update the start and end times of 
+    The algorithm continues by identifying the envelope of the processed acceleration signal. Active periods of the signal are identified
+    using the Hilbert envelope. The statistical distribution of the amplitude of the peaks in these active periods is used to derive an
+    adaptive threshold. In case the Hilbert envelope algorithm fails to detect active periods, a fixed threshold value (0.15 g) is used
+    for peak detection in the signal. Mid-swing peaks are detected based on this threshold. Pulse trains in the local maximum and minimum
+    of the peaks are identified, with those having fewer than four steps filtered out. The intersection of pulse trains from local maximum
+    and minimum peaks is detected as walking periods. These periods are then organized and grouped to update the start and end times of
     detected walking bouts.
 
     Next, the algorithm takes the last steps to detect walking bouts in the signal. For this purpose, walking bouts with five or more steps
-    are detected, and their start and end times are added to the list. Walking labels are generated as an array of zeros, and the intervals 
-    corresponding to the walking bouts are labeled as 1. Groups of consecutive zeros in the walking labels are identified, and if breaks 
-    between walking bouts are less than three seconds, they are merged. If gait sequences are found, the output is printed; otherwise, a 
+    are detected, and their start and end times are added to the list. Walking labels are generated as an array of zeros, and the intervals
+    corresponding to the walking bouts are labeled as 1. Groups of consecutive zeros in the walking labels are identified, and if breaks
+    between walking bouts are less than three seconds, they are merged. If gait sequences are found, the output is printed; otherwise, a
     message indicating that no gait sequences are detected is displayed.
-    
-    The output is then constructed as a DataFrame containing gait sequence information in BIDS format with columns `onset`, `duration`, 
-    `event_type`, `tracking_systems`, and `tracked_points`. 
+
+    The output is then constructed as a DataFrame containing gait sequence information in BIDS format with columns `onset`, `duration`,
+    `event_type`, `tracking_systems`, and `tracked_points`.
 
     Attributes:
         target_sampling_freq_Hz (float): Target sampling frequency for resampling the data. Defaults to 40 Hz.
@@ -64,7 +64,7 @@ class ParaschivIonescuGaitSequenceDetection:
 
     References:
         [1] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer...
-        
+
         [2] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using single trunk IMU...
     """
 
