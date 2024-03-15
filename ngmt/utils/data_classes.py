@@ -31,7 +31,6 @@ VALID_INFO_KEYS = {
     "Session",
     "Task",
     "Tracking system",
-    "suffix",
 }
 
 
@@ -72,11 +71,24 @@ class NGMTRecording:
             )
 
     def add_info(self, key: str, value: Any) -> None:
-        """Add information to the info dictionary.
+        """Add information to the info dictionary. Valid keys are :
+
+        VALID_INFO_KEYS = {
+            "Subject",
+            "Session",
+            "Task",
+            "Tracking system",
+        }
 
         Args:
             key (str): The key for the information.
             value (Any): The value of the information.
+
+        Raises:
+            ValueError: If the provided 'key' is not one of the valid info keys.
+
+        Examples:
+            >>> recording.add_info("Subject", "01")
         """
         if self.info is None:
             self.info = {}
@@ -105,12 +117,12 @@ class NGMTRecording:
             )
 
     def export_events(
-        self,
-        file_path: str,
-        tracking_system: Optional[str] = None,
-        file_name: Optional[str] = None,
-        bids_compatible: Optional[bool] = False,
-    ) -> None:
+            self,
+            file_path: str,
+            tracking_system: Optional[str] = None,
+            file_name: Optional[str] = None,
+            bids_compatible_fname: Optional[bool] = False,
+        ) -> None:
         """Export events for a specific tracking system to a file.
 
         Args:
@@ -118,7 +130,7 @@ class NGMTRecording:
                 If None, events from all tracking systems will be exported (default is None).
             file_path (str): Path to the directory where the file should be saved.
             file_name (Optional[str]): Name of the file to be exported. If None, a default name will be used.
-            bids_compatible (bool): Flag indicating whether the exported file should be BIDS compatible (default is False).
+            bids_compatible_fname (bool): Flag indicating whether the exported filename should be BIDS compatible (default is False).
         """
         if self.events is not None:
             if tracking_system is None:
@@ -129,7 +141,7 @@ class NGMTRecording:
                 )
                 if file_name is None:
                     file_name = "all_events.csv"
-                if bids_compatible:
+                if bids_compatible_fname:
                     # Construct the filename using subject ID and task name
                     subject_id = self.info.get("Subject", "")
                     task_name = self.info.get("Task", "")
@@ -151,7 +163,7 @@ class NGMTRecording:
             elif tracking_system in self.events:
                 if file_name is None:
                     file_name = f"{tracking_system}_events.csv"
-                if bids_compatible:
+                if bids_compatible_fname:
                     file_name = file_name.replace(".csv", "_events.tsv")
                     file_path = Path(file_path).joinpath(file_name)
                     self.events[tracking_system].to_csv(

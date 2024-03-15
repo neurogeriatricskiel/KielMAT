@@ -1,0 +1,7 @@
+body {
+    text-align: justify !important;
+}
+
+.navbar-brand img {
+    max-height: 100px; /* set the maximum height of the logo */
+  }

@@ -2,6 +2,13 @@ site_name: NeuroGeriatricsMotionToolbox NGMT
 
 theme:
   name: "mkdocs"
+  language: en
+  font:
+    text: "Roboto"
+    code: "Roboto Mono"
+
+extra_css:
+  - 'style.css'
 
 plugins:
 - search
@@ -19,12 +26,11 @@ theme:
     primary: light green
     accent: purple
 
-
 nav:
   - Home: index.md
+  - Examples: examples.md
   - Modules: modules.md
   - Dataclasses: dataclasses.md
-  - Examples: examples.md
   - Datasets: datasets.md
   - Utilities: utils.md
 
@@ -34,4 +40,3 @@ markdown_extensions:
       - name: mermaid
         class: mermaid
         format: !!python/name:pymdownx.superfences.fence_code_format
-

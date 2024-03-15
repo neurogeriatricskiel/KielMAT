@@ -1,11 +1,11 @@
 This part of the project documentation focuses on
 the avaliable **modules**.
 
-## Paraschiv-Ionescu Gait Sequence Detection
+## Gait Sequence Detection (Paraschiv-Ionescu)
 
 ::: modules.gsd._paraschiv.ParaschivIonescuGaitSequenceDetection
 
-## Paraschiv-Ionescu Initial Contact Detection
+## Initial Contact Detection (Paraschiv-Ionescu)
 
 ::: modules.icd._paraschiv.ParaschivIonescuInitialContactDetection
 
