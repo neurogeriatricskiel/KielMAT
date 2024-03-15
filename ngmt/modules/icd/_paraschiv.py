@@ -14,12 +14,12 @@ class ParaschivIonescuInitialContactDetection:
     collected from a low back IMU sensor. The purpose of algorithm is to identify and characterize initial contacts
     within walking bouts.
 
-    The algorithm takes accelerometer data as input, and the vertical acceleration component, and processes each 
-    specified gait sequence independently. The signal is first detrended and then low-pass filtered. The resulting 
-    signal is numerically integrated and differentiated using a Gaussian continuous wavelet transformation. The 
+    The algorithm takes accelerometer data as input, and the vertical acceleration component, and processes each
+    specified gait sequence independently. The signal is first detrended and then low-pass filtered. The resulting
+    signal is numerically integrated and differentiated using a Gaussian continuous wavelet transformation. The
     initial contact (IC) events are identified as the positive maximal peaks between successive zero-crossings.
 
-    Finally, initial contacts information is provided as a DataFrame with columns `onset`, `event_type`, 
+    Finally, initial contacts information is provided as a DataFrame with columns `onset`, `event_type`,
     `tracking_systems`, and `tracked_points`.
 
     Attributes:
