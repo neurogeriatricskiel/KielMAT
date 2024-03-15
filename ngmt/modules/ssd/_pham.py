@@ -1,83 +1,74 @@
 # Import libraries
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import scipy.signal
 from ngmt.utils import preprocessing
-from ngmt.utils import quaternion
 from ngmt.config import cfg_colors
 
 
 class PhamSittoStandStandtoSitDetection:
     """
-    Detects postural transitions (sit to stand and stand to sit) using acceleromter and gyro data.
+    This algorithm aims to detect postural transitions (e.g., sit-to-stand or stand-to-sit movements) 
+    using accelerometer and gyroscope data collected from a lower back inertial measurement unit (IMU) 
+    sensor. 
+    
+    The algorithm is designed to be robust in detecting sit-to-stand and stand-to-sit transitions 
+    using inertial sensor data and provides detailed information about these transitions. It starts by 
+    loading the accelerometer and gyro data, which includes three columns corresponding to the acceleration 
+    and gyro signals across the x, y, and z axes, along with the sampling frequency of the data. It first 
+    checks the validity of the input data. Then, it calculates the sampling period, selects accelerometer 
+    and gyro data. Tilt angle estimation is performed using gyro data. The tilt angle is decomposed using 
+    wavelet transformation to identify stationary periods. Stationary periods are detected using accelerometer 
+    variance and gyro variance.Then, peaks in the wavelet-transformed tilt signal are detected as potential 
+    postural transition events.
+
+    If there's enough stationary data, further processing is done to estimate the orientation using 
+    quaternions and to identify the beginning and end of postural transitions using gyro data. Otherwise, 
+    if there's insufficient stationary data, direction changes in gyro data are used to infer postural 
+    transitions.
+
+    Finally, the detected postural transitions are classified as either sit-to-stand or stand-to-sit 
+    based on gyro data characteristics and other criteria. The detected postural transitions along with 
+    their characteristics (onset time, duration, event type, angle, maximum flexion/extension velocity, 
+    tracking systems, and tracked points) are stored in a pandas DataFrame (postural_transitions_ attribute).
+
+    If requested (plot_results set to True), it generates plots of the accelerometer and gyroscope data 
+    along with the detected postural transitions.
 
     Attributes:
-        event_type (str): Type of the detected event. Default is 'sit to satnd and stand to sit'.
-        tracking_systems (str): Tracking systems used. Default is 'imu'.
-        tracked_points (str): Tracked points on the body. Default is 'LowerBack'.
-        postural_transitions_ (pd.DataFrame): DataFrame containing sit to stand and stand to sit information in BIDS format.
-
-    Description:
-        The algorithm finds sit to stand and stand to sit using acceleration and gyro signals from lower back IMU sensor.
-
-        The accelerometer and gyroscope data are preprocessed and the stationary periods of
-        the lower back are identified.
-
-        These stationary periods are used to estimate the tilt angle with respect to the horizontal plane.
-        They were smoothed by using discrete wavelet transformation and the start and end of
-        the postural transitions are identified.
-
-        The sensor orientation during the postural transitions are estimated using the quaternion
-        (estimated from accelerometer and gyroscope data) to estimate the vertical displacement of the lower back.
-
-        Based on the extent of vertical displacement, postural transitions were classified as “effective postural transitions
-        and “postural transitions attempts,” and the direction of the postural transitions was defined.
-
+        cutoff_freq_hz (float, optional): Cutoff frequency for low-pass Butterworth filer. Default is 5.
+        accel_convert_unit (float): Conevrsion of acceleration unit from g to m/s^2
+        tracking_systems (str, optional): Tracking systems used. Default is 'imu'.
+        tracked_points (str, optional): Tracked points on the body. Default is 'LowerBack'.
+    
     Methods:
         detect(data, sampling_freq_Hz):
             Detects  sit to stand and stand to sit using accelerometer and gyro signals.
-
-        __init__():
-            Initializes the sit to stand and stand to sit instance.
 
             Args:
                 data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
                 sampling_freq_Hz (float, int): Sampling frequency of the signals.
                 plot_results (bool, optional): If True, generates a plot. Default is False.
+            
             Returns:
-                PhamSittoStandStandtoSitDetection: Returns an instance of the class.
-                    The postural transition information is stored in the 'postural_transitions_' attribute,
-                    which is a pandas DataFrame in BIDS format with the following columns:
-                        - onset: Start time of the postural transition [s].
-                        - duration: Duration of the postural transition [s].
-                        - event_type: Type of the event (sit to stand ot stand to sit).
-                        - postural transition angle: Angle of the postural transition in degree [°].
-                        - maximum flexion velocity: Maximum flexion velocity [°/s].
-                        - maximum extension velocity: Maximum extension velocity [°/s].
-                        - tracking_systems: Tracking systems used (default is 'imu').
-                        - tracked_points: Tracked points on the body (default is 'LowerBack').
+                PhamSittoStandStandtoSitDetection: an instance of the class with the detected gait sequences 
+                stored in the 'postural_transitions_' attribute.
 
-        Examples:
-            Determines sit to stand and stand to sit in the sensor signal.
+    Examples:
+        >>> pham = PhamSittoStandStandtoSitDetection()
+        >>> pham.detect(
+                data=,
+                sampling_freq_Hz=200,
+                )
+        >>> print(pham.postural_transitions_)
+                onset      duration    event_type       postural transition angle [°]   maximum flexion velocity [°/s]  maximum extension velocity [°/s]  tracking_systems    tracked_points
+            0   17.895     1.800       sit to stand     53.263562                       79                              8                                 imu                 LowerBack
+            1   54.655     1.905       stand to sit     47.120448                       91                              120                               imu                 LowerBack
+            2   56.020     1.090       sit to stand     23.524748                       62                              10                                imu                 LowerBack
+            3   135.895    2.505       stand to sit     21.764146                       40                              65                                imu                 LowerBack
 
-            >>> pham = PhamSittoStandStandtoSitDetection()
-            >>> pham.detect(
-                    data=,
-                    sampling_freq_Hz=200,
-                    )
-            >>> postural_transitions = pham.postural_transitions_
-            >>> print(postural_transitions)
-                    onset      duration    event_type       postural transition angle [°]   maximum flexion velocity [°/s]  maximum extension velocity [°/s]  tracking_systems    tracked_points
-                0   17.895     1.800       sit to stand     53.263562                       79                              8                                 imu                 LowerBack
-                1   54.655     1.905       stand to sit     47.120448                       91                              120                               imu                 LowerBack
-                2   56.020     1.090       sit to stand     23.524748                       62                              10                                imu                 LowerBack
-                3   135.895    2.505       stand to sit     21.764146                       40                              65                                imu                 LowerBack
-
-        References:
-            [1] Pham et al. (2018). Validation of a Lower Back "Wearable"-Based Sit-to-Stand and
-            Stand-to-Sit Algorithm for Patients With Parkinson's Disease and Older Adults in a Home-Like
-            Environment. Frontiers in Neurology, 9, 652. https://doi.org/10.3389/fneur.2018.00652
+    References:
+        [1] Pham et al. (2018). Validation of a Lower Back "Wearable"-Based Sit-to-Stand and Stand-to-Sit Algorithm...
     """
 
     def __init__(

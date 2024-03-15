@@ -52,7 +52,7 @@ class ParaschivIonescuGaitSequenceDetection:
                 dt_data (str, optional): Name of the original datetime in the input data. If original datetime is provided, the output onset will be based on that.
 
             Returns:
-                ParaschivIonescuGaitSequenceDetection: An instance of the class with the detected gait sequences stored in the 'gait_sequences_' attribute.
+                ParaschivIonescuGaitSequenceDetection: an instance of the class with the detected gait sequences stored in the 'gait_sequences_' attribute.
 
     Examples:
         >>> gsd = ParaschivIonescuGaitSequenceDetection()
