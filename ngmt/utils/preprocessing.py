@@ -1218,8 +1218,7 @@ def moving_var(data, window):
     """
     Compute the centered moving variance.
 
-    Args
-    data : numpy.ndarray
+    Args:
         Data (int) : Data to take the moving variance on window
         Window size (int) : Window size for the moving variance.
 
