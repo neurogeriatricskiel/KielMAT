@@ -30,10 +30,10 @@ class ParaschivIonescuGaitSequenceDetection:
     are detected, and their start and end times are added to the list. Walking labels are generated as an array of zeros, and the intervals
     corresponding to the walking bouts are labeled as 1. Groups of consecutive zeros in the walking labels are identified, and if breaks
     between walking bouts are less than three seconds, they are merged. If gait sequences are found, the output is printed; otherwise, a
-    message indicating that no gait sequences are detected is displayed.
+    message indicating that no gait sequences are detected is displayed. 
 
-    The output is then constructed as a DataFrame containing gait sequence information in BIDS format with columns `onset`, `duration`,
-    `event_type`, `tracking_systems`, and `tracked_points`.
+    Finally, the gait sequence information is stored in the 'gait_sequences_' attribute in BIDS compatible format with columns `onset`, 
+    `duration`, `event_type`, `tracking_systems`, and `tracked_points` as Pandas DataFrame.
 
     Attributes:
         target_sampling_freq_Hz (float): Target sampling frequency for resampling the data. Defaults to 40 Hz.
@@ -42,21 +42,24 @@ class ParaschivIonescuGaitSequenceDetection:
         tracked_points (str): Tracked points on the body. Defaults to 'LowerBack'.
 
     Methods:
-        detect(data, sampling_freq_Hz, plot_results=False):
-            Detects gait sequences in the provided accelerometer data.
+        Args:
+            data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
+            sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
+            plot_results (bool, optional): If True, generates a plot of the pre-processed data and the detected gait sequences. Defaults to False.
+            dt_data (str, optional): Name of the original datetime in the input data. If original datetime is provided, the output onset will be based on that.
 
-            Args:
-                data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
-                sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
-                plot_results (bool, optional): If True, generates a plot of the pre-processed data and the detected gait sequences. Defaults to False.
-                dt_data (str, optional): Name of the original datetime in the input data. If original datetime is provided, the output onset will be based on that.
-
-            Returns:
-                ParaschivIonescuGaitSequenceDetection: an instance of the class with the detected gait sequences stored in the 'gait_sequences_' attribute.
+        Returns:
+            ParaschivIonescuGaitSequenceDetection: 
+                which is a pandas DataFrame in BIDS format with the following columns:
+            onset: Start time of the gait sequence.
+            duration: Duration of the gait sequence.
+            event_type: Type of the event (default is 'gait sequence').
+            tracking_systems: Tracking systems used (default is 'SU').
+            tracked_points: Tracked points on the body (default is 'LowerBack').
 
     Examples:
         >>> gsd = ParaschivIonescuGaitSequenceDetection()
-        >>> gsd.detect(data=acceleration_data, sampling_freq_Hz=100, plot_results=True)
+        >>> gsd.detect(data=acceleration_data, sampling_freq_Hz=100, plot_results=True, dt_data=None)
         >>> print(gsd.gait_sequences_)
                 onset   duration    event_type      tracking_systems    tracked_points
             0   4.500   5.25        gait sequence   SU                  LowerBack
@@ -75,15 +78,6 @@ class ParaschivIonescuGaitSequenceDetection:
         tracking_systems: str = "SU",
         tracked_points: str = "LowerBack",
     ):
-        """
-        Initializes the ParaschivIonescuGaitSequenceDetection instance.
-
-        Args:
-            target_sampling_freq_Hz (float, optional): Target sampling frequency for resampling the data. Default is 40.
-            event_type (str, optional): Type of the detected event. Default is 'gait sequence'.
-            tracking_systems (str, optional): Tracking systems used. Default is 'SU'.
-            tracked_points (str, optional): Tracked points on the body. Default is 'LowerBack'.
-        """
         self.target_sampling_freq_Hz = target_sampling_freq_Hz
         self.event_type = event_type
         self.tracking_systems = tracking_systems
@@ -97,26 +91,6 @@ class ParaschivIonescuGaitSequenceDetection:
         plot_results: bool = False,
         dt_data: pd.Series = None,
     ) -> pd.DataFrame:
-        """
-        Detects gait sequences based on the input accelerometer data.
-
-        Args:
-            data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
-            sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
-            plot_results (bool, optional): If True, generates a plot showing the pre-processed acceleration data
-            and the detected gait sequences. Default is False.
-            dt_data (pd.Series, optional): Original datetime in the input data. If original datetime is provided, the output onset will be based on that.
-
-        Returns:
-            ParaschivIonescuGaitSequenceDetection: Returns an instance of the class.
-                The gait sequence information is stored in the 'gait_sequences_' attribute,
-                which is a pandas DataFrame in BIDS format with the following columns:
-                    - onset: Start time of the gait sequence.
-                    - duration: Duration of the gait sequence.
-                    - event_type: Type of the event (default is 'gait sequence').
-                    - tracking_systems: Tracking systems used (default is 'SU').
-                    - tracked_points: Tracked points on the body (default is 'LowerBack').
-        """
         # Error handling for invalid input data
         if not isinstance(data, pd.DataFrame) or data.shape[1] != 3:
             raise ValueError(
