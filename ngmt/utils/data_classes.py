@@ -117,12 +117,12 @@ class NGMTRecording:
             )
 
     def export_events(
-        self,
-        file_path: str,
-        tracking_system: Optional[str] = None,
-        file_name: Optional[str] = None,
-        bids_compatible_fname: Optional[bool] = False,
-    ) -> None:
+            self,
+            file_path: str,
+            tracking_system: Optional[str] = None,
+            file_name: Optional[str] = None,
+            bids_compatible_fname: Optional[bool] = False,
+        ) -> None:
         """Export events for a specific tracking system to a file.
 
         Args:
