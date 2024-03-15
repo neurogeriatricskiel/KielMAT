@@ -23,4 +23,4 @@ The Physical Activity Monitoring module is a module that can be used to determin
 
 The Sit to Stand and Stand to Sit Detection module is a module that can be used to determine the sit to stand and stand to sit movements using body acceleration and gyro data recorded with a triaxial accelerometer worn on the lower-back.
 
-::: modules.ssd._pham.SittoStandStandtoSitDetection
+::: modules.ssd._pham.PhamSittoStandStandtoSitDetection
