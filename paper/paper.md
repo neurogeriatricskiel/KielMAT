@@ -70,7 +70,7 @@ This signal is first detrended and then low-pass filtered. The resulting signal 
 
 ![](figure_1.png){#fig:figure1}
 <div style="text-align:center;">
-<b>Figure 1:</b> Acceleration Data and Detected Gait Events using NGMT Modules
+<b>Figure 1:</b> Acceleration data and detected gait events using NGMT modules
 </div>
 
 In figure [1](figure_1.png){#fig:figure1}, a detailed analysis of acceleration data from the lower back is presented, highlighting key gait events detected by NGMT's modules. The green vertical line indicates the onset of a gait sequence, while the shaded gray region represents the duration of the gait sequence. Additionally, blue dashed lines denote the detected initial contacts within the gait sequence.
