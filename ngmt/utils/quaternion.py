@@ -29,8 +29,8 @@ def quatinv(
         - If channels_last is False, the input array is transposed to switch channels and time axis.
 
     Quaternion Inverse Calculation:
-        The inverse of a quaternion q is obtained by first calculating its conjugate and then normalizing it:
-            q_inv = normalize(conjugate(q))
+        >>> The inverse of a quaternion q is obtained by first calculating its conjugate and then normalizing it:
+        >>> q_inv = normalize(conjugate(q))
     """
 
     # Cast array to float
@@ -64,8 +64,8 @@ def quatnormalize(q: np.ndarray, channels_last: bool = True) -> np.ndarray:
         - If channels_last is False, the input array is transposed to switch channels and time axis.
 
     Quaternion Normalization:
-        The normalization of a quaternion q is performed by dividing each element of q by its norm:
-            q_normalized = q / norm(q)
+        >>> The normalization of a quaternion q is performed by dividing each element of q by its norm:
+        >>> q_normalized = q / norm(q)
     """
 
     # Cast array to float
@@ -99,8 +99,8 @@ def quatnorm(q: np.ndarray, channels_last: bool = True) -> np.ndarray:
         - If channels_last is False, the input array is transposed to switch channels and time axis.
 
     Quaternion Norm Calculation:
-        The norm of a quaternion q is calculated as follows:
-            norm(q) = sqrt(w^2 + x^2 + y^2 + z^2)
+        >>> The norm of a quaternion q is calculated as follows:
+        >>> norm(q) = sqrt(w^2 + x^2 + y^2 + z^2)
     """
 
     # Cast array to float
@@ -140,7 +140,7 @@ def quatconj(
         - If scalar_first is False, the scalar part is moved to the last element.
 
     Quaternion Conjugate Formula:
-        q_conj = [w, -x, -y, -z]
+        >>> q_conj = [w, -x, -y, -z]
     """
 
     # Cast array to float
@@ -207,11 +207,11 @@ def quatmultiply(
         - The input arrays are cast to float before the computation.
         - If channels_last is False, the input arrays are transposed to switch channels and time axis.
 
-    Quaternion Multiplication Formula:
-        q3 = [w1w2 - x1x2 - y1y2 - z1z2,
-              w1x2 + x1w2 + y1z2 - z1y2,
-              w1y2 - x1z2 + y1w2 + z1x2,
-              w1z2 + x1y2 - y1x2 + z1w2]
+    Quaternion Conjugate Formula:
+        >>> q3 = [w1w2 - x1x2 - y1y2 - z1z2,
+            w1x2 + x1w2 + y1z2 - z1y2,
+            w1y2 - x1z2 + y1w2 + z1x2,
+            w1z2 + x1y2 - y1x2 + z1w2]
     """
 
     # Parse input quaternions
@@ -375,8 +375,8 @@ def quat2rotm(
         AssertionError: If the last dimension of the input array `q` does not have size 4.
 
     Notes:
-        The conversion is based on the formula:
-        R = | 1 - 2*q2^2 - 2*q3^2    2*(q1*q2 - q3*q0)    2*(q1*q3 + q2*q0) |
+        >>> The conversion is based on the formula:
+        >>> R = | 1 - 2*q2^2 - 2*q3^2    2*(q1*q2 - q3*q0)    2*(q1*q3 + q2*q0) |
             | 2*(q1*q2 + q3*q0)    1 - 2*q1^2 - 2*q3^2    2*(q2*q3 - q1*q0) |
             | 2*(q1*q3 - q2*q0)    2*(q1*q0 + q2*q3)    1 - 2*q1^2 - 2*q2^2 |
 
@@ -384,8 +384,8 @@ def quat2rotm(
         Wikipedia: https://en.wikipedia.org/wiki/Rotation_matrix#Quaternion
 
     Examples:
-        quaternion = np.array([1.0, 0.0, 0.0, 0.0])
-        rotation_matrix = quat2rotm(quaternion)
+        >>> quaternion = np.array([1.0, 0.0, 0.0, 0.0])
+        >>> rotation_matrix = quat2rotm(quaternion)
     """
 
     # Cast array to float
