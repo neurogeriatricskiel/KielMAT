@@ -1,4 +1,4 @@
-# Examples
+# Overview
 
 This is a collection of examples to explain various parts of the NGMT toolbox.
 

@@ -1,4 +1,4 @@
-# Modules of the NGMT
+# Overview
 
 This part of the project documentation focuses on
 the avaliable **modules**.
