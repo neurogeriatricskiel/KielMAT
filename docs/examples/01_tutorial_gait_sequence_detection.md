@@ -12,7 +12,7 @@ By the end of this tutorial:
 - Visualize the results of gait sequence detection.  
 - Interpret the detected gait sequences for further analysis.
 
-# Paraschiv Gait Sequence Detection
+## Paraschiv Gait Sequence Detection
 
 This example can be referenced by citing the package.
 

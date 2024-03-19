@@ -12,7 +12,7 @@ By the end of this tutorial:
 - Visualize the results of the algorithm.  
 - Interpret the detected postural transitions (sit to stand and stand to sit) for further analysis.
 
-# Pham Sit to Stand and Stand to Sit Detection
+## Pham Sit to Stand and Stand to Sit Detection
 
 This example can be referenced by citing the package.
 

@@ -13,7 +13,7 @@ By the end of this tutorial, you will be able to:
 - Interpret the results of activity classification.  
 
 
-# Physical Activity Monitoring
+## Physical Activity Monitoring
 
 This example serves as a reference on how to use the physical activity monitoring algorithm. This example can be cited by referencing the package.
 

@@ -44,7 +44,7 @@ nav:
     - Initial Contact Detection: modules/icd.md
     - Physical Activity Monitoring: modules/pam.md
     - Sit to Stand and Stand to Sit Detection: modules/ssd.md
-  - Dataclasses: dataclasses.md
+  - Dataclasses: dataclass.md
   - Datasets: datasets.md
   - Utilities: utils.md
 

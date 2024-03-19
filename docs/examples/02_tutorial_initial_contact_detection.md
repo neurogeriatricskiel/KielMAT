@@ -12,7 +12,7 @@ By the end of this tutorial:
 - Visualize the results of initial contact detection.  
 - Interpret the detected initial contacts for further analysis.
 
-# Paraschiv Initial Contact Detection
+## Paraschiv Initial Contact Detection
 
 This example can be referenced by citing the package.
 
