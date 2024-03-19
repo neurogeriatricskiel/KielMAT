@@ -180,6 +180,17 @@ tests = ["attrs[tests-no-zope]", "zope-interface"]
 tests-no-zope = ["cloudpickle", "hypothesis", "mypy (>=1.1.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 
 [[package]]
+name = "bids-validator"
+version = "1.14.4"
+description = "Validator for the Brain Imaging Data Structure"
+optional = false
+python-versions = "*"
+files = [
+    {file = "bids-validator-1.14.4.tar.gz", hash = "sha256:434a608441662b9a89dec5a0af1b388d6526f8ec7b2cee6c0d1f06509581affa"},
+    {file = "bids_validator-1.14.4-py3-none-any.whl", hash = "sha256:162da51e10567ee18c38f56ff46b065ca03b38a4603e98f3aa47310b2e8009dc"},
+]
+
+[[package]]
 name = "cffi"
 version = "1.16.0"
 description = "Foreign Function Interface for Python calling C code."
@@ -2538,4 +2549,4 @@ docs = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9.0,<3.13"
-content-hash = "e2d9e6ce8a0932917636b8849d23bf1f64282371b67a3519124a356750def18d"
+content-hash = "c1778e587a7fbf0454b5cdac0d97efd9caa1ed3f7f5c7afbf7045c1be49c77c6"
