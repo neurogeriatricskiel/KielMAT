@@ -25,6 +25,8 @@ theme:
   palette:
     primary: light green
     accent: purple
+  features:
+    - navigation.tabs
 
 nav:
   - Home: index.md
@@ -40,3 +42,4 @@ markdown_extensions:
       - name: mermaid
         class: mermaid
         format: !!python/name:pymdownx.superfences.fence_code_format
+
