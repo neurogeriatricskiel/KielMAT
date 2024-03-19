@@ -1,7 +1,7 @@
-In the following the NGMT dataclasses are described.
-The dataclasses are used to store motion data in a standardized way. We provide some small set of import functions, each of which returns a dataclass.
-User should easily be able to write their own import functions, to get the their data into the provided dataclasses (this step might take some thinking).
-After the data is in the dataclasses, running functions on the data from our toolbox should be really straight forward.
+In the following the NGMT dataclass is described.
+The dataclass is used to store motion data in a standardized way. We provide some small set of import functions, each of which returns a `pandas.DataFrame` or a dict.
+User should easily be able to write their own import functions, to get the their data into the provided dataclass (this step might take some thinking).
+After the data is in the dataclass, running functions on the data from our toolbox should be really straight forward.
 
 ## NGMT data class
 ```mermaid

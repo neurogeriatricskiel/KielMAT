@@ -58,7 +58,7 @@ print(f"Sampling frequency: {sampling_frequency} Hz")
 The events are put into a pandas DataFrame, and follow the conventions outlined in the BIDS documentation (i.e. [https://bids-specification.readthedocs.io/en/stable/modality-specific-files/task-events.html](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/task-events.html)).
 
 
-### Gait sequence events in dataclass
+## Gait sequence events in dataclass
 
 ```python
 # Create an instance of the ParaschivIonescuGaitSequenceDetection class
@@ -72,7 +72,7 @@ gsd = gsd.detect(
 
     86 gait sequence(s) detected.
 
-# Add events to the recording as a dictionary including tracking system and events
+## Add events to the recording as a dictionary including tracking system and events
 
 ```python
 gait_sequence_events = gsd.gait_sequences_
@@ -97,7 +97,7 @@ events:
     [86 rows x 5 columns]}
 
 
-### Store events to events.tsv file following the BIDS convention
+## Store events to events.tsv file following the BIDS convention
 
 Add some information about the recording first which is necessary for the BIDS file name convention. NGMT has some implemented check on the information to make sure that the file name is in the correct format.
 

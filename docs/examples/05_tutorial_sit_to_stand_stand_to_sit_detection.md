@@ -28,7 +28,7 @@ Finally, the detected postural transitions are classified as either sit-to-stand
 
 If requested (plot_results set to True), it generates plots of the accelerometer and gyroscope data along with the detected postural transitions.
 
-#### References
+## References
 [`1`] Pham et al. (2018). Validation of a Lower Back "Wearable"-Based Sit-to-Stand and  Stand-to-Sit Algorithm for Patients With Parkinson's Disease and Older Adults in a Home-Like  Environment. Frontiers in Neurology, 9, 652. https://doi.org/10.3389/fneur.2018.00652
 
 ## Import libraries
@@ -110,7 +110,7 @@ gyro_data (deg/s):
 
 [84594 rows x 3 columns]
 
-#### Load and show sampling frequency of the data
+## Load and show sampling frequency of the data
 
 ```python
 # Get the corresponding sampling frequency directly from the recording
