@@ -9,4 +9,4 @@ the avaliable **modules**.
 
 ## [Physical Activity Monitoring](pam.md)
 
-## [Sit to Stand & Stand to Sit Detection](ssd.md)
+## [Sit to Stand & Stand to Sit Detection (Pham)](ssd.md)
