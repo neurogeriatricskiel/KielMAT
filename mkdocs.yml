@@ -20,7 +20,7 @@ plugins:
           paths: [ngmt]
 
 theme:
-  logo: ng_logo.png
+  logo: ngmt_logo_transBG.png
   name: material
   palette:
     primary: light green
