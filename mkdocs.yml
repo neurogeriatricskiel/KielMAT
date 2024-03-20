@@ -45,7 +45,7 @@ nav:
     - Physical Activity Monitoring: modules/pam.md
     - Sit to Stand and Stand to Sit Detection: modules/ssd.md
   - Dataclasses: dataclass.md
-  - Datasets: datasets.md
+  - Datasets:
     - datasets/index.md
     - KeepControl: datasets/keepcontrol.md
     - Mobilise-D: datasets/mobilised.md
