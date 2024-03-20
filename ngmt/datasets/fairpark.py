@@ -20,22 +20,19 @@ def load_recording(
         "imu": "LARM"
     },
 ) -> NGMTRecording:
-    """Load a recording from the FAIRPARK study.
+    """
+    Load a recording from the FAIRPARK II validation study.
 
-    Parameters
-    ----------
-    file_name : str | pathlib.Path
-        The absolute or relative path to the data file.
-    tracking_systems : str | list[str]
-        A string or list of strings of tracking systems for which data are to be returned.
-    tracked_points : str | list[str] | dict[str, str] | dict[str, list[str]]
-        Defines for which tracked points data are to be returned.
-        If a string or list of strings is provided, then these will be mapped to each requested tracking system.
+    Args:
+        file_name (str or pathlib.Path ): The absolute or relative path to the data file.
+        tracking_systems (str or list of str) : A string or list of strings of tracking systems for which data are to be returned.
+        tracked_points (str or list of str or dict[str, str] or dict[str, list of str]) :
+            Defines for which tracked points data are to be returned.
+            If a string or list of strings is provided, then these will be mapped to each requested tracking system.
+            If a dictionary is provided, it should map each tracking system to either a single tracked point or a list of tracked points.
 
-    Returns
-    -------
-    _ : NGMTRecording
-        An instance of the NGMTRecording dataclass.
+    Returns:
+        NGMTRecording : An instance of the NGMTRecording dataclass containing the loaded data and channels.
     """
     # Put tracking systems in a list
     if isinstance(tracking_systems, str):
