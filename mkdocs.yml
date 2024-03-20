@@ -1,4 +1,4 @@
-site_name: NeuroGeriatricsMotionToolbox NGMT
+site_name: NeuroGeriatricsMotionToolbox
 
 theme:
   name: "mkdocs"

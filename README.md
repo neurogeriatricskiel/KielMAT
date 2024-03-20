@@ -5,7 +5,6 @@
 ![GitHub contributors](https://img.shields.io/github/contributors/neurogeriatricskiel/NGMT)
 [![lint-and-test](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml/badge.svg)](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml)
 
-# NGMT
 ![NGMTLogo](ngmt_logo_transBG.png)
 
 Welcome to the NeuroGeriatricMotionToolbox (NGMT). We are a Python based toolbox for processing motion data.
