@@ -46,6 +46,10 @@ nav:
     - Sit to Stand and Stand to Sit Detection: modules/ssd.md
   - Dataclasses: dataclass.md
   - Datasets: datasets.md
+    - datasets/index.md
+    - KeepControl: datasets/keepcontrol.md
+    - Mobilise-D: datasets/mobilised.md
+    - Fair-Park II: datasets/fairpark.md
   - Utilities: utils.md
 
 markdown_extensions:
