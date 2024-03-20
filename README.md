@@ -11,13 +11,15 @@ Welcome to the NeuroGeriatricMotionToolbox (NGMT). We are a Python based toolbox
 
 > The toolbox is currently under development and is not yet ready for use.
 
-The toolbox is aimed at a wide variety of motion researchers who want to use open souce software to process their data.
-We have implemented a wide variety of functions to process motion data, such as:
+The toolbox is aimed at motion researchers who want to use python based open source software to process their data.
+We have implemented validated algorithms in modules to process motion data, such as:
 -   Gait sequence detection (GSD)
 -   Inital contact detection (ICD)
+-   Physical activity monitoring (PAM)
+-   Postrual transition detection (STSD)
 -   More to follow ...
 
-The idea is that various motion data can be loaded into our dedicated dataclasses which rely on principles from the [Motion-BIDS](https://bids-specification.readthedocs.io/en/latest/modality-specific-files/motion.html) standard.
+The idea is that various motion data can be loaded into our dedicated dataclass which rely on principles from the [Motion-BIDS](https://bids-specification.readthedocs.io/en/latest/modality-specific-files/motion.html) standard.
 
 ## Data classes
 ### Data classes: conceptual framework
@@ -29,7 +31,7 @@ Motion data is recorded with many different systems and modalities, each with th
 
 In NGMT, data from a single tracking system is therefore loaded into a single `pandas.DataFrame`. The column headers of this `pandas.DataFrame` refer to the channels, and the corresponding [channels information](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#channels-description-_channelstsv) is likewise available as a `pandas.DataFrame`.
 
-Similarly, if any [events](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/task-events.html) are available for the given recording, these are loaded into a single `pandas.DataFrame` for each tracking system as well.
+Similarly, if any [events](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/task-events.html) are available for the given recording, these are loaded into a single `pandas.DataFrame` for each tracking system as well. The events derived from the toolbox can be exported to a BIDS like '*_events.tsv' file.
 
 ### Data classes: in practice
 These concepts are translated into a NGMT dataclass for each recording: `NGMTRecording`:
