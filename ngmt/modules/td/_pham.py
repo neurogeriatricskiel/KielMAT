@@ -34,7 +34,7 @@ class PhamTurnDetection:
     Examples:
         >>> pham = PhamTurnDetection()
         >>> pham.detect(
-                data=,
+                data=input_data,
                 sampling_freq_Hz=,
                 )
         >>> print(pham.detected_turns)
@@ -65,8 +65,20 @@ class PhamTurnDetection:
     def detect(
         self, data: pd.DataFrame, sampling_freq_Hz: float, plot_results: bool = False
     ) -> pd.DataFrame:
+        """
+        Detects truns based on the input accelerometer and gyro data.
 
+        Args:
+            data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
+            sampling_freq_Hz (float): Sampling frequency of the input data.
+            plot_results (bool, optional): If True, generates a plot. Default is False.
+
+        Returns:
+            The turns information is stored in the 'detected_turns' attribute,
+            which is a pandas DataFrame in BIDS format.
+        """
         # Assign the DataFrame to the 'detected_turns' attribute
+
         #self.detected_turns = 
 
         # Return an instance of the class
