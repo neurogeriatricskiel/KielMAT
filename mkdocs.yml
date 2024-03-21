@@ -23,16 +23,15 @@ theme:
   logo: ngmt_logo_transBG.png
   name: material
   palette:
-    primary: light green
-    accent: purple
-    # Palette toggle for light mode
-    - scheme: default
-      primary: light green
-      accent: purple
-      toggle:
-        icon: material/brightness-7 
-        name: Switch to dark mode
-    # Palette toggle for dark mode
+  primary: light green
+  accent: purple
+  # Palette toggle for light mode
+  scheme: default
+  toggle:
+    icon: material/brightness-7 
+    name: Switch to dark mode
+  # Palette toggle for dark mode
+  schemes:
     - scheme: slate
       primary: '#6d539cff' # primary: another color for dark mode
       accent: light green
