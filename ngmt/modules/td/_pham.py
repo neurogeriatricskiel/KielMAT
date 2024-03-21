@@ -11,7 +11,26 @@ class PhamTurnDetection:
     This algorithm aims to detect turns using accelerometer and gyroscope data collected from a lower back 
     inertial measurement unit (IMU) sensor.
 
-    Describe algorithm functionality here...
+    The core of the algorithm lies in the detect method, where turns are identified using accelerometer and 
+    gyroscope data. The method first processes the gyro data, converting it to rad/s and computing 
+    the variance to identify periods of low variance, which may indicate bias. It then calculates the gyro bias 
+    and subtracts it from the original gyro signal to remove any biases. Next, the yaw angle is computed by 
+    integrating the gyro data, and zero-crossings indices are found to detect turns. Then, turns are identified 
+    based on significant changes in the yaw angle. 
+    
+    The algorithm also accounts for hesitations, which are brief pauses or fluctuations in the signal that may 
+    occur within a turn. Hesitations are marked based on specific conditions related to the magnitude and 
+    continuity of the yaw angle changes.
+
+    Then, the detected turns are characterized by their start and end times, duration, angle of turn, peak 
+    angular velocity, and direction (left or right). Turns with angles equal to or greater than 90 degrees 
+    and durations between 0.5 and 10 seconds are selected for further analysis. Finally, the detected turns 
+    along with their characteristics (onset, duration, direction, etc.) are stored in a pandas DataFrame 
+    (detected_turns attribute).
+
+    Optionally, if plot_results is set to True, the algorithm generates a plot visualizing the accelerometer 
+    and gyroscope data alongside the detected turns. This visualization aids in the qualitative assessment of 
+    the algorithm's performance and provides insights into the dynamics of the detected turns.
 
     Attributes:
         gyro_convert_unit (float): Conevrsion of gyro data unit from deg/s to rad/s.
@@ -38,9 +57,9 @@ class PhamTurnDetection:
                 sampling_freq_Hz=200.0,
                 )
         >>> print(pham.detected_turns)
-                onset   duration   event_type   angle of turn (deg)   direction of turn   peak angular velocity (deg/s)   tracking_systems    tracked_points
-            0   4.04    3.26       turn         197.55                Right               159.45                          imu                 LowerBack
-            1   9.44    3.35       turn         199.69                Left                144.67                          imu                 LowerBack
+                onset   duration   event_type   direction_of_turn   angle of turn (deg)   peak angular velocity (deg/s)   tracking_systems    tracked_points
+            0   4.04    3.26       turn         left               -197.55                159.45                          imu                 LowerBack
+            1   9.44    3.35       turn         right               199.69                144.67                          imu                 LowerBack
 
     References:
         [1] Pham et al. (2017). Algorithm for Turning Detection and Analysis Validated under Home-Like Conditions...
@@ -82,8 +101,8 @@ class PhamTurnDetection:
                 - onset: Start time of the turn [s].
                 - duration: Duration of the turn [s].
                 - event_type: Type of the event (turn).
+                - direction_of_turn: Direction of turn which is either left or right.
                 - angle_of_turn_deg: Angle of the turn in degrees.
-                - direction_of_turn: Direction of trun which is right or left.
                 - peak_angular_velocity: Peak angular velocity [deg/s].
                 - tracking_systems: Tracking systems used (default is 'imu').
                 - tracked_points: Tracked points on the body (default is 'LowerBack').
@@ -272,23 +291,26 @@ class PhamTurnDetection:
             peak_angular_velocities.append(np.max(diff_vector) * sampling_freq_Hz)
             
             # Calculate average angular velocity at the start of the turn
-            turn10percent = round(duration_nsamples * 0.1)
-            angular_velocity_start.append(np.mean(abs(diff_yaw[flags_start_90[k]:(flags_start_90[k] + turn10percent)])) * sampling_freq_Hz)
+            turn_10_percent = round(duration_nsamples * 0.1)
+            angular_velocity_start.append(np.mean(abs(diff_yaw[flags_start_90[k]:(flags_start_90[k] + turn_10_percent)])) * sampling_freq_Hz)
             
             # Calculate average angular velocity at the end of the turn
             md = flags_start_90[k] + np.floor((flags_end_90[k] - flags_start_90[k]) / 2)
-            angular_velocity_end.append(np.mean(abs(diff_yaw[(flags_end_90[k] - turn10percent):flags_end_90[k] - 1])) * sampling_freq_Hz)
+            angular_velocity_end.append(np.mean(abs(diff_yaw[(flags_end_90[k] - turn_10_percent):flags_end_90[k] - 1])) * sampling_freq_Hz)
             
             # Calculate average angular velocity in the middle of the turn
-            turn5percent = round(duration_nsamples * 0.05)
+            turn_5_percent = round(duration_nsamples * 0.05)
             md = int(md)  # Convert md to an integer
-            angular_velocity_middle.append(np.mean(abs(diff_yaw[int(md - turn5percent):int(md + turn5percent)])) * sampling_freq_Hz)
+            angular_velocity_middle.append(np.mean(abs(diff_yaw[int(md - turn_5_percent):int(md + turn_5_percent)])) * sampling_freq_Hz)
 
-            # Determine direction of the turn (left or right)
-            if turns_90[k] > 0:
-                DirectionOfTurns = 'right'
+        # Determine direction of the turn (left or right)
+        direction_of_turns = []  # Initialize list to store directions
+
+        for turn_angle in turns_90:
+            if turn_angle < 0:
+                direction_of_turns.append('left')
             else:
-                DirectionOfTurns = 'left'
+                direction_of_turns.append('right')
 
         # Create a DataFrame with postural transition information
         detected_turns = pd.DataFrame(
@@ -296,8 +318,8 @@ class PhamTurnDetection:
                 "onset": np.array(flags_start_90) / sampling_freq_Hz,
                 "duration": duration_90,
                 "event_type": "turn",
-                "angle_of_turn_deg": np.abs(turns_90),
-                "direction_of_turn": DirectionOfTurns,
+                'direction_of_turn': direction_of_turns,
+                "angle_of_turn_deg": turns_90,
                 "peak_angular_velocity": peak_angular_velocities,
                 "tracking_systems": self.tracking_systems,
                 "tracked_points": self.tracked_points,
