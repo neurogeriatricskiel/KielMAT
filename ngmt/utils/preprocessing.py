@@ -1587,3 +1587,70 @@ def process_postural_transitions_stationary_periods(
 
     # Return the necessary outputs
     return time_pt, pt_type, pt_angle, duration, flexion_max_vel, extension_max_vel
+
+
+# Function to plot results of the turn detection algorithm
+def pham_turn_plot_results(accel, gyro, detected_turns, sampling_freq_Hz):
+    """
+    Plot results of the turn detection algorithm.
+
+    Args:
+        accel (ndarray): Array of acceleration data.
+        gyro (ndarray): Array of gyroscope data.
+        detected_turns (DataFrame): DataFrame containing detected turns information.
+        sampling_freq_Hz (float): Sampling frequency in Hz.
+
+    Returns:
+        Plot detected turns on the data
+    """
+    # Figure
+    fig = plt.figure(figsize=(21, 10))
+
+    # Subplot 1: Acceleration data
+    ax1 = plt.subplot(211)
+    for i in range(3):
+        ax1.plot(
+            np.arange(len(accel)) / sampling_freq_Hz,
+            accel[:, i],
+        )
+    for i in range(len(detected_turns)):
+        onset = detected_turns["onset"][i]
+        duration = detected_turns["duration"][i]
+        ax1.axvline(x=onset, color="r")
+        ax1.axvspan(onset, (onset + duration), color="grey")
+    ax1.set_title("Detected Turns", fontsize=20)
+    ax1.set_ylabel(f"Acceleration (g)", fontsize=14)
+    ax1.set_xlabel(f"Time (s)", fontsize=14)
+    ax1.legend(
+        ["Acc x", "Acc y", "Acc z", "Turn oset", "Turn duration"],
+        loc="upper right",
+        fontsize=14,
+    )
+    ax1.set_ylim(-1, 2)
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+
+    # Subplot 2: Gyro data
+    ax2 = plt.subplot(212)
+    for i in range(3):
+        ax2.plot(
+            np.arange(len(gyro)) / sampling_freq_Hz,
+            gyro[:, i],
+        )
+    for i in range(len(detected_turns)):
+        onset = detected_turns["onset"][i]
+        duration = detected_turns["duration"][i]
+        ax2.axvline(x=onset, color="r")
+        ax2.axvspan(onset, (onset + duration), color="grey")
+    ax2.set_ylabel(f"Gyro (deg/s)", fontsize=14)
+    ax2.set_xlabel(f"Time (s)", fontsize=14)
+    ax2.legend(
+        ["Gyr x", "Gyr y", "Gyr z", "Turn oset", "Turn duration"],
+        loc="upper right",
+        fontsize=14,
+    )
+    ax2.set_ylim(-200, 200)
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+    fig.tight_layout()
+    plt.show()

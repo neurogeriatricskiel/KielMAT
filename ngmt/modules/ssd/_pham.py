@@ -74,7 +74,7 @@ class PhamSittoStandStandtoSitDetection:
     def __init__(
         self,
         cutoff_freq_hz: float = 5.0,
-        accel_convert_unit=9.81,
+        accel_convert_unit = 9.81,
         tracking_systems: str = "imu",
         tracked_points: str = "LowerBack",
     ):
@@ -104,18 +104,17 @@ class PhamSittoStandStandtoSitDetection:
             sampling_freq_Hz (float): Sampling frequency of the input data.
             plot_results (bool, optional): If True, generates a plot. Default is False.
 
-            Returns:
-                PhamSittoStandStandtoSitDetection: Returns an instance of the class.
-                    The postural transition information is stored in the 'postural_transitions_' attribute,
-                    which is a pandas DataFrame in BIDS format with the following columns:
-                        - onset: Start time of the postural transition [s].
-                        - duration: Duration of the postural transition [s].
-                        - event_type: Type of the event (sit to stand ot stand to sit).
-                        - postural transition angle: Angle of the postural transition in degree [°].
-                        - maximum flexion velocity: Maximum flexion velocity [°/s].
-                        - maximum extension velocity: Maximum extension velocity [°/s].
-                        - tracking_systems: Tracking systems used (default is 'imu').
-                        - tracked_points: Tracked points on the body (default is 'LowerBack').
+        Returns:
+            The postural transition information is stored in the 'postural_transitions_' attribute,
+            which is a pandas DataFrame in BIDS format with the following columns:
+                - onset: Start time of the postural transition [s].
+                - duration: Duration of the postural transition [s].
+                - event_type: Type of the event (sit to stand ot stand to sit).
+                - postural transition angle: Angle of the postural transition in degree [°].
+                - maximum flexion velocity: Maximum flexion velocity [°/s].
+                - maximum extension velocity: Maximum extension velocity [°/s].
+                - tracking_systems: Tracking systems used (default is 'imu').
+                - tracked_points: Tracked points on the body (default is 'LowerBack').
         """
         # Error handling for invalid input data
         if not isinstance(data, pd.DataFrame) or data.shape[1] != 6:
