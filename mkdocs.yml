@@ -25,6 +25,21 @@ theme:
   palette:
     primary: light green
     accent: purple
+    # Palette toggle for light mode
+    - scheme: default
+      primary: light green
+      accent: purple
+      toggle:
+        icon: material/brightness-7 
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: '#6d539cff' # primary: another color for dark mode
+      accent: light green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+        
   features:
     - navigation.tabs
 
