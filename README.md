@@ -4,6 +4,8 @@
 ![GitHub issues](https://img.shields.io/github/issues-raw/neurogeriatricskiel/NGMT)
 ![GitHub contributors](https://img.shields.io/github/contributors/neurogeriatricskiel/NGMT)
 [![lint-and-test](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml/badge.svg)](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/ngmt)
+
 
 ![NGMTLogo](ngmt_logo_transBG.png)
 
@@ -16,7 +18,7 @@ We have implemented validated algorithms in modules to process motion data, such
 -   Gait sequence detection (GSD)
 -   Inital contact detection (ICD)
 -   Physical activity monitoring (PAM)
--   Postrual transition detection (STSD)
+-   Postrual transition detection (SSD)
 -   More to follow ...
 
 The idea is that various motion data can be loaded into our dedicated dataclass which rely on principles from the [Motion-BIDS](https://bids-specification.readthedocs.io/en/latest/modality-specific-files/motion.html) standard.
@@ -68,40 +70,43 @@ classDiagram
 
 [993024 rows x 9 columns]}
 >>> recording.channels
-{'SU':                  name type component tracked_point  units  sampling_frequency
-0   LowerBack_ACCEL_x  Acc         x     LowerBack      g               100.0
-1   LowerBack_ACCEL_y  Acc         y     LowerBack      g               100.0
-2   LowerBack_ACCEL_z  Acc         z     LowerBack      g               100.0
-3  LowerBack_ANGVEL_x  Gyr         x     LowerBack  deg/s               100.0
-4  LowerBack_ANGVEL_y  Gyr         y     LowerBack  deg/s               100.0
-5  LowerBack_ANGVEL_z  Gyr         z     LowerBack  deg/s               100.0
-6    LowerBack_MAGN_x  Mag         x     LowerBack     µT               100.0
-7    LowerBack_MAGN_y  Mag         y     LowerBack     µT               100.0
-8    LowerBack_MAGN_z  Mag         z     LowerBack     µT               100.0
-9  LowerBack_BARO_n/a  Bar       n/a     LowerBack    hPa               100.0, 'SU_INDIP':                  name type component tracked_point  units  sampling_frequency
-0   LowerBack_ACCEL_x  Acc         x     LowerBack      g               100.0
-1   LowerBack_ACCEL_y  Acc         y     LowerBack      g               100.0
-2   LowerBack_ACCEL_z  Acc         z     LowerBack      g               100.0
-3  LowerBack_ANGVEL_x  Gyr         x     LowerBack  deg/s               100.0
-4  LowerBack_ANGVEL_y  Gyr         y     LowerBack  deg/s               100.0
-5  LowerBack_ANGVEL_z  Gyr         z     LowerBack  deg/s               100.0
-6    LowerBack_MAGN_x  Mag         x     LowerBack     µT               100.0
-7    LowerBack_MAGN_y  Mag         y     LowerBack     µT               100.0
-8    LowerBack_MAGN_z  Mag         z     LowerBack     µT               100.0}
+{'SU':                  
+   name                 type  component   tracked_point  units    sampling_frequency
+0  LowerBack_ACCEL_x    Acc   x           LowerBack      g        100.0
+1  LowerBack_ACCEL_y    Acc   y           LowerBack      g        100.0
+2  LowerBack_ACCEL_z    Acc   z           LowerBack      g        100.0
+3  LowerBack_ANGVEL_x   Gyr   x           LowerBack      deg/s    100.0
+4  LowerBack_ANGVEL_y   Gyr   y           LowerBack      deg/s    100.0
+5  LowerBack_ANGVEL_z   Gyr   z           LowerBack      deg/s    100.0
+6  LowerBack_MAGN_x     Mag   x           LowerBack      µT       100.0
+7  LowerBack_MAGN_y     Mag   y           LowerBack      µT       100.0
+8  LowerBack_MAGN_z     Mag   z           LowerBack      µT       100.0
+9  LowerBack_BARO_n/a   Bar   n/a         LowerBack      hPa      100.0, 
+
+'SU_INDIP':
+   name                 type  component   tracked_point  units    sampling_frequency
+0  LowerBack_ACCEL_x    Acc   x           LowerBack      g        100.0
+1  LowerBack_ACCEL_y    Acc   y           LowerBack      g        100.0
+2  LowerBack_ACCEL_z    Acc   z           LowerBack      g        100.0
+3  LowerBack_ANGVEL_x   Gyr   x           LowerBack      deg/s    100.0
+4  LowerBack_ANGVEL_y   Gyr   y           LowerBack      deg/s    100.0
+5  LowerBack_ANGVEL_z   Gyr   z           LowerBack      deg/s    100.0
+6  LowerBack_MAGN_x     Mag   x           LowerBack      µT       100.0
+7  LowerBack_MAGN_y     Mag   y           LowerBack      µT       100.0
+8  LowerBack_MAGN_z     Mag   z           LowerBack      µT       100.0
+9  LowerBack_BARO_n/a   Bar   n/a         LowerBack      hPa      100.0,
+}
 ```
 
 > [!NOTE]  
 > In the examples you find a [tutorial (the basics of NGMT)](https://neurogeriatricskiel.github.io/NGMT/00_tutorial_basics/) that explains the basics of the dataclass and how to work with them.
-
-## Documentation
-The full documentation can be found [here](https://neurogeriatricskiel.github.io/NGMT/).
 
 ## Installation
 The toolbox has been released on [pypi](https://pypi.org/project/ngmt/) and can be installed via pip:
 ```bash
 pip install ngmt
 ```
-It requires Python 3.10 or higher.
+It requires Python 3.9 or higher.
 
 ## Authors
 

@@ -11,6 +11,9 @@ Forth unofficial release of NGMT for testing purposes.
 ### Fixed
 - Gait sequence detection with datetime [[FIX]](https://github.com/neurogeriatricskiel/NGMT/commit/ad102772fd355e6ca64f7ad6a00a4c95d066a1d6)
 
+### Changed
+- Reworked documentation [#60](https://github.com/neurogeriatricskiel/NGMT/pull/60)
+
 ## [0.0.3] - 2024-02-27
 
 Third unofficial release of NGMT for testing purposes.
