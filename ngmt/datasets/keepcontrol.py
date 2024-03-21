@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pathlib
 import os
-from ngmt.utils.data_classes import NGMTRecording
+from ngmt.utils.ngmt_dataclass import NGMTRecording
 
 
 def load_recording(

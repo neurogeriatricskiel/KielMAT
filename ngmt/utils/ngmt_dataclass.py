@@ -42,8 +42,8 @@ class NGMTRecording:
     Attributes:
         data (dict): The data is stored as a pandas DataFrame for each unique tracking system.
         channels (dict): The channels descriptions are stored as a pandas DataFrame for each unique tracking system.
-        events (dict): The events are stored as a pandas DataFrame for each unique tracking system.
         info (dict): The infos on the subject, task, and more, are stored as a nested dictionary.
+        events (dict): The events are stored as a pandas DataFrame for each unique tracking system.
         events_info (dict): The event infos are stored as a nested dictionary.
     """
 

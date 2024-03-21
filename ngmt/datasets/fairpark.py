@@ -5,7 +5,7 @@ import seaborn as sns
 import os
 import pathlib
 import polars as pl
-from ngmt.utils.data_classes import NGMTRecording
+from ngmt.utils.ngmt_dataclass import NGMTRecording
 
 
 SAMPLING_FREQ_HZ: float = 100.0  # sampling frequency

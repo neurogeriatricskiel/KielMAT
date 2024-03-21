@@ -12,10 +12,13 @@ classDiagram
       info: None | dict[str, Any] = None
       events: None | dict[str, pd.DataFrame] = None
       events_info: None | dict[str, Any] = None
+      add_events(tracking_system, new_events)
+      add_info(key, value)
+      export_events(file_path, tracking_system=None, file_name=None, bids_compatible_fname=False)
    }
 
 ```
 
  A recording consists of the motion data from one or more tracking systems, where each tracking system may consist motion data from one or more tracked points. Therefore, the motion data (`NGMTRecording.data`) are organized as a dictionary where the dictionary keys refer to the tracking systems, and the corresponding values the actual (raw) data as a `pandas.DataFrame`. The description of data channels (`NGMTRecording.channels`) is availabe as a dictionary with the same keys, and the values contain the channels description.
 
-::: utils.data_classes
+::: utils.ngmt_dataclass

@@ -45,6 +45,9 @@ classDiagram
       info: None | dict[str, Any] = None
       events: None | dict[str, pd.DataFrame] = None
       events_info: None | dict[str, Any] = None
+      add_events(tracking_system, new_events)
+      add_info(key, value)
+      export_events(file_path, tracking_system=None, file_name=None, bids_compatible_fname=False)
    }
 
 ```

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pathlib
 from ngmt.utils import matlab_loader
-from ngmt.utils.data_classes import NGMTRecording
+from ngmt.utils.ngmt_dataclass import NGMTRecording
 
 
 # See: https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#restricted-keyword-list-for-channel-type
