@@ -15,11 +15,11 @@ Welcome to the NeuroGeriatricMotionToolbox (NGMT). We are a Python based toolbox
 
 The toolbox is aimed at motion researchers who want to use python based open source software to process their data.
 We have implemented validated algorithms in modules to process motion data, such as:
--   Gait sequence detection (GSD)
--   Inital contact detection (ICD)
--   Physical activity monitoring (PAM)
--   Postrual transition detection (SSD)
--   More to follow ...
+   - Gait sequence detection (GSD)
+   - Inital contact detection (ICD)
+   - Physical activity monitoring (PAM)
+   - Postrual transition detection (SSD)
+   - More to follow ...
 
 The idea is that various motion data can be loaded into our dedicated dataclass which rely on principles from the [Motion-BIDS](https://bids-specification.readthedocs.io/en/latest/modality-specific-files/motion.html) standard.
 
@@ -103,7 +103,7 @@ classDiagram
 ```
 
 > [!NOTE]  
-> In the examples you find a [tutorial (the basics of NGMT)](https://neurogeriatricskiel.github.io/NGMT/00_tutorial_basics/) that explains the basics of the dataclass and how to work with them.
+> In the examples you find a [tutorial (the basics of NGMT)](https://neurogeriatricskiel.github.io/NGMT/examples/00_tutorial_basics/) that explains the basics of the dataclass and how to work with them.
 
 ## Installation
 The toolbox has been released on [pypi](https://pypi.org/project/ngmt/) and can be installed via pip:
