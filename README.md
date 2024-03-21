@@ -61,14 +61,18 @@ classDiagram
 993022           0.970579  ...         1012.078703
 993023           0.960542  ...         1002.580321
 
-[993024 rows x 10 columns], 'SU_INDIP':         LowerBack_ACCEL_x  ...  LowerBack_MAGN_z
+[993024 rows x 10 columns], 
+
+'SU_INDIP':      LowerBack_ACCEL_x  ... LowerBack_MAGN_z
 0                0.967986  ...         -5.902833
 1                0.963671  ...          9.501037
 ...                   ...  ...               ...
 993022           0.951656  ...        -17.987983
 993023           0.955107  ...        -18.050600
 
-[993024 rows x 9 columns]}
+[993024 rows x 9 columns]
+}
+
 >>> recording.channels
 {'SU':                  
    name                 type  component   tracked_point  units    sampling_frequency
@@ -106,7 +110,7 @@ The toolbox has been released on [pypi](https://pypi.org/project/ngmt/) and can 
 ```bash
 pip install ngmt
 ```
-It requires Python 3.9 or higher.
+It requires Python 3.10 or higher.
 
 ## Authors
 
