@@ -62,10 +62,16 @@ NGMT offers a comprehensive suite of algorithms for motion data processing in ne
   - Following feature extraction, the toolbox facilitates event detection and visualization.
   - Events like gait sequences, initial contacts, etc., are detected using predefined criteria, with visualization aiding in timing and duration understanding.
 
-By integrating data loading, preprocessing, feature extraction, event detection, and visualization into a unified framework, NGMT offers a comprehensive set of tools for analyzing human motion data across various domains and applications. The toolbox offers practical examples demonstrating the application of currently implemented algorithms.
+Figure [1](figure_1.png){#fig:figure1} represents a functionality of the NGMT. By integrating data loading, preprocessing, feature extraction, event detection, and visualization into a unified framework, NGMT offers a comprehensive set of tools for analyzing human motion data across various domains and applications. The toolbox offers practical examples demonstrating the application of currently implemented algorithms.
+
+![](figure_1.png)
+<div style="text-align:center;">
+<b>Figure 1:</b> A representation of the functionality of NGMT.
+</div>
+
 
 # Example Use Case
-As a practical demonstration, the NeuroGeriatric Motion Toolbox (NGMT) is applied to analyze lower back IMU sensor data obtained from clinical cohorts, specifically individuals with congestive heart failure (CHF) [@micoamigo_2023]. Participants underwent real-world assessments, engaging in various activities including outdoor walking, navigating slopes and stairs, and moving between rooms. The NGMT toolbox facilitated the processing of this data using a gait sequence and initial contact detection modules based on the Paraschiv-Ionescu algorithms [@paraschiv2019locomotion; @paraschiv2020real].
+As a practical demonstration, the NeuroGeriatric Motion Toolbox (NGMT) is used to analyze lower back IMU sensor data obtained from clinical cohorts, specifically individuals with congestive heart failure (CHF) [@micoamigo_2023]. Participants underwent real-world assessments, engaging in various activities including outdoor walking, navigating slopes and stairs, and moving between rooms. The NGMT toolbox facilitated the processing of this data using a gait sequence and initial contact detection modules based on the Paraschiv-Ionescu algorithms [@paraschiv2019locomotion; @paraschiv2020real].
 
 - **Gait sequence detection**
 
@@ -77,11 +83,11 @@ Following gait sequence detection, the NGMT toolbox applied the Paraschiv-Ionesc
 
 - **Event detection and visulization**
 
-Figure [1](figure_1.png){#fig:figure1} illustrates the practical application of the NGMT toolbox in detecting events on the input data. The acceleration data from the lower back is depicted, with key gait events detected by NGMT's modules highlighted. The green vertical line denotes the onset of a gait sequence, while the shaded gray region represents the duration of the gait sequence. Additionally, blue dashed lines denote the detected initial contacts within the gait sequence.
+Figure [2](figure_1.png){#fig:figure1} illustrates the practical application of the NGMT toolbox in detecting events on the input data. The acceleration data from the lower back is depicted, with key gait events detected by NGMT's modules highlighted. The green vertical line denotes the onset of a gait sequence, while the shaded gray region represents the duration of the gait sequence. Additionally, blue dashed lines denote the detected initial contacts within the gait sequence.
 
-![](figure_1.png){#fig:figure1}
+![](figure_2.png)
 <div style="text-align:center;">
-<b>Figure 1:</b> Acceleration data and detected gait events using NGMT modules
+<b>Figure 2:</b> Acceleration data and detected gait events using NGMT modules
 </div>
 
 # Installation and usage
