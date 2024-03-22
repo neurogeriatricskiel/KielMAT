@@ -13,3 +13,4 @@ This is a collection of examples to explain various parts of the NGMT toolbox.
 ### [Example 2: Initial Contact Detection](02_tutorial_initial_contact_detection.md)
 ### [Example 3: Physical Activity Monitoring](03_tutorial_physical_activity_monitoring.md)
 ### [Example 4: Sit to Stand and Stand to Sit Detection](05_tutorial_sit_to_stand_stand_to_sit_detection.md)
+### [Example 5: Turn Detection](06_tutorial_turn_detection.md)

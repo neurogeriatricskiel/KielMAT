@@ -24,10 +24,13 @@ By running these tests, the reliability and correctness of the modules will be e
 import pytest
 import numpy as np
 import pandas as pd
+from unittest.mock import patch
 from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
 from ngmt.modules.pam import PhysicalActivityMonitoring
 from ngmt.modules.ssd import PhamSittoStandStandtoSitDetection
+from ngmt.modules.td import PhamTurnDetection
+
 
 ## Module test
 # Test for gait sequence detection algorithm
@@ -498,6 +501,39 @@ def test_plot_results_pham():
             sampling_freq_Hz=200,
             plot_results=invalid_plot_results,
         )
+
+# Test functions for PhamTurnDetection class
+@pytest.fixture
+def pham_turn_detection():
+    return PhamTurnDetection()
+
+def test_turn_detection_input(pham_turn_detection):
+    # Initialize PhamTurnDetection object
+    pham = pham_turn_detection
+
+    # Detect turns with sample data
+    pham.detect(data=sample_data, sampling_freq_Hz=200, plot_results=False)
+
+    pham = pham.detected_turns
+
+
+def test_invalid_sampling_freq_pham_td(pham_turn_detection):
+    # Initialize PhamTurnDetection object
+    pham = pham_turn_detection
+
+    # Test with invalid sampling frequency
+    invalid_sampling_freq = "invalid"
+    with pytest.raises(ValueError):
+        pham.detect(data=sample_data, sampling_freq_Hz=invalid_sampling_freq, plot_results=False)
+
+def test_invalid_plot_results_pham_td(pham_turn_detection):
+    # Initialize PhamTurnDetection object
+    pham = pham_turn_detection
+
+    # Test with invalid plot_results
+    invalid_plot_results = "invalid"
+    with pytest.raises(ValueError):
+        pham.detect(data=sample_data, sampling_freq_Hz=200, plot_results=invalid_plot_results)
 
 
 # Run the tests with pytest

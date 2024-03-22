@@ -1282,7 +1282,7 @@ def pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz):
     ax1.set_ylabel(f"Acceleration (g)", fontsize=14)
     ax1.set_xlabel(f"Time (sec)", fontsize=14)
     ax1.legend(
-        ["Acc 1", "Acc 2", "Acc 3", "Event oset", "Event duration"],
+        ["Acc x", "Acc y", "Acc z", "Event oset", "Event duration"],
         loc="upper right",
         fontsize=14,
     )
@@ -1306,7 +1306,7 @@ def pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz):
     ax2.set_ylabel(f"Gyro (deg/s)", fontsize=14)
     ax2.set_xlabel(f"Time (sec)", fontsize=14)
     ax2.legend(
-        ["Gyr 1", "Gyr 2", "Gyr 3", "Event oset", "Event duration"],
+        ["Gyr x", "Gyr y", "Gyr z", "Event oset", "Event duration"],
         loc="upper right",
         fontsize=14,
     )
