@@ -31,8 +31,10 @@ VALID_INFO_KEYS = {
     "Subject",
     "Session",
     "Task",
-    "Tracking system",
 }
+
+        
+VALID_CHANNEL_STATUS_VALUES = ["good", "bad", "n/a"]
 
 
 @dataclass(kw_only=True)
@@ -53,6 +55,48 @@ class NGMTRecording:
     events: None | dict[str, pd.DataFrame] = None
     events_info: None | dict[str, Any] = None
 
+    def __post_init__(self):
+        # Validate channels when an instance is created
+        self.validate_channels()
+
+    def validate_channels(self):
+        """
+        Validates the channel dataframes for each system.
+
+        This function checks if the channel dataframes have the required columns in the correct order,
+        and if the data types of the columns are valid. It also performs additional value checks for
+        optional columns.
+
+        Raises:
+            ValueError: If the channel dataframe does not have the required columns in the correct order,
+                or if the 'component' column contains invalid values, or if the 'type' column is not
+                uppercase strings, or if the 'status' column contains invalid values.
+            TypeError: If the 'name' column is not of type string.
+
+        Returns:
+            str: A message indicating that all channel dataframes are valid.
+        """
+        required_columns = ['name', 'component', 'type', 'tracked_point', 'units', 'sampling_frequency']
+
+        for system_name, df in self.channels.items():
+            # Check required columns and their order
+            if not df.columns.tolist()[:6] == required_columns:
+                raise ValueError(f"Channel dataframe for '{system_name}' does not have the required columns in correct order. The correct order is: {required_columns}")
+
+            # Check data types
+            if not all(isinstance(name, str) for name in df['name']):
+                raise TypeError(f"Column 'name' in '{system_name}' must be of type string.")
+            if not all(item in VALID_COMPONENT_TYPES for item in df['component']):
+                raise ValueError(f"Column 'component' in '{system_name}' contains invalid values.")
+            if not all(isinstance(typ, str) and typ.isupper() for typ in df['type']):
+                raise ValueError(f"Column 'type' in '{system_name}' must be uppercase strings.")
+
+            # Additional value checks for optional columns
+            if 'status' in df.columns and not all(s in VALID_CHANNEL_STATUS_VALUES for s in df['status'] if s != 'n/a'):
+                raise ValueError(f"Column 'status' in '{system_name}' contains invalid values.")
+
+        return "All channel dataframes are valid."
+
     def add_events(self, tracking_system: str, new_events: pd.DataFrame) -> None:
         """Add events to the recording for a specific tracking system.
 
@@ -72,14 +116,7 @@ class NGMTRecording:
             )
 
     def add_info(self, key: str, value: Any) -> None:
-        """Add information to the info dictionary. Valid keys are :
-
-        VALID_INFO_KEYS = {
-            "Subject",
-            "Session",
-            "Task",
-            "Tracking system",
-        }
+        """Add information to the info dictionary. Valid keys are : 'Subject', 'Session', 'Task'.
 
         Args:
             key (str): The key for the information.
@@ -96,8 +133,8 @@ class NGMTRecording:
 
         # Check if the key belongs to a list of keywords
         if key not in VALID_INFO_KEYS:
-            raise ValueError(
-                f"Invalid info key '{key}'. Valid info keys are: {VALID_INFO_KEYS}"
+            print(
+            f"Warning: Invalid info key '{key}'. Valid info keys are: {VALID_INFO_KEYS}"
             )
 
         # add the key-value pair to the info dictionary
@@ -181,131 +218,6 @@ class NGMTRecording:
                 errors = validator.is_bids(file_path)
                 if errors:
                     raise ValueError(f"File path '{file_path}' is not BIDS compatible.")
-
-
-# @dataclass
-# class FileInfo:
-#     """
-#     A data class representing information about a file to be processed.
-#     The main puprose is to store the metadata of the file for a larger dataset,
-#     and the path to the file in the file system.
-
-#     Attributes:
-#         SubjectID (str): The identifier of the subject associated with the file.
-#         TaskName (str): The name of the task or experiment associated with the file.
-#         DatasetName (str): The name of the dataset to which the file belongs.
-#         FilePath (str): The path to the file in the file system.
-#     """
-
-#     SubjectID: str
-#     TaskName: str
-#     DatasetName: str
-#     FilePath: str
-
-
-# @dataclass
-# class ChannelData:
-#     """
-#     A data class for representing information about channels used in a recording.
-
-#     Attributes:
-#         name (List[str]): A list of channel names.
-#         component (List[str]): A list of channel components.
-#         ch_type (List[str]): A list of channel types.
-#         tracked_point (List[str]): A list of tracked points.
-#         units (List[str]): A list of measurement units.
-#         placement (Optional[List[str]]): An optional list of placement information (default is None).
-#         description (Optional[List[str]]): An optional list of channel descriptions (default is None).
-#         range(Optional[List[float]]): An optional list of sensor ranges (default is None).
-#         sampling_frequency (Optional[float]): An optional sampling frequency (default is None).
-#         status (Optional[List[float]]): An optional list of channel statuses (default is None).
-#         status_description (Optional[List[str]]): An optional list of status descriptions (default is None).
-
-#     Raises:
-#         ValueError: If the provided 'ch_type' is not one of the valid channel types.
-#         ValueError: If the provided 'component' is not one of the valid component types.
-#     """
-
-#     name: List[str]
-#     component: List[str]
-#     ch_type: List[str]
-#     tracked_point: List[str]
-#     units: List[str]
-#     placement: Optional[List[str]] = None
-#     description: Optional[List[str]] = None
-#     range: Optional[List[float]] = None
-#     sampling_frequency: Optional[float] = None
-#     status: Optional[List[float]] = None
-#     status_description: Optional[List[str]] = None
-
-#     # check if all entries in the list of self.ch_type are valid
-#     def __post_init__(self):
-#         for ch_type in self.ch_type:
-#             if ch_type not in VALID_CHANNEL_TYPES:
-#                 raise ValueError(
-#                     f"Invalid channel type '{ch_type}'. Valid channel types are: {VALID_CHANNEL_TYPES}"
-#                 )
-
-#         for component in self.component:
-#             if component not in VALID_COMPONENT_TYPES:
-#                 raise ValueError(
-#                     f"Invalid component '{component}'. Valid components are: {VALID_COMPONENT_TYPES}"
-#                 )
-
-
-# @dataclass
-# class EventData:
-#     """
-#     A data class to describe timing and other properties of events during a recording.
-#     Events can include stimuli presented to the participant,
-#     participant responses or labeling of data samples.
-#     Events can overlap in time.
-
-#     Attributes:
-#         name (List[str]): A list of event names.
-#         onset (List[float]): A list of event onset times.
-#         duration (List[float]): A list of event durations.
-#         event_type (Optional[Union[str, List[str]]]): A list of event types.
-#     """
-
-#     def add_events(
-#         self,
-#         onset: Union[int, Sequence[int]],
-#         duration: Union[int, Sequence[int]],
-#         event_type: Union[str, Sequence[str]],
-#         name: Optional[Union[str, Sequence[str]]],
-#     ):
-#         """
-#         This function adds events to the EventData object.
-
-#         Args:
-#             name (str): name of the event
-#             onset (float): onset of the event
-#             duration (float): duration of the event
-
-#         Returns:
-#             self (EventData): An EventData object with the added event
-#         """
-
-#         # check if name is already present in the EventData object
-#         if name in self.name:
-#             raise ValueError(
-#                 f"Event with name '{name}' already present in EventData object."
-#             )
-
-#         self.name.extend(name)
-#         self.onset.extend(onset)
-#         self.duration.extend(duration)
-
-#         # sort the events by onset
-#         # get indices of ascending order of onset
-#         indices = np.argsort(self.onset)
-#         # sort the lists by the indices
-#         self.name = [self.name[i] for i in indices]
-#         self.onset = [self.onset[i] for i in indices]
-#         self.duration = [self.duration[i] for i in indices]
-
-#         return self
 
 
 # @dataclass
@@ -431,82 +343,6 @@ class NGMTRecording:
 #         )
 
 #         return recording_data_clean_type
-
-#     def plot_events(
-#         self,
-#         event_types_oi,
-#         axes=None,
-#     ):
-#         """
-#         This function plots the events of a given event type.
-
-#         Parameters:
-#             event_types_oi (str): event type
-
-#         Returns:
-#             None
-#         """
-
-#         # find the indices_type_oi of the events with the given event type
-#         indices_type_oi = []
-#         for index, event_type in enumerate(self.events.name):
-#             # check if event_types_oi is single string or list of strings of length > 1
-#             if isinstance(event_types_oi, str):
-#                 if event_type in event_types_oi:
-#                     indices_type_oi.append(index)
-
-#             elif isinstance(event_types_oi, list) and len(event_types_oi) > 1:
-#                 for event_type_oi in event_types_oi:
-#                     if event_type_oi in event_type:
-#                         indices_type_oi.append(index)
-
-#         # get the times of events
-#         times_events = [self.events.onset[i] for i in indices_type_oi]
-
-#         ax = axes if axes else plt.gca()
-
-#         # plot the raw data
-#         ax.plot(self.times, self.data, linewidth=1)
-
-#         # plot the events
-#         for time_event in times_events:
-#             ax.axvline(time_event, color="black", linewidth=1)
-#         ax.set_xlabel("Time [s]")
-
-#         return
-
-#     def detect_gait_sequence(self, sensor_id):
-#         # check if sensor_id is a list of strings of length > 0
-#         if isinstance(sensor_id, list) and len(sensor_id) > 0:
-#             pass
-#         else:
-#             raise ValueError(f"sensor_id should be a list of strings of length > 0.")
-
-#         # select acceleration data from recording
-#         acceleration_data = self.pick_channel_types(channel_type_oi="ACCEL")
-#         # select only lower back
-#         acceleration_data_lower_back = acceleration_data.pick_channels(
-#             channel_names_oi=sensor_id
-#         )
-#         # get sampling frequency
-#         sampling_frequency = acceleration_data.sampling_frequency
-
-#         # Use Gait_Sequence_Detection to detect gait sequence
-#         gait_sequences = GSDB.Gait_Sequence_Detection(
-#             imu_acceleration=acceleration_data_lower_back,
-#             sampling_frequency=sampling_frequency,
-#             plot_results=False,
-#         )
-
-#         # Add gait sequences to EventData object
-#         self.events.add_events(
-#             onset=gait_sequences["onset"],
-#             duration=gait_sequences["duration"],
-#             event_type="gait_sequence",
-#             name="gait_sequence",
-#         )
-
-#         return self
 
 
 # @dataclass
