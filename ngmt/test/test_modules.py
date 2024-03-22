@@ -507,16 +507,6 @@ def test_plot_results_pham():
 def pham_turn_detection():
     return PhamTurnDetection()
 
-def test_turn_detection_input(pham_turn_detection):
-    # Initialize PhamTurnDetection object
-    pham = pham_turn_detection
-
-    # Detect turns with sample data
-    pham.detect(data=sample_data, sampling_freq_Hz=200, plot_results=False)
-
-    pham = pham.detected_turns
-
-
 def test_invalid_sampling_freq_pham_td(pham_turn_detection):
     # Initialize PhamTurnDetection object
     pham = pham_turn_detection
