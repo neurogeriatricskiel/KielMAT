@@ -107,6 +107,22 @@ class PhamTurnDetection:
                 - tracking_systems: Tracking systems used (default is 'imu').
                 - tracked_points: Tracked points on the body (default is 'LowerBack').
         """
+        # Check if data is a DataFrame
+        if not isinstance(data, pd.DataFrame):
+            raise ValueError("Input data must be a pandas DataFrame")
+
+        # Check if data has the correct shape
+        if data.shape[1] != 6:
+            raise ValueError("Input data must have 6 columns (3 for accelerometer and 3 for gyro)")
+
+        # Check if sampling frequency is positive
+        if sampling_freq_Hz <= 0:
+            raise ValueError("Sampling frequency must be positive")
+
+        # Check if plot_results is a boolean
+        if not isinstance(plot_results, bool):
+            raise ValueError("plot_results must be a boolean value")
+
         # Select acceleration data and convert it to numpy array format
         accel = data.iloc[:, 0:3].copy()
         accel = accel.to_numpy()
