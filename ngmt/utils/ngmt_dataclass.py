@@ -1,3 +1,4 @@
+from bids_validator import BIDSValidator
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
 import numpy as np
@@ -41,8 +42,8 @@ class NGMTRecording:
     Attributes:
         data (dict): The data is stored as a pandas DataFrame for each unique tracking system.
         channels (dict): The channels descriptions are stored as a pandas DataFrame for each unique tracking system.
-        events (dict): The events are stored as a pandas DataFrame for each unique tracking system.
         info (dict): The infos on the subject, task, and more, are stored as a nested dictionary.
+        events (dict): The events are stored as a pandas DataFrame for each unique tracking system.
         events_info (dict): The event infos are stored as a nested dictionary.
     """
 
@@ -172,6 +173,14 @@ class NGMTRecording:
                 else:
                     file_path = Path(file_path).joinpath(file_name)
                     self.events[tracking_system].to_csv(file_path, index=False)
+
+            # check if file_path is BIDS compatible
+            if bids_compatible_fname:
+                # validate the file_path
+                validator = BIDSValidator()
+                errors = validator.is_bids(file_path)
+                if errors:
+                    raise ValueError(f"File path '{file_path}' is not BIDS compatible.")
 
 
 # @dataclass

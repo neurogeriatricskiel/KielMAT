@@ -13,7 +13,7 @@ By the end of this tutorial, you will be able to:
 - Interpret the results of activity classification.  
 
 
-# Physical Activity Monitoring
+## Physical Activity Monitoring
 
 This example serves as a reference on how to use the physical activity monitoring algorithm. This example can be cited by referencing the package.
 
@@ -29,7 +29,7 @@ The algorithm determines the intensity level of physical activities based on the
 
 4. **Results:** The algorithm classifies different levels of activities along with the time spent on each activity level for each day. If `plot_results` is set to True, the function generates a plot showing the averaged ENMO values for each day.
 
-#### References
+## References
 [`1`] Doherty, Aiden, et al. (2017). Large scale population assessment of physical activity using wrist-worn accelerometers: the UK biobank study. PloS one 12.2. [https://doi.org/10.1371/journal.pone.0169649](https://doi.org/10.1371/journal.pone.0169649)
 
 [`2`] Van Hees, Vincent T., et al. (2013). Separating movement and gravity components in an acceleration signal and implications for the assessment of human daily physical activity. PloS one 8.4. [https://doi.org/10.1371/journal.pone.0061691](https://doi.org/10.1371/journal.pone.0061691)

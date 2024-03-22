@@ -12,7 +12,7 @@ By the end of this tutorial:
 - Visualize the results of gait sequence detection.  
 - Interpret the detected gait sequences for further analysis.
 
-# Paraschiv Gait Sequence Detection
+## Paraschiv Gait Sequence Detection
 
 This example can be referenced by citing the package.
 
@@ -24,7 +24,7 @@ The algorithm continues by identifying the envelope of the processed acceleratio
 
 Next, the algorithm takes the last steps to detect walking bouts in the signal. For this purpose, walking bouts with five or more steps are detected, and their start and end times are added to the list. Walking labels are generated as an array of zeros, and the intervals corresponding to the walking bouts are labeled as 1. Groups of consecutive zeros in the walking labels are identified, and if breaks between walking bouts are less than three seconds, they are merged. The output is then constructed as a DataFrame containing gait sequence information in BIDS format with columns `onset`, `duration`, `event_type`, `tracking_systems`, and `tracked_points`. If gait sequences are found, the output is printed; otherwise, a message indicating that no gait sequences are detected is displayed.
 
-#### References
+## References
 [`1`] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer: validity for children with cerebral palsy in daily life-like conditions. Journal of NeuroEngineering and Rehabilitation, 16(1), 24. https://doi.org/10.1186/s12984-019-0494-z
 
 [`2`] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using a single trunk IMU: methodological challenges for impaired gait patterns. Annual International Conference of the IEEE Engineering in Medicine and Biology Society. IEEE Engineering in Medicine and Biology Society. https://doi.org/10.1109/EMBC44109.2020.9176281
@@ -48,7 +48,7 @@ To implement the Paraschiv-Ionescu gait sequence detection algorithm, we load ex
 
 The participant was assessed for 2.5 hours in the real-world while doing different daily life activities and also was asked to perform specific tasks such as outdoor walking, walking up and down a slope and stairs and moving from one room to another [`3`].
 
-#### Refertences
+## References
 
 .. [`3`] Mazzà, Claudia, et al. "Technical validation of real-world monitoring of gait: a multicentric observational study." BMJ open 11.12 (2021): e050785. http://dx.doi.org/10.1136/bmjopen-2021-050785
 
