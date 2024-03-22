@@ -33,7 +33,7 @@ VALID_INFO_KEYS = {
     "Task",
 }
 
-        
+
 VALID_CHANNEL_STATUS_VALUES = ["good", "bad", "n/a"]
 
 
@@ -76,24 +76,43 @@ class NGMTRecording:
         Returns:
             str: A message indicating that all channel dataframes are valid.
         """
-        required_columns = ['name', 'component', 'type', 'tracked_point', 'units', 'sampling_frequency']
+        required_columns = [
+            "name",
+            "component",
+            "type",
+            "tracked_point",
+            "units",
+            "sampling_frequency",
+        ]
 
         for system_name, df in self.channels.items():
             # Check required columns and their order
             if not df.columns.tolist()[:6] == required_columns:
-                raise ValueError(f"Channel dataframe for '{system_name}' does not have the required columns in correct order. The correct order is: {required_columns}")
+                raise ValueError(
+                    f"Channel dataframe for '{system_name}' does not have the required columns in correct order. The correct order is: {required_columns}"
+                )
 
             # Check data types
-            if not all(isinstance(name, str) for name in df['name']):
-                raise TypeError(f"Column 'name' in '{system_name}' must be of type string.")
-            if not all(item in VALID_COMPONENT_TYPES for item in df['component']):
-                raise ValueError(f"Column 'component' in '{system_name}' contains invalid values.")
-            if not all(isinstance(typ, str) and typ.isupper() for typ in df['type']):
-                raise ValueError(f"Column 'type' in '{system_name}' must be uppercase strings.")
+            if not all(isinstance(name, str) for name in df["name"]):
+                raise TypeError(
+                    f"Column 'name' in '{system_name}' must be of type string."
+                )
+            if not all(item in VALID_COMPONENT_TYPES for item in df["component"]):
+                raise ValueError(
+                    f"Column 'component' in '{system_name}' contains invalid values."
+                )
+            if not all(isinstance(typ, str) and typ.isupper() for typ in df["type"]):
+                raise ValueError(
+                    f"Column 'type' in '{system_name}' must be uppercase strings."
+                )
 
             # Additional value checks for optional columns
-            if 'status' in df.columns and not all(s in VALID_CHANNEL_STATUS_VALUES for s in df['status'] if s != 'n/a'):
-                raise ValueError(f"Column 'status' in '{system_name}' contains invalid values.")
+            if "status" in df.columns and not all(
+                s in VALID_CHANNEL_STATUS_VALUES for s in df["status"] if s != "n/a"
+            ):
+                raise ValueError(
+                    f"Column 'status' in '{system_name}' contains invalid values."
+                )
 
         return "All channel dataframes are valid."
 
@@ -134,7 +153,7 @@ class NGMTRecording:
         # Check if the key belongs to a list of keywords
         if key not in VALID_INFO_KEYS:
             print(
-            f"Warning: Invalid info key '{key}'. Valid info keys are: {VALID_INFO_KEYS}"
+                f"Warning: Invalid info key '{key}'. Valid info keys are: {VALID_INFO_KEYS}"
             )
 
         # add the key-value pair to the info dictionary
