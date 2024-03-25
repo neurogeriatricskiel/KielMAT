@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ngmt"
-version = "0.0.2"
+version = "0.0.3"
 description = "The NeuroGeriatricMotionToolbox (NGMT) is a Python-based toolbox for processing motion data."
 license = "MIT"
 readme = "README.md"
@@ -9,22 +9,23 @@ repository = "https://github.com/neurogeriatricskiel/NGMT"
 documentation = "https://neurogeriatricskiel.github.io/NGMT"
 authors = [
     "Masoud Abedinifar <Masoud.Abedinifar@uksh.de>",
-    "Robbin Romijnders <r.romijnders@neurologie.uni-kiel.de>",
+    "Julius Welzel <j.welzel@neurologie.uni-kiel.de>",
     "Walter Maetzler <w.maetzler@neurologie.uni-kiel.de>",
     "Clint Hansen <c.hansen@neurologie.uni-kiel.de>",
-    "Julius Welzel <j.welzel@neurologie.uni-kiel.de>"
+    "Robbin Romijnders <r.romijnders@neurologie.uni-kiel.de>"
 ]
 maintainers = [
     "Masoud Abedinifar <Masoud.Abedinifar@uksh.de>",
-    "Robbin Romijnders <r.romijnders@neurologie.uni-kiel.de>",
-    "Julius Welzel <j.welzel@neurologie.uni-kiel.de>"
+    "Julius Welzel <j.welzel@neurologie.uni-kiel.de>",
+    "Robbin Romijnders <r.romijnders@neurologie.uni-kiel.de>"
 ]
 packages = [
     { include = "ngmt" },
 ]
+include = ["CHANGELOG.md"]
 
 [tool.poetry.dependencies]
-python = ">=3.9.0,<3.13"
+python = ">=3.10.0,<3.13"
 pandas = ">=2"
 scipy = ">=1.11.0"
 numpy = ">=1.25"
@@ -39,6 +40,8 @@ h5py = "^3.10.0"
 polars = "^0.20.5"
 seaborn = "^0.13.1"
 json-repair = "^0.8.0"
+pyarrow = "^15.0.0"
+bids-validator = "^1.14.4"
 
 [tool.poetry.extras]
 docs = ["mkdocs", "mkdocs-material", "pymdownx.superfences"]

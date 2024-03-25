@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from ngmt.utils.data_classes import (
+from ngmt.utils.ngmt_dataclass import (
     FileInfo,
     ChannelData,
     RecordingData,

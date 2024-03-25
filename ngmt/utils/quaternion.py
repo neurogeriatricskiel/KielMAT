@@ -14,23 +14,23 @@ def quatinv(
     This function calculates the inverse of quaternions by first computing the conjugate
     and then normalizing the conjugate.
 
-    Parameters:
-    - q (np.ndarray): Input array of quaternions with shape (..., 4).
-    - scalar_first (bool, optional): If True, assumes the scalar part is the first element.
-      If False, assumes the scalar part is the last element. Default is True.
-    - channels_last (bool, optional): If True, assumes the channels are the last dimension.
-      If False, assumes the channels are the second-to-last dimension. Default is True.
+    Args:
+        q (np.ndarray): Input array of quaternions with shape (..., 4).
+        scalar_first (bool, optional): If True, assumes the scalar part is the first element.
+            If False, assumes the scalar part is the last element. Default is True.
+        channels_last (bool, optional): If True, assumes the channels are the last dimension.
+            If False, assumes the channels are the second-to-last dimension. Default is True.
 
     Returns:
-    - np.ndarray: Inverse of quaternions with the same shape as the input array.
+        np.ndarray: Inverse of quaternions with the same shape as the input array.
 
     Notes:
-    - The input array is cast to float before the computation.
-    - If channels_last is False, the input array is transposed to switch channels and time axis.
+        - The input array is cast to float before the computation.
+        - If channels_last is False, the input array is transposed to switch channels and time axis.
 
     Quaternion Inverse Calculation:
-    The inverse of a quaternion q is obtained by first calculating its conjugate and then normalizing it:
-    q_inv = normalize(conjugate(q))
+        >>> The inverse of a quaternion q is obtained by first calculating its conjugate and then normalizing it:
+        >>> q_inv = normalize(conjugate(q))
     """
 
     # Cast array to float
@@ -51,21 +51,21 @@ def quatnormalize(q: np.ndarray, channels_last: bool = True) -> np.ndarray:
     This function normalizes quaternions by dividing each quaternion by its magnitude (norm).
     The result is a unit quaternion with the same orientation as the original quaternion.
 
-    Parameters:
-    - q (np.ndarray): Input array of quaternions with shape (..., 4).
-    - channels_last (bool, optional): If True, assumes the channels are the last dimension.
-      If False, assumes the channels are the second-to-last dimension. Default is True.
+    Args:
+        q (np.ndarray): Input array of quaternions with shape (..., 4).
+        channels_last (bool, optional): If True, assumes the channels are the last dimension.
+            If False, assumes the channels are the second-to-last dimension. Default is True.
 
     Returns:
-    - np.ndarray: Normalized quaternions with the same shape as the input array.
+        np.ndarray: Normalized quaternions with the same shape as the input array.
 
     Notes:
-    - The input array is cast to float before the computation.
-    - If channels_last is False, the input array is transposed to switch channels and time axis.
+        - The input array is cast to float before the computation.
+        - If channels_last is False, the input array is transposed to switch channels and time axis.
 
     Quaternion Normalization:
-    The normalization of a quaternion q is performed by dividing each element of q by its norm:
-    q_normalized = q / norm(q)
+        >>> The normalization of a quaternion q is performed by dividing each element of q by its norm:
+        >>> q_normalized = q / norm(q)
     """
 
     # Cast array to float
@@ -86,21 +86,21 @@ def quatnorm(q: np.ndarray, channels_last: bool = True) -> np.ndarray:
     This function computes the norm (magnitude) of quaternions along the specified axis,
     which represents the length of the quaternion vector.
 
-    Parameters:
-    - q (np.ndarray): Input array of quaternions with shape (..., 4).
-    - channels_last (bool, optional): If True, assumes the channels are the last dimension.
-      If False, assumes the channels are the first dimension. Default is True.
+    Args:
+        q (np.ndarray): Input array of quaternions with shape (..., 4).
+        channels_last (bool, optional): If True, assumes the channels are the last dimension.
+            If False, assumes the channels are the first dimension. Default is True.
 
     Returns:
-    - np.ndarray: Norm of quaternions along the specified axis with the same shape as the input array.
+        np.ndarray: Norm of quaternions along the specified axis with the same shape as the input array.
 
     Notes:
-    - The input array is cast to float before the computation.
-    - If channels_last is False, the input array is transposed to switch channels and time axis.
+        - The input array is cast to float before the computation.
+        - If channels_last is False, the input array is transposed to switch channels and time axis.
 
     Quaternion Norm Calculation:
-    The norm of a quaternion q is calculated as follows:
-    norm(q) = sqrt(w^2 + x^2 + y^2 + z^2)
+        >>> The norm of a quaternion q is calculated as follows:
+        >>> norm(q) = sqrt(w^2 + x^2 + y^2 + z^2)
     """
 
     # Cast array to float
@@ -124,23 +124,23 @@ def quatconj(
     This function calculates the conjugate of a quaternion, which is obtained by negating
     the imaginary (vector) parts while keeping the real (scalar) part unchanged.
 
-    Parameters:
-    - q (np.ndarray): Input array of quaternions with shape (..., 4).
-    - scalar_first (bool, optional): If True, assumes the scalar part is the first element.
-      If False, assumes the scalar part is the last element. Default is True.
-    - channels_last (bool, optional): If True, assumes the channels are the last dimension.
-      If False, assumes the channels are the second-to-last dimension. Default is True.
+    Args:
+        q (np.ndarray): Input array of quaternions with shape (..., 4).
+        scalar_first (bool, optional): If True, assumes the scalar part is the first element.
+            If False, assumes the scalar part is the last element. Default is True.
+        channels_last (bool, optional): If True, assumes the channels are the last dimension.
+            If False, assumes the channels are the second-to-last dimension. Default is True.
 
     Returns:
-    - np.ndarray: Quaternion conjugate with the same shape as the input array.
+        np.ndarray: Quaternion conjugate with the same shape as the input array.
 
     Notes:
-    - The input array is cast to float before the computation.
-    - If channels_last is False, the input array is transposed to switch channels and time axis.
-    - If scalar_first is False, the scalar part is moved to the last element.
+        - The input array is cast to float before the computation.
+        - If channels_last is False, the input array is transposed to switch channels and time axis.
+        - If scalar_first is False, the scalar part is moved to the last element.
 
     Quaternion Conjugate Formula:
-    q_conj = [w, -x, -y, -z]
+        >>> q_conj = [w, -x, -y, -z]
     """
 
     # Cast array to float
@@ -187,31 +187,31 @@ def quatmultiply(
     Quaternions are 4-dimensional vectors of the form [w, x, y, z], where 'w' is the
     scalar (real) part, and 'x', 'y', and 'z' are the vector (imaginary) parts.
 
-    Parameters:
-    - q1 (np.ndarray): Input array of quaternions with shape (..., 4).
-    - q2 (np.ndarray, optional): Input array of quaternions with shape (..., 4).
-      If None, q2 is set to q1, making it a self-multiplication. Default is None.
-    - scalar_first (bool, optional): If True, assumes the scalar part is the first element.
-      If False, assumes the scalar part is the last element. Default is True.
-    - channels_last (bool, optional): If True, assumes the channels are the last dimension.
-      If False, assumes the channels are the second-to-last dimension. Default is True.
+    Args:
+        q1 (np.ndarray): Input array of quaternions with shape (..., 4).
+        q2 (np.ndarray, optional): Input array of quaternions with shape (..., 4).
+            If None, q2 is set to q1, making it a self-multiplication. Default is None.
+        scalar_first (bool, optional): If True, assumes the scalar part is the first element.
+            If False, assumes the scalar part is the last element. Default is True.
+        channels_last (bool, optional): If True, assumes the channels are the last dimension.
+            If False, assumes the channels are the second-to-last dimension. Default is True.
 
     Returns:
-    - np.ndarray: Result of quaternion multiplication with the same shape as the input arrays.
+        np.ndarray: Result of quaternion multiplication with the same shape as the input arrays.
 
     Raises:
-    - AssertionError: If the last dimension of q1 and q2 is not 4.
+        AssertionError: If the last dimension of q1 and q2 is not 4.
 
     Notes:
-    - If q2 is None, this function performs self-multiplication (q1 * q1).
-    - The input arrays are cast to float before the computation.
-    - If channels_last is False, the input arrays are transposed to switch channels and time axis.
+        - If q2 is None, this function performs self-multiplication (q1 * q1).
+        - The input arrays are cast to float before the computation.
+        - If channels_last is False, the input arrays are transposed to switch channels and time axis.
 
-    Quaternion Multiplication Formula:
-    q3 = [w1w2 - x1x2 - y1y2 - z1z2,
-          w1x2 + x1w2 + y1z2 - z1y2,
-          w1y2 - x1z2 + y1w2 + z1x2,
-          w1z2 + x1y2 - y1x2 + z1w2]
+    Quaternion Conjugate Formula:
+        >>> q3 = [w1w2 - x1x2 - y1y2 - z1z2,
+            w1x2 + x1w2 + y1z2 - z1y2,
+            w1y2 - x1z2 + y1w2 + z1x2,
+            w1z2 + x1y2 - y1x2 + z1w2]
     """
 
     # Parse input quaternions
@@ -284,28 +284,29 @@ def quatmultiply(
 
 
 def rotm2quat(R: np.ndarray, method: int | str = "auto") -> np.ndarray:
-    """Convert a 3x3 rotation matrix to a quaternion.
+    """
+    Convert a 3x3 rotation matrix to a quaternion.
 
     Source:
     - https://github.com/dlaidig/qmt/blob/0fa8d32eb461e14d78e9ddbd569664ea59bcea19/qmt/functions/quaternion.py#L1004
 
-    Parameters:
-    - R (np.ndarray): A rotation matrix with shape (3, 3).
-    - scalar_first (bool, optional): If True, sets the first element as the scalar part.
-      If False, sets the last element as the scalar part is the last element. Default is True.
-    - channels_last (bool, optional): If True, assumes the channels are the last dimension.
-      If False, assumes the channels are the first dimension. Default is True.
+    Args:
+        R (np.ndarray): A rotation matrix with shape (3, 3).
+        scalar_first (bool, optional): If True, sets the first element as the scalar part.
+            If False, sets the last element as the scalar part is the last element. Default is True.
+        channels_last (bool, optional): If True, assumes the channels are the last dimension.
+            If False, assumes the channels are the first dimension. Default is True.
 
     Returns:
-    - np.ndarray: The quaternion corresponding to the rotation matrix.
+        np.ndarray: The quaternion corresponding to the rotation matrix.
 
     Raises:
-    - AssertionError: If the shape of R is not (3, 3).
+        AssertionError: If the shape of R is not (3, 3).
 
     Notes:
-    - If q2 is None, this function performs self-multiplication (q1 * q1).
-    - The input arrays are cast to float before the computation.
-    - If channels_last is False, the input arrays are transposed to switch channels and time axis.
+        - If q2 is None, this function performs self-multiplication (q1 * q1).
+        - The input arrays are cast to float before the computation.
+        - If channels_last is False, the input arrays are transposed to switch channels and time axis.
     """
 
     # Cast array to float
@@ -361,41 +362,30 @@ def quat2rotm(
     """
     Convert quaternion(s) to rotation matrix.
 
-    Parameters
-    ----------
-    q : np.ndarray
-        Input quaternion(s) as a NumPy array. The last dimension must have size 4.
-    scalar_first : bool, optional
-        If True, the quaternion is assumed to be in scalar-first order (default is True).
-    channels_last : bool, optional
-        If True, the last dimension represents the quaternion channels (default is True).
-        If False, the quaternion channels are assumed to be in the first dimension.
+    Args:
+        q (np.ndarray): Input quaternion(s) as a NumPy array. The last dimension must have size 4.
+        scalar_first (bool, optional): If True, the quaternion is assumed to be in scalar-first order (default is True).
+        channels_last (bool, optional): If True, the last dimension represents the quaternion channels (default is True).
+            If False, the quaternion channels are assumed to be in the first dimension.
 
-    Returns
-    -------
-    np.ndarray
-        Rotation matrix corresponding to the input quaternion(s).
+    Returns:
+        np.ndarray: Rotation matrix corresponding to the input quaternion(s).
 
-    Raises
-    ------
-    AssertionError
-        If the last dimension of the input array `q` does not have size 4.
+    Raises:
+        AssertionError: If the last dimension of the input array `q` does not have size 4.
 
-    Notes
-    -----
-    The conversion is based on the formula:
-    R = | 1 - 2*q2^2 - 2*q3^2    2*(q1*q2 - q3*q0)    2*(q1*q3 + q2*q0) |
-        | 2*(q1*q2 + q3*q0)    1 - 2*q1^2 - 2*q3^2    2*(q2*q3 - q1*q0) |
-        | 2*(q1*q3 - q2*q0)    2*(q1*q0 + q2*q3)    1 - 2*q1^2 - 2*q2^2 |
+    Notes:
+        >>> The conversion is based on the formula:
+        >>> R = | 1 - 2*q2^2 - 2*q3^2    2*(q1*q2 - q3*q0)    2*(q1*q3 + q2*q0) |
+            | 2*(q1*q2 + q3*q0)    1 - 2*q1^2 - 2*q3^2    2*(q2*q3 - q1*q0) |
+            | 2*(q1*q3 - q2*q0)    2*(q1*q0 + q2*q3)    1 - 2*q1^2 - 2*q2^2 |
 
-    References
-    ----------
-    - Wikipedia: https://en.wikipedia.org/wiki/Rotation_matrix#Quaternion
+    References:
+        Wikipedia: https://en.wikipedia.org/wiki/Rotation_matrix#Quaternion
 
-    Examples
-    --------
-    >>> quaternion = np.array([1.0, 0.0, 0.0, 0.0])
-    >>> rotation_matrix = quat2rotm(quaternion)
+    Examples:
+        >>> quaternion = np.array([1.0, 0.0, 0.0, 0.0])
+        >>> rotation_matrix = quat2rotm(quaternion)
     """
 
     # Cast array to float
@@ -420,13 +410,13 @@ def quat2axang(q: np.ndarray) -> np.ndarray:
     """
     Convert a quaternion to axis-angle representation.
 
-    Parameters:
-    - q (np.ndarray): Input quaternion array of shape (..., 4).
+    Args:
+        q (np.ndarray): Input quaternion array of shape (..., 4).
 
     Returns:
-    - np.ndarray: Axis-angle representation array of shape (..., 4),
-                  where the first three elements are the axis of rotation
-                  and the last element is the angle of rotation in radians.
+        np.ndarray: Axis-angle representation array of shape (..., 4),
+            where the first three elements are the axis of rotation
+            and the last element is the angle of rotation in radians.
 
     The function normalizes the input quaternion, calculates the angle of rotation,
     and computes the axis of rotation in the axis-angle representation.
@@ -450,3 +440,48 @@ def quat2axang(q: np.ndarray) -> np.ndarray:
         np.array([0.0, 0.0, 1.0]),
     )
     return axang
+
+
+def axang2rotm(axang: np.ndarray) -> np.ndarray:
+    """
+    Convert axis-angle representation to rotation matrix.
+
+    Args:
+        axang (np.ndarray): Input array of axis-angle representations with shape (..., 4),
+            where the first three elements are the axis of rotation
+            and the last element is the angle of rotation in radians.
+
+    Returns:
+        np.ndarray: Rotation matrix corresponding to the input axis-angle representations.
+
+    The function computes the rotation matrix using Rodrigues' rotation formula.
+    """
+
+    # Cast array to float
+    axang = np.asarray(axang, float)
+    assert axang.shape[-1] == 4
+
+    # Extract axis and angle
+    axis = axang[..., :3]
+    angle = axang[..., 3]
+
+    # Normalize axis
+    axis /= np.linalg.norm(axis, axis=-1, keepdims=True)
+
+    # Compute rotation matrix using Rodrigues' rotation formula
+    cos_theta = np.cos(angle)
+    sin_theta = np.sin(angle)
+    cross_prod_matrix = np.zeros((*axis.shape[:-1], 3, 3), dtype=float)
+    cross_prod_matrix[..., 0, 1] = -axis[..., 2]
+    cross_prod_matrix[..., 0, 2] = axis[..., 1]
+    cross_prod_matrix[..., 1, 0] = axis[..., 2]
+    cross_prod_matrix[..., 1, 2] = -axis[..., 0]
+    cross_prod_matrix[..., 2, 0] = -axis[..., 1]
+    cross_prod_matrix[..., 2, 1] = axis[..., 0]
+    rotation_matrix = (
+        np.eye(3, dtype=float) * cos_theta[..., None]
+        + sin_theta[..., None] * cross_prod_matrix
+        + (1 - cos_theta[..., None]) * np.einsum("...i,...j->...ij", axis, axis)
+    )
+
+    return rotation_matrix

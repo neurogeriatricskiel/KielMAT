@@ -1,3 +1,4 @@
+from datetime import datetime
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,74 +9,69 @@ from ngmt.config import cfg_colors
 
 class ParaschivIonescuGaitSequenceDetection:
     """
-    Detects gait sequences based on identified steps in accelerometer data.
+    The Paraschiv-Ionescu gait sequence detection algorithm identifies gait sequences in accelerometer data from a lower back sensor.
+
+    The algorithm detects gait sequences based on identified steps. It starts by loading the accelerometer data, which includes three
+    columns corresponding to the acceleration signals across the x, y, and z axes, along with the sampling frequency of the data. To
+    simplify the analysis, the norm of acceleration is computed. Next, the signal is resampled at a 40 Hz sampling frequency using
+    interpolation. Smoothing is then applied through a Savitzky-Golay filter and a Finite Impulse Response (FIR) low-pass filter to
+    remove noise and drifts from the signal. The continuous wavelet transform is applied to capture gait-related features, followed by
+    additional smoothing using successive Gaussian-weighted filters. The processed data is then analyzed to detect gait sequences.
+
+    The algorithm continues by identifying the envelope of the processed acceleration signal. Active periods of the signal are identified
+    using the Hilbert envelope. The statistical distribution of the amplitude of the peaks in these active periods is used to derive an
+    adaptive threshold. In case the Hilbert envelope algorithm fails to detect active periods, a fixed threshold value (0.15 g) is used
+    for peak detection in the signal. Mid-swing peaks are detected based on this threshold. Pulse trains in the local maximum and minimum
+    of the peaks are identified, with those having fewer than four steps filtered out. The intersection of pulse trains from local maximum
+    and minimum peaks is detected as walking periods. These periods are then organized and grouped to update the start and end times of
+    detected walking bouts.
+
+    Next, the algorithm takes the last steps to detect walking bouts in the signal. For this purpose, walking bouts with five or more steps
+    are detected, and their start and end times are added to the list. Walking labels are generated as an array of zeros, and the intervals
+    corresponding to the walking bouts are labeled as 1. Groups of consecutive zeros in the walking labels are identified, and if breaks
+    between walking bouts are less than three seconds, they are merged. If gait sequences are found, the output is printed; otherwise, a
+    message indicating that no gait sequences are detected is displayed.
+
+    Finally, the gait sequence information is stored in the 'gait_sequences_' attribute in BIDS compatible format with columns `onset`,
+    `duration`, `event_type`, `tracking_systems`, and `tracked_points` as Pandas DataFrame.
 
     Attributes:
-        target_sampling_freq_Hz (float): Target sampling frequency for resampling the data. Default is 40.
-        event_type (str): Type of the detected event. Default is 'gait sequence'.
-        tracking_systems (str): Tracking systems used. Default is 'SU'.
-        tracked_points (str): Tracked points on the body. Default is 'LowerBack'.
-        gait_sequences_ (pd.DataFrame): DataFrame containing gait sequence information in BIDS format.
-
-    Description:
-        This function performs Paraschiv-Ionescu gait sequence detection on accelerometer data
-        collected from a lower back sensor. The purpose of this algortihm is to identify and
-        characterize walking bouts or gait sequences within the input data.
-
-        The input accelerometer data should be provided as a numpy.ndarray with shape
-        (N, 3), where N is the number of data points. The three columns represent the
-        acceleration along the x, y, and z axes.
-
-        The function processes the input data through a series of signal processing steps
-        including resampling, filtering, wavelet transform, and peak detection to identify
-        gait sequences. Finally, the gait sequence information is stored in the 'gait_sequences_' attribute,
-        which is a pandas DataFrame in BIDS format with the columns including onset, duration, event_type,
-        tracked_systems and tracking_points.
-
-        If `plot_results` is set to True, the function will also generate a plot showing
-        the pre-processed acceleration data and the detected gait sequences for
-        visualization purposes. Default is False.
+        target_sampling_freq_Hz (float): Target sampling frequency for resampling the data. Defaults to 40 Hz.
+        event_type (str): Type of the detected event. Defaults to 'gait sequence'.
+        tracking_systems (str): Tracking systems used. Defaults to 'SU'.
+        tracked_points (str): Tracked points on the body. Defaults to 'LowerBack'.
 
     Methods:
         detect(data, sampling_freq_Hz, plot_results=False):
-            Detects gait sequences on the accelerometer signal.
+            Detects gait sequences in the provided accelerometer data.
 
             Args:
                 data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
                 sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
-                plot_results (bool, optional): If True, generates a plot showing the pre-processed acceleration data
-                    and the detected gait sequences. Default is False.
+                plot_results (bool, optional): If True, generates a plot of the pre-processed data and the detected gait sequences. Defaults to False.
+                dt_data (str, optional): Name of the original datetime in the input data. If original datetime is provided, the output onset will be based on that.
 
-            Returns:
-                ParaschivIonescuGaitSequenceDetection: Returns an instance of the class.
-                    The gait sequence information is stored in the 'gait_sequences_' attribute,
-                    which is a pandas DataFrame in BIDS format with the following columns:
-                        - onset: Start time of the gait sequence.
-                        - duration: Duration of the gait sequence.
-                        - event_type: Type of the event (default is 'gait sequence').
-                        - tracking_systems: Tracking systems used (default is 'SU').
-                        - tracked_points: Tracked points on the body (default is 'LowerBack').
+        Returns:
+            ParaschivIonescuGaitSequenceDetection:
+                which is a pandas DataFrame in BIDS format with the following columns:
+            onset: Start time of the gait sequence.
+            duration: Duration of the gait sequence.
+            event_type: Type of the event (default is 'gait sequence').
+            tracking_systems: Tracking systems used (default is 'SU').
+            tracked_points: Tracked points on the body (default is 'LowerBack').
 
-        Examples:
-            Find sequences of gait in sensor signal
+    Examples:
+        >>> gsd = ParaschivIonescuGaitSequenceDetection()
+        >>> gsd.detect(data=acceleration_data, sampling_freq_Hz=100, plot_results=True)
+        >>> print(gsd.gait_sequences_)
+                onset   duration    event_type      tracking_systems    tracked_points
+            0   4.500   5.25        gait sequence   SU                  LowerBack
+            1   90.225  10.30       gait sequence   SU                  LowerBack
 
-            >>> gsd = ParaschivIonescuGaitSequenceDetection()
-            >>> gsd.detect(data=acceleration_data, sampling_freq_Hz=100, plot_results=True)
-            >>> gait_sequences = gsd.gait_sequences_
-            >>> print(gait_sequences)
-                    onset   duration    event_type      tracking_systems    tracked_points
-                0   4.500   5.25        gait sequence   SU                  LowerBack
-                1   90.225  10.30       gait sequence   SU                  LowerBack
+    References:
+        [1] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer...
 
-        References:
-            [1] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer:
-                validity for children with cerebral palsy in daily life-like conditions.
-                Journal of NeuroEngineering and Rehabilitation, 16(1), 24.
-                https://doi.org/10.1186/s12984-019-0494-z
-            [2] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using single trunk IMU:
-                methodological challenges for impaired gait patterns.
-                Annual International Conference of the IEEE Engineering in Medicine and Biology Society.
-                IEEE Engineering in Medicine and Biology Society. https://doi.org/10.1109/EMBC44109.2020.9176281
+        [2] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using single trunk IMU...
     """
 
     def __init__(
@@ -101,7 +97,11 @@ class ParaschivIonescuGaitSequenceDetection:
         self.gait_sequences_ = None
 
     def detect(
-        self, data: pd.DataFrame, sampling_freq_Hz: float, plot_results: bool = False
+        self,
+        data: pd.DataFrame,
+        sampling_freq_Hz: float,
+        plot_results: bool = False,
+        dt_data: pd.Series = None,
     ) -> pd.DataFrame:
         """
         Detects gait sequences based on the input accelerometer data.
@@ -111,16 +111,17 @@ class ParaschivIonescuGaitSequenceDetection:
             sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
             plot_results (bool, optional): If True, generates a plot showing the pre-processed acceleration data
             and the detected gait sequences. Default is False.
+            dt_data (pd.Series, optional): Original datetime in the input data. If original datetime is provided, the output onset will be based on that.
 
-            Returns:
-                ParaschivIonescuGaitSequenceDetection: Returns an instance of the class.
-                    The gait sequence information is stored in the 'gait_sequences_' attribute,
-                    which is a pandas DataFrame in BIDS format with the following columns:
-                        - onset: Start time of the gait sequence.
-                        - duration: Duration of the gait sequence.
-                        - event_type: Type of the event (default is 'gait sequence').
-                        - tracking_systems: Tracking systems used (default is 'SU').
-                        - tracked_points: Tracked points on the body (default is 'LowerBack').
+        Returns:
+            ParaschivIonescuGaitSequenceDetection: Returns an instance of the class.
+                The gait sequence information is stored in the 'gait_sequences_' attribute,
+                which is a pandas DataFrame in BIDS format with the following columns:
+                    - onset: Start time of the gait sequence.
+                    - duration: Duration of the gait sequence.
+                    - event_type: Type of the event (default is 'gait sequence').
+                    - tracking_systems: Tracking systems used (default is 'SU').
+                    - tracked_points: Tracked points on the body (default is 'LowerBack').
         """
         # Error handling for invalid input data
         if not isinstance(data, pd.DataFrame) or data.shape[1] != 3:
@@ -133,6 +134,17 @@ class ParaschivIonescuGaitSequenceDetection:
 
         if not isinstance(plot_results, bool):
             raise ValueError("Plot results must be a boolean (True or False).")
+
+        # check if dt_data is a pandas Series with datetime values
+        if dt_data is not None and (
+            not isinstance(dt_data, pd.Series)
+            or not pd.api.types.is_datetime64_any_dtype(dt_data)
+        ):
+            raise ValueError("dt_data must be a pandas Series with datetime values")
+
+        # check if dt_data is provided and if it is a series with the same length as data
+        if dt_data is not None and len(dt_data) != len(data):
+            raise ValueError("dt_data must be a series with the same length as data")
 
         # Calculate the norm of acceleration
         acceleration_norm = np.linalg.norm(data, axis=1)
@@ -203,7 +215,6 @@ class ParaschivIonescuGaitSequenceDetection:
             int(round(self.target_sampling_freq_Hz)),
             1,
             int(round(self.target_sampling_freq_Hz)),
-            0,
         )
 
         # Initialize a list for walking bouts
@@ -281,10 +292,10 @@ class ParaschivIonescuGaitSequenceDetection:
         # Check if walking_periods is empty
         if walking_periods is None:
             walking_bouts = []
-            MidSwing = []
+
         else:
             # Call the organize_and_pack_results function with walking_periods and MaxPeaks
-            walking_bouts, MidSwing = preprocessing.organize_and_pack_results(
+            walking_bouts, _ = preprocessing.organize_and_pack_results(
                 walking_periods, max_peaks
             )
             if walking_bouts:
@@ -369,7 +380,31 @@ class ParaschivIonescuGaitSequenceDetection:
         gait_sequences_["tracking_systems"] = self.tracking_systems
         gait_sequences_["tracked_points"] = self.tracked_points
 
-        # Select and reorder columns
+        # Check if the indices in ind_Wk are within the range of dt_data's index
+        if ind_Wk.size > 0 and dt_data is not None:
+            valid_indices = [index for index in ind_Wk[:, 0] if index < len(dt_data)]
+            invalid_indices = len(ind_Wk[:, 0]) - len(valid_indices)
+
+            if invalid_indices > 0:
+                print(f"Warning: {invalid_indices} invalid index/indices found.")
+
+            # Only use valid indices to access dt_data
+            valid_dt_data = dt_data.iloc[valid_indices]
+
+            # Create a DataFrame from the gait sequence data
+            gait_sequences_ = pd.DataFrame(GSD_Output)
+            gait_sequences_["onset"] = gait_sequences_["Start"]
+            gait_sequences_["duration"] = (
+                gait_sequences_["End"] - gait_sequences_["Start"]
+            )
+            gait_sequences_["event_type"] = self.event_type
+            gait_sequences_["tracking_systems"] = self.tracking_systems
+            gait_sequences_["tracked_points"] = self.tracked_points
+
+            # If original datetime is available, update the 'onset' column
+            gait_sequences_["onset"] = valid_dt_data.reset_index(drop=True)
+
+        # Create a DataFrame from the gait sequence data
         gait_sequences_ = gait_sequences_[
             ["onset", "duration", "event_type", "tracking_systems", "tracked_points"]
         ]
@@ -377,35 +412,18 @@ class ParaschivIonescuGaitSequenceDetection:
         # Return gait_sequences_ as an output
         self.gait_sequences_ = gait_sequences_
 
+        # If Plot_results set to true
+        # currently no plotting for datetime values
+        if dt_data is not None and plot_results:
+            print("No plotting for datetime values.")
+            plot_results = False
+            return self
+
         # Plot results if set to true
         if plot_results:
-            plt.figure(figsize=(22, 14))
-            plt.plot(
-                np.arange(len(detected_activity_signal))
-                / (60 * self.target_sampling_freq_Hz),
-                detected_activity_signal,
-                label="Pre-processed acceleration signal",
-            )
-            plt.title("Detected gait sequences", fontsize=20)
-            plt.xlabel("Time (minutes)", fontsize=20)
-            plt.ylabel("Acceleration (g)", fontsize=20)
 
-            # Fill the area between start and end times
-            for index, sequence in gait_sequences_.iterrows():
-                onset = sequence["onset"] / 60  # Convert to minutes
-                end_time = (
-                    sequence["onset"] + sequence["duration"]
-                ) / 60  # Convert to minutes
-                plt.axvline(onset, color="g")
-                plt.axvspan(onset, end_time, facecolor="grey", alpha=0.8)
-            plt.legend(
-                ["Pre-processed acceleration signal", "Gait onset", "Gait duration"],
-                fontsize=20,
-                loc="best",
+            preprocessing.gsd_plot_results(
+                self.target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
             )
-            plt.grid(visible=None, which="both", axis="both")
-            plt.xticks(fontsize=20)
-            plt.yticks(fontsize=20)
-            plt.show()
 
         return self

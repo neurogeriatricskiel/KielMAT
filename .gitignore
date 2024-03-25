@@ -16,3 +16,7 @@ examples/data/exDataGSDA.mat
 /site/*
 /dist
 /.venv
+
+# local changelog generator
+create_changelog.py
+changelog.yml
