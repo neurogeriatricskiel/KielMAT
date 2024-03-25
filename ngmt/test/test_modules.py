@@ -104,6 +104,68 @@ def test_plot_results_type():
             plot_results=invalid_plot_results,
         )
 
+def test_invalid_dt_data_type():
+    # Initialize the class
+    gsd = ParaschivIonescuGaitSequenceDetection()
+
+    # Test with invalid dt_data type
+    invalid_dt_data = "invalid"
+    with pytest.raises(ValueError):
+        gsd.detect(
+            data=acceleration_data,
+            sampling_freq_Hz=sampling_frequency,
+            plot_results=False,
+            dt_data=invalid_dt_data,
+        )
+
+
+def test_invalid_dt_data_format():
+    # Initialize the class
+    gsd = ParaschivIonescuGaitSequenceDetection()
+
+    # Test with invalid dt_data format
+    invalid_dt_data = pd.Series(["2024-03-22 10:00:00", "2024-03-22 10:00:01"])
+    with pytest.raises(ValueError):
+        gsd.detect(
+            data=acceleration_data,
+            sampling_freq_Hz=sampling_frequency,
+            plot_results=False,
+            dt_data=invalid_dt_data,
+        )
+
+
+def test_invalid_dt_data_length():
+    # Initialize the class
+    gsd = ParaschivIonescuGaitSequenceDetection()
+
+    # Test with invalid dt_data length
+    invalid_dt_data = pd.Series(
+        pd.date_range(start="2024-03-22", periods=3, freq="S")
+    )
+    with pytest.raises(ValueError):
+        gsd.detect(
+            data=acceleration_data,
+            sampling_freq_Hz=sampling_frequency,
+            plot_results=False,
+            dt_data=invalid_dt_data,
+        )
+
+def test_valid_dt_data():
+    # Initialize the class
+    gsd = ParaschivIonescuGaitSequenceDetection()
+
+    # Create valid datetime data
+    valid_dt_data = pd.Series(
+        pd.date_range(start="2024-03-22", periods=len(acceleration_data), freq="S")
+    )
+
+    # Call the detect method with valid datetime data
+    gsd.detect(
+        data=acceleration_data,
+        sampling_freq_Hz=sampling_frequency,
+        plot_results=False,
+        dt_data=valid_dt_data,
+    )
 
 # Tests for initial contact detection algorithm
 def test_detect_empty_data():
@@ -502,28 +564,7 @@ def test_plot_results_pham():
             plot_results=invalid_plot_results,
         )
 
-# Test functions for PhamTurnDetection class
-@pytest.fixture
-def pham_turn_detection():
-    return PhamTurnDetection()
 
-def test_invalid_sampling_freq_pham_td(pham_turn_detection):
-    # Initialize PhamTurnDetection object
-    pham = pham_turn_detection
-
-    # Test with invalid sampling frequency
-    invalid_sampling_freq = "invalid"
-    with pytest.raises(ValueError):
-        pham.detect(data=sample_data, sampling_freq_Hz=invalid_sampling_freq, plot_results=False)
-
-def test_invalid_plot_results_pham_td(pham_turn_detection):
-    # Initialize PhamTurnDetection object
-    pham = pham_turn_detection
-
-    # Test with invalid plot_results
-    invalid_plot_results = "invalid"
-    with pytest.raises(ValueError):
-        pham.detect(data=sample_data, sampling_freq_Hz=200, plot_results=invalid_plot_results)
 
 
 # Run the tests with pytest

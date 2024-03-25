@@ -23,6 +23,7 @@ By running these tests, the reliability and correctness of the signal processing
 # Import necessary libraries and functions to be tested.
 import pandas as pd
 import numpy as np
+import matplotlib as plt
 import warnings
 import numpy.testing as npt
 import pytest
@@ -50,6 +51,7 @@ from ngmt.utils.preprocessing import (
     pam_plot_results,
     pham_plot_results,
     process_postural_transitions_stationary_periods,
+    pham_turn_plot_results,
 )
 from ngmt.utils.quaternion import (
     quatinv,
@@ -62,6 +64,7 @@ from ngmt.utils.quaternion import (
     quat2axang,
     axang2rotm,
 )
+from ngmt.modules.td import PhamTurnDetection
 
 
 # Generate a random sinusoidal signal with varying amplitudes to use as an input in testing functions
@@ -1779,7 +1782,6 @@ def test_organize_and_pack_results(walking_periods, peak_steps, expected_results
         item for sublist in actual_results for item in sublist.items()
     ]
 
-
 # Define some test data
 quaternions = np.array(
     [
@@ -1873,9 +1875,8 @@ def test_quatconj(q, expected):
         ),  # Test case 3
     ],
 )
-def test_quatmultiply(q1, q2, expected):
+def test_quatmultiply(q1, q2):
     result = quatmultiply(q1, q2)
-
 
 # Test function for rotm2quat function
 @pytest.mark.parametrize(
@@ -2083,7 +2084,6 @@ def test_quatmultiply(q1_shape, q2_shape, scalar_first, channels_last):
     if not channels_last:
         assert result.shape == q1.T.shape  # Check the shape after transpose
 
-
 # Test function for axang2rotm function
 @pytest.mark.parametrize(
     "axang, expected",
@@ -2096,6 +2096,186 @@ def test_axang2rotm(axang, expected):
     axang = axang.reshape(-1, 4)
     result = axang2rotm(axang)
     assert np.allclose(result, expected)
+
+# Test functions for PhamTurnDetection class
+def test_invalid_sampling_freq_pham_td():
+    # Initialize PhamTurnDetection object
+    pham = PhamTurnDetection()
+
+    # Test with invalid sampling frequency
+    invalid_sampling_freq = "invalid"
+    with pytest.raises(ValueError):
+        pham.detect(data=sample_data, sampling_freq_Hz=invalid_sampling_freq, plot_results=False)
+
+def test_invalid_plot_results_pham_td():
+    # Initialize PhamTurnDetection object
+    pham = PhamTurnDetection()
+
+    # Test with invalid plot_results
+    invalid_plot_results = "invalid"
+    with pytest.raises(ValueError):
+        pham.detect(data=sample_data, sampling_freq_Hz=200, plot_results=invalid_plot_results)
+
+def test_invalid_sampling_freq_pham_td():
+    # Initialize PhamTurnDetection object
+    pham = PhamTurnDetection()
+
+    # Test with invalid sampling frequency
+    invalid_sampling_freq = "invalid"
+    with pytest.raises(ValueError):
+        pham.detect(data=sample_data, sampling_freq_Hz=invalid_sampling_freq, plot_results=False)
+
+def test_invalid_plot_results_pham_td():
+    # Initialize PhamTurnDetection object
+    pham = PhamTurnDetection()
+
+    # Test with invalid plot_results
+    invalid_plot_results = "invalid"
+    with pytest.raises(ValueError):
+        pham.detect(data=sample_data, sampling_freq_Hz=200, plot_results=invalid_plot_results)
+
+@pytest.fixture
+def detector():
+    return PhamTurnDetection()
+
+@pytest.fixture
+def sample_data():
+    # Create a sample accelerometer and gyroscope data
+    accel_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Accel_X', 'Accel_Y', 'Accel_Z'])
+    gyro_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Gyro_X', 'Gyro_Y', 'Gyro_Z'])
+    data = pd.concat([accel_data, gyro_data], axis=1)
+    return data
+
+def test_bias_calculation(detector, sample_data):
+    # Test the calculation of gyro bias
+    detector = detector.detect(sample_data, 100)
+    
+    # Select gyro data and convert it to numpy array format
+    gyro = sample_data.iloc[:, 3:6].copy()
+    gyro = gyro.to_numpy()
+
+    # Convert gyro data unit from deg/s to rad/s
+    gyro *= np.pi/180
+
+    # Compute the variance of the moving window of gyro signal
+    gyro_vars = []
+
+    for i in range(3):
+        gyro_var = moving_var(data=gyro[:, i], window=100)
+        gyro_vars.append(gyro_var)
+
+    gyro_var_1, gyro_var_2, gyro_var_3 = gyro_vars
+
+    # Threshold value for identifying periods where the variance is low
+    thr = 2 * 10**-4
+    
+    # Identify periods where the variance is below the threshold
+    locs = (gyro_var_1 <= thr) & (gyro_var_2 <= thr) & (gyro_var_3 <= thr)
+    
+    # Exclude the last 'sampling_freq_Hz' samples from the identified periods
+    locs[-100:] = False
+    # Find the start and end indices of the first bias period
+    locs_place = np.where(locs)[0]
+    location = np.array([[locs_place[0]], [locs_place[0] + 100 - 1]])
+    
+    # Calculate the bias for each axis within the identified period
+    gyro_bias = np.mean(gyro[location[0, 0]:location[1, 0] + 1], axis=0)
+
+    # Manually calculate the gyro bias for comparison
+    locs_place = np.where(detector.locs)[0]
+    location = np.array([[locs_place[0]], [locs_place[0] + 100 - 1]])  # Assuming sampling_freq_Hz is 100
+
+@pytest.fixture
+def detector():
+    return PhamTurnDetection()
+
+@pytest.fixture
+def valid_data():
+    # Create valid data with 6 columns (3 for accelerometer and 3 for gyro)
+    data = pd.DataFrame(np.random.rand(100, 6), columns=['Accel_X', 'Accel_Y', 'Accel_Z', 'Gyro_X', 'Gyro_Y', 'Gyro_Z'])
+    return data
+
+@pytest.fixture
+def invalid_data():
+    # Create invalid data with less than 6 columns
+    data = pd.DataFrame(np.random.rand(100, 5), columns=['Accel_X', 'Accel_Y', 'Accel_Z', 'Gyro_X', 'Gyro_Y'])
+    return data
+
+def test_data_shape_valid(detector, valid_data):
+    # Test valid data shape
+    try:
+        detector.detect(valid_data, 100)
+    except ValueError as e:
+        pytest.fail("Valid data raised ValueError unexpectedly: {}".format(e))
+
+def test_data_shape_invalid(detector, invalid_data):
+    # Test invalid data shape
+    with pytest.raises(ValueError):
+        detector.detect(invalid_data, 100)
+
+@pytest.fixture
+def valid_sampling_freq():
+    return 100 
+
+@pytest.fixture
+def invalid_sampling_freq():
+    return 0 
+
+def test_sampling_freq_valid(detector, valid_sampling_freq):
+    # Test valid sampling frequency
+    try:
+        data = pd.DataFrame(np.random.rand(100, 6))
+        detector.detect(data, valid_sampling_freq)
+    except ValueError as e:
+        pytest.fail("Valid sampling frequency raised ValueError unexpectedly: {}".format(e))
+
+def test_sampling_freq_invalid(detector, invalid_sampling_freq):
+    # Test invalid sampling frequency
+    with pytest.raises(ValueError):
+        data = pd.DataFrame(np.random.rand(100, 6))
+        detector.detect(data, invalid_sampling_freq)
+
+@pytest.fixture
+def valid_plot_results():
+    return True  # Valid boolean value for plot_results
+
+@pytest.fixture
+def invalid_plot_results():
+    return "invalid"  # Invalid non-boolean value for plot_results
+
+def test_plot_results_valid(detector, valid_plot_results):
+    # Test valid plot_results value
+    try:
+        data = pd.DataFrame(np.random.rand(100, 6))
+        detector.detect(data, 100, plot_results=valid_plot_results)
+    except ValueError as e:
+        pytest.fail("Valid plot_results value raised ValueError unexpectedly: {}".format(e))
+
+def test_plot_results_invalid(detector, invalid_plot_results):
+    # Test invalid plot_results value
+    with pytest.raises(ValueError):
+        data = pd.DataFrame(np.random.rand(100, 6))
+        detector.detect(data, 100, plot_results=invalid_plot_results)
+
+# Test function for gsd_plot_results without plotting
+def test_pham_turn_plot_results_no_plot(monkeypatch):
+    # Define a mock function for plt.show() that does nothing
+    def mock_show():
+        pass
+    # Generate mock data
+    accel = np.random.rand(100, 3)  # Acceleration data
+    gyro = np.random.rand(100, 3)   # Gyroscope data
+    detected_turns = pd.DataFrame({
+        "onset": [10.5, 20.0, 35.2],
+        "duration": [2.0, 1.5, 3.0]
+    })  # Detected turns DataFrame
+    sampling_freq_Hz = 50.0  # Sampling frequency
+
+    # Monkeypatch plt.show() with the mock function
+    monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
+
+    # Call the function
+    pham_turn_plot_results(accel, gyro, detected_turns, sampling_freq_Hz)
 
 
 # Run the tests with pytest
