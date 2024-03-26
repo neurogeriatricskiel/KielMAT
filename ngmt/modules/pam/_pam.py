@@ -84,12 +84,12 @@ class PhysicalActivityMonitoring:
         self,
         data: pd.DataFrame,
         sampling_freq_Hz: float,
-        thresholds_mg: dict = {
+        thresholds_mg: dict[str, float] = {
             "sedentary_threshold": 45,
             "light_threshold": 100,
             "moderate_threshold": 400,
         },
-        epoch_duration_sec: int = 5,
+        epoch_duration_sec: float = 5,
         plot: bool = True,
     ) -> pd.DataFrame:
         """
