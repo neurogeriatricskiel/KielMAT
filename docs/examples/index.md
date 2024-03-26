@@ -5,7 +5,8 @@ This is a collection of examples to explain various parts of the NGMT toolbox.
 ## Basic NGMT usage
 
 ### [Example 0: Introduction to the NGMT toolbox](00_tutorial_basics.md)
-### [Example 1: Events in dataclass](04_tutorial_events_in_dataclass.md)
+### [Example 1: Load data into NGMT](06_tutorial_lowlevel_import.md)
+### [Example 2: Events in dataclass](04_tutorial_events_in_dataclass.md)
 
 ## Modules of NGMT
 

@@ -10,6 +10,7 @@ import scipy.integrate
 import scipy.ndimage
 import pywt
 from ngmt.utils import quaternion
+from ngmt.config import cfg_colors
 
 
 # use the importlib.resources package to access the FIR_2_3Hz_40.mat file
@@ -1083,6 +1084,7 @@ def gsd_plot_results(
         np.arange(len(detected_activity_signal)) / (60 * target_sampling_freq_Hz),
         detected_activity_signal,
         label="Pre-processed acceleration signal",
+        color = cfg_colors["prep"][0]
     )
     plt.title("Detected gait sequences", fontsize=20)
     plt.xlabel("Time (minutes)", fontsize=20)
@@ -1092,7 +1094,7 @@ def gsd_plot_results(
     for index, sequence in gait_sequences_.iterrows():
         onset = sequence["onset"] / 60  # Convert to minutes
         end_time = (sequence["onset"] + sequence["duration"]) / 60  # Convert to minutes
-        plt.axvline(onset, color="g")
+        plt.axvline(onset, color=cfg_colors["raw"][1])
         plt.axvspan(onset, end_time, facecolor="grey", alpha=0.8)
     plt.legend(
         ["Pre-processed acceleration signal", "Gait onset", "Gait duration"],
