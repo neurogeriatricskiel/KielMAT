@@ -77,7 +77,7 @@ def load_recording(
             "tracked_point": [],
             "units": [],
             "sampling_frequency": [],
-        } # ['name', 'component', 'type', 'tracked_point', 'units', 'sampling_frequency']
+        }  # ['name', 'component', 'type', 'tracked_point', 'units', 'sampling_frequency']
 
         data_arr = None
         for tracked_point in data_dict["TimeMeasure1"]["Recording4"][tracksys].keys():
@@ -105,7 +105,8 @@ def load_recording(
                             for ch_comp in MAP_CHANNEL_COMPONENTS[ch_type]
                         ]
                         channel_data[tracksys]["type"] += [
-                            MAP_CHANNEL_TYPES[ch_type] for _ in range(len(MAP_CHANNEL_COMPONENTS[ch_type]))
+                            MAP_CHANNEL_TYPES[ch_type]
+                            for _ in range(len(MAP_CHANNEL_COMPONENTS[ch_type]))
                         ]
                         channel_data[tracksys]["component"] += [
                             ch_comp for ch_comp in MAP_CHANNEL_COMPONENTS[ch_type]
