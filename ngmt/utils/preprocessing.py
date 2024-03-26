@@ -1084,7 +1084,7 @@ def gsd_plot_results(
         np.arange(len(detected_activity_signal)) / (60 * target_sampling_freq_Hz),
         detected_activity_signal,
         label="Pre-processed acceleration signal",
-        color = cfg_colors["prep"][0]
+        color=cfg_colors["prep"][0],
     )
     plt.title("Detected gait sequences", fontsize=20)
     plt.xlabel("Time (minutes)", fontsize=20)
