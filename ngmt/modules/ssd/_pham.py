@@ -65,7 +65,7 @@ class PhamSittoStandStandtoSitDetection:
     def __init__(
         self,
         cutoff_freq_hz: float = 5.0,
-        accel_convert_unit = 9.81,
+        accel_convert_unit=9.81,
         tracking_systems: str = "imu",
         tracked_points: str = "LowerBack",
     ):
