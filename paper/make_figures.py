@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from ngmt.datasets import mobilised
 from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
+plt.rcParams.update({f"axes.spines.{which}": False for which in ["top", "right", "bottom", "left"]})
 
 # from ngmt.config import cfg_colors
 
@@ -47,22 +48,17 @@ def main() -> None:
     # Plot
     iplot = True
     if iplot:
-        fig, axs = plt.subplots(2, 1, sharex=True, figsize=(6 * 1 / 2.54, 4 * 1 / 2.54))
-        axs[0].plot(np.arange(acc_data.shape[0]) / fs, acc_data)
-        axs[1].plot(np.arange(gyr_data.shape[0]) / fs, gyr_data)
-        for ax in axs:
-            ax.spines[["top", "right", "bottom", "left"]].set_visible(False)
-            ax.set_xticks([])
-            ax.set_xticklabels([])
-            ax.set_xlabel("")
-            ax.set_yticks([])
-            ax.set_yticklabels([])
-            ax.set_ylabel("")
-        axs[0].set_ylim((-1, 2))
-        axs[1].set_ylim((-200, 200))
-        axs[1].set_xlim((1322.0, 1340.0))
+        fig, ax = plt.subplots(figsize=(6*1/2.54, 3.5*1/2.54))
+        ax.plot(np.arange(acc_data.shape[0]) / fs, acc_data)
+        for _, (onset, duration) in gsd.gait_sequences_[["onset", "duration"]].iterrows():
+            ax.axvspan(onset, onset + duration, color="tab:pink", ec="none", alpha=0.1)
+        ax.set_xlim((1318.0, 1342.0))
+        ax.set_xlabel("")
+        ax.set_ylabel("")
+        ax.set_xticks([])
+        ax.set_yticks([])
         plt.tight_layout()
-        plt.show()
+        plt.savefig("fig_gs_example.png", dpi=300)
     return
 
 
