@@ -147,47 +147,47 @@ class PhamTurnDetection:
         thr = 2 * 10**-4
         
         # Identify periods where the variance is below the threshold
-        locs = (gyro_var_1 <= thr) & (gyro_var_2 <= thr) & (gyro_var_3 <= thr)
+        self.locs = (gyro_var_1 <= thr) & (gyro_var_2 <= thr) & (gyro_var_3 <= thr)
         
         # Exclude the last 'sampling_freq_Hz' samples from the identified periods
-        locs[-sampling_freq_Hz:] = False
+        self.locs[-sampling_freq_Hz:] = False
         
         # If no bias periods are found, return the original gyro values
-        if np.sum(locs) == 0:
+        if np.sum(self.locs) == 0:
             gyro_out = gyro
             return gyro_out
         
         # Find the start and end indices of the first bias period
-        locs_place = np.where(locs)[0]
+        locs_place = np.where(self.locs)[0]
         location = np.array([[locs_place[0]], [locs_place[0] + sampling_freq_Hz - 1]])
         
         # Calculate the bias for each axis within the identified period
-        gyro_bias = np.mean(gyro[location[0, 0]:location[1, 0] + 1], axis=0)
+        self.gyro_bias = np.mean(gyro[location[0, 0]:location[1, 0] + 1], axis=0)
         
         # Subtract the bias from the original gyro signal
-        gyro = gyro - gyro_bias
+        gyro = gyro - self.gyro_bias
 
         # Integrate x component of the gyro signal to get yaw angle (also convert gyro unit to deg/s)
-        yaw = scipy.integrate.cumtrapz(gyro[:, 0] / self.gyro_convert_unit, initial=0) / sampling_freq_Hz
+        self.yaw = scipy.integrate.cumtrapz(gyro[:, 0] / self.gyro_convert_unit, initial=0) / sampling_freq_Hz
 
         # Find zero-crossings indices
-        index_zero_crossings = np.where(np.diff(np.sign(gyro[:, 0])))[0]  
+        self.index_zero_crossings = np.where(np.diff(np.sign(gyro[:, 0])))[0]  
 
         # Calculate turns from yaw angle
-        turns_all = yaw[index_zero_crossings[1:]] - yaw[index_zero_crossings[:-1]]  
+        self.turns_all = self.yaw[self.index_zero_crossings[1:]] - self.yaw[self.index_zero_crossings[:-1]]  
         
         # Marks hesitations in the signal
         # Initialize an array to mark hesitations
-        hesitation_markers = np.zeros(len(turns_all))
+        hesitation_markers = np.zeros(len(self.turns_all))
 
         # Loop through each index in the turns_all array
-        for i in range(len(turns_all)):
+        for i in range(len(self.turns_all)):
             # Check if the absolute value of the turn angle at index i is greater than or equal to 10
-            if abs(turns_all[i]) >= 10:
+            if abs(self.turns_all[i]) >= 10:
                 # Loop to search for potential hesitations
-                for j in range(i + 1, len(turns_all)):
+                for j in range(i + 1, len(self.turns_all)):
                     # Check if the difference between current index and i exceeds 4, or if the time between zero crossings exceeds half a second
-                    if (j - i) > 4 or (index_zero_crossings[j] - index_zero_crossings[i + 1] > (sampling_freq_Hz / 2)):
+                    if (j - i) > 4 or (self.index_zero_crossings[j] - self.index_zero_crossings[i + 1] > (sampling_freq_Hz / 2)):
                         # Break the loop if the conditions for hesitation are not met
                         break
                     else:
@@ -195,10 +195,10 @@ class PhamTurnDetection:
                         # - Absolute values of both turns are greater than or equal to 10
                         # - The relative change in yaw angle is less than 20% of the minimum turn angle
                         # - The signs of both turns are the same
-                        if (abs(turns_all[i]) >= 10 and abs(turns_all[j]) >= 10 and
-                            abs(yaw[index_zero_crossings[i + 1]] - yaw[index_zero_crossings[j]]) /
-                            min(abs(turns_all[i]), abs(turns_all[j])) < 0.2 and
-                            np.sign(turns_all[i]) == np.sign(turns_all[j])):
+                        if (abs(self.turns_all[i]) >= 10 and abs(self.turns_all[j]) >= 10 and
+                            abs(self.yaw[self.index_zero_crossings[i + 1]] - self.yaw[self.index_zero_crossings[j]]) /
+                            min(abs(self.turns_all[i]), abs(self.turns_all[j])) < 0.2 and
+                            np.sign(self.turns_all[i]) == np.sign(self.turns_all[j])):
                             
                             # Mark the range between i and j (inclusive) as a hesitation
                             hesitation_markers[i:j+1] = 1
@@ -219,23 +219,23 @@ class PhamTurnDetection:
             if hesitation_markers[i] == 1:
                 # Check if sum_temp is zero, indicating the start of a new turn
                 if sum_temp == 0:
-                    f1 = index_zero_crossings[i]  # Store the start index of the turn
+                    f1 = self.index_zero_crossings[i]  # Store the start index of the turn
                 
                 # Check if the absolute value of the turn angle is greater than or equal to 10
-                if abs(turns_all[i]) >= 10:
+                if abs(self.turns_all[i]) >= 10:
                     try:
                         # Check if the next index also has a hesitation marker
                         if hesitation_markers[i + 1] != 0:
                             # Iterate through subsequent indices to find the end of the turn
                             for j in range(i + 1, len(hesitation_markers)):
                                 # Check if the absolute value of the turn angle is greater than or equal to 10
-                                if abs(turns_all[j]) >= 10:
+                                if abs(self.turns_all[j]) >= 10:
                                     # Check if the signs of the turn angles are the same
-                                    if np.sign(turns_all[j]) == np.sign(turns_all[i]):
-                                        sum_temp += turns_all[i]  # Accumulate the turn angle
+                                    if np.sign(self.turns_all[j]) == np.sign(self.turns_all[i]):
+                                        sum_temp += self.turns_all[i]  # Accumulate the turn angle
                                     else:
                                         f2 = hesitation_markers[i + 1]  # Store the end index of the turn
-                                        sum_temp += turns_all[i]  # Accumulate the turn angle
+                                        sum_temp += self.turns_all[i]  # Accumulate the turn angle
                                         turns_no_hesitation.append(sum_temp)  # Store the turn angle without hesitation
                                         flags_start_no_hesitation.append(f1)  # Store the start index of the turn
                                         flags_end_no_hesitation.append(f2)  # Store the end index of the turn
@@ -245,8 +245,8 @@ class PhamTurnDetection:
                                         del f1, f2  # Delete stored indices to avoid conflicts
                                     break  # Exit the loop once the turn is processed
                         else:
-                            f2 = index_zero_crossings[i + 1]  # Store the end index of the turn
-                            sum_temp += turns_all[i]  # Accumulate the turn angle
+                            f2 = self.index_zero_crossings[i + 1]  # Store the end index of the turn
+                            sum_temp += self.turns_all[i]  # Accumulate the turn angle
                             turns_no_hesitation.append(sum_temp)  # Store the turn angle without hesitation
                             flags_start_no_hesitation.append(f1)  # Store the start index of the turn
                             flags_end_no_hesitation.append(f2)  # Store the end index of the turn
@@ -255,8 +255,8 @@ class PhamTurnDetection:
                             del f1, f2  # Delete stored indices to avoid conflicts
                             sum_temp = 0  # Reset the temporary sum
                     except:
-                        f2 = index_zero_crossings[i + 1]  # Store the end index of the turn
-                        sum_temp += turns_all[i]  # Accumulate the turn angle
+                        f2 = self.index_zero_crossings[i + 1]  # Store the end index of the turn
+                        sum_temp += self.turns_all[i]  # Accumulate the turn angle
                         turns_no_hesitation.append(sum_temp)  # Store the turn angle without hesitation
                         flags_start_no_hesitation.append(f1)  # Store the start index of the turn
                         flags_end_no_hesitation.append(f2)  # Store the end index of the turn
@@ -265,12 +265,12 @@ class PhamTurnDetection:
                         del f1, f2  # Delete stored indices to avoid conflicts
                         sum_temp = 0  # Reset the temporary sum
                 else:
-                    sum_temp += turns_all[i]  # Accumulate the turn angle if it's smaller than 10 degrees
+                    sum_temp += self.turns_all[i]  # Accumulate the turn angle if it's smaller than 10 degrees
             else:  # If there's no hesitation marker at the current index
-                turns_no_hesitation.append(turns_all[i])  # Store the turn angle without hesitation
-                flags_start_no_hesitation.append(index_zero_crossings[i])  # Store the start index of the turn
-                flags_end_no_hesitation.append(index_zero_crossings[i + 1])  # Store the end index of the turn
-                durations_no_hesitation.append((index_zero_crossings[i + 1] - index_zero_crossings[i]) / sampling_freq_Hz)  # Calculate and store the duration of the turn
+                turns_no_hesitation.append(self.turns_all[i])  # Store the turn angle without hesitation
+                flags_start_no_hesitation.append(self.index_zero_crossings[i])  # Store the start index of the turn
+                flags_end_no_hesitation.append(self.index_zero_crossings[i + 1])  # Store the end index of the turn
+                durations_no_hesitation.append((self.index_zero_crossings[i + 1] - self.index_zero_crossings[i]) / sampling_freq_Hz)  # Calculate and store the duration of the turn
                 z += 1  # Increment the turn index
 
         # Initialize lists to store information about turns >= 90 degrees
@@ -294,7 +294,7 @@ class PhamTurnDetection:
         angular_velocity_start = []  # List to store angular velocities at the start of >= 90 degree turns
         angular_velocity_end = []  # List to store angular velocities at the end of >= 90 degree turns
         angular_velocity_middle = []  # List to store angular velocities in the middle of >= 90 degree turns
-        diff_yaw = np.diff(yaw)  # Compute difference in yaw angle
+        diff_yaw = np.diff(self.yaw)  # Compute difference in yaw angle
 
         # Calculate additional information for each >= 90 degree turn
         for k in range(len(flags_start_90)):

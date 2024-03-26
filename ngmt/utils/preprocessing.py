@@ -1352,6 +1352,10 @@ def process_postural_transitions_stationary_periods(
             flexion_max_vel (list): List of maximum flexion velocities.
             extension_max_vel (list): List of maximum extension velocities.
     """
+    # Check if input arrays are empty
+    if any(arr.size == 0 for arr in [time, accel, gyro, stationary, tilt_angle_deg]):
+        raise ValueError("Input arrays cannot be empty")
+
     # If there is enough stationary data, perform sensor fusion using accelerometer and gyro data
     # Initialize quaternion array for orientation estimation
     quat = np.zeros((len(time), 4))

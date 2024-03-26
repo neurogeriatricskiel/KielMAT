@@ -565,8 +565,6 @@ def test_plot_results_pham():
         )
 
 
-
-
 # Run the tests with pytest
 if __name__ == "__main__":
     pytest.main()
