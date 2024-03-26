@@ -3,7 +3,10 @@ import matplotlib.pyplot as plt
 from ngmt.datasets import mobilised
 from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
-plt.rcParams.update({f"axes.spines.{which}": False for which in ["top", "right", "bottom", "left"]})
+
+plt.rcParams.update(
+    {f"axes.spines.{which}": False for which in ["top", "right", "bottom", "left"]}
+)
 
 # from ngmt.config import cfg_colors
 
@@ -48,9 +51,11 @@ def main() -> None:
     # Plot
     iplot = True
     if iplot:
-        fig, ax = plt.subplots(figsize=(6*1/2.54, 3.5*1/2.54))
+        fig, ax = plt.subplots(figsize=(6 * 1 / 2.54, 3.5 * 1 / 2.54))
         ax.plot(np.arange(acc_data.shape[0]) / fs, acc_data)
-        for _, (onset, duration) in gsd.gait_sequences_[["onset", "duration"]].iterrows():
+        for _, (onset, duration) in gsd.gait_sequences_[
+            ["onset", "duration"]
+        ].iterrows():
             ax.axvspan(onset, onset + duration, color="tab:pink", ec="none", alpha=0.1)
         ax.set_xlim((1318.0, 1342.0))
         ax.set_xlabel("")
