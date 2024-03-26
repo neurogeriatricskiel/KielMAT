@@ -18,7 +18,7 @@ We have implemented validated algorithms in modules to process motion data, such
    - Gait sequence detection (GSD)
    - Inital contact detection (ICD)
    - Physical activity monitoring (PAM)
-   - Postrual transition detection (SSD)
+   - Postural transition detection (SSD)
    - More to follow ...
 
 The idea is that various motion data can be loaded into our dedicated dataclass which rely on principles from the [Motion-BIDS](https://bids-specification.readthedocs.io/en/latest/modality-specific-files/motion.html) standard.
