@@ -191,7 +191,7 @@ In order to apply gait sequence detection algorithm, an instance of the Paraschi
 
 ```python
 # Create an instance of the ParaschivIonescuGaitSequenceDetection class
-gsd = ParaschivIonescuGaitSequenceDetection(target_sampling_freq_Hz=40)
+gsd = ParaschivIonescuGaitSequenceDetection()
 
 # Call the gait sequence detection using gsd.detect
 gsd = gsd.detect(

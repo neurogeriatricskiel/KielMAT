@@ -36,7 +36,6 @@ class ParaschivIonescuGaitSequenceDetection:
     `duration`, `event_type`, `tracking_systems`, and `tracked_points` as Pandas DataFrame.
 
     Attributes:
-        target_sampling_freq_Hz (float): Target sampling frequency for resampling the data. Defaults to 40 Hz.
         event_type (str): Type of the detected event. Defaults to 'gait sequence'.
         tracking_systems (str): Tracking systems used. Defaults to 'SU'.
         tracked_points (str): Tracked points on the body. Defaults to 'LowerBack'.
