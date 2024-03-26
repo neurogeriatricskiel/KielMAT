@@ -5,6 +5,16 @@ import os
 from ngmt.utils.ngmt_dataclass import NGMTRecording
 
 
+REQUIRED_COLUMNS = [
+    "name",
+    "component",
+    "type",
+    "tracked_point",
+    "units",
+    "sampling_frequency",
+]
+
+
 def load_recording(
     file_name: str | pathlib.Path,
     tracking_systems: str | list[str],
@@ -79,6 +89,7 @@ def load_recording(
             ]
 
             # Put data and channels in output dictionaries
+            col_names = [c for c in REQUIRED_COLUMNS] + [c for c in df_channels.columns if c not in REQUIRED_COLUMNS]
             data_dict[tracksys] = df_data
-            channels_dict[tracksys] = df_channels
+            channels_dict[tracksys] = df_channels[col_names]
     return NGMTRecording(data=data_dict, channels=channels_dict)
