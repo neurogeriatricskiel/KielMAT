@@ -17,7 +17,7 @@ def import_axivity(file_path: str, tracked_point: str):
     Returns:
         NGMTRecording: The NGMTRecording object containing the imported data.
 
-    Example:
+    Examples:
         >>> file_path = "/path/to/axivity_data.cwa"
         >>> tracked_point = "lowerBack"
         >>> recording = import_axivity(file_path, tracked_point)
