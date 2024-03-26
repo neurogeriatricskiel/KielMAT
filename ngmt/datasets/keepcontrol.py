@@ -89,7 +89,9 @@ def load_recording(
             ]
 
             # Put data and channels in output dictionaries
-            col_names = [c for c in REQUIRED_COLUMNS] + [c for c in df_channels.columns if c not in REQUIRED_COLUMNS]
+            col_names = [c for c in REQUIRED_COLUMNS] + [
+                c for c in df_channels.columns if c not in REQUIRED_COLUMNS
+            ]
             data_dict[tracksys] = df_data
             channels_dict[tracksys] = df_channels[col_names]
     return NGMTRecording(data=data_dict, channels=channels_dict)
