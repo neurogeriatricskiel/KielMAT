@@ -32,14 +32,6 @@ class ParaschivIonescuInitialContactDetection:
         detect(data, gait_sequences, sampling_freq_Hz):
             Detects initial contacts on the accelerometer signal.
 
-            Args:
-                data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
-                gait_sequences (pd.DataFrame): Gait sequences detected using ParaschivIonescuGaitSequenceDetectionDataframe algorithm.
-                sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
-
-            Returns:
-                self (pd.DataFrame): DataFrame containing initial contact information in BIDS format.
-
     Examples:
         Find initial contacts based on the detected gait sequence
 

@@ -61,6 +61,9 @@ nav:
     - Fair-Park II: datasets/fairpark.md
   - Utilities: 
     - utils/index.md
+    - Data Preprocessing: utils/preprocessing.md
+    - Data Import: utils/importers.md
+    - Orientation Estimation: utils/orientation_estimation.md
 
 markdown_extensions:
 - pymdownx.superfences:

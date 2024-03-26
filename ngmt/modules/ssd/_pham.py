@@ -37,27 +37,18 @@ class PhamSittoStandStandtoSitDetection:
 
     Attributes:
         cutoff_freq_hz (float, optional): Cutoff frequency for low-pass Butterworth filer. Default is 5.
-        accel_convert_unit (float): Conevrsion of acceleration unit from g to m/s^2
+        accel_convert_unit (float): Conversion of acceleration unit from g to m/s^2
         tracking_systems (str, optional): Tracking systems used. Default is 'imu'.
         tracked_points (str, optional): Tracked points on the body. Default is 'LowerBack'.
 
     Methods:
         detect(data, sampling_freq_Hz):
-            Detects  sit to stand and stand to sit using accelerometer and gyro signals.
-
-            Args:
-                data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
-                sampling_freq_Hz (float, int): Sampling frequency of the signals.
-                plot_results (bool, optional): If True, generates a plot. Default is False.
-
-            Returns:
-                PhamSittoStandStandtoSitDetection: an instance of the class with the detected gait sequences
-                stored in the 'postural_transitions_' attribute.
+            Detects  sit to stand and stand to sit events using accelerometer and gyro signals.
 
     Examples:
         >>> pham = PhamSittoStandStandtoSitDetection()
         >>> pham.detect(
-                data=,
+                data=df_data,
                 sampling_freq_Hz=200,
                 )
         >>> print(pham.postural_transitions_)
@@ -74,7 +65,7 @@ class PhamSittoStandStandtoSitDetection:
     def __init__(
         self,
         cutoff_freq_hz: float = 5.0,
-        accel_convert_unit=9.81,
+        accel_convert_unit = 9.81,
         tracking_systems: str = "imu",
         tracked_points: str = "LowerBack",
     ):

@@ -44,21 +44,6 @@ class ParaschivIonescuGaitSequenceDetection:
         detect(data, sampling_freq_Hz, plot_results=False):
             Detects gait sequences in the provided accelerometer data.
 
-            Args:
-                data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
-                sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
-                plot_results (bool, optional): If True, generates a plot of the pre-processed data and the detected gait sequences. Defaults to False.
-                dt_data (str, optional): Name of the original datetime in the input data. If original datetime is provided, the output onset will be based on that.
-
-        Returns:
-            ParaschivIonescuGaitSequenceDetection:
-                which is a pandas DataFrame in BIDS format with the following columns:
-            onset: Start time of the gait sequence.
-            duration: Duration of the gait sequence.
-            event_type: Type of the event (default is 'gait sequence').
-            tracking_systems: Tracking systems used (default is 'SU').
-            tracked_points: Tracked points on the body (default is 'LowerBack').
-
     Examples:
         >>> gsd = ParaschivIonescuGaitSequenceDetection()
         >>> gsd.detect(data=acceleration_data, sampling_freq_Hz=100, plot_results=True)

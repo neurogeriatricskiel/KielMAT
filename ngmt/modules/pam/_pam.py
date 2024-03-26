@@ -40,17 +40,6 @@ class PhysicalActivityMonitoring:
         detect(data, sampling_freq_Hz, thresholds_mg, epoch_duration_sec, plot):
             Detects gait sequences on the accelerometer signal.
 
-        Args:
-            data (pd.DataFrame): Input data with time index and accelerometer data (N, 3) for x, y, and z axes.
-            sampling_freq_Hz (float): Sampling frequency of the accelerometer data (in Hertz).
-            thresholds_mg (dict): Dictionary containing threshold values for physical activity detection.
-            epoch_duration_sec (int): Duration of each epoch in seconds.
-            plot (bool): If True, generates a plot showing the average Euclidean Norm Minus One (ENMO). Default is True.
-
-        Returns:
-            PhysicalActivityMonitoring: An instance of the class with the physical activity levels information stored
-            in the 'physical_activities_' attribute.
-
     Examples:
         >>> pam = PhysicalActivityMonitoring()
         >>> pam.detect(
