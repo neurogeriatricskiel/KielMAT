@@ -60,7 +60,7 @@ nav:
     - Mobilise-D: datasets/mobilised.md
     - Fair-Park II: datasets/fairpark.md
   - Utilities: 
-    - utilities/index.md
+    - utils/index.md
 
 markdown_extensions:
 - pymdownx.superfences:
