@@ -1,9 +1,10 @@
 import actipy
 import numpy as np
 import pandas as pd
-from ngmt.utils.ngmt_dataclass import NGMTRecording 
+from ngmt.utils.ngmt_dataclass import NGMTRecording
 from ngmt.utils.file_io import get_unit_from_type
 from pathlib import Path
+
 
 def import_axivity(file_path: str, tracked_point: str):
     """
@@ -27,10 +28,11 @@ def import_axivity(file_path: str, tracked_point: str):
         file_path = Path(file_path)
 
     # Read the Axivity data file and perform lowpass filtering and gravity calibration
-    data, info = actipy.read_device(str(file_path),
-                                    lowpass_hz=20,
-                                    calibrate_gravity=True,
-                                    )
+    data, info = actipy.read_device(
+        str(file_path),
+        lowpass_hz=20,
+        calibrate_gravity=True,
+    )
 
     # Reset the index of the data DataFrame
     data.reset_index(inplace=True)
@@ -45,11 +47,7 @@ def import_axivity(file_path: str, tracked_point: str):
     n_channels = len(accel_col_names)
 
     # Create the column names for the NGMTRecording object
-    col_names = [
-        f"{tracked_point}_{s}_{x}"
-        for s in ["ACCEL"]
-        for x in ["x", "y", "z"]
-    ]
+    col_names = [f"{tracked_point}_{s}_{x}" for s in ["ACCEL"] for x in ["x", "y", "z"]]
 
     # Create the channel dictionary following the BIDS naming conventions
     channels_dict = {
@@ -63,7 +61,8 @@ def import_axivity(file_path: str, tracked_point: str):
 
     # Create the NGMTRecording object
     recording = NGMTRecording(
-        data={tracked_point: data[accel_col_names]}, channels={tracked_point: pd.DataFrame(channels_dict)}
+        data={tracked_point: data[accel_col_names]},
+        channels={tracked_point: pd.DataFrame(channels_dict)},
     )
 
     return recording
