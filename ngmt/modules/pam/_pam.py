@@ -44,6 +44,7 @@ class PhysicalActivityMonitoring:
         >>> pam = PhysicalActivityMonitoring()
         >>> pam.detect(
                 data=acceleration_data,
+                acceleration_unit:"m/s^2",
                 sampling_freq_Hz=100,
                 thresholds_mg={
                     "sedentary_threshold": 45,
@@ -54,8 +55,8 @@ class PhysicalActivityMonitoring:
                 plot=True)
         >>> print(pam.physical_activities_)
                         sedentary_mean_mg  sedentary_time_min  light_mean_mg  light_time_min  moderate_mean_mg  moderate_time_min  vigorous_mean_mg  vigorous_time_min
-        3/19/2018               23.48               733.08          60.78              72             146.2              21.58             730.34                0.58
-        3/20/2018               27.16               753.83          57.06           102.25            137.26               7.92             737.9                 0.42
+        3/19/2018       23.48              733.08              60.78          72              146.2             21.58              730.34            0.58
+        3/20/2018       27.16              753.83              57.06          102.25          137.26            7.92               737.9             0.42
 
     References:
         [1] Doherty, Aiden, et al. (2017). Large scale population assessment of physical activity using wrist-worn accelerometers...
@@ -72,6 +73,7 @@ class PhysicalActivityMonitoring:
     def detect(
         self,
         data: pd.DataFrame,
+        acceleration_unit: str,
         sampling_freq_Hz: float,
         thresholds_mg: dict[str, float] = {
             "sedentary_threshold": 45,
@@ -86,6 +88,7 @@ class PhysicalActivityMonitoring:
 
         Args:
             data (pd.DataFrame): Input data with time index and accelerometer data (N, 3) for x, y, and z axes.
+            acceleration_unit (str): Unit of input acceleration data.
             sampling_freq_Hz (float): Sampling frequency of the accelerometer data (in Hertz).
             thresholds_mg (dict): Dictionary containing threshold values for physical activity detection.
             epoch_duration_sec (int): Duration of each epoch in seconds.
@@ -108,9 +111,12 @@ class PhysicalActivityMonitoring:
         if not isinstance(plot, bool):
             raise ValueError("Plot results must be a boolean (True or False).")
 
-        # Select accelerometer data columns and convert units from m/s^2 to g
-        data[["LARM_ACCEL_x", "LARM_ACCEL_y", "LARM_ACCEL_z"]] /= 9.81
-
+        # Check unit of acceleration data if it is in g or m/s^2
+        unit = acceleration_unit
+        if unit == "m/s^2":
+            # Convert acceleration data from m/s^2 to g (if not already is in g)
+            data /= 9.81
+        
         # Calculate Euclidean Norm (EN)
         data["en"] = np.linalg.norm(data, axis=1)
 

@@ -17,7 +17,7 @@ def load_recording(
     file_name: str | pathlib.Path,
     tracking_systems: str | list[str] = ["imu"],
     tracked_points: str | list[str] | dict[str, str] | dict[str, list[str]] = {
-        "imu": "LARM"
+        "imu": ["LARM"]
     },
 ) -> NGMTRecording:
     """
@@ -49,8 +49,10 @@ def load_recording(
             tracked_points[k] = [v]
 
     # Extract relevant metadata from filename
-    sub_id = os.path.split(file_name)[1][4:7]
-    tracked_point = os.path.split(file_name)[1][12:16]
+    file_name_parts = os.path.splitext(os.path.basename(file_name))[0].split("_")
+    tracked_point = next((part for part in file_name_parts if "imu-" in part), None)
+    if tracked_point:
+        tracked_point = tracked_point.split("-")[-1]
 
     # Load the data from the file
     col_names = [

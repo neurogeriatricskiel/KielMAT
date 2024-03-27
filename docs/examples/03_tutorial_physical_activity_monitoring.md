@@ -74,7 +74,7 @@ recording = fairpark.load_recording(
 acceleration_data = recording.data[tracking_sys][
     ["LARM_ACCEL_x", "LARM_ACCEL_y", "LARM_ACCEL_z"]
 ]
-print("Acceleration data (m/s^2):", acceleration_data)
+print(f"Acceleration data {recording.channels['imu']['units'][0]}:", acceleration_data)
 
 # Get the corresponding sampling frequency from the recording
 sampling_frequency = recording.channels["imu"]["sampling_frequency"].iloc[0]
@@ -166,13 +166,13 @@ plt.show()
 Now, we are running the physical activity monitoring algorithm from the main module [`ngmt.modules.pam._pam`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/pam/_pam.py). The inputs of the algorithm are as follows:
 
 - **Input Data:** `data` Includes data with a time index along with accelerometer data (N, 3) for x, y, and z axes in pandas Dataframe format.
+- **Acceleration Unit:** `acceleration_unit` is the unit of the acceleration data.
 - **Sampling Frequency:** `sampling_freq_Hz` is the sampling frequency of the acceleration data, defined in Hz, with a default value of 100 Hz.
 - **Thresholds:** `thresholds_mg` are provided as a dictionary containing threshold values for physical activity detection in mili-g.
 - **Epoch Duration:** `epoch_duration_sec` is the epoch length in seconds, with a default value of 5 seconds.
 - **Plot Results:** `plot_results`, if set to True, generates a plot showing the average Euclidean Norm Minus One (ENMO) per hour for each day. The default is True.
 
 To apply the physical activity monitoring algorithm, an instance of the PhysicalActivityMonitoring class is created using the constructor, `PhysicalActivityMonitoring()`. The `pam` variable holds the instance, allowing us to access its methods. The output of the algorithm includes information regarding physical activity levels and the time spent on each activity for the provided date, including the mean of sedentary time, light, moderate, and vigorous activities, along with the time spent for each of them.
-
 
 ```python
 # Create an instance of the PhysicalActivityMonitoring class
