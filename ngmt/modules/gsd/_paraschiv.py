@@ -36,7 +36,6 @@ class ParaschivIonescuGaitSequenceDetection:
     `duration`, `event_type`, `tracking_systems`, and `tracked_points` as Pandas DataFrame.
 
     Attributes:
-        event_type (str): Type of the detected event. Defaults to 'gait sequence'.
         tracking_systems (str): Tracking systems used. Defaults to 'SU'.
         tracked_points (str): Tracked points on the body. Defaults to 'LowerBack'.
 
