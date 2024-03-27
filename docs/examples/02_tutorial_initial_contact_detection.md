@@ -2,7 +2,7 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Thu 14 Mar 2024
+**Last update:** Wed 27 Mar 2024
 
 ## Learning objectives
 By the end of this tutorial:
@@ -186,7 +186,7 @@ Then, in order to apply Paraschiv-Ionescu initial contact detection algorithm, a
 
 ```python
 # Create an instance of the ParaschivIonescuGaitSequenceDetection class
-gsd = ParaschivIonescuGaitSequenceDetection(target_sampling_freq_Hz=40)
+gsd = ParaschivIonescuGaitSequenceDetection()
 
 # Call the gait sequence detection using gsd.detect to detect gait sequences
 gsd = gsd.detect(
@@ -196,12 +196,8 @@ gsd = gsd.detect(
 # Gait sequences are stored in gait_sequences_ attribute of gsd
 gait_sequences = gsd.gait_sequences_
 
-# Add events to the recording as a dictionary including tracking system and events
-gait_sequence_events = gait_sequences
-recording.add_events(tracking_system=tracking_sys, new_events=gait_sequence_events)
-
 # Now, use Paraschiv-Ionescu initial contact detection algortihm to find initial contacts within detected gait sequences.
-icd = ParaschivIonescuInitialContactDetection(target_sampling_freq_Hz=40)
+icd = ParaschivIonescuInitialContactDetection()
 
 # Call the initial contact detection using icd.detect
 icd = icd.detect(
@@ -210,32 +206,24 @@ icd = icd.detect(
     sampling_freq_Hz=sampling_frequency,
 )
 
-# Initial contacts are stored in initial_contacts_ attribute of icd
-initial_contacts = icd.initial_contacts_
-
-# Add events to the recording as a dictionary including tracking system and events
-initial_contacts_events = initial_contacts
-recording.add_events(tracking_system=tracking_sys, new_events=initial_contacts_events)
-
-# Print events types including both detected gait sequences and initial contacts
-print(recording.events)
+# Print initial contacts information
+print(icd.initial_contacts_)
 ```
-    {'SU':   onset    duration   event_type         tracking_systems    tracked_points
-    0        4.5      5.25       gait sequence      SU                  LowerBack
-    1        90.225   10.3       gait sequence      SU                  LowerBack
-    2        106.07   5.6        gait sequence      SU                  LowerBack
-    3        116.22   10.35      gait sequence      SU                  LowerBack
-    4        141.27   5.85       gait sequence      SU                  LowerBack
-    ...      ...      ...        ...                ...                 ...
-    3533     8203.2   NaN        initial contact    SU                  LowerBack
-    3534     8203.67  NaN        initial contact    SU                  LowerBack
-    3535     8204.32  NaN        initial contact    SU                  LowerBack
-    3536     8205.42  NaN        initial contact    SU                  LowerBack
-    3537     8206.1   NaN        initial contact    SU                  LowerBack
+            onset       event_type          tracking_systems    tracked_points
+    0       5.000       initial contact     SU                  LowerBack
+    1       5.600       initial contact     SU                  LowerBack
+    2       6.525       initial contact     SU                  LowerBack
+    3       7.000       initial contact     SU                  LowerBack
+    4       7.600       initial contact     SU                  LowerBack
+    ...     ...         ...                 ...                 ...
+    3447    8203.200    initial contact     SU                  LowerBack
+    3448    8203.675    initial contact     SU                  LowerBack
+    3449    8204.325    initial contact     SU                  LowerBack
+    3450    8205.425    initial contact     SU                  LowerBack
+    3451    8206.100    initial contact     SU                  LowerBack
 
-    [3538 rows x 5 columns]}
-    
-    
+[3452 rows x 4 columns]
+
 ## Visualization of the Detected Initial Contacts
 In the following, the raw data of the lower back sensor is plotted with the detected events. The events are plotted as vertical lines. The events are:
 

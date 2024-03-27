@@ -23,8 +23,6 @@ class ParaschivIonescuInitialContactDetection:
     `tracking_systems`, and `tracked_points`.
 
     Attributes:
-        target_sampling_freq_Hz (float): Target sampling frequency for resampling the data. Default is 40.
-        event_type (str): Type of the detected event. Default is 'initial contact'.
         tracking_systems (str): Tracking systems used. Default is 'SU'.
         tracked_points (str): Tracked points on the body. Default is 'LowerBack'.
 
@@ -50,8 +48,6 @@ class ParaschivIonescuInitialContactDetection:
 
     def __init__(
         self,
-        target_sampling_freq_Hz: float = 40.0,
-        event_type: str = "initial contact",
         tracking_systems: str = "SU",
         tracked_points: str = "LowerBack",
     ):
@@ -59,13 +55,9 @@ class ParaschivIonescuInitialContactDetection:
         Initializes the ParaschivIonescuInitialContactDetection instance.
 
         Args:
-            target_sampling_freq_Hz (float, optional): Target sampling frequency for resampling the data. Default is 40.
-            event_type (str, optional): Type of the detected event. Default is 'gait sequence'.
             tracking_systems (str, optional): Tracking systems used. Default is 'SU'.
             tracked_points (str, optional): Tracked points on the body. Default is 'LowerBack'.
         """
-        self.target_sampling_freq_Hz = target_sampling_freq_Hz
-        self.event_type = event_type
         self.tracking_systems = tracking_systems
         self.tracked_points = tracked_points
         self.initial_contacts_ = None
@@ -106,6 +98,9 @@ class ParaschivIonescuInitialContactDetection:
 
         # Initialize an empty list to store all onsets
         all_onsets = []
+
+        # Target sampling frequency
+        target_sampling_freq_Hz = 40.0
 
         # Process each gait sequence
         for _, gait_seq in gait_sequences.iterrows():
@@ -151,7 +146,7 @@ class ParaschivIonescuInitialContactDetection:
         self.initial_contacts_ = pd.DataFrame(
             {
                 "onset": all_onsets,
-                "event_type": self.event_type,
+                "event_type": "initial contact",
                 "tracking_systems": self.tracking_systems,
                 "tracked_points": self.tracked_points,
             }
