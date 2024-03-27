@@ -334,7 +334,7 @@ class ParaschivIonescuGaitSequenceDetection:
         ind_Wk = []
         walkLabel_1_indices = np.where(walking_labels == 1)[0]
         GSD_Output = []
-        
+
         if walkLabel_1_indices.size > 0:
             ind_Wk = preprocessing.find_consecutive_groups(walking_labels == 1)
             # Create an empty list to store 'walk' dictionaries
