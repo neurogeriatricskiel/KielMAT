@@ -116,7 +116,7 @@ class PhysicalActivityMonitoring:
         if unit == "m/s^2":
             # Convert acceleration data from m/s^2 to g (if not already is in g)
             data /= 9.81
-        
+
         # Calculate Euclidean Norm (EN)
         data["en"] = np.linalg.norm(data, axis=1)
 
