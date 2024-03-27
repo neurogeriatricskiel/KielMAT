@@ -209,6 +209,7 @@ icd = icd.detect(
 # Print initial contacts information
 print(icd.initial_contacts_)
 ```
+
             onset       event_type          tracking_systems    tracked_points
     0       5.000       initial contact     SU                  LowerBack
     1       5.600       initial contact     SU                  LowerBack
