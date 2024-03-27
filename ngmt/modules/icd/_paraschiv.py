@@ -67,6 +67,7 @@ class ParaschivIonescuInitialContactDetection:
         data: pd.DataFrame,
         gait_sequences: pd.DataFrame,
         sampling_freq_Hz: float = 100,
+        dt_data: pd.Series = None,
     ) -> pd.DataFrame:
         """
         Detects initial contacts based on the input accelerometer data.
@@ -75,20 +76,32 @@ class ParaschivIonescuInitialContactDetection:
             data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
             gait_sequences (pd.DataFrame): Gait sequence calculated using ParaschivIonescuGaitSequenceDetectionDataframe algorithm.
             sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
+            dt_data (pd.Series, optional): Original datetime in the input data. If original datetime is provided, the output onset will be based on that.
 
-            Returns:
-                ParaschivIonescuInitialContactDetection: Returns an instance of the class.
-                    The initial contacts information is stored in the 'initial_contacts_' attribute,
-                    which is a pandas DataFrame in BIDS format with the following columns:
-                        - onset: Initial contacts.
-                        - event_type: Type of the event (default is 'gait sequence').
-                        - tracking_systems: Tracking systems used (default is 'SU').
-                        - tracked_points: Tracked points on the body (default is 'LowerBack').
+        Returns:
+            ParaschivIonescuInitialContactDetection: Returns an instance of the class.
+                The initial contacts information is stored in the 'initial_contacts_' attribute,
+                which is a pandas DataFrame in BIDS format with the following columns:
+                    - onset: Initial contacts.
+                    - event_type: Type of the event (default is 'gait sequence').
+                    - tracking_systems: Tracking systems used (default is 'SU').
+                    - tracked_points: Tracked points on the body (default is 'LowerBack').
         """
         # Check if data is empty
         if data.empty:
             self.initial_contacts_ = pd.DataFrame()
-            return  # Return without performing further processing
+            return self  # Return without performing further processing
+
+        # check if dt_data is a pandas Series with datetime values
+        if dt_data is not None and (
+            not isinstance(dt_data, pd.Series)
+            or not pd.api.types.is_datetime64_any_dtype(dt_data)
+        ):
+            raise ValueError("dt_data must be a pandas Series with datetime values")
+
+        # check if dt_data is provided and if it is a series with the same length as data
+        if dt_data is not None and len(dt_data) != len(data):
+            raise ValueError("dt_data must be a series with the same length as data")
 
         # Extract vertical accelerometer data
         acc_vertical = data["LowerBack_ACCEL_x"]
@@ -152,4 +165,23 @@ class ParaschivIonescuInitialContactDetection:
             }
         )
 
+        # If original datetime is available, update the 'onset' column
+        if dt_data is not None:
+            valid_indices = [
+                index for index in self.initial_contacts_["onset"] if index < len(dt_data)
+            ]
+            invalid_indices = (
+                len(self.initial_contacts_["onset"]) - len(valid_indices)
+            )
+
+            if invalid_indices > 0:
+                print(f"Warning: {invalid_indices} invalid index/indices found.")
+
+            # Only use valid indices to access dt_data
+            valid_dt_data = dt_data.iloc[valid_indices]
+
+            # Update the 'onset' column
+            self.initial_contacts_["onset"] = valid_dt_data.reset_index(drop=True)
+
         return self
+
