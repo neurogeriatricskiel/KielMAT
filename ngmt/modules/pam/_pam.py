@@ -112,9 +112,7 @@ class PhysicalActivityMonitoring:
         data[["LARM_ACCEL_x", "LARM_ACCEL_y", "LARM_ACCEL_z"]] /= 9.81
 
         # Calculate Euclidean Norm (EN)
-        data["en"] = np.linalg.norm(
-            data[["LARM_ACCEL_x", "LARM_ACCEL_y", "LARM_ACCEL_z"]], axis=1
-        )
+        data["en"] = np.linalg.norm(data, axis=1)
 
         # Apply 4th order low-pass Butterworth filter with the cutoff frequency of 20Hz
         data["en"] = preprocessing.lowpass_filter(
@@ -142,9 +140,9 @@ class PhysicalActivityMonitoring:
         # Classify activities based on thresholds using activity_classification
         classified_processed_data = preprocessing.classify_physical_activity(
             processed_data,
-            sedentary_threshold=thresholds_mg.get("sedentary_threshold", 45),
-            light_threshold=thresholds_mg.get("light_threshold", 100),
-            moderate_threshold=thresholds_mg.get("moderate_threshold", 400),
+            sedentary_threshold=thresholds_mg.get("sedentary_threshold"),
+            light_threshold=thresholds_mg.get("light_threshold"),
+            moderate_threshold=thresholds_mg.get("moderate_threshold"),
             epoch_duration=epoch_duration_sec,
         )
 

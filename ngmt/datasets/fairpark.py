@@ -77,8 +77,8 @@ def load_recording(
     # Make the channel dictionary
     channels_dict = {
         "name": df.columns.to_list(),
-        "type": [f"{s}" for s in ["ACCEL", "ANGVEL", "MAGN"] for _ in range(3)],
         "component": [f"{x}" for _ in range(3) for x in ["x", "y", "z"]],
+        "type": [f"{s}" for s in ["ACCEL", "ANGVEL", "MAGN"] for _ in range(3)],
         "tracked_point": [tracked_point for _ in range(len(df.columns))],
         "units": [
             f"{MAP_CHANNEL_UNITS[s]}"
