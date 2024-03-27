@@ -384,7 +384,11 @@ def test_empty_input_data():
 
     # Call the detect method with empty_data
     with pytest.raises(ValueError):
-        pam.detect(data=empty_data,acceleration_unit="m/s^2", sampling_freq_Hz=sampling_frequency)
+        pam.detect(
+            data=empty_data,
+            acceleration_unit="m/s^2",
+            sampling_freq_Hz=sampling_frequency,
+        )
 
 
 def test_pam_detect_full_coverage():
@@ -441,7 +445,7 @@ def test_PhysicalActivityMonitoring():
         "LARM_ACCEL_z": np.random.uniform(-2, 2, num_samples),
     }
     acceleration_data = pd.DataFrame(acceleration_data)
-    acceleration_unit="m/s^2"
+    acceleration_unit = "m/s^2"
     sampling_frequency = 100  # Sampling frequency
     time_index = pd.date_range(
         start="2024-02-07", periods=num_samples, freq=f"{1/sampling_frequency}S"
