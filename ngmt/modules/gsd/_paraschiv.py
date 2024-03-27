@@ -60,8 +60,6 @@ class ParaschivIonescuGaitSequenceDetection:
 
     def __init__(
         self,
-        target_sampling_freq_Hz: float = 40.0,
-        event_type: str = "gait sequence",
         tracking_systems: str = "SU",
         tracked_points: str = "LowerBack",
     ):
@@ -69,13 +67,9 @@ class ParaschivIonescuGaitSequenceDetection:
         Initializes the ParaschivIonescuGaitSequenceDetection instance.
 
         Args:
-            target_sampling_freq_Hz (float, optional): Target sampling frequency for resampling the data. Default is 40.
-            event_type (str, optional): Type of the detected event. Default is 'gait sequence'.
             tracking_systems (str, optional): Tracking systems used. Default is 'SU'.
             tracked_points (str, optional): Tracked points on the body. Default is 'LowerBack'.
         """
-        self.target_sampling_freq_Hz = target_sampling_freq_Hz
-        self.event_type = event_type
         self.tracking_systems = tracking_systems
         self.tracked_points = tracked_points
         self.gait_sequences_ = None
@@ -135,8 +129,9 @@ class ParaschivIonescuGaitSequenceDetection:
 
         # Resample acceleration_norm to target sampling frequency
         initial_sampling_frequency = sampling_freq_Hz
+        target_sampling_freq_Hz = 40
         resampled_acceleration = preprocessing.resample_interpolate(
-            acceleration_norm, initial_sampling_frequency, self.target_sampling_freq_Hz
+            acceleration_norm, initial_sampling_frequency, target_sampling_freq_Hz
         )
 
         # Applying low-pass Savitzky-Golay filter to smoothen the resampled data
@@ -150,7 +145,7 @@ class ParaschivIonescuGaitSequenceDetection:
         # Remove 40Hz drift from the filtered data
         drift_removed_acceleration = preprocessing.highpass_filter(
             signal=smoothed_acceleration,
-            sampling_frequency=self.target_sampling_freq_Hz,
+            sampling_frequency=target_sampling_freq_Hz,
             method="iir",
         )
 
@@ -165,7 +160,7 @@ class ParaschivIonescuGaitSequenceDetection:
             scales=10,
             desired_scale=10,
             wavelet="gaus2",
-            sampling_frequency=self.target_sampling_freq_Hz,
+            sampling_frequency=target_sampling_freq_Hz,
         )
 
         # Applying Savitzky-Golay filter to further smoothen the wavelet transformed data
@@ -180,7 +175,7 @@ class ParaschivIonescuGaitSequenceDetection:
                 scales=10,
                 desired_scale=10,
                 wavelet="gaus2",
-                sampling_frequency=self.target_sampling_freq_Hz,
+                sampling_frequency=target_sampling_freq_Hz,
             )
         )
         further_smoothed_wavelet_result = further_smoothed_wavelet_result.T
@@ -196,9 +191,9 @@ class ParaschivIonescuGaitSequenceDetection:
         # Compute the envelope of the processed acceleration data
         envelope, _ = preprocessing.calculate_envelope_activity(
             detected_activity_signal,
-            int(round(self.target_sampling_freq_Hz)),
+            int(round(target_sampling_freq_Hz)),
             1,
-            int(round(self.target_sampling_freq_Hz)),
+            int(round(target_sampling_freq_Hz)),
         )
 
         # Initialize a list for walking bouts
@@ -210,7 +205,7 @@ class ParaschivIonescuGaitSequenceDetection:
             for j in range(len(index_ranges)):
                 if (
                     index_ranges[j, 1] - index_ranges[j, 0]
-                    <= 3 * self.target_sampling_freq_Hz
+                    <= 3 * target_sampling_freq_Hz
                 ):
                     envelope[index_ranges[j, 0] : index_ranges[j, 1] + 1] = 0
                 else:
@@ -294,18 +289,24 @@ class ParaschivIonescuGaitSequenceDetection:
         # Calculate the length of walking bouts
         walking_bouts_length = len(walking_bouts)
 
-        # Initialize an empty list
+        # Initialize an empty list for filtered walking bouts
         filtered_walking_bouts = []
 
-        # Initialize a counter variable "counter"
+        # Initialize a counter variable to count walking bouts
         counter = 0
 
+        # Iterate through walking bouts to filter those with steps less than 5
         for j in range(walking_bouts_length):
             if walking_bouts[j]["steps"] >= 5:
                 counter += 1
                 filtered_walking_bouts.append(
                     {"start": walking_bouts[j]["start"], "end": walking_bouts[j]["end"]}
                 )
+
+        # If no walking bouts are detected, print a message
+        if counter == 0:
+            print("No gait sequences detected due to insufficient steps in the data.")
+            return self
 
         # Initialize an array of zeros with the length of detected_activity_signal
         walking_labels = np.zeros(len(detected_activity_signal))
@@ -326,13 +327,14 @@ class ParaschivIonescuGaitSequenceDetection:
         # Merge walking bouts if break less than 3 seconds
         if ind_noWk.size > 0:
             for j in range(len(ind_noWk)):
-                if ind_noWk[j, 1] - ind_noWk[j, 0] <= self.target_sampling_freq_Hz * 3:
+                if ind_noWk[j, 1] - ind_noWk[j, 0] <= target_sampling_freq_Hz * 3:
                     walking_labels[ind_noWk[j, 0] : ind_noWk[j, 1] + 1] = 1
 
         # Merge walking bouts if break less than 3 seconds
         ind_Wk = []
         walkLabel_1_indices = np.where(walking_labels == 1)[0]
-
+        GSD_Output = []
+        
         if walkLabel_1_indices.size > 0:
             ind_Wk = preprocessing.find_consecutive_groups(walking_labels == 1)
             # Create an empty list to store 'walk' dictionaries
@@ -342,13 +344,12 @@ class ParaschivIonescuGaitSequenceDetection:
                     walk.append({"start": (ind_Wk[j, 0]), "end": ind_Wk[j, 1]})
 
             n = len(walk)
-            GSD_Output = []
 
             for j in range(n):
                 GSD_Output.append(
                     {
-                        "Start": walk[j]["start"] / self.target_sampling_freq_Hz,
-                        "End": walk[j]["end"] / self.target_sampling_freq_Hz,
+                        "Start": walk[j]["start"] / target_sampling_freq_Hz,
+                        "End": walk[j]["end"] / target_sampling_freq_Hz,
                         "fs": sampling_freq_Hz,
                     }
                 )
@@ -360,7 +361,7 @@ class ParaschivIonescuGaitSequenceDetection:
         gait_sequences_ = pd.DataFrame(GSD_Output)
         gait_sequences_["onset"] = gait_sequences_["Start"]
         gait_sequences_["duration"] = gait_sequences_["End"] - gait_sequences_["Start"]
-        gait_sequences_["event_type"] = self.event_type
+        gait_sequences_["event_type"] = "gait sequence"
         gait_sequences_["tracking_systems"] = self.tracking_systems
         gait_sequences_["tracked_points"] = self.tracked_points
 
@@ -381,7 +382,7 @@ class ParaschivIonescuGaitSequenceDetection:
             gait_sequences_["duration"] = (
                 gait_sequences_["End"] - gait_sequences_["Start"]
             )
-            gait_sequences_["event_type"] = self.event_type
+            gait_sequences_["event_type"] = "gait sequence"
             gait_sequences_["tracking_systems"] = self.tracking_systems
             gait_sequences_["tracked_points"] = self.tracked_points
 
@@ -407,7 +408,7 @@ class ParaschivIonescuGaitSequenceDetection:
         if plot_results:
 
             preprocessing.gsd_plot_results(
-                self.target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
+                target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
             )
 
         return self
