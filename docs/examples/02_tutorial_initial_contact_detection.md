@@ -210,6 +210,7 @@ icd = icd.detect(
 print(icd.initial_contacts_)
 ```
 
+
             onset       event_type          tracking_systems    tracked_points
     0       5.000       initial contact     SU                  LowerBack
     1       5.600       initial contact     SU                  LowerBack
@@ -223,7 +224,7 @@ print(icd.initial_contacts_)
     3450    8205.425    initial contact     SU                  LowerBack
     3451    8206.100    initial contact     SU                  LowerBack
 
-[3452 rows x 4 columns]
+    [3452 rows x 4 columns]
 
 ## Visualization of the Detected Initial Contacts
 In the following, the raw data of the lower back sensor is plotted with the detected events. The events are plotted as vertical lines. The events are:
