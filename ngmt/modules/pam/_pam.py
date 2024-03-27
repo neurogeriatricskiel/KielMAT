@@ -112,8 +112,7 @@ class PhysicalActivityMonitoring:
             raise ValueError("Plot results must be a boolean (True or False).")
 
         # Check unit of acceleration data if it is in g or m/s^2
-        unit = acceleration_unit
-        if unit == "m/s^2":
+        if acceleration_unit == "m/s^2":
             # Convert acceleration data from m/s^2 to g (if not already is in g)
             data /= 9.81
 
