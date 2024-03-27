@@ -168,11 +168,11 @@ class ParaschivIonescuInitialContactDetection:
         # If original datetime is available, update the 'onset' column
         if dt_data is not None:
             valid_indices = [
-                index for index in self.initial_contacts_["onset"] if index < len(dt_data)
+                index
+                for index in self.initial_contacts_["onset"]
+                if index < len(dt_data)
             ]
-            invalid_indices = (
-                len(self.initial_contacts_["onset"]) - len(valid_indices)
-            )
+            invalid_indices = len(self.initial_contacts_["onset"]) - len(valid_indices)
 
             if invalid_indices > 0:
                 print(f"Warning: {invalid_indices} invalid index/indices found.")
@@ -184,4 +184,3 @@ class ParaschivIonescuInitialContactDetection:
             self.initial_contacts_["onset"] = valid_dt_data.reset_index(drop=True)
 
         return self
-
