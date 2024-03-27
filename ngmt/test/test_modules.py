@@ -236,6 +236,7 @@ def test_pam_detect():
     # Call the detect method
     pam.detect(
         data=acceleration_data,
+        acceleration_unit="m/s^2",
         sampling_freq_Hz=sampling_frequency,
         thresholds_mg={
             "sedentary_threshold": 45,
@@ -262,6 +263,7 @@ def test_invalid_sampling_freq_pam():
     with pytest.raises(ValueError):
         pam.detect(
             data=acceleration_data,
+            acceleration_unit="m/s^2",
             sampling_freq_Hz=invalid_sampling_freq,
             thresholds_mg={
                 "sedentary_threshold": 45,
@@ -281,6 +283,7 @@ def test_invalid_thresholds_type():
     with pytest.raises(ValueError):
         pam.detect(
             data=acceleration_data,
+            acceleration_unit="m/s^2",
             sampling_freq_Hz=sampling_frequency,
             thresholds_mg=invalid_thresholds,
             epoch_duration_sec=5,
@@ -296,6 +299,7 @@ def test_invalid_epoch_duration():
     with pytest.raises(ValueError):
         pam.detect(
             data=acceleration_data,
+            acceleration_unit="m/s^2",
             sampling_freq_Hz=sampling_frequency,
             thresholds_mg={
                 "sedentary_threshold": 45,
@@ -315,6 +319,7 @@ def test_invalid_plot_results_type_pam():
     with pytest.raises(ValueError):
         pam.detect(
             data=acceleration_data,
+            acceleration_unit="m/s^2",
             sampling_freq_Hz=sampling_frequency,
             thresholds_mg={
                 "sedentary_threshold": 45,
@@ -335,6 +340,7 @@ def test_invalid_sampling_freq_type_error_handling():
     with pytest.raises(ValueError):
         pam.detect(
             data=acceleration_data,
+            acceleration_unit="m/s^2",
             sampling_freq_Hz=invalid_sampling_freq,
             thresholds_mg={
                 "sedentary_threshold": 45,
@@ -355,6 +361,7 @@ def test_invalid_thresholds_type_error_handling():
     with pytest.raises(ValueError):
         pam.detect(
             data=acceleration_data,
+            acceleration_unit="m/s^2",
             sampling_freq_Hz=sampling_frequency,
             thresholds_mg=invalid_thresholds,
             epoch_duration_sec=5,
@@ -377,7 +384,7 @@ def test_empty_input_data():
 
     # Call the detect method with empty_data
     with pytest.raises(ValueError):
-        pam.detect(data=empty_data, sampling_freq_Hz=sampling_frequency)
+        pam.detect(data=empty_data,acceleration_unit="m/s^2", sampling_freq_Hz=sampling_frequency)
 
 
 def test_pam_detect_full_coverage():
@@ -387,6 +394,7 @@ def test_pam_detect_full_coverage():
     # Call the detect method with plot_results=False to avoid plotting
     pam.detect(
         data=acceleration_data,
+        acceleration_unit="m/s^2",
         sampling_freq_Hz=sampling_frequency,
         thresholds_mg={
             "sedentary_threshold": 45,
@@ -433,6 +441,7 @@ def test_PhysicalActivityMonitoring():
         "LARM_ACCEL_z": np.random.uniform(-2, 2, num_samples),
     }
     acceleration_data = pd.DataFrame(acceleration_data)
+    acceleration_unit="m/s^2"
     sampling_frequency = 100  # Sampling frequency
     time_index = pd.date_range(
         start="2024-02-07", periods=num_samples, freq=f"{1/sampling_frequency}S"
@@ -446,6 +455,7 @@ def test_PhysicalActivityMonitoring():
     # Test detect method
     pam.detect(
         data=acceleration_data,
+        acceleration_unit="m/s^2",
         sampling_freq_Hz=100,
         thresholds_mg={
             "sedentary_threshold": 45,
