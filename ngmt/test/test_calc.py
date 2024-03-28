@@ -2073,6 +2073,7 @@ def test_quatmultiply(q1_shape, q2_shape, scalar_first, channels_last):
         q1, q2, scalar_first=scalar_first, channels_last=channels_last
     )
 
+
 # Test function for axang2rotm function
 @pytest.mark.parametrize(
     "axang, expected",

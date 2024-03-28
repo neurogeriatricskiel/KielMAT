@@ -251,6 +251,7 @@ def test_detect_no_gait_sequences():
         sampling_freq_Hz=100,
     )
 
+
 def test_detect_no_plot():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
@@ -318,9 +319,7 @@ def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
 
     # Check the columns in the initial_contacts_ DataFrame
     expected_columns = ["onset", "event_type", "tracking_systems", "tracked_points"]
-    assert all(
-        col in icd.initial_contacts_.columns for col in expected_columns
-    )
+    assert all(col in icd.initial_contacts_.columns for col in expected_columns)
 
     # Check the data type of the 'onset' column
     assert pd.api.types.is_float_dtype(icd.initial_contacts_["onset"])
@@ -328,7 +327,10 @@ def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
     # Check if onset values are within the expected range
     assert all(0 <= onset <= 6 for onset in icd.initial_contacts_["onset"])
 
-def test_detect_method_invalid_dt_data_type(sample_accelerometer_data, sample_gait_sequences):
+
+def test_detect_method_invalid_dt_data_type(
+    sample_accelerometer_data, sample_gait_sequences
+):
     # Initialize ParaschivIonescuInitialContactDetection instance
     icd = ParaschivIonescuInitialContactDetection()
 
@@ -338,11 +340,14 @@ def test_detect_method_invalid_dt_data_type(sample_accelerometer_data, sample_ga
             data=sample_accelerometer_data,
             gait_sequences=sample_gait_sequences,
             sampling_freq_Hz=100,
-            dt_data="not a series"
+            dt_data="not a series",
         )
     assert str(excinfo.value) == "dt_data must be a pandas Series with datetime values"
 
-def test_detect_method_invalid_dt_data_length(sample_accelerometer_data, sample_gait_sequences):
+
+def test_detect_method_invalid_dt_data_length(
+    sample_accelerometer_data, sample_gait_sequences
+):
     # Initialize ParaschivIonescuInitialContactDetection instance
     icd = ParaschivIonescuInitialContactDetection()
 
@@ -352,9 +357,10 @@ def test_detect_method_invalid_dt_data_length(sample_accelerometer_data, sample_
             data=sample_accelerometer_data,
             gait_sequences=sample_gait_sequences,
             sampling_freq_Hz=100,
-            dt_data=pd.Series([1, 2, 3, 4])
+            dt_data=pd.Series([1, 2, 3, 4]),
         )
     assert str(excinfo.value) == "dt_data must be a pandas Series with datetime values"
+
 
 # Tests for phyisical activity monitoring algorithm
 # Test data
