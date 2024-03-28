@@ -198,7 +198,7 @@ class PhysicalActivityMonitoring:
             .reset_index()
         )
 
-        # Return gait_sequences_ as an output
+        # Return physical activities as an output
         self.physical_activities_ = physical_activities_
 
         # Group by date and hour to calculate the average ENMO for each hour

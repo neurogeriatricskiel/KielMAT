@@ -104,16 +104,13 @@ class ParaschivIonescuInitialContactDetection:
             raise ValueError("dt_data must be a series with the same length as data")
 
         # Extract vertical accelerometer data
-        acc_vertical = data["LowerBack_ACCEL_x"]
+        acc_vertical = data[data.columns[0]]
 
         # Initialize an empty list to store the processed output
         processed_output = []
 
         # Initialize an empty list to store all onsets
         all_onsets = []
-
-        # Target sampling frequency
-        target_sampling_freq_Hz = 40.0
 
         # Process each gait sequence
         for _, gait_seq in gait_sequences.iterrows():
