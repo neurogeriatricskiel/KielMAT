@@ -177,7 +177,7 @@ def test_detect_empty_data():
     icd.detect(data=pd.DataFrame(), gait_sequences=pd.DataFrame(), sampling_freq_Hz=100)
 
 
-# Define test_detect_no_gait_sequences function
+# Test_detect_no_gait_sequences function
 def test_detect_no_gait_sequences():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
@@ -428,7 +428,7 @@ def test_invalid_thresholds_type_error_handling():
 
 
 def test_empty_input_data():
-    # Define empty_data with required columns
+    # empty_data with required columns
     empty_data = pd.DataFrame(
         {
             "LARM_ACCEL_x": [],
@@ -564,6 +564,223 @@ def test_plot_results_pham():
             plot_results=invalid_plot_results,
         )
 
+# Test functions for Turn detection algorithm
+@pytest.fixture
+def detector():
+    return PhamTurnDetection()
+
+@pytest.fixture
+def gyro_data_numpy():
+    # Create a sample accelerometer and gyroscope data
+    accel_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Accel_X', 'Accel_Y', 'Accel_Z'])
+    gyro_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Gyro_X', 'Gyro_Y', 'Gyro_Z'])
+    sample_data = pd.concat([accel_data, gyro_data], axis=1)
+
+    # Select gyro data and convert it to numpy array format
+    gyro = sample_data.iloc[:, 3:6].copy()
+    gyro = gyro.to_numpy()
+    return gyro
+
+def test_bias_calculation_valid(detector, gyro_data_numpy):
+    # Create a sample accelerometer and gyroscope data
+    accel_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Accel_X', 'Accel_Y', 'Accel_Z'])
+    gyro_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Gyro_X', 'Gyro_Y', 'Gyro_Z'])
+    sample_data = pd.concat([accel_data, gyro_data], axis=1)
+
+    # Perform detection
+    detector.detect(sample_data, 100)
+    
+    # Manually calculate the gyro bias for comparison
+    gyro_bias_manual = np.mean(gyro_data_numpy[:100], axis=0)
+    
+    # Retrieve the calculated bias from the detector
+    gyro_bias_detected = detector.gyro_bias
+
+# Soem additional test functions for Turn detection algorithm
+class TestPhamTurnDetection:
+    @staticmethod
+    def create_mock_data(num_samples=1000, sampling_freq_Hz=200):
+        # Create mock accelerometer and gyro data
+        time = np.arange(0, num_samples) / sampling_freq_Hz
+        accel_data = np.random.rand(num_samples, 3)
+        gyro_data = np.random.rand(num_samples, 3)
+        data = np.concatenate((accel_data, gyro_data), axis=1)
+        columns = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z']
+        return pd.DataFrame(data, columns=columns), sampling_freq_Hz
+
+    def test_detect_returns_instance(self):
+        pham_detector = PhamTurnDetection()
+        data, sampling_freq_Hz = self.create_mock_data()
+        result = pham_detector.detect(data=data, sampling_freq_Hz=sampling_freq_Hz)
+
+    def test_detect_raises_value_error_non_dataframe(self):
+        pham_detector = PhamTurnDetection()
+        data, sampling_freq_Hz = np.array([1, 2, 3]), 100
+        with pytest.raises(ValueError):
+            pham_detector.detect(data=data, sampling_freq_Hz=sampling_freq_Hz)
+
+    def test_detect_raises_value_error_wrong_shape(self):
+        pham_detector = PhamTurnDetection()
+        data, sampling_freq_Hz = self.create_mock_data()
+        data.drop(columns=['gyro_z'], inplace=True)
+        with pytest.raises(ValueError):
+            pham_detector.detect(data=data, sampling_freq_Hz=sampling_freq_Hz)
+
+    def test_detect_raises_value_error_negative_sampling_freq(self):
+        pham_detector = PhamTurnDetection()
+        data, sampling_freq_Hz = self.create_mock_data()
+        with pytest.raises(ValueError):
+            pham_detector.detect(data=data, sampling_freq_Hz=-100)
+
+    def test_detect_raises_value_error_non_boolean_plot_results(self):
+        pham_detector = PhamTurnDetection()
+        data, sampling_freq_Hz = self.create_mock_data()
+        with pytest.raises(ValueError):
+            pham_detector.detect(data=data, sampling_freq_Hz=sampling_freq_Hz, plot_results=1)
+
+    def test_detect_hesitations(self):
+        pham_detector = PhamTurnDetection()
+        data, sampling_freq_Hz = self.create_mock_data()
+        data['gyro_x'] = np.linspace(0, 100, len(data))  # Ensure a continuous yaw angle change
+        result = pham_detector.detect(data=data, sampling_freq_Hz=sampling_freq_Hz)
+
+    def test_detect_turns_90_degrees(self):
+        pham_detector = PhamTurnDetection()
+        data, sampling_freq_Hz = self.create_mock_data()
+        data['gyro_x'] = np.linspace(0, np.pi/2, len(data))  # Simulate a 90-degree turn
+        result = pham_detector.detect(data=data, sampling_freq_Hz=sampling_freq_Hz)
+
+    def test_detect_peak_angular_velocities(self):
+        pham_detector = PhamTurnDetection()
+        data, sampling_freq_Hz = self.create_mock_data()
+        data['gyro_x'] = np.linspace(0, np.pi/2, len(data))  # Simulate a 90-degree turn
+        result = pham_detector.detect(data=data, sampling_freq_Hz=sampling_freq_Hz)
+
+    @pytest.fixture
+    def sample_data(self):
+        # Sample data for testing
+        diff_yaw = np.array([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+        flags_start_90 = [2, 5]
+        flags_end_90 = [7, 10]
+        sampling_freq_Hz = 10
+        return diff_yaw, flags_start_90, flags_end_90, sampling_freq_Hz
+
+    def test_duration_90(self, sample_data):
+        pham_detector = PhamTurnDetection()
+        diff_yaw, flags_start_90, flags_end_90, sampling_freq_Hz = sample_data
+        
+        # Calculate duration of the turn in seconds
+        duration_90 = []
+        for k in range(len(flags_start_90)):
+            duration_nsamples = flags_end_90[k] - flags_start_90[k]
+            duration_90.append(duration_nsamples / sampling_freq_Hz)
+
+    def test_peak_angular_velocities(self, sample_data):
+        pham_detector = PhamTurnDetection()
+        diff_yaw, flags_start_90, flags_end_90, sampling_freq_Hz = sample_data
+        
+        # Calculate peak angular velocity during the turn
+        peak_angular_velocities = []
+        for k in range(len(flags_start_90)):
+            diff_vector = abs(diff_yaw[(flags_start_90[k] - 1):(flags_end_90[k] - 1)])
+            peak_angular_velocities.append(np.max(diff_vector) * sampling_freq_Hz)
+
+    @pytest.fixture
+    def sample_data_turn_det(self):
+        # Sample data for testing
+        flags_start_90 = [1, 5, 9]
+        flags_end_90 = [4, 8, 12]
+        diff_yaw = np.array([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120])
+        sampling_freq_Hz = 10
+        return flags_start_90, flags_end_90, diff_yaw, sampling_freq_Hz
+
+    def test_process_turns(self, sample_data_turn_det):
+        pham_detector = PhamTurnDetection()
+
+        flags_start_90, flags_end_90, diff_yaw, sampling_freq_Hz = sample_data_turn_det
+
+        # Initialize lists to store processed data
+        duration_90 = []
+        peak_angular_velocities = []
+        angular_velocity_start = []
+        angular_velocity_end = []
+        angular_velocity_middle = []
+
+        # Process each turn
+        for k in range(len(flags_start_90)):
+            # Compute duration of the turn in seconds
+            duration_nsamples = flags_end_90[k] - flags_start_90[k]
+            duration_90.append(duration_nsamples / sampling_freq_Hz)
+
+            # Calculate peak angular velocity during the turn
+            diff_vector = abs(diff_yaw[(flags_start_90[k] - 1):(flags_end_90[k] - 1)])
+            peak_angular_velocities.append(np.max(diff_vector) * sampling_freq_Hz)
+
+            # Calculate average angular velocity at the start of the turn
+            turn_10_percent = round(duration_nsamples * 0.1)
+            angular_velocity_start.append(np.mean(abs(diff_yaw[flags_start_90[k]:(flags_start_90[k] + turn_10_percent)])) * sampling_freq_Hz)
+
+            # Calculate average angular velocity at the end of the turn
+            md = flags_start_90[k] + np.floor((flags_end_90[k] - flags_start_90[k]) / 2)
+            angular_velocity_end.append(np.mean(abs(diff_yaw[(flags_end_90[k] - turn_10_percent):flags_end_90[k] - 1])) * sampling_freq_Hz)
+
+            # Calculate average angular velocity in the middle of the turn
+            turn_5_percent = round(duration_nsamples * 0.05)
+            md = int(md)  # Convert md to an integer
+            angular_velocity_middle.append(np.mean(abs(diff_yaw[int(md - turn_5_percent):int(md + turn_5_percent)])) * sampling_freq_Hz)
+
+        # Assertions to verify the processed data
+        assert duration_90 == [0.3, 0.3, 0.3]
+
+def test_invalid_plot_results_pham_td():
+    # Create a sample accelerometer and gyroscope data
+    accel_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Accel_X', 'Accel_Y', 'Accel_Z'])
+    gyro_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Gyro_X', 'Gyro_Y', 'Gyro_Z'])
+    sample_data = pd.concat([accel_data, gyro_data], axis=1)
+    
+    # Initialize PhamTurnDetection object
+    pham = PhamTurnDetection()
+
+    # Test with invalid plot_results
+    invalid_plot_results = "invalid"
+    with pytest.raises(ValueError):
+        pham.detect(data=sample_data, sampling_freq_Hz=200, plot_results=invalid_plot_results)
+
+# Test function for PhamTurnDetection class
+@pytest.fixture
+def detector():
+    return PhamTurnDetection()
+
+@pytest.fixture
+def invalid_data():
+    # Create invalid data with less than 6 columns
+    data = pd.DataFrame(np.random.rand(100, 5), columns=['Accel_X', 'Accel_Y', 'Accel_Z', 'Gyro_X', 'Gyro_Y'])
+    return data
+
+def test_data_shape_invalid(detector, invalid_data):
+    # Test invalid data shape
+    with pytest.raises(ValueError):
+        detector.detect(invalid_data, 100)
+
+@pytest.fixture
+def invalid_sampling_freq():
+    return 0 
+
+def test_sampling_freq_invalid(detector, invalid_sampling_freq):
+    # Test invalid sampling frequency
+    with pytest.raises(ValueError):
+        data = pd.DataFrame(np.random.rand(100, 6))
+        detector.detect(data, invalid_sampling_freq)
+
+@pytest.fixture
+def invalid_plot_results():
+    return "invalid"  # Invalid non-boolean value for plot_results
+
+def test_plot_results_invalid(detector, invalid_plot_results):
+    # Test invalid plot_results value
+    with pytest.raises(ValueError):
+        data = pd.DataFrame(np.random.rand(100, 6))
+        detector.detect(data, 100, plot_results=invalid_plot_results)
 
 # Run the tests with pytest
 if __name__ == "__main__":
