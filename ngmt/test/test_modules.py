@@ -101,89 +101,124 @@ def test_plot_results_type():
             plot_results=invalid_plot_results,
         )
 
+
 # Test for ValueError: "dt_data must be a pandas Series with datetime values"
 def test_invalid_dt_data_type():
     gsd = ParaschivIonescuGaitSequenceDetection()
-    acceleration_data = pd.DataFrame({
-        "LowerBack_ACCEL_x": np.random.uniform(-2, 2, 1000),
-        "LowerBack_ACCEL_y": np.random.uniform(-2, 2, 1000),
-        "LowerBack_ACCEL_z": np.random.uniform(-2, 2, 1000),
-    })
+    acceleration_data = pd.DataFrame(
+        {
+            "LowerBack_ACCEL_x": np.random.uniform(-2, 2, 1000),
+            "LowerBack_ACCEL_y": np.random.uniform(-2, 2, 1000),
+            "LowerBack_ACCEL_z": np.random.uniform(-2, 2, 1000),
+        }
+    )
     with pytest.raises(ValueError):
         gsd.detect(data=acceleration_data, sampling_freq_Hz=100, dt_data="not_a_series")
+
 
 # Test for ValueError: "dt_data must be a series with the same length as data"
 def test_invalid_dt_data_length():
     gsd = ParaschivIonescuGaitSequenceDetection()
-    acceleration_data = pd.DataFrame({
-        "LowerBack_ACCEL_x": np.random.uniform(-2, 2, 1000),
-        "LowerBack_ACCEL_y": np.random.uniform(-2, 2, 1000),
-        "LowerBack_ACCEL_z": np.random.uniform(-2, 2, 1000),
-    })
-    dt_data = pd.Series(pd.date_range(start="2022-01-01", periods=500))  # Different length than data
+    acceleration_data = pd.DataFrame(
+        {
+            "LowerBack_ACCEL_x": np.random.uniform(-2, 2, 1000),
+            "LowerBack_ACCEL_y": np.random.uniform(-2, 2, 1000),
+            "LowerBack_ACCEL_z": np.random.uniform(-2, 2, 1000),
+        }
+    )
+    dt_data = pd.Series(
+        pd.date_range(start="2022-01-01", periods=500)
+    )  # Different length than data
     with pytest.raises(ValueError):
         gsd.detect(data=acceleration_data, sampling_freq_Hz=100, dt_data=dt_data)
+
 
 def test_threshold_selected_signal():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
-    
+
     # Create empty data
-    acceleration_data = pd.DataFrame({
-        "LowerBack_ACCEL_x": [],
-        "LowerBack_ACCEL_y": [],
-        "LowerBack_ACCEL_z": [],
-    })
+    acceleration_data = pd.DataFrame(
+        {
+            "LowerBack_ACCEL_x": [],
+            "LowerBack_ACCEL_y": [],
+            "LowerBack_ACCEL_z": [],
+        }
+    )
     dt_data = pd.Series([])
 
     # Call detect with empty data
     with pytest.raises(ValueError):
-        gsd.detect(data=acceleration_data, sampling_freq_Hz=100, dt_data=dt_data, plot_results=True)
+        gsd.detect(
+            data=acceleration_data,
+            sampling_freq_Hz=100,
+            dt_data=dt_data,
+            plot_results=True,
+        )
+
 
 def test_no_gait_sequences_detected():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
-    
+
     # Create empty data
-    acceleration_data = pd.DataFrame({
-        "LowerBack_ACCEL_x": [],
-        "LowerBack_ACCEL_y": [],
-        "LowerBack_ACCEL_z": [],
-    })
-    
+    acceleration_data = pd.DataFrame(
+        {
+            "LowerBack_ACCEL_x": [],
+            "LowerBack_ACCEL_y": [],
+            "LowerBack_ACCEL_z": [],
+        }
+    )
+
     # Call detect with empty data
     with pytest.raises(ValueError):
         gsd.detect(data=acceleration_data, sampling_freq_Hz=100)
+
 
 def test_invalid_indices_warning():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
 
     # Create random acceleration data and datetime series with more indices than data length
-    acceleration_data = pd.DataFrame({
-        "LowerBack_ACCEL_x": np.random.uniform(-2, 2, 1000),
-        "LowerBack_ACCEL_y": np.random.uniform(-2, 2, 1000),
-        "LowerBack_ACCEL_z": np.random.uniform(-2, 2, 1000),
-    })
-    dt_data = pd.Series(pd.date_range(start="2022-01-01", periods=1000))  # Same length as data
+    acceleration_data = pd.DataFrame(
+        {
+            "LowerBack_ACCEL_x": np.random.uniform(-2, 2, 1000),
+            "LowerBack_ACCEL_y": np.random.uniform(-2, 2, 1000),
+            "LowerBack_ACCEL_z": np.random.uniform(-2, 2, 1000),
+        }
+    )
+    dt_data = pd.Series(
+        pd.date_range(start="2022-01-01", periods=1000)
+    )  # Same length as data
+
 
 def test_no_plotting_datetime_values():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
 
     # Create empty data
-    acceleration_data = pd.DataFrame({
-        "LowerBack_ACCEL_x": [],
-        "LowerBack_ACCEL_y": [],
-        "LowerBack_ACCEL_z": [],
-    })
+    acceleration_data = pd.DataFrame(
+        {
+            "LowerBack_ACCEL_x": [],
+            "LowerBack_ACCEL_y": [],
+            "LowerBack_ACCEL_z": [],
+        }
+    )
 
     # Create an empty pandas Series (no datetime values)
     dt_data = pd.Series([])
 
     # Call detect with empty data and datetime series without datetime values
-    with pytest.raises(ValueError, match="dt_data must be a pandas Series with datetime values"):
-        gsd.detect(data=acceleration_data, sampling_freq_Hz=100, dt_data=dt_data, plot_results=True)
+    with pytest.raises(
+        ValueError, match="dt_data must be a pandas Series with datetime values"
+    ):
+        gsd.detect(
+            data=acceleration_data,
+            sampling_freq_Hz=100,
+            dt_data=dt_data,
+            plot_results=True,
+        )
+
 
 # Tests for initial contact detection algorithm
 def test_detect_empty_data():
@@ -193,6 +228,7 @@ def test_detect_empty_data():
 
     # Call detect with an empty DataFrame instead of None
     icd.detect(data=pd.DataFrame(), gait_sequences=pd.DataFrame(), sampling_freq_Hz=100)
+
 
 # Define test_detect_no_gait_sequences function
 def test_detect_no_gait_sequences():
