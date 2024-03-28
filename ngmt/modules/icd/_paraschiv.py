@@ -67,6 +67,7 @@ class ParaschivIonescuInitialContactDetection:
         data: pd.DataFrame,
         gait_sequences: pd.DataFrame,
         sampling_freq_Hz: float = 100,
+        vertical_axis_index: int = 0,
         dt_data: pd.Series = None,
     ) -> pd.DataFrame:
         """
@@ -76,6 +77,7 @@ class ParaschivIonescuInitialContactDetection:
             data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
             gait_sequences (pd.DataFrame): Gait sequence calculated using ParaschivIonescuGaitSequenceDetectionDataframe algorithm.
             sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
+            vertical_axis_index (int): Index of vertical component of the acceleration data
             dt_data (pd.Series, optional): Original datetime in the input data. If original datetime is provided, the output onset will be based on that.
 
         Returns:
@@ -103,8 +105,8 @@ class ParaschivIonescuInitialContactDetection:
         if dt_data is not None and len(dt_data) != len(data):
             raise ValueError("dt_data must be a series with the same length as data")
 
-        # Extract vertical accelerometer data
-        acc_vertical = data[data.columns[0]]
+        # Extract vertical accelerometer data using the specified index
+        acc_vertical = data[data.columns[vertical_axis_index]]
 
         # Initialize an empty list to store the processed output
         processed_output = []
