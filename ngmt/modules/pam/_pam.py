@@ -99,6 +99,23 @@ class PhysicalActivityMonitoring:
                           moderate_mean_mg, moderate_time_min, vigorous_mean_mg, vigorous_time_min
         """
         # Error handling for invalid input data
+
+        # Check if data is a DataFrame
+        if not isinstance(data, pd.DataFrame):
+            raise ValueError("Input data must be a DataFrame.")
+        
+        # check if index column is datetime
+        if not isinstance(data.index, pd.DatetimeIndex):
+            raise ValueError("Index column must be a datetime index.")
+        
+        # check if index column in named timestamp
+        if data.index.name != "timestamp":
+            raise ValueError("Index column must be named timestamp.")
+        
+        # Check if data has at least 3 columns
+        if data.shape[1] < 3:
+            raise ValueError("Input data must have at least 3 columns.")
+        
         if not isinstance(sampling_freq_Hz, (int, float)) or sampling_freq_Hz <= 0:
             raise ValueError("Sampling frequency must be a positive float.")
 
@@ -153,7 +170,7 @@ class PhysicalActivityMonitoring:
 
         # Extract date from the datetime index
         classified_processed_data["date"] = classified_processed_data[
-            "timestamp"
+            data.index.name
         ].dt.date
 
         # Calculate time spent in each activity level for each epoch
