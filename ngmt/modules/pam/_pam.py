@@ -176,22 +176,46 @@ class PhysicalActivityMonitoring:
             .agg(
                 sedentary_mean_enmo=(
                     "enmo",
-                    lambda x: np.mean(np.where(classified_processed_data.loc[x.index, "sedentary"] == 1, x, np.nan)),
+                    lambda x: np.mean(
+                        np.where(
+                            classified_processed_data.loc[x.index, "sedentary"] == 1,
+                            x,
+                            np.nan,
+                        )
+                    ),
                 ),
                 sedentary_time_min=("sedentary_time_min", "sum"),
                 light_mean_enmo=(
                     "enmo",
-                    lambda x: np.mean(np.where(classified_processed_data.loc[x.index, "light"] == 1, x, np.nan)),
+                    lambda x: np.mean(
+                        np.where(
+                            classified_processed_data.loc[x.index, "light"] == 1,
+                            x,
+                            np.nan,
+                        )
+                    ),
                 ),
                 light_time_min=("light_time_min", "sum"),
                 moderate_mean_enmo=(
                     "enmo",
-                    lambda x: np.mean(np.where(classified_processed_data.loc[x.index, "moderate"] == 1, x, np.nan)),
+                    lambda x: np.mean(
+                        np.where(
+                            classified_processed_data.loc[x.index, "moderate"] == 1,
+                            x,
+                            np.nan,
+                        )
+                    ),
                 ),
                 moderate_time_min=("moderate_time_min", "sum"),
                 vigorous_mean_enmo=(
                     "enmo",
-                    lambda x: np.mean(np.where(classified_processed_data.loc[x.index, "vigorous"] == 1, x, np.nan)),
+                    lambda x: np.mean(
+                        np.where(
+                            classified_processed_data.loc[x.index, "vigorous"] == 1,
+                            x,
+                            np.nan,
+                        )
+                    ),
                 ),
                 vigorous_time_min=("vigorous_time_min", "sum"),
             )
