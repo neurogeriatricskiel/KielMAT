@@ -103,19 +103,19 @@ class PhysicalActivityMonitoring:
         # Check if data is a DataFrame
         if not isinstance(data, pd.DataFrame):
             raise ValueError("Input data must be a DataFrame.")
-        
+
         # check if index column is datetime
         if not isinstance(data.index, pd.DatetimeIndex):
             raise ValueError("Index column must be a datetime index.")
-        
+
         # check if index column in named timestamp
         if data.index.name != "timestamp":
             raise ValueError("Index column must be named timestamp.")
-        
+
         # Check if data has at least 3 columns
         if data.shape[1] < 3:
             raise ValueError("Input data must have at least 3 columns.")
-        
+
         if not isinstance(sampling_freq_Hz, (int, float)) or sampling_freq_Hz <= 0:
             raise ValueError("Sampling frequency must be a positive float.")
 
