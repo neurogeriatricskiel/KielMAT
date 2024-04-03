@@ -85,7 +85,11 @@ class PhamSittoStandStandtoSitDetection:
         self.postural_transitions_ = None
 
     def detect(
-        self, data: pd.DataFrame, sampling_freq_Hz: float, plot_results: bool = False, dt_data: pd.Series = None
+        self,
+        data: pd.DataFrame,
+        sampling_freq_Hz: float,
+        plot_results: bool = False,
+        dt_data: pd.Series = None,
     ) -> pd.DataFrame:
         """
         Detects sit to stand and stand to sit based on the input acceleromete and gyro data.
@@ -108,7 +112,7 @@ class PhamSittoStandStandtoSitDetection:
                         - maximum extension velocity: Maximum extension velocity [°/s].
                         - tracking_systems: Tracking systems used (default is 'imu').
                         - tracked_points: Tracked points on the body (default is 'LowerBack').
-        """        
+        """
         # Error handling for invalid input data
         if not isinstance(data, pd.DataFrame) or data.shape[1] != 6:
             raise ValueError(
@@ -346,9 +350,10 @@ class PhamSittoStandStandtoSitDetection:
         # Check if dt_data is provided for datetime conversion
         if dt_data is not None:
             # Convert onset times to datetime format
-            starting_datetime = dt_data.iloc[0]  # Assuming dt_data is aligned with the signal data
+            starting_datetime = dt_data.iloc[
+                0
+            ]  # Assuming dt_data is aligned with the signal data
             time_pt = [starting_datetime + pd.Timedelta(seconds=t) for t in time_pt]
-
 
         # Create a DataFrame with postural transition information
         postural_transitions_ = pd.DataFrame(
@@ -373,7 +378,7 @@ class PhamSittoStandStandtoSitDetection:
             print("No plotting for datetime values.")
             plot_results = False
             return self
-        
+
         # If Plot_results set to true
         if plot_results:
 
