@@ -85,7 +85,7 @@ class PhamSittoStandStandtoSitDetection:
         self.postural_transitions_ = None
 
     def detect(
-        self, data: pd.DataFrame, sampling_freq_Hz: float, plot_results: bool = False
+        self, data: pd.DataFrame, sampling_freq_Hz: float, plot_results: bool = False, dt_data: pd.Series = None
     ) -> pd.DataFrame:
         """
         Detects sit to stand and stand to sit based on the input acceleromete and gyro data.
@@ -94,6 +94,7 @@ class PhamSittoStandStandtoSitDetection:
             data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
             sampling_freq_Hz (float): Sampling frequency of the input data.
             plot_results (bool, optional): If True, generates a plot. Default is False.
+            dt_data (pd.Series, optional): Original datetime in the input data. If original datetime is provided, the output onset will be based on that.
 
             Returns:
                 PhamSittoStandStandtoSitDetection: Returns an instance of the class.
@@ -107,12 +108,23 @@ class PhamSittoStandStandtoSitDetection:
                         - maximum extension velocity: Maximum extension velocity [°/s].
                         - tracking_systems: Tracking systems used (default is 'imu').
                         - tracked_points: Tracked points on the body (default is 'LowerBack').
-        """
+        """        
         # Error handling for invalid input data
         if not isinstance(data, pd.DataFrame) or data.shape[1] != 6:
             raise ValueError(
                 "Input accelerometer and gyro data must be a DataFrame with 6 columns for x, y, and z axes."
             )
+
+        # check if dt_data is a pandas Series with datetime values
+        if dt_data is not None and (
+            not isinstance(dt_data, pd.Series)
+            or not pd.api.types.is_datetime64_any_dtype(dt_data)
+        ):
+            raise ValueError("dt_data must be a pandas Series with datetime values")
+
+        # check if dt_data is provided and if it is a series with the same length as data
+        if dt_data is not None and len(dt_data) != len(data):
+            raise ValueError("dt_data must be a series with the same length as data")
 
         # Calculate sampling period
         sampling_period = 1 / sampling_freq_Hz
@@ -331,6 +343,13 @@ class PhamSittoStandStandtoSitDetection:
             if i[idx]
         ]
 
+        # Check if dt_data is provided for datetime conversion
+        if dt_data is not None:
+            # Convert onset times to datetime format
+            starting_datetime = dt_data.iloc[0]  # Assuming dt_data is aligned with the signal data
+            time_pt = [starting_datetime + pd.Timedelta(seconds=t) for t in time_pt]
+
+
         # Create a DataFrame with postural transition information
         postural_transitions_ = pd.DataFrame(
             {
@@ -348,6 +367,13 @@ class PhamSittoStandStandtoSitDetection:
         # Assign the DataFrame to the 'postural_transitions_' attribute
         self.postural_transitions_ = postural_transitions_
 
+        # If Plot_results set to true
+        # currently no plotting for datetime values
+        if dt_data is not None and plot_results:
+            print("No plotting for datetime values.")
+            plot_results = False
+            return self
+        
         # If Plot_results set to true
         if plot_results:
 
