@@ -1,4 +1,5 @@
 # Import libraries
+from typing import Optional
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -65,19 +66,19 @@ class ParaschivIonescuInitialContactDetection:
     def detect(
         self,
         data: pd.DataFrame,
-        gait_sequences: pd.DataFrame,
-        sampling_freq_Hz: float = 100,
-        vertical_axis_index: int = 0,
-        dt_data: pd.Series = None,
+        sampling_freq_Hz: float,
+        v_acc_col_name: str,
+        gait_sequences: Optional[pd.DataFrame] = None,
+        dt_data: Optional[pd.Series] = None,
     ) -> pd.DataFrame:
         """
         Detects initial contacts based on the input accelerometer data.
 
         Args:
             data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
-            gait_sequences (pd.DataFrame): Gait sequence calculated using ParaschivIonescuGaitSequenceDetectionDataframe algorithm.
             sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
-            vertical_axis_index (int): Index of vertical component of the acceleration data
+            v_acc_col_name (str): The column name that corresponds to the vertical acceleration.
+            gait_sequences (pd.DataFrame, optional): A dataframe of detected gait sequences. If not provided, the entire acceleration time series will be used for detecting initial contacts.
             dt_data (pd.Series, optional): Original datetime in the input data. If original datetime is provided, the output onset will be based on that.
 
         Returns:
@@ -106,7 +107,7 @@ class ParaschivIonescuInitialContactDetection:
             raise ValueError("dt_data must be a series with the same length as data")
 
         # Extract vertical accelerometer data using the specified index
-        acc_vertical = data[data.columns[vertical_axis_index]]
+        acc_vertical = data[v_acc_col_name]
 
         # Initialize an empty list to store the processed output
         processed_output = []
@@ -115,6 +116,8 @@ class ParaschivIonescuInitialContactDetection:
         all_onsets = []
 
         # Process each gait sequence
+        if gait_sequences is None:
+            gait_sequences = pd.DataFrame("onset": [0], "duration": [len(data)/sampling_freq_Hz])
         for _, gait_seq in gait_sequences.iterrows():
             # Calculate start and stop indices for the current gait sequence
             start_index = int(sampling_freq_Hz * gait_seq["onset"] - 1)
