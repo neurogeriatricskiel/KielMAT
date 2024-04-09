@@ -47,49 +47,24 @@ Physical mobility is an essential aspect of health, since impairment of mobility
 With the growing availability of digital health data, open-source implementations of relevant algorithms are increasingly becoming available. From the Mobilise-D consortium, the recommended algorithms for assessing real-world gait were released, but these algorithms were developed in MATLAB, that is not free to use [@mobilised:2023]. Likewise, an algorithm for the estimation of gait quality was released, but it is also only available in MATLAB [@gaitqualitycomposite:2016].  Alternatively, open-source, Python packages are available, for example to detect gait and extract gait features from a low back-worn inertial measurement unit (IMU) [@czech:2019], or from two feet-worn IMUs [@kuederle:2024]. NGMT builds forth on these toolboxes by providing a module software package that goes beyond the analysis of merely gait, and extends these analyses by additionally allowing for the analysis of general physical activity and other daily life-relevant movements, such as sit-to-stand and stand-to-sit transitions [@pham:2017] as well as turns [@pham:2018].
 
 # Provided Functionality
-NGMT offers a comprehensive suite of algorithms for motion data processing in neuroscience and biomechanics. Currently, the toolbox includes implementations for gait sequence detection, initial contact detection, sit-to-stand and stand-to-sit detection, and physical activity monitoring algorithms. The workflow of algortihms is structured as follows:
+NGMT offers a comprehensive suite of algorithms for motion data processing in neuroscience and biomechanics. Currently, the toolbox includes implementations for gait sequence detection (GSD) and initial contact detection (ICD), whereas algorithms for postural transition analysis [@pham:2017] and turns [@pham:2018] are under current development. NGMT is built on principles from the Brain Imaging Data Structure (BIDS) [gorgolewski:2016] and for the motion analysis data are organized similar to the Motion-BIDS specifications [@jeung:2023]. 
 
-1. **Loading Data:**
-  - Raw sensor data is loaded as input, with the option to provide additional inputs such as sampling frequency for subsequent processing steps.
+## Dataclass
+Practically, this means that data are organized in recordings, where recordings can be simultaneously collected with different tracking systems (e.g., an camera-based optical motion capture system and a set of IMUs). A tracking system is defined as a group of motion channels that share hardware properties (the recording device) and software properties (the recording duration and number of samples). Loading of a recording returns a `NGMTRecording` object, that holds both `data` and `channels`. Here, `data` are the actual time series data, where `channels` provide information on the time series type, component, the sampling frequency, and the units in which the time series are recorded.
 
-2. **Feature extraction:** 
-  - Advanced signal processing techniques are employed to extract relevant features, including resampling, noise removal, wavelet transforms, etc.
-  - Extract features such as active periods, local peaks, etc to identify and characterize events within the input data.
+## Modules
+The data can be passed to algorithms that are organized in different modules, such as GSD and ICD. For example, the accelerometer data from a low back-worn IMU can be passed to the gait sequence detection algorithm [@paraschiv:2019;@paraschiv:2020]. Next, the data can be passed to the initial contact detection algorithm [@paraschiv:2019] to returns the timings of initial contacts within each gait sequence (Figure [1](my_figure.png)).
 
-3. **Event detection and visualization:** 
-  - Following feature extraction, the toolbox facilitates event detection and visualization.
-  - Events like gait sequences, initial contacts, etc., are detected using predefined criteria, with visualization aiding in timing and duration understanding.
-
-Figure [1](fig_1.png) represents a functionality of the NGMT. By integrating data loading, preprocessing, feature extraction, event detection, and visualization into a unified framework, NGMT offers a comprehensive set of tools for analyzing human motion data across various domains and applications. The toolbox offers practical examples demonstrating the application of currently implemented algorithms.
-
-![](fig_1.png)
+![](my_figure.png)
 <div style="text-align:center;">
-<b>Figure 1:</b> A representation of the functionality of NGMT.
-</div>
-
-
-# Example Use Case
-As a practical demonstration, the NeuroGeriatric Motion Toolbox (NGMT) is used to analyze lower back IMU sensor data obtained from clinical cohorts, specifically individuals with congestive heart failure (CHF) [@micoamigo:2023]. Participants underwent real-world assessments, engaging in various activities including outdoor walking, navigating slopes and stairs, and moving between rooms. The NGMT toolbox facilitated the processing of this data using a gait sequence and initial contact detection modules based on the Paraschiv-Ionescu algorithms [@paraschiv:2019; @paraschiv:2020].
-
-- **Gait sequence detection**
-
-The initial step involved processing the input data through a series of signal processing steps, including resampling, filtering, wavelet transform, and peak detection, to identify gait sequences within the time series. The algorithm detected active periods potentially corresponding to locomotion, and the statistical distribution of peak amplitudes within these active periods was used to derive an adaptive threshold for detecting step-related peaks. Subsequently, consecutive steps were associated with gait sequences.
-
-- **Initial contact detection**
-
-Following gait sequence detection, the NGMT toolbox applied the Paraschiv-Ionescu initial contact detection algorithm to identify initial contacts within the detected gait sequences. The algorithm processed pre-processed vertical acceleration signals recorded on the lower back. This involved detrending and low-pass filtering the signal, followed by numerical integration and differentiation using a Gaussian continuous wavelet transformation. Initial contact events were identified as positive maximal peaks between successive zero-crossings.
-
-- **Event detection and visulization**
-
-Figure [2](fig_2.png) illustrates the practical application of the NGMT toolbox in detecting events on the input data. The acceleration data from the lower back is depicted, with key gait events detected by NGMT's modules highlighted. The green vertical line denotes the onset of a gait sequence, while the shaded gray region represents the duration of the gait sequence. Additionally, blue dashed lines denote the detected initial contacts within the gait sequence.
-
-![](fig_2.png)
-<div style="text-align:center;">
-<b>Figure 2:</b> Acceleration data and detected gait events using NGMT modules
+<b>Figure 1:</b> A representative snipped of acceleration data from a low back-worn with the detected gait sequences (pink-shaded background) and the detected initial contacts (red triangles).
 </div>
 
 # Installation and usage
 The NGMT package is implemented in Python (>=3.10) and is freely available under a Non-Profit Open Software License version 3.0. The stable version of the package can be installed from PyPI.org using `pip install ngmt`. Users and developers can also install the oolbxo from source from GitHub. The documentation of the toolbox provides detailed instructions on [installation](https://neurogeriatricskiel.github.io/NGMT/#installation), [conceptual framework](https://neurogeriatricskiel.github.io/NGMT/#data-classes-conceptual-framework) and [tutorial notebooks](https://neurogeriatricskiel.github.io/NGMT/examples/) for basic usage and specific algorithms.
+
+# How to contribute
+NGMT is a community effort, and any contribution is welcomed. The project is hosted on [https://github.com/neurogeriatricskiel/NGMT](https://github.com/neurogeriatricskiel/NGMT). In case you want to add new algorithms, it is suggested to fork the project and, after finalizing the changes, to [create a pull request from a fork](https://docs.github.com/de/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
 
 # Acknowledgements
 
