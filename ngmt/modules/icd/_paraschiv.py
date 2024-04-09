@@ -117,7 +117,9 @@ class ParaschivIonescuInitialContactDetection:
 
         # Process each gait sequence
         if gait_sequences is None:
-            gait_sequences = pd.DataFrame("onset": [0], "duration": [len(data)/sampling_freq_Hz])
+            gait_sequences = pd.DataFrame(
+                {"onset": [0], "duration": [len(data) / sampling_freq_Hz]}
+            )
         for _, gait_seq in gait_sequences.iterrows():
             # Calculate start and stop indices for the current gait sequence
             start_index = int(sampling_freq_Hz * gait_seq["onset"] - 1)
