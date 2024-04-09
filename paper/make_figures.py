@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from ngmt.datasets import mobilised
+from ngmt.modules.pam import PhysicalActivityMonitoring
 from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
 
@@ -35,6 +36,10 @@ def main() -> None:
         .values[0]
         .astype(float)
     )
+
+    # Physical Activity Monitoring
+    pam = PhysicalActivityMonitoring()
+    # pam = pam.detect(data=acc_data, sampling_freq_Hz=fs)
 
     # Detect gait sequences
     gsd = ParaschivIonescuGaitSequenceDetection(
