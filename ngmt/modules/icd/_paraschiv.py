@@ -122,11 +122,11 @@ class ParaschivIonescuInitialContactDetection:
             )
         for _, gait_seq in gait_sequences.iterrows():
             # Calculate start and stop indices for the current gait sequence
-            start_index = int(sampling_freq_Hz * gait_seq["onset"] - 1)
+            start_index = int(sampling_freq_Hz * gait_seq["onset"])
             stop_index = int(
-                sampling_freq_Hz * (gait_seq["onset"] + gait_seq["duration"]) - 1
+                sampling_freq_Hz * (gait_seq["onset"] + gait_seq["duration"])
             )
-            accv_gait_seq = acc_vertical[start_index : stop_index + 2].to_numpy()
+            accv_gait_seq = acc_vertical[start_index:stop_index].to_numpy()
 
             try:
                 # Perform Signal Decomposition Algorithm for Initial Contacts (ICs)
