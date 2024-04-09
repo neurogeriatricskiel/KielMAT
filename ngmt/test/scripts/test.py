@@ -35,7 +35,7 @@ def plot_initial_contacts(
 ) -> None:
     idxs = initial_contacts["onset"].to_numpy() * sampling_frequency_Hz
     idxs = idxs.astype(int)
-    fig, ax = plt.subplots(figsize=(21*1/2.54, 6*1/2.54))
+    fig, ax = plt.subplots(figsize=(21 * 1 / 2.54, 6 * 1 / 2.54))
     for _, (onset, duration) in gait_sequences[["onset", "duration"]].iterrows():
         ax.axvspan(onset, onset + duration, color="tab:pink", alpha=0.2, ec=None)
     ax.plot(np.arange(len(acc_data)) / sampling_frequency_Hz, acc_data, lw=2)
@@ -67,7 +67,7 @@ def main() -> None:
         tracked_points={
             "SU": "LowerBack",
             "SU_INDIP": ["LowerBack", "LeftFoot", "RightFoot"],
-        }, # type: ignore
+        },  # type: ignore
     )
     acc_data = data.data["SU"].loc[
         :, [c for c in data.data["SU"].columns if "_ACC" in c]
@@ -97,8 +97,8 @@ def main() -> None:
         v_acc_col_name="LowerBack_ACCEL_x",
         initial_contacts=icd.initial_contacts_,
         gait_sequences=gsd.gait_sequences_,
-        xlimits=(8642., 8672.),
-        ylimits=(-1, 2)
+        xlimits=(8642.0, 8672.0),
+        ylimits=(-1, 2),
     )
     return
 
