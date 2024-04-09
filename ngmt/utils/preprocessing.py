@@ -21,7 +21,9 @@ with pkg_resources.path(
 
 
 def resample_interpolate(
-    input_signal, initial_sampling_frequency=100, target_sampling_frequency=40
+    input_signal, 
+    initial_sampling_frequency: float, 
+    target_sampling_frequency: float
 ):
     """
     Resample and interpolate a signal to a new sampling frequency.
