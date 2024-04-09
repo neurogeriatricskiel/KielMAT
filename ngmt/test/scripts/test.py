@@ -29,11 +29,13 @@ def plot_initial_contacts(
     sampling_frequency_Hz: float,
     v_acc_col_name: str,
     initial_contacts: pd.DataFrame,
-    gait_sequences: Optional[pd.DataFrame] = None,
+    gait_sequences: pd.DataFrame,
+    xlimits: Optional[tuple] = None,
+    ylimits: Optional[tuple] = None,
 ) -> None:
     idxs = initial_contacts["onset"].to_numpy() * sampling_frequency_Hz
     idxs = idxs.astype(int)
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(21*1/2.54, 6*1/2.54))
     for _, (onset, duration) in gait_sequences[["onset", "duration"]].iterrows():
         ax.axvspan(onset, onset + duration, color="tab:pink", alpha=0.2, ec=None)
     ax.plot(np.arange(len(acc_data)) / sampling_frequency_Hz, acc_data, lw=2)
@@ -43,9 +45,17 @@ def plot_initial_contacts(
         ls="none",
         marker="^",
     )
-    ax.set_xlabel("time (s)")
-    ax.set_ylabel("acceleration (g)")
+    if xlimits:
+        ax.set_xlim(xlimits)
+    if ylimits:
+        ax.set_ylim(ylimits)
+    ax.set_xlabel("time (s)", fontsize=12)
+    ax.set_ylabel("acceleration (g)", fontsize=12)
+    for lbl in ax.xaxis.get_ticklabels() + ax.yaxis.get_ticklabels():
+        lbl.set_fontsize(12)
+    ax.spines[["top", "right"]].set_visible(False)
     plt.tight_layout()
+    plt.savefig("/home/robbin/Desktop/my_figure.png", dpi=300)
     plt.show()
     return
 
@@ -57,7 +67,7 @@ def main() -> None:
         tracked_points={
             "SU": "LowerBack",
             "SU_INDIP": ["LowerBack", "LeftFoot", "RightFoot"],
-        },
+        }, # type: ignore
     )
     acc_data = data.data["SU"].loc[
         :, [c for c in data.data["SU"].columns if "_ACC" in c]
@@ -87,6 +97,8 @@ def main() -> None:
         v_acc_col_name="LowerBack_ACCEL_x",
         initial_contacts=icd.initial_contacts_,
         gait_sequences=gsd.gait_sequences_,
+        xlimits=(8642., 8672.),
+        ylimits=(-1, 2)
     )
     return
 
