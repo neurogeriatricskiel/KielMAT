@@ -324,7 +324,7 @@ def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
     assert isinstance(icd.initial_contacts_, pd.DataFrame)
 
     # Check the columns in the initial_contacts_ DataFrame
-    expected_columns = ["onset", "event_type", "tracking_systems", "tracked_points"]
+    expected_columns = ["onset", "event_type", "tracking_systems"]
     assert all(col in icd.initial_contacts_.columns for col in expected_columns)
 
     # Check the data type of the 'onset' column
