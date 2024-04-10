@@ -90,7 +90,7 @@ class ParaschivIonescuInitialContactDetection:
             or not pd.api.types.is_datetime64_any_dtype(dt_data)
         ):
             raise ValueError("dt_data must be a pandas Series with datetime values")
-        
+
         # check if tracking_system is a string
         if tracking_system is not None and not isinstance(tracking_system, str):
             raise ValueError("tracking_system must be a string")

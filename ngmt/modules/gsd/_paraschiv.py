@@ -100,7 +100,7 @@ class ParaschivIonescuGaitSequenceDetection:
 
         if not isinstance(plot_results, bool):
             raise ValueError("Plot results must be a boolean (True or False).")
-        
+
         # check if tracking_system is a string
         if tracking_system is not None and not isinstance(tracking_system, str):
             raise ValueError("tracking_system must be a string")
