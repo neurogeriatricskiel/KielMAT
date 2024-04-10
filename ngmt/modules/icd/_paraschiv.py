@@ -20,12 +20,8 @@ class ParaschivIonescuInitialContactDetection:
     signal is numerically integrated and differentiated using a Gaussian continuous wavelet transformation. The
     initial contact (IC) events are identified as the positive maximal peaks between successive zero-crossings.
 
-    Finally, initial contacts information is provided as a DataFrame with columns `onset`, `event_type`,
-    `tracking_systems`, and `tracked_points`.
-
-    Attributes:
-        tracking_systems (str): Tracking systems used. Default is 'SU'.
-        tracked_points (str): Tracked points on the body. Default is 'LowerBack'.
+    Finally, initial contacts information is provided as a DataFrame with columns `onset`, `event_type`, and
+    `tracking_systems`.
 
     Methods:
         detect(data, gait_sequences, sampling_freq_Hz):
@@ -37,9 +33,9 @@ class ParaschivIonescuInitialContactDetection:
         >>> icd = ParaschivIonescuInitialContactDetection()
         >>> icd = icd.detect(data=acceleration_data, sampling_freq_Hz=100)
         >>> print(icd.initial_contacts_)
-                onset   event_type       tracking_systems   tracked_points
-            0   5       initial contact  SU                 LowerBack
-            1   5.6     initial contact  SU                 LowerBack
+                onset   event_type       duration   tracking_systems
+            0   5       initial contact  0          SU
+            1   5.6     initial contact  0          SU
 
     References:
         [1] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer...
@@ -49,18 +45,10 @@ class ParaschivIonescuInitialContactDetection:
 
     def __init__(
         self,
-        tracking_systems: str = "SU",
-        tracked_points: str = "LowerBack",
     ):
         """
         Initializes the ParaschivIonescuInitialContactDetection instance.
-
-        Args:
-            tracking_systems (str, optional): Tracking systems used. Default is 'SU'.
-            tracked_points (str, optional): Tracked points on the body. Default is 'LowerBack'.
         """
-        self.tracking_systems = tracking_systems
-        self.tracked_points = tracked_points
         self.initial_contacts_ = None
 
     def detect(
@@ -70,6 +58,7 @@ class ParaschivIonescuInitialContactDetection:
         v_acc_col_name: str,
         gait_sequences: Optional[pd.DataFrame] = None,
         dt_data: Optional[pd.Series] = None,
+        tracking_system: Optional[str] = None,
     ) -> pd.DataFrame:
         """
         Detects initial contacts based on the input accelerometer data.
@@ -80,15 +69,15 @@ class ParaschivIonescuInitialContactDetection:
             v_acc_col_name (str): The column name that corresponds to the vertical acceleration.
             gait_sequences (pd.DataFrame, optional): A dataframe of detected gait sequences. If not provided, the entire acceleration time series will be used for detecting initial contacts.
             dt_data (pd.Series, optional): Original datetime in the input data. If original datetime is provided, the output onset will be based on that.
+            tracking_system (str, optional): Tracking system the data is from to be used for events df. Default is None.
 
         Returns:
             ParaschivIonescuInitialContactDetection: Returns an instance of the class.
                 The initial contacts information is stored in the 'initial_contacts_' attribute,
                 which is a pandas DataFrame in BIDS format with the following columns:
                     - onset: Initial contacts.
-                    - event_type: Type of the event (default is 'gait sequence').
-                    - tracking_systems: Tracking systems used (default is 'SU').
-                    - tracked_points: Tracked points on the body (default is 'LowerBack').
+                    - event_type: Type of the event (default is 'Inital contact').
+                    - tracking_system: Tracking systems used the events are derived from.
         """
         # Check if data is empty
         if data.empty:
@@ -101,6 +90,10 @@ class ParaschivIonescuInitialContactDetection:
             or not pd.api.types.is_datetime64_any_dtype(dt_data)
         ):
             raise ValueError("dt_data must be a pandas Series with datetime values")
+        
+        # check if tracking_system is a string
+        if tracking_system is not None and not isinstance(tracking_system, str):
+            raise ValueError("tracking_system must be a string")
 
         # check if dt_data is provided and if it is a series with the same length as data
         if dt_data is not None and len(dt_data) != len(data):
@@ -164,8 +157,8 @@ class ParaschivIonescuInitialContactDetection:
             {
                 "onset": all_onsets,
                 "event_type": "initial contact",
-                "tracking_systems": self.tracking_systems,
-                "tracked_points": self.tracked_points,
+                "duration": 0,
+                "tracking_systems": tracking_system,
             }
         )
 
