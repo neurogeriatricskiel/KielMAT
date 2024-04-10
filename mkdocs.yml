@@ -41,12 +41,12 @@ nav:
   - Examples: 
     - examples/index.md
     - Tutorial basics: examples/00_tutorial_basics.md
+    - Load data into NGMT: examples/06_tutorial_lowlevel_import.md
     - Events in dataclass: examples/04_tutorial_events_in_dataclass.md
     - Gait Sequence Detection: examples/01_tutorial_gait_sequence_detection.md
     - Initial Contact Detection: examples/02_tutorial_initial_contact_detection.md
     - Physical Activity Monitoring: examples/03_tutorial_physical_activity_monitoring.md
     - Sit to Stand and Stand to Sit Detection: examples/05_tutorial_sit_to_stand_stand_to_sit_detection.md
-    - Load data into NGMT: examples/06_tutorial_lowlevel_import.md
   - Modules: 
     - modules/index.md
     - Gait Sequence Detection: modules/gsd.md
