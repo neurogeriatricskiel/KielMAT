@@ -227,7 +227,10 @@ def test_detect_empty_data():
     icd = ParaschivIonescuInitialContactDetection()
 
     # Call detect with an empty DataFrame instead of None
-    icd.detect(data=pd.DataFrame(), gait_sequences=pd.DataFrame(), sampling_freq_Hz=100)
+    icd.detect(data=pd.DataFrame(),
+               gait_sequences=pd.DataFrame(),
+               sampling_freq_Hz=100,
+               v_acc_col_name='LowerBack')
 
 
 # Define test_detect_no_gait_sequences function
@@ -249,6 +252,7 @@ def test_detect_no_gait_sequences():
         data=acceleration_data_single_axis,
         gait_sequences=pd.DataFrame(),
         sampling_freq_Hz=100,
+        v_acc_col_name='LowerBack_ACCEL_y'
     )
 
 
@@ -270,6 +274,7 @@ def test_detect_no_plot():
         data=acceleration_data_single_axis,
         gait_sequences=pd.DataFrame(),
         sampling_freq_Hz=100,
+        v_acc_col_name='LowerBack_ACCEL_y'
     )
 
     # Check if initial_contacts_ is None
@@ -312,6 +317,7 @@ def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
         data=sample_accelerometer_data,
         gait_sequences=sample_gait_sequences,
         sampling_freq_Hz=100,
+        v_acc_col_name='LowerBack_ACCEL_y'
     )
 
     # Check if initial_contacts_ attribute is a DataFrame
@@ -340,6 +346,7 @@ def test_detect_method_invalid_dt_data_type(
             data=sample_accelerometer_data,
             gait_sequences=sample_gait_sequences,
             sampling_freq_Hz=100,
+            v_acc_col_name='LowerBack_ACCEL_y',
             dt_data="not a series",
         )
     assert str(excinfo.value) == "dt_data must be a pandas Series with datetime values"
@@ -357,6 +364,7 @@ def test_detect_method_invalid_dt_data_length(
             data=sample_accelerometer_data,
             gait_sequences=sample_gait_sequences,
             sampling_freq_Hz=100,
+            v_acc_col_name='LowerBack_ACCEL_y',
             dt_data=pd.Series([1, 2, 3, 4]),
         )
     assert str(excinfo.value) == "dt_data must be a pandas Series with datetime values"
