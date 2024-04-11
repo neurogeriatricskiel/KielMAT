@@ -52,12 +52,10 @@ NGMT offers a comprehensive suite of algorithms for motion data processing in ne
 ## Dataclass
 Supporting the data curation as specified in BIDS, data are organized in recordings, where recordings can be simultaneously collected with different tracking systems (e.g., an camera-based optical motion capture system and a set of IMUs). A tracking system is defined as a group of motion channels that share hardware properties (the recording device) and software properties (the recording duration and number of samples). Loading of a recording returns a `NGMTRecording` object, that holds both `data` and `channels`. Here, `data` are the actual time series data, where `channels` provide information (meta-data) on the time series type, component, the sampling frequency, and the units in which the time series (channel) are recorded.
 
-![Data lfow in NGMT](ngmt_flow.png)
-
 ## Modules
-The data can be passed to algorithms that are organized in different modules, such as GSD and ICD. For example, the accelerometer data from a lower back-worn IMU can be passed to the gait sequence detection algorithm [@paraschiv:2019;@paraschiv:2020]. Next, the data can be passed to the initial contact detection algorithm [@paraschiv:2019] to returns the timings of initial contacts within each gait sequence (Figure [1](my_figure.png)).
+The data can be passed to algorithms that are organized in different modules, such as GSD and ICD. For example, the accelerometer data from a lower back-worn IMU can be passed to the gait sequence detection algorithm [@paraschiv:2019;@paraschiv:2020]. Next, the data can be passed to the initial contact detection algorithm [@paraschiv:2019] to returns the timings of initial contacts within each gait sequence (Figure [1](example_data.png)).
 
-![](my_figure.png)
+![](example_data.png)
 <div style="text-align:center;">
 <b>Figure 1:</b> A representative snipped of acceleration data from a low back-worn with the detected gait sequences (pink-shaded background) and the detected initial contacts (red triangles).
 </div>
