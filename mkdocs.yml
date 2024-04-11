@@ -64,6 +64,8 @@ nav:
     - Data Preprocessing: utils/preprocessing.md
     - Data Import: utils/importers.md
     - Orientation Estimation: utils/orientation_estimation.md
+  - Contributing: 
+    - contributing.md
 
 markdown_extensions:
 - pymdownx.superfences:
