@@ -4,15 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) (+ the Migration Guide section),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unreleased] 
+## [0.0.4] 
 
-Forth unofficial release of NGMT for testing purposes.
+Forth release of NGMT for for JOSS publication.
 
 ### Fixed
-- Gait sequence detection with datetime [[FIX]](https://github.com/neurogeriatricskiel/NGMT/commit/ad102772fd355e6ca64f7ad6a00a4c95d066a1d6)
+- Gait sequence detection with datetime [[#61]](https://github.com/neurogeriatricskiel/NGMT/pull/61)
 
 ### Changed
-- Reworked documentation [#60](https://github.com/neurogeriatricskiel/NGMT/pull/60)
+- Reworked documentation [[#60]](https://github.com/neurogeriatricskiel/NGMT/pull/60)
 
 ## [0.0.3] - 2024-02-27
 
