@@ -67,5 +67,7 @@ The NGMT package is implemented in Python (>=3.10) and is freely available under
 NGMT is a community effort, and any contribution is welcomed. The project is hosted on [https://github.com/neurogeriatricskiel/NGMT](https://github.com/neurogeriatricskiel/NGMT). In case you want to add new algorithms, it is suggested to fork the project and, after finalizing the changes, to [create a pull request from a fork](https://docs.github.com/de/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
 
 # Acknowledgements
+The authors would like to thank every person who provided data which has been used in the development and validation of the algorithms in the NGMT toolbox.
+The authors declare no competing interests.
 
 # References
