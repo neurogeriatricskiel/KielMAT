@@ -1,4 +1,4 @@
-# Tutorial: the basics of NGMT
+# Tutorial: Load data into an `NGMTRecording` object
 
 **Author:** Julius Welzel
 **Last update:** Fri 22 Mar 2024
@@ -120,7 +120,7 @@ Now we can run some of our modules on this data. For example, we find gait seque
 
 ```python
 # Create an instance of the ParaschivIonescuGaitSequenceDetection class
-gsd = ParaschivIonescuGaitSequenceDetection(target_sampling_freq_Hz=40)
+gsd = ParaschivIonescuGaitSequenceDetection()
 
 # Call the gait sequence detection using gsd.detect
 gsd = gsd.detect(
@@ -143,31 +143,31 @@ print(recording.events)
 
 
     
-![png](06_tutorial_lowlevel_import_files/06_tutorial_lowlevel_import_14_1.png)
+![png](basic_01_load_Data_files/basic_01_load_Data_14_1.png)
     
 
 
-    {'lowerBack':        onset  duration     event_type tracking_systems tracked_points
-    0     90.175    10.400  gait sequence               SU      LowerBack
-    1    106.075     5.600  gait sequence               SU      LowerBack
-    2    121.750     4.250  gait sequence               SU      LowerBack
-    3    141.275     5.525  gait sequence               SU      LowerBack
-    4    195.025     7.100  gait sequence               SU      LowerBack
-    5    207.850    12.325  gait sequence               SU      LowerBack
-    6    256.925     5.900  gait sequence               SU      LowerBack
-    7    291.175    16.650  gait sequence               SU      LowerBack
-    8    319.450     7.100  gait sequence               SU      LowerBack
-    9    360.350    32.375  gait sequence               SU      LowerBack
-    10   408.125    58.650  gait sequence               SU      LowerBack
-    11   470.975     4.275  gait sequence               SU      LowerBack
-    12   479.150     3.600  gait sequence               SU      LowerBack
-    13   488.100     4.650  gait sequence               SU      LowerBack
-    14   495.875   327.350  gait sequence               SU      LowerBack
-    15   848.875    14.300  gait sequence               SU      LowerBack
-    16   867.025    47.975  gait sequence               SU      LowerBack
-    17   940.975    14.025  gait sequence               SU      LowerBack
-    18   967.575    38.800  gait sequence               SU      LowerBack
-    19  1047.625    12.625  gait sequence               SU      LowerBack}
+    {'lowerBack':        onset  duration     event_type tracking_system
+    0     90.175    10.400  gait sequence            None
+    1    106.075     5.600  gait sequence            None
+    2    121.750     4.250  gait sequence            None
+    3    141.275     5.525  gait sequence            None
+    4    195.025     7.100  gait sequence            None
+    5    207.850    12.325  gait sequence            None
+    6    256.925     5.900  gait sequence            None
+    7    291.175    16.650  gait sequence            None
+    8    319.450     7.100  gait sequence            None
+    9    360.350    32.375  gait sequence            None
+    10   408.125    58.650  gait sequence            None
+    11   470.975     4.275  gait sequence            None
+    12   479.150     3.600  gait sequence            None
+    13   488.100     4.650  gait sequence            None
+    14   495.875   327.350  gait sequence            None
+    15   848.875    14.300  gait sequence            None
+    16   867.025    47.975  gait sequence            None
+    17   940.975    14.025  gait sequence            None
+    18   967.575    38.800  gait sequence            None
+    19  1047.625    12.625  gait sequence            None}
     
 
 That seemed to work. Let's see how many gait sequences we found and how long they lasted on average.
