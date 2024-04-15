@@ -1506,6 +1506,7 @@ def test_at_least_one_dimension():
 def test_classify_physical_activity_invalid_input_data():
     # Test with invalid input data type
     input_data = "not_a_dataframe"
+    index_name = "timestamp"
     sedentary_threshold = 0.2
     light_threshold = 0.5
     moderate_threshold = 0.8
@@ -1514,6 +1515,7 @@ def test_classify_physical_activity_invalid_input_data():
     with pytest.raises(ValueError, match="Input_data must be a pandas DataFrame."):
         classify_physical_activity(
             input_data,
+            index_name,
             sedentary_threshold,
             light_threshold,
             moderate_threshold,
@@ -1525,6 +1527,7 @@ def test_classify_physical_activity_invalid_input_data():
 def test_classify_physical_activity_invalid_threshold_type():
     # Test with invalid threshold type
     input_data = pd.DataFrame({"x": [1, 2, 3], "y": [4, 5, 6], "z": [7, 8, 9]})
+    index_name = "timestamp"
     sedentary_threshold = "invalid_type"
     light_threshold = 0.5
     moderate_threshold = 0.8
@@ -1533,6 +1536,7 @@ def test_classify_physical_activity_invalid_threshold_type():
     with pytest.raises(ValueError, match="Threshold values must be numeric."):
         classify_physical_activity(
             input_data,
+            index_name,
             sedentary_threshold,
             light_threshold,
             moderate_threshold,
@@ -1544,7 +1548,7 @@ def test_classify_physical_activity_invalid_threshold_type():
 def test_classify_physical_activity_invalid_threshold_values():
     invalid_data = pd.DataFrame(
         {
-            "timestamps": pd.date_range(start="2024-01-01", periods=100, freq="S"),
+            "timestamp": pd.date_range(start="2024-01-01", periods=100, freq="S"),
             "enmo": np.random.rand(100) * 500,
         }
     )
@@ -1558,7 +1562,7 @@ def test_classify_physical_activity_invalid_threshold_values():
 def test_classify_physical_activity_negative_epoch_duration():
     invalid_data = pd.DataFrame(
         {
-            "timestamps": pd.date_range(start="2024-01-01", periods=100, freq="S"),
+            "timestamp": pd.date_range(start="2024-01-01", periods=100, freq="S"),
             "enmo": np.random.rand(100) * 500,
         }
     )

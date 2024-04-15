@@ -636,6 +636,69 @@ def test_PhysicalActivityMonitoring():
     ), "physical_activities_ should be a DataFrame."
 
 
+def test_invalid_input_data_type():
+    # Initialize the class
+    pam = PhysicalActivityMonitoring()
+
+    # Test with invalid input data type
+    invalid_data = "invalid"
+    with pytest.raises(ValueError):
+        pam.detect(
+            data=invalid_data,
+            acceleration_unit="m/s^2",
+            sampling_freq_Hz=sampling_frequency,
+            thresholds_mg={
+                "sedentary_threshold": 45,
+                "light_threshold": 100,
+                "moderate_threshold": 400,
+            },
+            epoch_duration_sec=5,
+            plot=False,
+        )
+
+
+def test_invalid_index_name():
+    # Initialize the class
+    pam = PhysicalActivityMonitoring()
+
+    # Test with invalid index name
+    data_with_wrong_index_name = acceleration_data.copy()
+    data_with_wrong_index_name.index.name = "wrong_name"
+    with pytest.raises(ValueError):
+        pam.detect(
+            data=data_with_wrong_index_name,
+            acceleration_unit="m/s^2",
+            sampling_freq_Hz=sampling_frequency,
+            thresholds_mg={
+                "sedentary_threshold": 45,
+                "light_threshold": 100,
+                "moderate_threshold": 400,
+            },
+            epoch_duration_sec=5,
+            plot=False,
+        )
+
+def test_insufficient_columns():
+    # Initialize the class
+    pam = PhysicalActivityMonitoring()
+
+    # Test with insufficient columns
+    data_with_insufficient_columns = acceleration_data[["LARM_ACCEL_x", "LARM_ACCEL_y"]]
+    with pytest.raises(ValueError):
+        pam.detect(
+            data=data_with_insufficient_columns,
+            acceleration_unit="m/s^2",
+            sampling_freq_Hz=sampling_frequency,
+            thresholds_mg={
+                "sedentary_threshold": 45,
+                "light_threshold": 100,
+                "moderate_threshold": 400,
+            },
+            epoch_duration_sec=5,
+            plot=False,
+        )
+
+
 # Tests for sit to stand and stand to sit detection algorithm
 @pytest.fixture
 def sample_data():
