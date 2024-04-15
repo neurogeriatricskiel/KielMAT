@@ -1003,7 +1003,7 @@ def signal_decomposition_algorithm(
 # Function to classify activity levels based on accelerometer data
 def classify_physical_activity(
     input_data,
-    index_name="timestamp",
+    time_column_name="timestamp",
     sedentary_threshold=45,
     light_threshold=100,
     moderate_threshold=400,
@@ -1014,7 +1014,7 @@ def classify_physical_activity(
 
     Args:
         input_data (DataFrame): Input data with time index and accelerometer data (N, 3) for x, y, and z axes.
-        index_name (str): Name of the index column.
+        time_column_name (str): Name of the index column.
         sedentary_threshold (float): Threshold for sedentary activity.
         light_threshold (float): Threshold for light activity.
         moderate_threshold (float): Threshold for moderate activity.
@@ -1062,7 +1062,7 @@ def classify_physical_activity(
 
     # Return a DataFrame with the time, averaged ENMO, and classes of sedentary, light, moderate and vigorous shown with 1 or 0.
     return processed_data[
-        [index_name, "enmo", "sedentary", "light", "moderate", "vigorous"]
+        [time_column_name, "enmo", "sedentary", "light", "moderate", "vigorous"]
     ]
 
 
