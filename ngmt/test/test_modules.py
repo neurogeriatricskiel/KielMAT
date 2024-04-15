@@ -678,6 +678,7 @@ def test_invalid_index_name():
             plot=False,
         )
 
+
 def test_insufficient_columns():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
