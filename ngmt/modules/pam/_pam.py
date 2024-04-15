@@ -162,7 +162,7 @@ class PhysicalActivityMonitoring:
         # Classify activities based on thresholds using activity_classification
         classified_processed_data = preprocessing.classify_physical_activity(
             processed_data,
-            index_name=data.index.name,
+            time_column_name=data.index.name,
             sedentary_threshold=thresholds_mg.get("sedentary_threshold"),
             light_threshold=thresholds_mg.get("light_threshold"),
             moderate_threshold=thresholds_mg.get("moderate_threshold"),

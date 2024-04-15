@@ -1506,7 +1506,7 @@ def test_at_least_one_dimension():
 def test_classify_physical_activity_invalid_input_data():
     # Test with invalid input data type
     input_data = "not_a_dataframe"
-    index_name = "timestamp"
+    time_column_name = "timestamp"
     sedentary_threshold = 0.2
     light_threshold = 0.5
     moderate_threshold = 0.8
@@ -1515,7 +1515,7 @@ def test_classify_physical_activity_invalid_input_data():
     with pytest.raises(ValueError, match="Input_data must be a pandas DataFrame."):
         classify_physical_activity(
             input_data,
-            index_name,
+            time_column_name,
             sedentary_threshold,
             light_threshold,
             moderate_threshold,
@@ -1527,7 +1527,7 @@ def test_classify_physical_activity_invalid_input_data():
 def test_classify_physical_activity_invalid_threshold_type():
     # Test with invalid threshold type
     input_data = pd.DataFrame({"x": [1, 2, 3], "y": [4, 5, 6], "z": [7, 8, 9]})
-    index_name = "timestamp"
+    time_column_name = "timestamp"
     sedentary_threshold = "invalid_type"
     light_threshold = 0.5
     moderate_threshold = 0.8
@@ -1536,7 +1536,7 @@ def test_classify_physical_activity_invalid_threshold_type():
     with pytest.raises(ValueError, match="Threshold values must be numeric."):
         classify_physical_activity(
             input_data,
-            index_name,
+            time_column_name,
             sedentary_threshold,
             light_threshold,
             moderate_threshold,
