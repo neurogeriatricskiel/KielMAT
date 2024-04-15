@@ -40,7 +40,7 @@ nav:
   - Home: index.md
   - Examples: 
     - examples/index.md
-    - Tutorial basics: examples/00_tutorial_basics.md
+    - Tutorial basics: examples/basic_00_intro_ngmt.md
     - Load data into NGMT: examples/basic_01_load_Data.md
     - Events in dataclass: examples/basic_02_events.md
     - Gait Sequence Detection: examples/modules_01_gsd.md
