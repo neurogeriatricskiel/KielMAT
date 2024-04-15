@@ -85,18 +85,19 @@ recording.add_events(tracking_system=tracking_sys, new_events=gait_sequence_even
 print(f"events: {recording.events}")
 ```
 
-    events: {'SU':         onset  duration     event_type tracking_system
-    0      17.450     6.525  gait sequence            None
-    1      96.500     5.350  gait sequence            None
-    2     145.150     7.500  gait sequence            None
-    3     451.425    21.375  gait sequence            None
-    4     500.700     6.775  gait sequence            None
-    ..        ...       ...            ...             ...
-    67   9965.875    10.700  gait sequence            None
-    68  10035.875    11.700  gait sequence            None
-    69  10078.075    18.575  gait sequence            None
-    70  10251.475     8.925  gait sequence            None
-    71  10561.200    11.325  gait sequence            None
+    events: {'SU':         
+        onset       duration    event_type         tracking_system
+    0      17.450     6.525     gait sequence      None
+    1      96.500     5.350     gait sequence      None
+    2     145.150     7.500     gait sequence      None
+    3     451.425    21.375     gait sequence      None
+    4     500.700     6.775     gait sequence      None
+    ..        ...       ...               ...       ...
+    67   9965.875    10.700     gait sequence      None
+    68  10035.875    11.700     gait sequence      None
+    69  10078.075    18.575     gait sequence      None
+    70  10251.475     8.925     gait sequence      None
+    71  10561.200    11.325     gait sequence      None
     
     [72 rows x 4 columns]}
     
