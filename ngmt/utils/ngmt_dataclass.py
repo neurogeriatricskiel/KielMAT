@@ -6,7 +6,14 @@ import pandas as pd
 from pathlib import Path
 from typing import Any, List, Optional, Union, Sequence
 
-# from ngmt.modules import GSDB
+REQUIRED_COLUMNS = [
+    "name",
+    "component",
+    "type",
+    "tracked_point",
+    "units",
+    "sampling_frequency",
+]
 
 # See: https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#restricted-keyword-list-for-channel-type
 VALID_CHANNEL_TYPES = {
