@@ -3,16 +3,7 @@ import pandas as pd
 import pathlib
 import os
 from ngmt.utils.ngmt_dataclass import NGMTRecording
-
-
-REQUIRED_COLUMNS = [
-    "name",
-    "component",
-    "type",
-    "tracked_point",
-    "units",
-    "sampling_frequency",
-]
+from ngmt.utils.ngmt_dataclass import REQUIRED_COLUMNS
 
 
 def load_recording(
