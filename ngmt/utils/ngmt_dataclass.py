@@ -83,20 +83,11 @@ class NGMTRecording:
         Returns:
             str: A message indicating that all channel dataframes are valid.
         """
-        required_columns = [
-            "name",
-            "component",
-            "type",
-            "tracked_point",
-            "units",
-            "sampling_frequency",
-        ]
-
         for system_name, df in self.channels.items():
             # Check required columns and their order
-            if not df.columns.tolist()[:6] == required_columns:
+            if not df.columns.tolist()[:6] == REQUIRED_COLUMNS:
                 raise ValueError(
-                    f"Channel dataframe for '{system_name}' does not have the required columns in correct order. The correct order is: {required_columns}"
+                    f"Channels dataframe for '{system_name}' does not have the required columns in correct order. The correct order is: {REQUIRED_COLUMNS}."
                 )
 
             # Check data types
