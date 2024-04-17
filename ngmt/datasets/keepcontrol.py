@@ -7,7 +7,7 @@ from ngmt.utils.ngmt_dataclass import REQUIRED_COLUMNS
 
 
 def load_recording(
-    file_name: str | pathlib.Path,
+    file_name: pathlib.Path,
     tracking_systems: str | list[str],
     tracked_points: str | list[str] | dict[str, str] | dict[str, list[str]],
 ):
@@ -15,7 +15,7 @@ def load_recording(
     Load a recording from the Keep Control validation study.
 
     Args:
-        file_name (str or pathlib.Path ): The absolute or relative path to the data file.
+        file_name (pathlib.Path): The absolute or relative path to the data file.
         tracking_systems (str or list of str) : A string or list of strings of tracking systems for which data are to be returned.
         tracked_points (str or list of str or dict[str, str] or dict[str, list of str]) :
             Defines for which tracked points data are to be returned.
@@ -41,15 +41,15 @@ def load_recording(
 
     # From the file_name, extract the tracking system
     search_str = "_tracksys-"
-    idx_from = file_name.find(search_str) + len(search_str)
-    idx_to = idx_from + file_name[idx_from:].find("_")
-    current_tracksys = file_name[idx_from:idx_to]
+    idx_from = str(file_name).find(search_str) + len(search_str)
+    idx_to = idx_from + str(file_name)[idx_from:].find("_")
+    current_tracksys = str(file_name)[idx_from:idx_to]
 
     # Initialize the data and channels dictionaroes
     data_dict, channels_dict = {}, {}
     for tracksys in tracking_systems:
         # Set current filename
-        current_file_name = file_name.replace(
+        current_file_name = str(file_name).replace(
             f"{search_str}{current_tracksys}", f"{search_str}{tracksys}"
         )
         if os.path.isfile(current_file_name):
