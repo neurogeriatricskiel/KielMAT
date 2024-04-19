@@ -4,7 +4,7 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Mon 25 Mar 2024
+**Last update:** Fri 19 Apr 2024
 
 ## Learning Objectives
 By the end of this tutorial:
@@ -168,7 +168,7 @@ fig.tight_layout()
 plt.show()
 ```
 
-![](07_tutorial_turn_detection_files/07_tutorial_turn_detection_1.png)
+![](modules_05_td_files/modules_05_td_1.png)
     
 
 ## Applying Pham Turn Detection Algorithm
@@ -197,7 +197,7 @@ pham = pham.detect(
     data=input_data, sampling_freq_Hz=sampling_frequency, plot_results= True
 )
 ```
-![](07_tutorial_turn_detection_files/07_tutorial_turn_detection_2.png)
+![](modules_05_td_files/modules_05_td_2.png)
 
 The turn information are stored in the 'detected_turns' attribute, which is a pandas DataFrame in BIDS format with the following columns:
 
@@ -280,5 +280,5 @@ fig.tight_layout()
 plt.show()
 ```
 
-![](07_tutorial_turn_detection_files/07_tutorial_turn_detection_3.png)
+![](modules_05_td_files/modules_05_td_3.png)
 
