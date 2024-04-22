@@ -25,6 +25,7 @@ import pytest
 import numpy as np
 import pandas as pd
 from unittest.mock import patch
+from ngmt.datasets import keepcontrol
 from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
 from ngmt.modules.pam import PhysicalActivityMonitoring
@@ -571,7 +572,7 @@ def detector():
 
 @pytest.fixture
 def gyro_data_numpy():
-    # Create a sample accelerometer and gyroscope data
+    # Sample accelerometer and gyroscope data
     accel_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Accel_X', 'Accel_Y', 'Accel_Z'])
     gyro_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Gyro_X', 'Gyro_Y', 'Gyro_Z'])
     sample_data = pd.concat([accel_data, gyro_data], axis=1)
@@ -582,7 +583,7 @@ def gyro_data_numpy():
     return gyro
 
 def test_bias_calculation_valid(detector, gyro_data_numpy):
-    # Create a sample accelerometer and gyroscope data
+    # Sample accelerometer and gyroscope data
     accel_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Accel_X', 'Accel_Y', 'Accel_Z'])
     gyro_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Gyro_X', 'Gyro_Y', 'Gyro_Z'])
     sample_data = pd.concat([accel_data, gyro_data], axis=1)
@@ -596,7 +597,7 @@ def test_bias_calculation_valid(detector, gyro_data_numpy):
     # Retrieve the calculated bias from the detector
     gyro_bias_detected = detector.gyro_bias
 
-# Soem additional test functions for Turn detection algorithm
+# Some additional test functions for Turn detection algorithm
 class TestPhamTurnDetection:
     @staticmethod
     def create_mock_data(num_samples=1000, sampling_freq_Hz=200):
@@ -658,7 +659,7 @@ class TestPhamTurnDetection:
 
     @pytest.fixture
     def sample_data(self):
-        # Sample data for testing
+        # Sample data for test
         diff_yaw = np.array([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
         flags_start_90 = [2, 5]
         flags_end_90 = [7, 10]
@@ -733,7 +734,7 @@ class TestPhamTurnDetection:
         assert duration_90 == [0.3, 0.3, 0.3]
 
 def test_invalid_plot_results_pham_td():
-    # Create a sample accelerometer and gyroscope data
+    # Sample accelerometer and gyroscope data
     accel_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Accel_X', 'Accel_Y', 'Accel_Z'])
     gyro_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Gyro_X', 'Gyro_Y', 'Gyro_Z'])
     sample_data = pd.concat([accel_data, gyro_data], axis=1)
@@ -748,7 +749,7 @@ def test_invalid_plot_results_pham_td():
 
 # Test function for PhamTurnDetection class
 @pytest.fixture
-def detector():
+def pham_detection_instance():
     return PhamTurnDetection()
 
 @pytest.fixture
@@ -757,30 +758,66 @@ def invalid_data():
     data = pd.DataFrame(np.random.rand(100, 5), columns=['Accel_X', 'Accel_Y', 'Accel_Z', 'Gyro_X', 'Gyro_Y'])
     return data
 
-def test_data_shape_invalid(detector, invalid_data):
+def test_data_shape_invalid(pham_detection_instance, invalid_data):
     # Test invalid data shape
     with pytest.raises(ValueError):
-        detector.detect(invalid_data, 100)
+        pham_detection_instance.detect(invalid_data, 100)
 
 @pytest.fixture
 def invalid_sampling_freq():
     return 0 
 
-def test_sampling_freq_invalid(detector, invalid_sampling_freq):
+def test_sampling_freq_invalid(pham_detection_instance, invalid_sampling_freq):
     # Test invalid sampling frequency
     with pytest.raises(ValueError):
         data = pd.DataFrame(np.random.rand(100, 6))
-        detector.detect(data, invalid_sampling_freq)
+        pham_detection_instance.detect(data, invalid_sampling_freq)
 
 @pytest.fixture
 def invalid_plot_results():
     return "invalid"  # Invalid non-boolean value for plot_results
 
-def test_plot_results_invalid(detector, invalid_plot_results):
+def test_plot_results_invalid(pham_detection_instance, invalid_plot_results):
     # Test invalid plot_results value
     with pytest.raises(ValueError):
         data = pd.DataFrame(np.random.rand(100, 6))
-        detector.detect(data, 100, plot_results=invalid_plot_results)
+        pham_detection_instance.detect(data, 100, plot_results=invalid_plot_results)
+
+def test_hesitation_detection_with_provided_data(pham_detection_instance):
+    # The 'file_path' variable holds the absolute path to the data file
+    file_path = (
+        r"C:\Users\Project\Desktop\bigprojects\neurogeriatrics_data\Keep Control\Data\lab dataset\raw data\sub-pp002\motion\sub-pp002_task-walkTurn_tracksys-imu_motion.tsv"
+    )
+    # In this example, we use "imu" as tracking_system and "pelvis" as tracked points.
+    tracking_sys = "imu"
+    tracked_points = {tracking_sys: ["pelvis"]}    
+
+    # The 'keepcontrol.load_recording' function is used to load the data from the specified file_path
+    recording = keepcontrol.load_recording(
+        file_name=file_path, tracking_systems=[tracking_sys], tracked_points=tracked_points
+    )    
+
+    # Load lower back acceleration data
+    acceleration_data = recording.data[tracking_sys][
+        ["pelvis_ACC_x", "pelvis_ACC_y", "pelvis_ACC_z"]
+    ]
+    # Load lower back gyro data
+    gyro_data = recording.data[tracking_sys][
+        ["pelvis_ANGVEL_x", "pelvis_ANGVEL_y", "pelvis_ANGVEL_z"]
+    ]
+    # Get the corresponding sampling frequency directly from the recording
+    sampling_frequency = recording.channels[tracking_sys][
+        recording.channels[tracking_sys]["name"] == "pelvis_ACC_x"
+    ]["sampling_frequency"].values[0]
+
+    # Concatenate acceleration_data and gyro_data along axis=1 (columns)
+    input_data = pd.concat([acceleration_data, gyro_data], axis=1)
+
+    # Call the detect method
+    pham_detection_instance.detect(input_data, sampling_frequency)
+
+    # Assert that detected_turns attribute is not None
+    assert pham_detection_instance.detected_turns is not None
 
 # Run the tests with pytest
 if __name__ == "__main__":
