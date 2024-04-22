@@ -58,7 +58,6 @@ nav:
     - datasets/index.md
     - KeepControl: datasets/keepcontrol.md
     - Mobilise-D: datasets/mobilised.md
-    - Fair-Park II: datasets/fairpark.md
   - Utilities: 
     - utils/index.md
     - Data Preprocessing: utils/preprocessing.md
