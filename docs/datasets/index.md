@@ -3,6 +3,6 @@
 This part of the project documentation focuses on
 the avaliable **datasets**.
 
-## [KeepControl](keepcontrol.md)
+## [Keep Control](keepcontrol.md)
 
 ## [Mobilise-D](mobilised.md)
