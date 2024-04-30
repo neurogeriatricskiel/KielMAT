@@ -11,11 +11,6 @@
 
 Welcome to the NeuroGeriatricMotionToolbox (NGMT). We are a Python based toolbox for processing motion data.
 
-!!! warning
-
-    The toolbox is currently under development and is not yet ready for use.
-
-
 The toolbox is aimed at motion researchers who want to use python based open source software to process their data.
 We have implemented validated algorithms in modules to process motion data, such as:
    - Gait sequence detection (GSD)
