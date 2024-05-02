@@ -131,7 +131,7 @@ class PhamSittoStandStandtoSitDetection:
 
         # Select gyro data and convert it to numpy array format
         gyro = data.iloc[:, 3:6].copy()
-        gyro = gyro.to_numpy()
+        gyro = -gyro.to_numpy()
 
         # Calculate timestamps to use in next calculation
         time = np.arange(1, len(accel[:, 0]) + 1) * sampling_period
@@ -184,6 +184,9 @@ class PhamSittoStandStandtoSitDetection:
         threshold = 10**-2
         stationary_2 = accel_var <= threshold
         stationary_2 = (accel_var <= threshold).astype(int)
+
+        # Convert unit of the gyro data from deg/s to rad/s
+        gyro = np.deg2rad(gyro)
 
         # Calculate stationary of gyro variance
         gyro_norm = np.sqrt(gyro[:, 0] ** 2 + gyro[:, 1] ** 2 + gyro[:, 2] ** 2)
@@ -247,7 +250,7 @@ class PhamSittoStandStandtoSitDetection:
             iZeroCr = np.where((gyro[:, 1][:-1] * gyro[:, 1][1:]) < 0)[0]
 
             # Calculate the difference between consecutive values
-            gyrY_diff = np.diff(gyro[:, 1])
+            gyrY_diff = np.diff(gyro[:, 1], axis=0)
 
             # Initialize arrays to store left and right indices for each local peak
             # Initialize left side indices with ones
@@ -273,21 +276,21 @@ class PhamSittoStandStandtoSitDetection:
                 # Iterate over distances to zero-crossing points on the left side of the peak (in reverse order)
                 for j in range(len(dist2peak_ls) - 1, -1, -1):
                     # Check if slope is down and the left side not too close to the peak (more than 200ms)
-                    if gyrY_diff[pt + dist2peak_ls[j]] < 0 and -dist2peak_ls[j] > 25:
+                    if gyrY_diff[pt + dist2peak_ls[j]] < 0 and -dist2peak_ls[j] > (0.2*sampling_freq_Hz):
                         if j > 0:  # Make sure dist2peak_ls[j] exist
                             # If the left side peak is far enough or small enough
-                            if (dist2peak_ls[j] - dist2peak_ls[j - 1]) >= 25 or (
+                            if (dist2peak_ls[j] - dist2peak_ls[j - 1]) >= (0.2*sampling_freq_Hz) or (
                                 tilt_angle_deg[pt + dist2peak_ls[j - 1]]
                                 - tilt_angle_deg[pt + dist2peak_ls[j]]
                             ) > 1:
                                 # Store the index of the left side
                                 ls[i] = pt + dist2peak_ls[j]
                                 break
-                        else:
-                            ls[i] = pt + dist2peak_ls[j]
-                            break
+                            else:
+                                ls[i] = pt + dist2peak_ls[j]
+                                break
                 for j in range(len(dist2peak_rs)):
-                    if gyrY_diff[pt + dist2peak_rs[j]] < 0 and dist2peak_rs[j] > 25:
+                    if gyrY_diff[pt + dist2peak_rs[j]] < 0 and dist2peak_rs[j] > (0.2*sampling_freq_Hz):
                         rs[i] = pt + dist2peak_rs[j]
                         break
 
@@ -307,6 +310,10 @@ class PhamSittoStandStandtoSitDetection:
             # Calculate maximum flexion velocity and maximum extension velocity
             flexion_max_vel = np.zeros_like(local_peaks)
             extension_max_vel = np.zeros_like(local_peaks)
+
+            # Convert unit of the gyro data from deg/s to rad/s
+            gyro = np.rad2deg(gyro)
+
             for i in range(len(local_peaks)):
                 flexion_max_vel[i] = max(abs(gyro[:, 1][ls[i] : local_peaks[i]]))
                 extension_max_vel[i] = max(abs(gyro[:, 1][local_peaks[i] : rs[i]]))
@@ -326,7 +333,7 @@ class PhamSittoStandStandtoSitDetection:
 
         # Remove too small postural transitions
         i = pt_angle >= 15
-        time_pt = time_pt[i]
+        time_pt = ls[i]/ sampling_freq_Hz
         pt_type = [pt_type[idx] for idx, val in enumerate(pt_type) if i[idx]]
         pt_angle = pt_angle[i]
         duration = duration[i]

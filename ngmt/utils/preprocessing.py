@@ -1200,7 +1200,7 @@ def wavelet_decomposition(data, level, wavetype):
         denoised_signal (ndarray): Denoised signal.
     """
     # Perform wavelet decomposition
-    coeffs = pywt.wavedec(data, wavetype, mode="smooth", level=level)
+    coeffs = pywt.wavedec(data, wavetype, mode="constant", level=level)
 
     # Zero out wavelet coefficients beyond specified order
     for i in range(1, len(coeffs)):
@@ -1208,7 +1208,7 @@ def wavelet_decomposition(data, level, wavetype):
             coeffs[i][:] = 0
 
     # Reconstruct signal from coefficients
-    denoised_signal = pywt.waverec(coeffs, wavetype, mode="smooth")
+    denoised_signal = pywt.waverec(coeffs, wavetype, mode="constant")
 
     return denoised_signal
 
@@ -1295,7 +1295,7 @@ def pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz):
     for i in range(3):
         ax2.plot(
             np.arange(len(gyro)) / sampling_freq_Hz,
-            gyro[:, i],
+            -gyro[:, i],
         )
     for i in range(len(postural_transitions_)):
         onset = postural_transitions_["onset"][i]
@@ -1310,7 +1310,7 @@ def pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz):
         loc="upper right",
         fontsize=14,
     )
-    ax2.set_ylim(-200, 200)
+    ax2.set_ylim(-220, 220)
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
     fig.tight_layout()
