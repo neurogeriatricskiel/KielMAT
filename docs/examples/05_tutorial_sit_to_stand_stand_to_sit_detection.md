@@ -2,7 +2,7 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Thu 14 Mar 2024
+**Last update:** Fri 03 May 2024
 
 ## Learning objectives  
 By the end of this tutorial:
@@ -50,7 +50,7 @@ To implement Pham Sit to Stand and Stand to Sit Detection algorithm, we load exa
 ```python
 # The 'file_path' variable holds the absolute path to the data file
 file_path = (
-    r"C:\Users\Project\Desktop\bigprojects\neurogeriatrics_data\Keep Control\Data\lab dataset\raw data\sub-pp002\motion\sub-pp002_task-homePart1_tracksys-imu_motion.tsv"
+    r"C:\Users\Project\Desktop\bigprojects\neurogeriatrics_data\Keep Control\Data\lab dataset\raw data\sub-pp002\motion\sub-pp002_task-tug_tracksys-imu_motion.tsv"
 )
 
 # In this example, we use "imu" as tracking_system and "pelvis" as tracked points.
@@ -79,36 +79,36 @@ print(f"gyro_data (deg/s): {gyro_data}")
 acceleration_data (g):
 
                         pelvis_ACC_x      pelvis_ACC_y      pelvis_ACC_z
-            0           0.993190          -0.074219         0.025876
-            1           0.992179          -0.072742         0.024897
-            2           0.990726          -0.072742         0.026365
-            3           0.998559          -0.067859         0.030279
-            4           0.988263          -0.074219         0.020983
+            0           0.920901          -0.047850         -0.400888
+            1           0.919441          -0.051282         -0.392583
+            2           0.922828          -0.047359         -0.392093
+            3           0.926741          -0.048830         -0.384279
+            4           0.918973          -0.053218         -0.397947
             ...         ...               ...               ...
-            84589       0.964385          -0.042958         -0.288087
-            84590       0.957500          -0.044435         -0.292490
-            84591       0.962427          -0.043470         -0.280286
-            84592       0.956552          -0.052243         -0.291022
-            84593       0.960469          -0.048354         -0.288087
+            2903        0.966803          -0.027822         -0.279782
+            2904        0.957517          -0.035152         -0.285636
+            2905        0.960437          -0.034171         -0.291979
+            2906        0.962890          -0.036623         -0.299794
+            2907        0.963883          -0.038584         -0.294921
 
-[84594 rows x 3 columns]
+[2908 rows x 3 columns]
 
 gyro_data (deg/s):        
 
                         pelvis_ANGVEL_x     pelvis_ANGVEL_y     pelvis_ANGVEL_z
-            0           -0.089270           2.883682            -0.611571
-            1           -0.173289           3.062097            -0.437273
-            2            0.960967           2.099487            -1.137522
-            3            0.000000           2.883682            -0.088678
-            4            0.351829           2.099487            -0.700249
-            ...          ...                ...                 ...
-            84589         0.000000          1.398275             0.088678
-            84590         1.396815          1.224009            -0.088678
-            84591         0.871697          1.224009            -0.174298
-            84592         1.223526          0.000000            -0.348595
-            84593         0.614389          0.000000             0.000000
+            0           0.000000           -0.614677             0.436291
+            1           0.000000           -0.700049             0.176093
+            2          -0.172905           -0.261807            -0.262826
+            3           0.262815           -0.261807             0.000000
+            4           0.608625           -0.614677            -0.349559
+            ...         ...                 ...                  ...
+            2903       -0.089911           -1.309034             0.000000
+            2904        0.525631           -0.438242            -0.436291
+            2905        0.871441           -0.961855             0.086733
+            2906        1.051262           -0.700049             0.176093
+            2907        1.134256           -0.347179            -0.525652
 
-[84594 rows x 3 columns]
+[2908 rows x 3 columns]
 
 ## Load and show sampling frequency of the data
 
@@ -217,10 +217,8 @@ postural_transition_events:
 
         onset [s]   duration [s]    event_type      postural transition angle [°]   maximum flexion velocity [°/s]  maximum extension velocity [°/s]    tracking_systems   tracked_points  
 
-    0   17.89       1.8             sit to stand    53.26                           79                              8                                   imu                LowerBack   
-    1   54.65       1.9             stand to sit    47.12                           91                              120                                 imu                LowerBack  
-    2   56.02       1.09            sit to stand    23.52                           62                              10                                  imu                LowerBack  
-    3   135.89      2.5             stand to sit    21.76                           40                              65                                  imu                LowerBack   
+    0   3.345       1.9             sit to stand    71.63                           186                             78                                  imu                LowerBack   
+    1   11.69       2.8             stand to sit    29.25                           97                              113                                 imu                LowerBack  
 
 ## Detailed Visualization of the Detected Postural Transitions
 
