@@ -74,8 +74,7 @@ def import_mobilityLab(fullFileName: str) -> NGMTRecording:
     Imports data from a mobility lab system from the specified file path and constructs an NGMTRecording object.
 
     Args:
-        file_path (str or Path): The path to the mobility lab data file.
-        tracked_point (str): The name of the tracked point.
+        fullFileName (str or Path): The path to the mobility lab data file.
 
     Returns:
         NGMTRecording: The NGMTRecording object containing the imported data.
@@ -86,9 +85,9 @@ def import_mobilityLab(fullFileName: str) -> NGMTRecording:
         >>> recording = import_mobilityLab(file_path, tracked_point)
     """
 
-    # Convert file_path to a Path object if it is a string
-    if isinstance(file_path, str):
-        file_path = Path(file_path)
+    # Convert fullFileName to a Path object if it is a string
+    if isinstance(fullFileName, str):
+        fullFileName = Path(fullFileName)
 
     with h5py.File(fullFileName, 'r') as hfile:
         monitor_labels = hfile.attrs['MonitorLabelList']
@@ -108,16 +107,16 @@ def import_mobilityLab(fullFileName: str) -> NGMTRecording:
             sample_rate = hfile[case_id].attrs['SampleRate']
             # Raw data
             rawAcc = hfile[case_id]['Calibrated']['Accelerometers'][:]
-            rawAcc = hfile[case_id]['Calibrated']['Gyroscopes'][:]
+            rawGyro = hfile[case_id]['Calibrated']['Gyroscopes'][:]
             rawMagn = hfile[case_id]['Calibrated']['Magnetometers'][:]
 
             data_dict[f'{monitor_label}'] = pd.DataFrame({
                 f'{monitor_label}_ACCEL_x': rawAcc[:,0],
                 f'{monitor_label}_ACCEL_y': rawAcc[:,1],
                 f'{monitor_label}_ACCEL_z': rawAcc[:,2],
-                f'{monitor_label}_GYRO_x': rawAcc[:,0],
-                f'{monitor_label}_GYRO_y': rawAcc[:,1],
-                f'{monitor_label}_GYRO_z': rawAcc[:,2],
+                f'{monitor_label}_GYRO_x': rawGyro[:,0],
+                f'{monitor_label}_GYRO_y': rawGyro[:,1],
+                f'{monitor_label}_GYRO_z': rawGyro[:,2],
                 f'{monitor_label}_MAGN_x': rawMagn[:,0],
                 f'{monitor_label}_MAGN_y': rawMagn[:,1],
                 f'{monitor_label}_MAGN_z': rawMagn[:,2],
