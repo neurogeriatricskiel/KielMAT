@@ -23,6 +23,10 @@ def import_axivity(file_path: str, tracked_point: str):
         >>> recording = import_axivity(file_path, tracked_point)
     """
 
+    # return an error if no tracked point is provided
+    if not tracked_point:
+        raise ValueError("Please provide a tracked point.")
+
     # Convert file_path to a Path object if it is a string
     if isinstance(file_path, str):
         file_path = Path(file_path)
@@ -38,10 +42,6 @@ def import_axivity(file_path: str, tracked_point: str):
     data.reset_index(inplace=True)
 
     # Construct the channel information
-
-    # Set the tracked point to "lowerBack"
-    tracked_point = "lowerBack"
-
     # Find all the columns that are named x, y or z in the data DataFrame
     accel_col_names = [col for col in data.columns if col[-1] in ["x", "y", "z"]]
     n_channels = len(accel_col_names)
@@ -59,7 +59,7 @@ def import_axivity(file_path: str, tracked_point: str):
         "sampling_frequency": [info["ResampleRate"]] * n_channels,
     }
 
-    # Create the NGMTRecording object
+    # Create the NGMTRecording object of a single tracked point
     recording = NGMTRecording(
         data={tracked_point: data[accel_col_names]},
         channels={tracked_point: pd.DataFrame(channels_dict)},
