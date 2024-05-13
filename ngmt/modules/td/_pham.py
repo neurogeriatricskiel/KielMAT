@@ -43,6 +43,8 @@ class PhamTurnDetection:
 
             Args:
                 data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
+                acceleration_data_unit (str): Unit of acceleration data.
+                gyro_data_unit (str): Unit of gyro data.
                 sampling_freq_Hz (float, int): Sampling frequency of the signals in Hz.
                 plot_results (bool, optional): If True, generates a plot. Default is False.
 
@@ -54,6 +56,8 @@ class PhamTurnDetection:
         >>> pham = PhamTurnDetection()
         >>> pham.detect(
                 data=input_data,
+                acceleration_data_unit='g'.
+                gyro_data_unit='deg/s'.
                 sampling_freq_Hz=200.0,
                 )
         >>> print(pham.detected_turns)
@@ -85,13 +89,15 @@ class PhamTurnDetection:
         self.detected_turns = None
 
     def detect(
-        self, data: pd.DataFrame, sampling_freq_Hz: float, plot_results: bool = False
+        self, data: pd.DataFrame, acceleration_data_unit: str, gyro_data_unit: str, sampling_freq_Hz: float, plot_results: bool = False
     ) -> pd.DataFrame:
         """
         Detects truns based on the input accelerometer and gyro data.
 
         Args:
             data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
+            acceleration_data_unit (str): Unit of acceleration data.
+            gyro_data_unit (str): Unit of gyro data.
             sampling_freq_Hz (float): Sampling frequency of the input data.
             plot_results (bool, optional): If True, generates a plot. Default is False.
 
@@ -130,6 +136,16 @@ class PhamTurnDetection:
         # Select gyro data and convert it to numpy array format
         gyro = data.iloc[:, 3:6].copy()
         gyro = gyro.to_numpy()
+
+        # Check unit of acceleration data if it is in g or m/s^2
+        if acceleration_data_unit == "m/s^2":
+            # Convert acceleration data from m/s^2 to g (if not already is in g)
+            accel /= 9.81
+
+        # Check unit of acceleration data if it is in g or m/s^2
+        if gyro_data_unit == "rad/s":
+            # Convert acceleration data from rad/s to deg/s (if not already is in deg/s)
+            gyro = np.rad2deg(gyro)
 
         # Convert gyro data unit from deg/s to rad/s
         gyro *= self.gyro_convert_unit

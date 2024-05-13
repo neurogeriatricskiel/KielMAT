@@ -57,8 +57,11 @@ class PhamSittoStandStandtoSitDetection:
     Examples:
         >>> pham = PhamSittoStandStandtoSitDetection()
         >>> pham.detect(
-                data=,
-                sampling_freq_Hz=200,
+                data=input_data,
+                acceleration_data_unit='g'.
+                gyro_data_unit='deg/s'.
+                sampling_freq_Hz=200.0,
+                plot_results (bool, optional): If True, generates a plot. Default is False.
                 )
         >>> print(pham.postural_transitions_)
                 onset      duration    event_type       postural transition angle [°]   maximum flexion velocity [°/s]  maximum extension velocity [°/s]  tracking_systems    tracked_points
@@ -94,13 +97,15 @@ class PhamSittoStandStandtoSitDetection:
         self.postural_transitions_ = None
 
     def detect(
-        self, data: pd.DataFrame, sampling_freq_Hz: float, plot_results: bool = False
+        self, data: pd.DataFrame, acceleration_data_unit: str, gyro_data_unit: str, sampling_freq_Hz: float, plot_results: bool = False
     ) -> pd.DataFrame:
         """
         Detects sit to stand and stand to sit based on the input acceleromete and gyro data.
 
         Args:
             data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
+            acceleration_data_unit (str): Unit of acceleration data.
+            gyro_data_unit (str): Unit of gyro data.
             sampling_freq_Hz (float): Sampling frequency of the input data.
             plot_results (bool, optional): If True, generates a plot. Default is False.
 
@@ -132,6 +137,16 @@ class PhamSittoStandStandtoSitDetection:
         # Select gyro data and convert it to numpy array format
         gyro = data.iloc[:, 3:6].copy()
         gyro = -gyro.to_numpy()
+
+        # Check unit of acceleration data if it is in g or m/s^2
+        if acceleration_data_unit == "m/s^2":
+            # Convert acceleration data from m/s^2 to g (if not already is in g)
+            accel /= 9.81
+
+        # Check unit of acceleration data if it is in g or m/s^2
+        if gyro_data_unit == "rad/s":
+            # Convert acceleration data from rad/s to deg/s (if not already is in deg/s)
+            gyro = np.rad2deg(gyro)
 
         # Calculate timestamps to use in next calculation
         time = np.arange(1, len(accel[:, 0]) + 1) * sampling_period

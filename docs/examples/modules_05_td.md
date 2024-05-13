@@ -4,7 +4,7 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Fri 19 Apr 2024
+**Last update:** Mon 13 May 2024
 
 ## Learning Objectives
 By the end of this tutorial:
@@ -53,7 +53,7 @@ To implement Pham Turn Detection algorithm, we load example data.
 ```python
 # The 'file_path' variable holds the absolute path to the data file
 file_path = (
-    r"C:\Users\Project\Desktop\bigprojects\neurogeriatrics_data\Keep Control\Data\lab dataset\raw data\sub-pp002\motion\sub-pp002_task-walkTurn_tracksys-imu_motion.tsv"
+    r"\Keep Control\Data\lab dataset\raw data\sub-pp002\motion\sub-pp002_task-walkTurn_tracksys-imu_motion.tsv"
 )
 
 # In this example, we use "imu" as tracking_system and "pelvis" as tracked points.
@@ -70,14 +70,24 @@ acceleration_data = recording.data[tracking_sys][
     ["pelvis_ACC_x", "pelvis_ACC_y", "pelvis_ACC_z"]
 ]
 
+# Get the acceleration data unit from the recording
+acceleration_data_unit = recording.channels[tracking_sys][
+    recording.channels[tracking_sys]["name"].str.contains("ACC", case=False)
+]["units"].iloc[0]
+
 # Load lower back gyro data
 gyro_data = recording.data[tracking_sys][
     ["pelvis_ANGVEL_x", "pelvis_ANGVEL_y", "pelvis_ANGVEL_z"]
 ]
 
+# Get the gyro data unit from the recording
+gyro_data_unit = recording.channels[tracking_sys][
+    recording.channels[tracking_sys]["name"].str.contains("ANGVEL", case=False)
+]["units"].iloc[0]
+
 # Print acceleration and gyro data
-print(f"acceleration_data (g): {acceleration_data}")
-print(f"gyro_data (deg/s): {gyro_data}")
+print(f"acceleration_data ({acceleration_data_unit}): {acceleration_data}")
+print(f"gyro_data ({gyro_data_unit}): {gyro_data}")
 ```
 acceleration_data (g):
 
@@ -179,6 +189,8 @@ The following code first prepares the input data by combining acceleration and g
 Then, in order to apply turn detection algorithm, an instance of the PhamTurnDetection class is created using the constructor, `PhamTurnDetection()`. The `pham` variable holds this instance, allowing us to access its methods. The inputs of the algorithm are as follows:
 
 - **Input Data:** `data` Includes accelerometer and gyro data (N, 6) for x, y, and z axes. in pandas Dataframe format.
+- **Unit of acceleration data:** `acceleration_data_unit` is the unit of the acceleation data.
+- **Unit of gyro data:** `gyro_data_unit` is unit of the gyro data.
 - **Sampling Frequency:** `sampling_freq_Hz` is the sampling frequency of the data, defined in Hz.
 - **Plot Results:** `plot_results`, if set to True, generates a plot showing the detected turns on the data. The default is False. The onset is represented with the vertical red line and the grey area represents the duration of the turns detected by the algorithm.
 
@@ -194,7 +206,11 @@ pham = PhamTurnDetection()
 
 # Call the turn detection using pham.detect
 pham = pham.detect(
-    data=input_data, sampling_freq_Hz=sampling_frequency, plot_results= True
+    data=input_data,
+    acceleration_data_unit=acceleration_data_unit,
+    gyro_data_unit=gyro_data_unit,
+    sampling_freq_Hz=sampling_frequency,
+    plot_results=True
 )
 ```
 ![](modules_05_td_files/modules_05_td_2.png)
