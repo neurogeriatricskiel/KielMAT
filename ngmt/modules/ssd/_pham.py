@@ -58,8 +58,8 @@ class PhamSittoStandStandtoSitDetection:
         >>> pham = PhamSittoStandStandtoSitDetection()
         >>> pham.detect(
                 data=input_data,
-                acceleration_data_unit='g'.
-                gyro_data_unit='deg/s'.
+                acceleration_data_unit='g',
+                gyro_data_unit='deg/s',
                 sampling_freq_Hz=200.0,
                 plot_results (bool, optional): If True, generates a plot. Default is False.
                 )
