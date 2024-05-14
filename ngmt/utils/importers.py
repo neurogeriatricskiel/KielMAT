@@ -69,27 +69,34 @@ def import_axivity(file_path: str, tracked_point: str):
     return recording
 
 
-def import_mobilityLab(fullFileName: str) -> NGMTRecording:
+def import_mobilityLab(
+    file_name: str | Path,
+    tracked_points: str | list[str],
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Imports data from a mobility lab system from the specified file path and constructs an NGMTRecording object.
+    Imports data from an APDM Mobility Lab system from the specified file path and constructs an NGMTRecording object.
 
     Args:
-        fullFileName (str or Path): The path to the mobility lab data file.
+        file_name (str or Path): The absolute or relative path to the data file.
+        tracked_point (str or list of str or dict[str, str] or dict[str, list of str]):
+            Defines for which tracked points data are to be returned.
 
     Returns:
-        NGMTRecording: The NGMTRecording object containing the imported data.
+        data, channels: An instance of the NGMTRecording dataclass containing the loaded data and channels.
 
     Examples:
         >>> file_path = "/path/to/sensor_data.h5"
-        >>> tracked_point = "lowerBack"
+        >>> tracked_point = "Lumbar"
         >>> recording = import_mobilityLab(file_path, tracked_point)
     """
+    # Convert file_name to a Path object if it is a string
+    if isinstance(file_name, str):
+        file_name = Path(file_name)
+    
+    if isinstance(tracked_points, str):
+        tracked_points = [tracked_points]
 
-    # Convert fullFileName to a Path object if it is a string
-    if isinstance(fullFileName, str):
-        fullFileName = Path(fullFileName)
-
-    with h5py.File(fullFileName, 'r') as hfile:
+    with h5py.File(file_name, 'r') as hfile:
         monitor_labels = hfile.attrs['MonitorLabelList']
         case_ids = hfile.attrs['CaseIdList']
         channels_dict = {
@@ -135,11 +142,11 @@ def import_mobilityLab(fullFileName: str) -> NGMTRecording:
 
             channels_dict["component"].extend(['x', 'y', 'z'] * 3)
             channels_dict["type"].extend(['ACCEL', 'ACCEL', 'ACCEL', 'GYRO', 'GYRO', 'GYRO', 'MAGN', 'MAGN', 'MAGN'])
-            channels_dict["tracked_point"].extend([monitor_label.upper()] * 9)
-            channels_dict["units"].extend(['m/s^2'] * 9)
+            channels_dict["tracked_point"].extend([monitor_label] * 9)
+            channels_dict["units"].extend(['m/s^2', 'm/s^2', 'm/s^2', 'rad/s', 'rad/s', 'rad/s', 'µT', 'µT', 'µT'])
             channels_dict["sampling_frequency"].extend([sample_rate] * 9)
 
-    data = {monitor_label: pd.concat(list(data_dict.values()), axis=1)}
-    channels = {monitor_label: pd.DataFrame(channels_dict)}
+    # recording_data = {monitor_label: pd.concat(list(data_dict.values()), axis=1)}
+    # channel_data = {monitor_label: pd.DataFrame(channels_dict)}
 
-    return NGMTRecording(data=data, channels=channels)
+    return pd.concat(list(data_dict.values()), axis=1), pd.DataFrame(channels_dict)  # NGMTRecording(data=recording_data, channels=channel_data)
