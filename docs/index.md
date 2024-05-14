@@ -8,7 +8,7 @@
 # NGMT
 ![NeurogeriatricsLogo](ng_logo.png)
 
-Welcome to the NeuroGeriatricMotionToolbox (NGMT). We are a Python based toolbox for processing motion data.
+Welcome to the NeuroGeriatricsMotionToolbox (NGMT). We are a Python based toolbox for processing motion data.
 
 > The toolbox is currently under development and is not yet ready for use.
 
