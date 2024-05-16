@@ -230,7 +230,7 @@ class ParaschivIonescuGaitSequenceDetection:
             # Calculate the data adaptive threshold using the 5th percentile of the combined peaks
             try:
                 threshold = np.percentile(combined_peaks, 5)
-                
+
             except IndexError:
                 # If combined_peaks is empty, set threshold to default value
                 threshold = 0.15
