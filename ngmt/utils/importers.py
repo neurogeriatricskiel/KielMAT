@@ -69,20 +69,21 @@ def import_axivity(file_path: str, tracked_point: str):
     return recording
 
 
+# Importher for APDM Mobility Lab system
 def import_mobilityLab(
     file_name: str | Path,
     tracked_points: str | list[str],
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Imports data from an APDM Mobility Lab system from the specified file path and constructs an NGMTRecording object.
+    Imports data from an APDM Mobility Lab system from the specified file path.
 
     Args:
         file_name (str or Path): The absolute or relative path to the data file.
-        tracked_point (str or list of str or dict[str, str] or dict[str, list of str]):
+        tracked_point (str or list of str]):
             Defines for which tracked points data are to be returned.
 
     Returns:
-        data, channels: An instance of the NGMTRecording dataclass containing the loaded data and channels.
+        data, channels: The loaded data and channels.
 
     Examples:
         >>> file_path = "/path/to/sensor_data.h5"
@@ -92,13 +93,35 @@ def import_mobilityLab(
     # Convert file_name to a Path object if it is a string
     if isinstance(file_name, str):
         file_name = Path(file_name)
-    
+
+    # Convert tracked_points into a list if the it is provided as a string
     if isinstance(tracked_points, str):
         tracked_points = [tracked_points]
 
     with h5py.File(file_name, 'r') as hfile:
+        # Get monitor labels and case IDs
         monitor_labels = hfile.attrs['MonitorLabelList']
+        monitor_labels = [
+            s.decode("UTF-8").strip()
+            for s in monitor_labels
+        ]
         case_ids = hfile.attrs['CaseIdList']
+        case_ids = [
+            s.decode("UTF-8")[:9]
+            for s in case_ids
+        ]
+        
+        # Check if all tracked points exist in monitor labels
+        for tracked_point in tracked_points:
+            if tracked_point not in monitor_labels:
+                print(f"Warning: Tracked point '{tracked_point}' does not exist in monitor labels.")
+                # Return empty data and channels
+                data = pd.DataFrame()
+                channels = pd.DataFrame()
+
+                return data, channels
+
+        # Initialize dictionaries to store channels and data frames
         channels_dict = {
             "name": [],
             "component": [],
@@ -107,16 +130,22 @@ def import_mobilityLab(
             "units": [],
             "sampling_frequency": []
         }
+
+        # Create dictionary to store data
         data_dict = {}
-        for ixSensor in range(len(monitor_labels)):
-            monitor_label = monitor_labels[ixSensor].decode('utf-8').strip()
-            case_id = case_ids[ixSensor].decode('utf-8')[:9]
+
+        # Iterate over each sensor
+        for idx_sensor, (monitor_label, case_id) in enumerate(zip(monitor_labels, case_ids)):
+            if monitor_label not in tracked_points:
+                continue  # to next sensor name
             sample_rate = hfile[case_id].attrs['SampleRate']
-            # Raw data
+            
+            # Get raw data
             rawAcc = hfile[case_id]['Calibrated']['Accelerometers'][:]
             rawGyro = hfile[case_id]['Calibrated']['Gyroscopes'][:]
             rawMagn = hfile[case_id]['Calibrated']['Magnetometers'][:]
 
+            # Populate data_dict
             data_dict[f'{monitor_label}'] = pd.DataFrame({
                 f'{monitor_label}_ACCEL_x': rawAcc[:,0],
                 f'{monitor_label}_ACCEL_y': rawAcc[:,1],
@@ -128,6 +157,8 @@ def import_mobilityLab(
                 f'{monitor_label}_MAGN_y': rawMagn[:,1],
                 f'{monitor_label}_MAGN_z': rawMagn[:,2],
             })
+
+            # Extend lists in channels_dict
             channels_dict["name"].extend([
                 f"{monitor_label}_ACCEL_x",
                 f"{monitor_label}_ACCEL_y",
@@ -146,7 +177,10 @@ def import_mobilityLab(
             channels_dict["units"].extend(['m/s^2', 'm/s^2', 'm/s^2', 'rad/s', 'rad/s', 'rad/s', 'µT', 'µT', 'µT'])
             channels_dict["sampling_frequency"].extend([sample_rate] * 9)
 
-    # recording_data = {monitor_label: pd.concat(list(data_dict.values()), axis=1)}
-    # channel_data = {monitor_label: pd.DataFrame(channels_dict)}
-
-    return pd.concat(list(data_dict.values()), axis=1), pd.DataFrame(channels_dict)  # NGMTRecording(data=recording_data, channels=channel_data)
+    # Concatenate data frames from data_dict
+    data = pd.concat(list(data_dict.values()), axis=1)
+    
+    # Create DataFrame from channels_dict
+    channels = pd.DataFrame(channels_dict)
+   
+    return data, channels
