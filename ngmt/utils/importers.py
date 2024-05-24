@@ -9,19 +9,20 @@ from pathlib import Path
 
 def import_axivity(file_path: str, tracked_point: str):
     """
-    Imports Axivity data from the specified file path and constructs an NGMTRecording object.
+    Imports Axivity data from the specified file path and 
+    return the data and channel formatted to be used in a NGMTRecording object.
 
     Args:
         file_path (str or Path): The path to the Axivity data file.
         tracked_point (str): The name of the tracked point.
 
     Returns:
-        NGMTRecording: The NGMTRecording object containing the imported data.
+        dict, dict: The loaded data and channels as dictionaries.
 
     Examples:
         >>> file_path = "/path/to/axivity_data.cwa"
         >>> tracked_point = "lowerBack"
-        >>> recording = import_axivity(file_path, tracked_point)
+        >>> data, channels = import_axivity(file_path, tracked_point)
     """
 
     # return an error if no tracked point is provided
@@ -51,7 +52,7 @@ def import_axivity(file_path: str, tracked_point: str):
     col_names = [f"{tracked_point}_{s}_{x}" for s in ["ACCEL"] for x in ["x", "y", "z"]]
 
     # Create the channel dictionary following the BIDS naming conventions
-    channels_dict = {
+    channels = {
         "name": col_names,
         "component": ["x", "y", "z"] * (n_channels // 3),
         "type": ["ACCEL"] * (n_channels),
@@ -60,13 +61,7 @@ def import_axivity(file_path: str, tracked_point: str):
         "sampling_frequency": [info["ResampleRate"]] * n_channels,
     }
 
-    # Create the NGMTRecording object of a single tracked point
-    recording = NGMTRecording(
-        data={tracked_point: data[accel_col_names]},
-        channels={tracked_point: pd.DataFrame(channels_dict)},
-    )
-
-    return recording
+    return data, channels
 
 
 # Importher for APDM Mobility Lab system
@@ -83,7 +78,7 @@ def import_mobilityLab(
             Defines for which tracked points data are to be returned.
 
     Returns:
-        data, channels: The loaded data and channels.
+        dict, dict: The loaded data and channels as dictionaries.
 
     Examples:
         >>> file_path = "/path/to/sensor_data.h5"
@@ -178,5 +173,5 @@ def import_mobilityLab(
     
     # Create DataFrame from channels_dict
     channels = pd.DataFrame(channels_dict)
-   
+
     return data, channels
