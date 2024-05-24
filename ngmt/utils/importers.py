@@ -111,15 +111,11 @@ def import_mobilityLab(
             for s in case_ids
         ]
         
-        # Check if all tracked points exist in monitor labels
-        for tracked_point in tracked_points:
-            if tracked_point not in monitor_labels:
-                print(f"Warning: Tracked point '{tracked_point}' does not exist in monitor labels.")
-                # Return empty data and channels
-                data = pd.DataFrame()
-                channels = pd.DataFrame()
+        # Track invalid tracked points
+        invalid_tracked_points = [tp for tp in tracked_points if tp not in monitor_labels]
 
-                return data, channels
+        if invalid_tracked_points:
+            raise ValueError(f"The following tracked points do not exist in monitor labels: {invalid_tracked_points}")
 
         # Initialize dictionaries to store channels and data frames
         channels_dict = {
