@@ -9,7 +9,7 @@ from pathlib import Path
 
 def import_axivity(file_path: str, tracked_point: str):
     """
-    Imports Axivity data from the specified file path and 
+    Imports Axivity data from the specified file path and
     return the data and channel formatted to be used in a NGMTRecording object.
 
     Args:
@@ -93,24 +93,22 @@ def import_mobilityLab(
     if isinstance(tracked_points, str):
         tracked_points = [tracked_points]
 
-    with h5py.File(file_name, 'r') as hfile:
+    with h5py.File(file_name, "r") as hfile:
         # Get monitor labels and case IDs
-        monitor_labels = hfile.attrs['MonitorLabelList']
-        monitor_labels = [
-            s.decode("UTF-8").strip()
-            for s in monitor_labels
-        ]
-        case_ids = hfile.attrs['CaseIdList']
-        case_ids = [
-            s.decode("UTF-8")[:9]
-            for s in case_ids
-        ]
-        
+        monitor_labels = hfile.attrs["MonitorLabelList"]
+        monitor_labels = [s.decode("UTF-8").strip() for s in monitor_labels]
+        case_ids = hfile.attrs["CaseIdList"]
+        case_ids = [s.decode("UTF-8")[:9] for s in case_ids]
+
         # Track invalid tracked points
-        invalid_tracked_points = [tp for tp in tracked_points if tp not in monitor_labels]
+        invalid_tracked_points = [
+            tp for tp in tracked_points if tp not in monitor_labels
+        ]
 
         if invalid_tracked_points:
-            raise ValueError(f"The following tracked points do not exist in monitor labels: {invalid_tracked_points}")
+            raise ValueError(
+                f"The following tracked points do not exist in monitor labels: {invalid_tracked_points}"
+            )
 
         # Initialize dictionaries to store channels and data frames
         channels_dict = {
@@ -119,58 +117,78 @@ def import_mobilityLab(
             "type": [],
             "tracked_point": [],
             "units": [],
-            "sampling_frequency": []
+            "sampling_frequency": [],
         }
 
         # Create dictionary to store data
         data_dict = {}
 
         # Iterate over each sensor
-        for idx_sensor, (monitor_label, case_id) in enumerate(zip(monitor_labels, case_ids)):
+        for idx_sensor, (monitor_label, case_id) in enumerate(
+            zip(monitor_labels, case_ids)
+        ):
             if monitor_label not in tracked_points:
                 continue  # to next sensor name
-            sample_rate = hfile[case_id].attrs['SampleRate']
-            
+            sample_rate = hfile[case_id].attrs["SampleRate"]
+
             # Get raw data
-            rawAcc = hfile[case_id]['Calibrated']['Accelerometers'][:]
-            rawGyro = hfile[case_id]['Calibrated']['Gyroscopes'][:]
-            rawMagn = hfile[case_id]['Calibrated']['Magnetometers'][:]
+            rawAcc = hfile[case_id]["Calibrated"]["Accelerometers"][:]
+            rawGyro = hfile[case_id]["Calibrated"]["Gyroscopes"][:]
+            rawMagn = hfile[case_id]["Calibrated"]["Magnetometers"][:]
 
             # Populate data_dict
-            data_dict[f'{monitor_label}'] = pd.DataFrame({
-                f'{monitor_label}_ACCEL_x': rawAcc[:,0],
-                f'{monitor_label}_ACCEL_y': rawAcc[:,1],
-                f'{monitor_label}_ACCEL_z': rawAcc[:,2],
-                f'{monitor_label}_GYRO_x': rawGyro[:,0],
-                f'{monitor_label}_GYRO_y': rawGyro[:,1],
-                f'{monitor_label}_GYRO_z': rawGyro[:,2],
-                f'{monitor_label}_MAGN_x': rawMagn[:,0],
-                f'{monitor_label}_MAGN_y': rawMagn[:,1],
-                f'{monitor_label}_MAGN_z': rawMagn[:,2],
-            })
+            data_dict[f"{monitor_label}"] = pd.DataFrame(
+                {
+                    f"{monitor_label}_ACCEL_x": rawAcc[:, 0],
+                    f"{monitor_label}_ACCEL_y": rawAcc[:, 1],
+                    f"{monitor_label}_ACCEL_z": rawAcc[:, 2],
+                    f"{monitor_label}_GYRO_x": rawGyro[:, 0],
+                    f"{monitor_label}_GYRO_y": rawGyro[:, 1],
+                    f"{monitor_label}_GYRO_z": rawGyro[:, 2],
+                    f"{monitor_label}_MAGN_x": rawMagn[:, 0],
+                    f"{monitor_label}_MAGN_y": rawMagn[:, 1],
+                    f"{monitor_label}_MAGN_z": rawMagn[:, 2],
+                }
+            )
 
             # Extend lists in channels_dict
-            channels_dict["name"].extend([
-                f"{monitor_label}_ACCEL_x",
-                f"{monitor_label}_ACCEL_y",
-                f"{monitor_label}_ACCEL_z",
-                f"{monitor_label}_GYRO_x",
-                f"{monitor_label}_GYRO_y",
-                f"{monitor_label}_GYRO_z",
-                f"{monitor_label}_MAGN_x",
-                f"{monitor_label}_MAGN_y",
-                f"{monitor_label}_MAGN_z",
-            ])
+            channels_dict["name"].extend(
+                [
+                    f"{monitor_label}_ACCEL_x",
+                    f"{monitor_label}_ACCEL_y",
+                    f"{monitor_label}_ACCEL_z",
+                    f"{monitor_label}_GYRO_x",
+                    f"{monitor_label}_GYRO_y",
+                    f"{monitor_label}_GYRO_z",
+                    f"{monitor_label}_MAGN_x",
+                    f"{monitor_label}_MAGN_y",
+                    f"{monitor_label}_MAGN_z",
+                ]
+            )
 
-            channels_dict["component"].extend(['x', 'y', 'z'] * 3)
-            channels_dict["type"].extend(['ACCEL', 'ACCEL', 'ACCEL', 'GYRO', 'GYRO', 'GYRO', 'MAGN', 'MAGN', 'MAGN'])
+            channels_dict["component"].extend(["x", "y", "z"] * 3)
+            channels_dict["type"].extend(
+                [
+                    "ACCEL",
+                    "ACCEL",
+                    "ACCEL",
+                    "GYRO",
+                    "GYRO",
+                    "GYRO",
+                    "MAGN",
+                    "MAGN",
+                    "MAGN",
+                ]
+            )
             channels_dict["tracked_point"].extend([monitor_label] * 9)
-            channels_dict["units"].extend(['m/s^2', 'm/s^2', 'm/s^2', 'rad/s', 'rad/s', 'rad/s', 'µT', 'µT', 'µT'])
+            channels_dict["units"].extend(
+                ["m/s^2", "m/s^2", "m/s^2", "rad/s", "rad/s", "rad/s", "µT", "µT", "µT"]
+            )
             channels_dict["sampling_frequency"].extend([sample_rate] * 9)
 
     # Concatenate data frames from data_dict
     data = pd.concat(list(data_dict.values()), axis=1)
-    
+
     # Create DataFrame from channels_dict
     channels = pd.DataFrame(channels_dict)
 
