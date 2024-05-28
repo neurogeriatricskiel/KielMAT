@@ -94,7 +94,7 @@ channels_dict = {
 }
 
 recording =  NGMTRecording(
-    data={"imu": acc_data}, channels={"lb_imu": pd.DataFrame(channels_dict)}
+    data={"lb_imu": acc_data}, channels={"lb_imu": pd.DataFrame(channels_dict)}
 )
 ```
 
