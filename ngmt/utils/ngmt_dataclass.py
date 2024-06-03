@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 from typing import Any, List, Optional, Union, Sequence
+from typing_extensions import Self
 
 REQUIRED_COLUMNS = [
     "name",
@@ -235,3 +236,54 @@ class NGMTRecording:
                 errors = validator.is_bids(file_path)
                 if errors:
                     raise ValueError(f"File path '{file_path}' is not BIDS compatible.")
+
+    def merge(self, other: "NGMTRecording") -> Self:
+        """Merge two recording objects.
+
+        Merge two recording objects. If the recording objects contain data from the same
+        tracking system, then check if the sampling frequency and number of samples were the same.
+        If not, then throw a ValueError.
+        
+        Args:
+            other: An instance of an NGMTRecording
+        
+        Raises:
+            ValueError: If the recording are from the same tracking system, but sampled at different
+            frequencies or have a different number of samples.
+        """
+
+        # Loop over the tracking systems in the other recording
+        for tracksys in other.data.keys():
+            # In case the tracking system already exists
+            if tracksys in self.data.keys():
+                # Compare the sampling frequencies
+                if (
+                    self.channels[tracksys]["sampling_frequency"].iloc[0]
+                    != other.channels[tracksys]["sampling_frequency"].iloc[0]
+                ):
+                    raise ValueError(
+                        f"The sampling frequencies of the recording do not match, {self.channels[tracksys]['sampling_frequency'].iloc[0]} Hz and {other.channels[tracksys]['sampling_frequency'].iloc[0]} Hz respectively."
+                    )
+
+                # Compare the number of samples
+                if self.data[tracksys].shape[0] != other.data[tracksys].shape[0]:
+                    raise ValueError(
+                        f"The number of samples different between the recordings ({self.data[tracksys].shape[0]} and {other.data[tracksys].shape[0]}, respectively)."
+                    )
+
+                # Merge the data dataframes
+                data_df = pd.concat((self.data[tracksys], other.data[tracksys]), axis=1)
+
+                # Merge the channels dataframes
+                channels_df = pd.concat(
+                    (self.channels[tracksys], other.channels[tracksys]), axis=0
+                )
+
+                # Update the tracking system
+                self.data[tracksys] = data_df
+                self.channels[tracksys] = channels_df
+            else:
+                # Add tracking system to dataframe
+                self.data[tracksys] = other.data[tracksys]
+                self.channels[tracksys] = other.channels[tracksys]
+        return self
