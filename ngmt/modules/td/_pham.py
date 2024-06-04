@@ -469,7 +469,7 @@ class PhamTurnDetection:
             else:
                 direction_of_turns.append("right")
 
-        # Create a DataFrame with the calculated temporal parameters
+        # Create a DataFrame with the calculated spatio-temporal parameters
         self.parameters_ = pd.DataFrame(
             {
                 "direction of turn": direction_of_turns,
@@ -478,5 +478,5 @@ class PhamTurnDetection:
             }
         )
 
-        # Set the index name to 'stride id'
+        # Set the index name to 'turn id'
         self.parameters_.index.name = "turn id"
