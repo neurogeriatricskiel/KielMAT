@@ -1,10 +1,8 @@
-from datetime import datetime
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import scipy.signal
 from ngmt.utils import preprocessing
-from ngmt.config import cfg_colors
+from ngmt.utils import viz_utils
 
 
 class ParaschivIonescuGaitSequenceDetection:
@@ -422,7 +420,7 @@ class ParaschivIonescuGaitSequenceDetection:
         # Plot results if set to true
         if plot_results:
 
-            preprocessing.gsd_plot_results(
+            viz_utils.plot_gait(
                 self.target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
             )
 

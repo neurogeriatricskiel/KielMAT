@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import scipy
 from ngmt.utils import preprocessing
+from ngmt.utils import viz_utils
 from typing import Optional, TypeVar
 
 Self = TypeVar("Self", bound="PhamTurnDetection")
@@ -14,11 +15,11 @@ class PhamTurnDetection:
     inertial measurement unit (IMU) sensor.
 
     The core of the algorithm lies in the detect method, where turns are identified using accelerometer and
-    gyroscope data. The method first processes the gyro data, converting it to rad/s and computing
+    gyroscope data. The method first processes the gyro data, converting it to rad/s if needed and computing
     the variance to identify periods of low variance, which may indicate bias. It then calculates the gyro bias
     and subtracts it from the original gyro signal to remove any biases. Next, the yaw angle is computed by
-    integrating the gyro data, and zero-crossings indices are found to detect turns. Then, turns are identified
-    based on significant changes in the yaw angle.
+    integrating the vertical component of the gyro data, and zero-crossings indices are found to detect turns.
+    Then, turns are identified based on significant changes in the yaw angle.
 
     The algorithm also accounts for hesitations, which are brief pauses or fluctuations in the signal that may
     occur within a turn. Hesitations are marked based on specific conditions related to the magnitude and
@@ -27,59 +28,67 @@ class PhamTurnDetection:
     Then, the detected turns are characterized by their onset and duration. Turns with angles equal to or greater
     than 90 degrees and durations between 0.5 and 10 seconds are selected for further analysis. Finally, the detected
     turns along with their characteristics (onset, duration, etc.) are stored in a pandas DataFrame
-    (detected_turns attribute).
+    (turns_ attribute).
 
     In addition, spatial-temporal parameters are calculated using detected turns and their characteristics by
-    the spatio_temporal_parameters method. As a return, the turn id along with its spatial-temporal parameters including direction (left or right), angle of turn
-    and peak angular velocity are stored in a pandas DataFrame (detected_turns attribute).
+    the spatio_temporal_parameters method. As a return, the turn id along with its spatial-temporal parameters
+    including direction (left or right), angle of turn and peak angular velocity are stored in a pandas DataFrame
+    (parameters_ attribute).
 
     Optionally, if plot_results is set to True, the algorithm generates a plot visualizing the accelerometer
     and gyroscope data alongside the detected turns. This visualization aids in the qualitative assessment of
     the algorithm's performance and provides insights into the dynamics of the detected turns.
 
     Methods:
-        detect(data, accel_unit, gyro_unit, sampling_freq_Hz, plot_results, tracking_system, tracked_point):
+        detect(data, gyro_vertical, accel_unit, gyro_unit, sampling_freq_Hz, dt_data, tracking_system, tracked_point, plot_results):
             Detects turns using accelerometer and gyro signals.
 
             Args:
                 data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
+                gyro_vertical (str): The column name that corresponds to the vertical component gyro.
                 accel_unit (str): Unit of acceleration data.
                 gyro_unit (str): Unit of gyro data.
                 sampling_freq_Hz (float, int): Sampling frequency of the signals in Hz.
-                plot_results (bool, optional): If True, generates a plot. Default is False.
+                dt_data (pd.Series, optional): Original datetime in the input data. If original datetime is provided, the output onset will be based on that.
                 tracking_system (str, optional): Tracking systems.
                 tracked_point (str, optional): Tracked points on the body.
+                plot_results (bool, optional): If True, generates a plot. Default is False.
 
             Returns:
                 PhamTurnDetection: an instance of the class with the detected turns
-                stored in the 'detected_turns' attribute.
+                stored in the 'turns_' attribute.
 
         spatio_temporal_parameters():
             Extracts spatio-temporal parameters of the detected turns.
 
-            Sets the parameters_ attribute with detailed turn characteristics.
-
+            Returns:
+                pd.DataFrame: The spatio-temporal parameter information is stored in the 'spatio_temporal_parameters'
+                attribute with the following columns:
+                    - direction of turn: Direction of turn which is either "left" or "right".
+                    - angle of turn: Angle of the turn in degrees.
+                    - peak angular velocity: Peak angular velocity during turn [deg/s].
 
     Examples:
         >>> pham = PhamTurnDetection()
         >>> pham.detect(
                 data = input_data,
-                accel_unit = 'g',
-                gyro_unit = 'deg/s',
+                gyro_vertical = "pelvis_ANGVEL_x",
+                accel_unit = "g",
+                gyro_unit = "rad/s",
                 sampling_freq_Hz = 200.0,
-                tracking_system = 'IMU'
-                tracked_point = 'LowerBack'
+                tracking_system = "imu"
+                tracked_point = "LowerBack"
                 )
-        >>> print(pham.detected_turns)
-                onset   duration   event_type   tracked_sys    tracked_point
-            0   4.04    3.26       turn         imu            LowerBack
-            1   9.44    3.35       turn         imu            LowerBack
+        >>> print(pham.turns_)
+                onset   duration   event_type   tracking_systems    tracked_points
+            0   4.04    3.26       turn         imu                 LowerBack
+            1   9.44    3.35       turn         imu                 LowerBack
 
         >>> pham.spatio_temporal_parameters()
         >>> print(pham.parameters_)
-                direction_of_turn   angle_of_turn_deg   peak_angular_velocity
-            0   left               -197.55              159.45
-            1   right               199.69              144.67
+                direction of turn   angle of turn   peak angular velocity
+            0   left               -197.55          159.45
+            1   right               199.69          144.67
 
     References:
         [1] Pham et al. (2017). Algorithm for Turning Detection and Analysis Validated under Home-Like Conditions...
@@ -101,7 +110,7 @@ class PhamTurnDetection:
             max_turn_duration_s (float): Maximum duration of a turn in seconds. Default is 10.
             min_turn_angle_deg (float): Minimum angle of a turn in degrees. Default is 90
         """
-        self.detected_turns = None
+        self.turns_ = None
         self.thr_gyro_var = thr_gyro_var
         self.min_turn_duration_s = min_turn_duration_s
         self.max_turn_duration_s = max_turn_duration_s
@@ -110,27 +119,31 @@ class PhamTurnDetection:
     def detect(
         self,
         data: pd.DataFrame,
+        gyro_vertical: str,
         accel_unit: str,
         gyro_unit: str,
         sampling_freq_Hz: float,
-        plot_results: bool = False,
+        dt_data: Optional[pd.Series] = None,
         tracking_system: Optional[str] = None,
         tracked_point: Optional[str] = None,
+        plot_results: bool = False,
     ) -> Self:
         """
         Detects truns based on the input accelerometer and gyro data.
 
         Args:
             data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
+            gyro_vertical (str): The column name that corresponds to the vertical component gyro.
             accel_unit (str): Unit of acceleration data.
             gyro_unit (str): Unit of gyro data.
             sampling_freq_Hz (float): Sampling frequency of the input data in Hz.
+            dt_data (pd.Series, optional): Original datetime in the input data. If original datetime is provided, the output onset will be based on that.
             tracking_system (str, optional): Tracking systems.
             tracked_point (str, optional): Tracked points on the body.
             plot_results (bool, optional): If True, generates a plot. Default is False.
 
         Returns:
-            The turns information is stored in the 'detected_turns' attribute,
+            The turns information is stored in the 'turns_' attribute,
             which is a pandas DataFrame in BIDS format with the following information:
                 - onset: Start time of the turn [s].
                 - duration: Duration of the turn [s].
@@ -138,6 +151,17 @@ class PhamTurnDetection:
                 - tracking_systems: Tracking systems.
                 - tracked_points: Tracked points on the body.
         """
+        # check if dt_data is a pandas Series with datetime values
+        if dt_data is not None and (
+            not isinstance(dt_data, pd.Series)
+            or not pd.api.types.is_datetime64_any_dtype(dt_data)
+        ):
+            raise ValueError("dt_data must be a pandas Series with datetime values")
+
+        # check if dt_data is provided and if it is a series with the same length as data
+        if dt_data is not None and len(dt_data) != len(data):
+            raise ValueError("dt_data must be a series with the same length as data")
+
         # Check if data is a DataFrame
         if not isinstance(data, pd.DataFrame):
             raise ValueError("Input data must be a pandas DataFrame")
@@ -157,12 +181,10 @@ class PhamTurnDetection:
             raise ValueError("plot_results must be a boolean value")
 
         # Select acceleration data and convert it to numpy array format
-        accel = data.iloc[:, 0:3].copy()
-        accel = accel.to_numpy()
+        accel = data.iloc[:, 0:3].copy().to_numpy()
 
-        # Select gyro data and convert it to numpy array format
-        gyro = data.iloc[:, 3:6].copy()
-        gyro = gyro.to_numpy()
+        # Select acceleration data and convert it to numpy array format
+        gyro = data.iloc[:, 3:6].copy().to_numpy()
 
         # Check unit of acceleration data if it is in g or m/s^2 (including variations)
         if accel_unit in ["m/s^2", "meters/s^2", "meter/s^2"]:
@@ -203,14 +225,21 @@ class PhamTurnDetection:
         # Subtract gyro bias from the original gyro signal
         gyro_unbiased = gyro - gyro_bias
 
+        # Get the index of the vertical component of gyro from data and minus 3 to find correspoding data in unbiased gyro
+        gyro_vertical_index = data.columns.get_loc(gyro_vertical) - 3
+
         # Integrate x component of the gyro signal to get yaw angle (also convert gyro unit to deg/s)
         self.yaw = (
-            scipy.integrate.cumtrapz(np.rad2deg(gyro_unbiased[:, 0]), initial=0)
+            scipy.integrate.cumtrapz(
+                np.rad2deg(gyro_unbiased[:, gyro_vertical_index]), initial=0
+            )
             / sampling_freq_Hz
         )
 
         # Find zero-crossings indices
-        self.index_zero_crossings = np.where(np.diff(np.sign(gyro[:, 0])))[0]
+        self.index_zero_crossings = np.where(
+            np.diff(np.sign(gyro[:, gyro_vertical_index]))
+        )[0]
 
         # Calculate turns from yaw angle
         self.turns_all = (
@@ -413,7 +442,7 @@ class PhamTurnDetection:
             duration_90.append(duration_nsamples / sampling_freq_Hz)
 
         # Create a DataFrame with postural transition information
-        detected_turns = pd.DataFrame(
+        self.turns_ = pd.DataFrame(
             {
                 "onset": np.array(flags_start_90) / sampling_freq_Hz,
                 "duration": duration_90,
@@ -423,13 +452,20 @@ class PhamTurnDetection:
             }
         )
 
-        # Assign the DataFrame to the 'detected_turns' attribute
-        self.detected_turns = detected_turns
+        # If original datetime is available, update the 'onset' and 'duration'
+        if dt_data is not None:
+            # Update the 'onset' based on the original datetime information
+            self.turns_["onset"] = dt_data.iloc[flags_start_90].reset_index(drop=True)
+
+            # Update the 'duration' based on the difference between end and start indices
+            self.turns_["duration"] = dt_data.iloc[flags_end_90].reset_index(
+                drop=True
+            ) - dt_data.iloc[flags_start_90].reset_index(drop=True)
 
         # If Plot_results set to true
         if plot_results:
-            preprocessing.pham_turn_plot_results(
-                accel, np.rad2deg(gyro), detected_turns, sampling_freq_Hz
+            viz_utils.plot_turns(
+                accel, gyro, accel_unit, gyro_unit, self.turns_, sampling_freq_Hz
             )
 
         # Return an instance of the class
@@ -446,7 +482,7 @@ class PhamTurnDetection:
                 - angle of turn [deg]: Angle of the turn in degrees.
                 - peak angular velocity [deg/s]: Peak angular velocity during turn.
         """
-        if self.detected_turns is None:
+        if self.turns_ is None:
             raise ValueError("No turns detected. Please run the detect method first.")
 
         # Calculate additional information for each >= 90 degree turn
