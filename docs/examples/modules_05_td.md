@@ -1,6 +1,4 @@
-<style>body {text-align: justify}</style>
-
-# Tutorial: Turn Detection
+# Tutorial: turn detection algortihm
 
 **Author:** Masoud Abedinifar
 
@@ -10,7 +8,7 @@
 By the end of this tutorial:
 
 - You can load data from a recording that belongs to one of the available datasets,
-- Apply the Pham Turn Detection algorithm.
+- Apply the Pham turn detection algorithm.
 - Visualize the results of the algorithm.
 - Extract spatio-temporal parameters of the detected turns.
 - Interpret the detected turns for further analysis.
