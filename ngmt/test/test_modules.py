@@ -1,6 +1,6 @@
 # Introduction and explanation regarding the test suite
 """
-This code is a test suite for various signal processing and analysis functions which exist in the NGMT toolbox. 
+This code is a test suite for various modules which exist in the NGMT toolbox. 
 It employs pytest, a Python testing framework, to verify the correctness of these functions. 
 Here's a brief explanation of the code structure:
 
@@ -29,7 +29,7 @@ from ngmt.datasets import keepcontrol
 from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
 from ngmt.modules.pam import PhysicalActivityMonitoring
-from ngmt.modules.ssd import PhamSittoStandStandtoSitDetection
+from ngmt.modules.ptd import PhamPosturalTransitionDetection
 from ngmt.modules.td import PhamTurnDetection
 
 
@@ -545,27 +545,58 @@ def sample_data():
     )
     return sample_data
 
-
-def test_detection_output_shape(sample_data):
-    # Test if the output DataFrame shape is correct
-    detection = PhamSittoStandStandtoSitDetection()
-    result = detection.detect(sample_data, acceleration_data_unit='g', gyro_data_unit='deg/s', sampling_freq_Hz=100, plot_results=False)
-
-
-def test_plot_results_pham():
-    # Initialize the class
-    gsd = PhamSittoStandStandtoSitDetection()
-
-    # Test with invalid plot_results type
-    invalid_plot_results = "invalid"
-    with pytest.raises(ValueError):
-        gsd.detect(
-            data=sample_data,
-            acceleration_data_unit='g',
-            gyro_data_unit='deg/s',
-            sampling_freq_Hz=200,
-            plot_results=invalid_plot_results,
+# Some additional test functions for PhamPosturalTransitionDetection algorithm
+class PhamPosturalTransitionDetection:
+    @staticmethod
+    def test_detection_output_shape(self):
+        pham_ssd_detector = PhamPosturalTransitionDetection()
+        # Generate sample data
+        num_samples = 50000  # Number of samples
+        data = pd.DataFrame(
+            {
+                "Acc_X": np.random.uniform(-2, 2, num_samples),
+                "Acc_Y": np.random.uniform(-2, 2, num_samples),
+                "Acc_Z": np.random.uniform(-2, 2, num_samples),
+                "Gyro_X": np.random.uniform(-150, 150, num_samples),
+                "Gyro_Y": np.random.uniform(-150, 150, num_samples),
+                "Gyro_Z": np.random.uniform(-150, 150, num_samples),
+            }
         )
+        result = pham_ssd_detector.detect(
+            data,
+            accel_unit='g',
+            gyro_unit='deg/s',
+            sampling_freq_Hz=100,
+            plot_results=False
+        )
+        # Assuming the result should be a DataFrame
+        assert isinstance(result, pd.DataFrame), "The result should be a DataFrame"
+
+    def test_plot_results_pham(self):
+        # Initialize the class
+        pham_ssd_detector = PhamPosturalTransitionDetection()
+        # Generate sample data
+        num_samples = 50000  # Number of samples
+        data = pd.DataFrame(
+            {
+                "Acc_X": np.random.uniform(-2, 2, num_samples),
+                "Acc_Y": np.random.uniform(-2, 2, num_samples),
+                "Acc_Z": np.random.uniform(-2, 2, num_samples),
+                "Gyro_X": np.random.uniform(-150, 150, num_samples),
+                "Gyro_Y": np.random.uniform(-150, 150, num_samples),
+                "Gyro_Z": np.random.uniform(-150, 150, num_samples),
+            }
+        )
+        # Test with invalid plot_results type
+        invalid_plot_results = "invalid"
+        with pytest.raises(ValueError):
+            pham_ssd_detector.detect(
+                data=data,
+                accel_unit='g',
+                gyro_unit='deg/s',
+                sampling_freq_Hz=100,
+                plot_results=invalid_plot_results,
+            )
 
 # Test functions for Turn detection algorithm
 @pytest.fixture
@@ -591,7 +622,7 @@ def test_bias_calculation_valid(detector, gyro_data_numpy):
     sample_data = pd.concat([accel_data, gyro_data], axis=1)
 
     # Perform detection
-    detector.detect(sample_data, acceleration_data_unit='g', gyro_data_unit='deg/s', sampling_freq_Hz=100, plot_results=False)
+    detector.detect(sample_data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='Gyro_X', sampling_freq_Hz=100, plot_results=False)
     
     # Manually calculate the gyro bias for comparison
     gyro_bias_manual = np.mean(gyro_data_numpy[:100], axis=0)
@@ -614,50 +645,50 @@ class TestPhamTurnDetection:
     def test_detect_returns_instance(self):
         pham_detector = PhamTurnDetection()
         data, sampling_freq_Hz = self.create_mock_data()
-        result = pham_detector.detect(data=data, acceleration_data_unit='g', gyro_data_unit='deg/s', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
+        result = pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
 
     def test_detect_raises_value_error_non_dataframe(self):
         pham_detector = PhamTurnDetection()
         data, sampling_freq_Hz = np.array([1, 2, 3]), 100
         with pytest.raises(ValueError):
-            pham_detector.detect(data=data,acceleration_data_unit='g', gyro_data_unit='deg/s', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
+            pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
 
     def test_detect_raises_value_error_wrong_shape(self):
         pham_detector = PhamTurnDetection()
         data, sampling_freq_Hz = self.create_mock_data()
         data.drop(columns=['gyro_z'], inplace=True)
         with pytest.raises(ValueError):
-            pham_detector.detect(data=data, acceleration_data_unit='g', gyro_data_unit='deg/s', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
+            pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x',sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
 
     def test_detect_raises_value_error_negative_sampling_freq(self):
         pham_detector = PhamTurnDetection()
         data, sampling_freq_Hz = self.create_mock_data()
         with pytest.raises(ValueError):
-            pham_detector.detect(data=data, acceleration_data_unit='g', gyro_data_unit='deg/s', sampling_freq_Hz=-100, plot_results=False)
+            pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x', sampling_freq_Hz=-100, plot_results=False)
 
     def test_detect_raises_value_error_non_boolean_plot_results(self):
         pham_detector = PhamTurnDetection()
         data, sampling_freq_Hz = self.create_mock_data()
         with pytest.raises(ValueError):
-            pham_detector.detect(data=data, acceleration_data_unit='g', gyro_data_unit='deg/s', sampling_freq_Hz=sampling_freq_Hz, plot_results=1)
+            pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x', sampling_freq_Hz=sampling_freq_Hz, plot_results=1)
 
     def test_detect_hesitations(self):
         pham_detector = PhamTurnDetection()
         data, sampling_freq_Hz = self.create_mock_data()
         data['gyro_x'] = np.linspace(0, 100, len(data))  # Ensure a continuous yaw angle change
-        result = pham_detector.detect(data=data, acceleration_data_unit='g', gyro_data_unit='deg/s', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
+        result = pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
 
     def test_detect_turns_90_degrees(self):
         pham_detector = PhamTurnDetection()
         data, sampling_freq_Hz = self.create_mock_data()
         data['gyro_x'] = np.linspace(0, np.pi/2, len(data))  # Simulate a 90-degree turn
-        result = pham_detector.detect(data=data, acceleration_data_unit='g', gyro_data_unit='deg/s', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
+        result = pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
 
     def test_detect_peak_angular_velocities(self):
         pham_detector = PhamTurnDetection()
         data, sampling_freq_Hz = self.create_mock_data()
         data['gyro_x'] = np.linspace(0, np.pi/2, len(data))  # Simulate a 90-degree turn
-        result = pham_detector.detect(data=data, acceleration_data_unit='g', gyro_data_unit='deg/s', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
+        result = pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
 
     @pytest.fixture
     def sample_data(self):
@@ -747,7 +778,7 @@ def test_invalid_plot_results_pham_td():
     # Test with invalid plot_results
     invalid_plot_results = "invalid"
     with pytest.raises(ValueError):
-        pham.detect(data=sample_data,acceleration_data_unit='g', gyro_data_unit='deg/s', sampling_freq_Hz=200, plot_results=invalid_plot_results)
+        pham.detect(data=sample_data,accel_unit='g', gyro_unit='deg/s', gyro_vertical='Gyro_X', sampling_freq_Hz=200, plot_results=invalid_plot_results)
 
 # Test function for PhamTurnDetection class
 @pytest.fixture
@@ -763,14 +794,14 @@ def invalid_data():
 def test_data_shape_invalid(pham_detection_instance, invalid_data):
     # Test invalid data shape
     with pytest.raises(ValueError):
-        pham_detection_instance.detect(data=invalid_data,acceleration_data_unit='g', gyro_data_unit='deg/s', sampling_freq_Hz=100)
+        pham_detection_instance.detect(data=invalid_data,accel_unit='g', gyro_unit='deg/s', gyro_vertical='Gyro_X', sampling_freq_Hz=100)
 
 @pytest.fixture
 def test_sampling_freq_invalid(pham_detection_instance):
     # Test invalid sampling frequency
     with pytest.raises(ValueError):
         data = pd.DataFrame(np.random.rand(100, 6))
-        pham_detection_instance.detect(data, acceleration_data_unit='g', gyro_data_unit='deg/s', sampling_freq_Hz=0)
+        pham_detection_instance.detect(data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='Gyro_X', sampling_freq_Hz=0)
 
 @pytest.fixture
 def invalid_plot_results():
@@ -780,43 +811,43 @@ def test_plot_results_invalid(pham_detection_instance, invalid_plot_results):
     # Test invalid plot_results value
     with pytest.raises(ValueError):
         data = pd.DataFrame(np.random.rand(100, 6))
-        pham_detection_instance.detect(data=data, acceleration_data_unit='g', gyro_data_unit='deg/s',  sampling_freq_Hz=100, plot_results=invalid_plot_results)
+        pham_detection_instance.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='Gyro_X',  sampling_freq_Hz=100, plot_results=invalid_plot_results)
 
-def test_hesitation_detection_with_provided_data(pham_detection_instance):
-    # The 'file_path' variable holds the absolute path to the data file
-    file_path = (
-        r"C:\Users\Project\Desktop\bigprojects\neurogeriatrics_data\Keep Control\Data\lab dataset\raw data\sub-pp002\motion\sub-pp002_task-walkTurn_tracksys-imu_motion.tsv"
-    )
-    # In this example, we use "imu" as tracking_system and "pelvis" as tracked points.
-    tracking_sys = "imu"
-    tracked_points = {tracking_sys: ["pelvis"]}    
+# def test_hesitation_detection_with_provided_data(pham_detection_instance):
+#     # The 'file_path' variable holds the absolute path to the data file
+#     file_path = (
+#         r"C:\Users\Project\Desktop\bigprojects\neurogeriatrics_data\Keep Control\Data\lab dataset\raw data\sub-pp002\motion\sub-pp002_task-walkTurn_tracksys-imu_motion.tsv"
+#     )
+#     # In this example, we use "imu" as tracking_system and "pelvis" as tracked points.
+#     tracking_sys = "imu"
+#     tracked_points = {tracking_sys: ["pelvis"]}    
 
-    # The 'keepcontrol.load_recording' function is used to load the data from the specified file_path
-    recording = keepcontrol.load_recording(
-        file_name=file_path, tracking_systems=[tracking_sys], tracked_points=tracked_points
-    )    
+#     # The 'keepcontrol.load_recording' function is used to load the data from the specified file_path
+#     recording = keepcontrol.load_recording(
+#         file_name=file_path, tracking_systems=[tracking_sys], tracked_points=tracked_points
+#     )    
 
-    # Load lower back acceleration data
-    acceleration_data = recording.data[tracking_sys][
-        ["pelvis_ACC_x", "pelvis_ACC_y", "pelvis_ACC_z"]
-    ]
-    # Load lower back gyro data
-    gyro_data = recording.data[tracking_sys][
-        ["pelvis_ANGVEL_x", "pelvis_ANGVEL_y", "pelvis_ANGVEL_z"]
-    ]
-    # Get the corresponding sampling frequency directly from the recording
-    sampling_frequency = recording.channels[tracking_sys][
-        recording.channels[tracking_sys]["name"] == "pelvis_ACC_x"
-    ]["sampling_frequency"].values[0]
+#     # Load lower back acceleration data
+#     acceleration_data = recording.data[tracking_sys][
+#         ["pelvis_ACC_x", "pelvis_ACC_y", "pelvis_ACC_z"]
+#     ]
+#     # Load lower back gyro data
+#     gyro_data = recording.data[tracking_sys][
+#         ["pelvis_ANGVEL_x", "pelvis_ANGVEL_y", "pelvis_ANGVEL_z"]
+#     ]
+#     # Get the corresponding sampling frequency directly from the recording
+#     sampling_frequency = recording.channels[tracking_sys][
+#         recording.channels[tracking_sys]["name"] == "pelvis_ACC_x"
+#     ]["sampling_frequency"].values[0]
 
-    # Concatenate acceleration_data and gyro_data along axis=1 (columns)
-    input_data = pd.concat([acceleration_data, gyro_data], axis=1)
+#     # Concatenate acceleration_data and gyro_data along axis=1 (columns)
+#     input_data = pd.concat([acceleration_data, gyro_data], axis=1)
 
-    # Call the detect method
-    pham_detection_instance.detect(input_data,acceleration_data_unit='g', gyro_data_unit='deg/s', sampling_freq_Hz=sampling_frequency)
+#     # Call the detect method
+#     pham_detection_instance.detect(input_data,accel_unit='g', gyro_unit='deg/s', gyro_vertical='pelvis_ACC_x',  sampling_freq_Hz=sampling_frequency)
 
-    # Assert that detected_turns attribute is not None
-    assert pham_detection_instance.detected_turns is not None
+#     # Assert that detected_turns attribute is not None
+#     assert pham_detection_instance.detected_turns is not None
 
 # Run the tests with pytest
 if __name__ == "__main__":

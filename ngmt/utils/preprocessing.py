@@ -1083,10 +1083,8 @@ def tilt_angle_estimation(data, sampling_frequency_hz):
     if not isinstance(data, np.ndarray):
         raise TypeError("Input data must be a numpy array or pandas DataFrame")
 
-    gyro_y = data[:, 1]
-
     # Integrate gyro data over time to estimate tilt
-    tilt_angle = -np.cumsum(gyro_y) / sampling_frequency_hz
+    tilt_angle = np.cumsum(data) / sampling_frequency_hz
 
     return tilt_angle
 

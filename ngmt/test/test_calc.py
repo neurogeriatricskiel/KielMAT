@@ -53,11 +53,12 @@ from ngmt.utils.preprocessing import (
     tilt_angle_estimation,
     wavelet_decomposition,
     moving_var,
-    gsd_plot_results,
-    pam_plot_results,
-    pham_plot_results,
-    process_postural_transitions_stationary_periods,
-    pham_turn_plot_results,
+)
+from ngmt.utils.viz_utils import (
+    plot_gait,
+    plot_pam,
+    plot_postural_transitions,
+    plot_turns,
 )
 from ngmt.utils.quaternion import (
     quatinv,
@@ -1697,7 +1698,7 @@ def test_gsd_plot_results_without_plot(monkeypatch):
     monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
 
     # Call the function
-    gsd_plot_results(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_)
+    plot_gait(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_)
 
 
 # Test function for pam_plot_results without plotting
@@ -1710,7 +1711,7 @@ def test_pam_plot_results_without_plot(monkeypatch):
     monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
 
     # Call the function
-    pam_plot_results(hourly_average_data, thresholds_mg)
+    plot_pam(hourly_average_data, thresholds_mg)
 
 
 # Test function for test_pham_plot_results
@@ -1736,7 +1737,7 @@ def test_pham_plot_results(monkeypatch):
     monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
 
     # Call the function
-    pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz)
+    plot_postural_transitions(accel, gyro, postural_transitions_, sampling_freq_Hz)
 
 
 # Test function for test_organize_and_pack_results
@@ -2113,13 +2114,19 @@ def test_pham_turn_plot_results_no_plot(monkeypatch):
         "onset": [10.5, 20.0, 35.2],
         "duration": [2.0, 1.5, 3.0]
     })  # Detected turns DataFrame
-    sampling_freq_Hz = 50.0  # Sampling frequency
+    sampling_freq_Hz = 50  # Sampling frequency
 
     # Monkeypatch plt.show() with the mock function
     monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
+    
+    # Unit of acceleration data.
+    accel_unit = "g"
+
+    # Unit of gyro data.
+    gyro_unit = "rad/s"
 
     # Call the function
-    pham_turn_plot_results(accel, gyro, detected_turns, sampling_freq_Hz)
+    plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq_Hz)
 
 # Test function NGMT dataclass: case 1
 # Sample dataset for test

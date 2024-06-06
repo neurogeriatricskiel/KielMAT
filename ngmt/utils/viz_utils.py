@@ -2,7 +2,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 # Function to plot results of the gait sequence detection algorithm
 def plot_gait(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_):
     """
@@ -45,7 +44,6 @@ def plot_gait(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
     plt.xticks(fontsize=font_size)
     plt.yticks(fontsize=font_size)
     plt.show()
-
 
 # Function to plot results of the physical activity monitoring algorithm
 def plot_pam(hourly_average_data, thresholds_mg):
@@ -102,15 +100,16 @@ def plot_pam(hourly_average_data, thresholds_mg):
     plt.tight_layout()
     plt.show()
 
-
 # Function to plot results of the postural transition detection algorithm
-def plot_postural_transitions(accel, gyro, postural_transitions_, sampling_freq_Hz):
+def plot_postural_transitions(accel, gyro, accel_unit, gyro_unit, postural_transitions_, sampling_freq_Hz):
     """
     Plot results of the gait sequence detection algorithm.
 
     Args:
         accel (ndarray): Array of acceleration data.
         gyro (ndarray): Array of gyroscope data.
+        accel_unit (str): Unit of acceleration data.
+        gyro_unit (str): Unit of gyro data.
         postural_transitions_ (DataFrame): DataFrame containing postural transition information.
         sampling_freq_Hz (float): Sampling frequency in Hertz.
 
@@ -135,13 +134,13 @@ def plot_postural_transitions(accel, gyro, postural_transitions_, sampling_freq_
         duration = postural_transitions_["duration"][i]
         ax1.axvline(x=onset, color="r")
         ax1.axvspan(onset, (onset + duration), color="grey")
-    ax1.set_title("Detected Postural Transitions", fontsize=font_size)
-    ax1.set_ylabel(f"Acceleration (g)", fontsize=font_size)
+    ax1.set_ylabel(f"Acceleration ({accel_unit})", fontsize=font_size)
     ax1.set_xlabel(f"Time (sec)", fontsize=font_size)
     ax1.legend(
         ["Acc x", "Acc y", "Acc z", "Event oset", "Event duration"],
-        loc="upper right",
+        loc="upper left",
         fontsize=font_size,
+        framealpha=0.5
     )
     accel_min = np.min(accel)
     accel_max = np.max(accel)
@@ -155,20 +154,20 @@ def plot_postural_transitions(accel, gyro, postural_transitions_, sampling_freq_
     for i in range(3):
         ax2.plot(
             np.arange(len(gyro)) / sampling_freq_Hz,
-            -gyro[:, i],
+            gyro[:, i],
         )
     for i in range(len(postural_transitions_)):
         onset = postural_transitions_["onset"][i]
         duration = postural_transitions_["duration"][i]
         ax2.axvline(x=onset, color="r")
         ax2.axvspan(onset, (onset + duration), color="grey")
-    ax1.set_title("Detected Postural Transitions", fontsize=font_size)
-    ax2.set_ylabel(f"Gyro (deg/s)", fontsize=font_size)
+    ax2.set_ylabel(f"Gyro ({gyro_unit})", fontsize=font_size)
     ax2.set_xlabel(f"Time (sec)", fontsize=font_size)
     ax2.legend(
         ["Gyr x", "Gyr y", "Gyr z", "Event oset", "Event duration"],
-        loc="upper right",
+        loc="upper left",
         fontsize=font_size,
+        framealpha=0.5
     )
     gyro_min = np.min(gyro)
     gyro_max = np.max(gyro)
@@ -178,7 +177,6 @@ def plot_postural_transitions(accel, gyro, postural_transitions_, sampling_freq_
     plt.yticks(fontsize=font_size)
     fig.tight_layout()
     plt.show()
-
 
 # Function to plot results of the turn detection algorithm
 def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq_Hz):
@@ -218,8 +216,9 @@ def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq
     ax1.set_xlabel("Time (s)", fontsize=font_size)
     ax1.legend(
         ["Acc x", "Acc y", "Acc z", "Turn onset", "Turn duration"],
-        loc="upper right",
+        loc="upper left",
         fontsize=font_size,
+        framealpha=0.5
     )
     accel_min = np.min(accel)
     accel_max = np.max(accel)
@@ -244,8 +243,9 @@ def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq
     ax2.set_xlabel("Time (s)", fontsize=font_size)
     ax2.legend(
         ["Gyr x", "Gyr y", "Gyr z", "Turn onset", "Turn duration"],
-        loc="upper right",
+        loc="upper left",
         fontsize=font_size,
+        framealpha=0.5
     )
     gyro_min = np.min(gyro)
     gyro_max = np.max(gyro)

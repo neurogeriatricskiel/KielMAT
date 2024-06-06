@@ -8,7 +8,6 @@ from typing import Optional, TypeVar
 
 Self = TypeVar("Self", bound="PhamTurnDetection")
 
-
 class PhamTurnDetection:
     """
     This algorithm aims to detect turns using accelerometer and gyroscope data collected from a lower back
@@ -64,20 +63,21 @@ class PhamTurnDetection:
             Returns:
                 pd.DataFrame: The spatio-temporal parameter information is stored in the 'spatio_temporal_parameters'
                 attribute with the following columns:
-                    - direction of turn: Direction of turn which is either "left" or "right".
-                    - angle of turn: Angle of the turn in degrees.
-                    - peak angular velocity: Peak angular velocity during turn [deg/s].
+                    - direction_of_turn: Direction of turn which is either "left" or "right".
+                    - angle_of_turn: Angle of the turn in degrees.
+                    - peak_angular_velocity: Peak angular velocity during turn in deg/s.
 
     Examples:
         >>> pham = PhamTurnDetection()
         >>> pham.detect(
-                data = input_data,
-                gyro_vertical = "pelvis_ANGVEL_x",
-                accel_unit = "g",
-                gyro_unit = "rad/s",
-                sampling_freq_Hz = 200.0,
-                tracking_system = "imu"
-                tracked_point = "LowerBack"
+                data=input_data,
+                gyro_vertical="pelvis_ANGVEL_x",
+                accel_unit="g",
+                gyro_unit="rad/s",
+                sampling_freq_Hz=200.0,
+                tracking_system="imu",
+                tracked_point="LowerBack",
+                plot_results=False
                 )
         >>> print(pham.turns_)
                 onset   duration   event_type   tracking_systems    tracked_points
@@ -86,7 +86,7 @@ class PhamTurnDetection:
 
         >>> pham.spatio_temporal_parameters()
         >>> print(pham.parameters_)
-                direction of turn   angle of turn   peak angular velocity
+                direction_of_turn   angle_of_turn   peak_angular_velocity
             0   left               -197.55          159.45
             1   right               199.69          144.67
 
@@ -108,9 +108,8 @@ class PhamTurnDetection:
             thr_gyro_var (float): Threshold value for identifying periods where the variance is low. Default is 2e-4.
             min_turn_duration_s (float): Minimum duration of a turn in seconds. Default is 0.5.
             max_turn_duration_s (float): Maximum duration of a turn in seconds. Default is 10.
-            min_turn_angle_deg (float): Minimum angle of a turn in degrees. Default is 90
+            min_turn_angle_deg (float): Minimum angle of a turn in degrees. Default is 90.
         """
-        self.turns_ = None
         self.thr_gyro_var = thr_gyro_var
         self.min_turn_duration_s = min_turn_duration_s
         self.max_turn_duration_s = max_turn_duration_s
@@ -145,11 +144,11 @@ class PhamTurnDetection:
         Returns:
             The turns information is stored in the 'turns_' attribute,
             which is a pandas DataFrame in BIDS format with the following information:
-                - onset: Start time of the turn [s].
-                - duration: Duration of the turn [s].
+                - onset: Start time of the turn in second.
+                - duration: Duration of the turn in second.
                 - event_type: Type of the event (turn).
-                - tracking_systems: Tracking systems.
-                - tracked_points: Tracked points on the body.
+                - tracking_systems: Name of the tracking systems.
+                - tracked_points: Name of the tracked points on the body.
         """
         # check if dt_data is a pandas Series with datetime values
         if dt_data is not None and (
@@ -220,10 +219,10 @@ class PhamTurnDetection:
         bias_periods = bias_periods[bias_periods < (len(gyro_vars) - sampling_freq_Hz)]
 
         # Compute gyro bias (mean of gyro signal during bias periods)
-        gyro_bias = np.mean(gyro[bias_periods, :], axis=0)
+        self.gyro_bias = np.mean(gyro[bias_periods, :], axis=0)
 
         # Subtract gyro bias from the original gyro signal
-        gyro_unbiased = gyro - gyro_bias
+        gyro_unbiased = gyro - self.gyro_bias
 
         # Get the index of the vertical component of gyro from data and minus 3 to find correspoding data in unbiased gyro
         gyro_vertical_index = data.columns.get_loc(gyro_vertical) - 3
@@ -478,9 +477,9 @@ class PhamTurnDetection:
         Returns:
             The spatio-temporal parameter information is stored in the 'spatio_temporal_parameters'
             attribute, which is a pandas DataFrame as:
-                - direction of turn: Direction of turn which is either "left" or "right".
-                - angle of turn [deg]: Angle of the turn in degrees.
-                - peak angular velocity [deg/s]: Peak angular velocity during turn.
+                - direction_of_turn: Direction of turn which is either "left" or "right".
+                - angle_of_turn: Angle of the turn in degrees.
+                - peak_angular_velocity: Peak angular velocity during turn in deg/s.
         """
         if self.turns_ is None:
             raise ValueError("No turns detected. Please run the detect method first.")
@@ -508,9 +507,9 @@ class PhamTurnDetection:
         # Create a DataFrame with the calculated spatio-temporal parameters
         self.parameters_ = pd.DataFrame(
             {
-                "direction of turn": direction_of_turns,
-                "angle of turn [deg]": self.turns_90,
-                "peak angular velocity [deg/s]": peak_angular_velocities,
+                "direction_of_turn": direction_of_turns,
+                "angle_of_turn": self.turns_90,
+                "peak_angular_velocity": peak_angular_velocities,
             }
         )
 
