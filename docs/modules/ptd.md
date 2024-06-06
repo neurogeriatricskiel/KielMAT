@@ -1,3 +1,3 @@
-## Sit to Stand & Stand to Sit Detection
+## Postural Transition Detection (Pham)
 
-::: modules.ssd._pham.PhamSittoStandStandtoSitDetection
+::: modules.ptd._pham.PhamPosturalTransitionDetection

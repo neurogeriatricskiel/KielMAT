@@ -2,7 +2,7 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Thu 06 May 2024
+**Last update:** Thu 06 Jun 2024
 
 ## Learning objectives
 By the end of this tutorial:
