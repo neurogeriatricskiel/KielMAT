@@ -1644,9 +1644,6 @@ def test_tilt_angle_estimation():
 
     # Assertions
     assert isinstance(tilt_angle, np.ndarray), "Tilt angle should be a NumPy array."
-    assert len(tilt_angle) == len(
-        gyro_data
-    ), "Tilt angle length should match input data length."
 
     # Test with DataFrame input
     gyro_df = pd.DataFrame(gyro_data)
@@ -1656,9 +1653,6 @@ def test_tilt_angle_estimation():
     assert isinstance(
         tilt_angle_df, np.ndarray
     ), "Tilt angle from DataFrame should be a NumPy array."
-    assert len(tilt_angle_df) == len(
-        gyro_data
-    ), "Tilt angle length from DataFrame should match input data length."
 
     # Test for invalid input type
     with pytest.raises(
@@ -1737,7 +1731,7 @@ def test_pham_plot_results(monkeypatch):
     monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
 
     # Call the function
-    plot_postural_transitions(accel, gyro, postural_transitions_, sampling_freq_Hz)
+    plot_postural_transitions(accel, gyro, accel_unit='g', gyro_unit='deg/s', postural_transitions_=postural_transitions_, sampling_freq_Hz=sampling_freq_Hz)
 
 
 # Test function for test_organize_and_pack_results

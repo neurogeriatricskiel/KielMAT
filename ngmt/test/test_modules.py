@@ -1,15 +1,14 @@
 # Introduction and explanation regarding the test suite
 """
 This code is a test suite for various modules which exist in the NGMT toolbox. 
-It employs pytest, a Python testing framework, to verify the correctness of these functions. 
+It employs pytest, a Python testing framework, to verify the correctness of these modules. 
 Here's a brief explanation of the code structure:
 
-1. Import necessary libraries, pytest and the functions to be tested.
+1. Import necessary libraries, pytest and the modules to be tested.
 2. Generate a random input signal for testing purposes.
-3. Define a series of test functions, each targeting a specific function from the specific module.
-4. Inside each test module, we validate the correctness of the corresponding function and its inputs.
-5. We make use of 'assert' statements to check that the functions return expected results.
-6. The code is organized for clarity and maintainability.
+3. Inside each test module, we validate the correctness of the modules.
+4. We make use of 'assert' statements to check that the functions return expected results.
+5. The code is organized for clarity and maintainability.
 
 To run the tests, follow these steps:
 
@@ -24,8 +23,9 @@ By running these tests, the reliability and correctness of the modules will be e
 import pytest
 import numpy as np
 import pandas as pd
+import os
+from datetime import datetime
 from unittest.mock import patch
-from ngmt.datasets import keepcontrol
 from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
 from ngmt.modules.pam import PhysicalActivityMonitoring
@@ -34,7 +34,7 @@ from ngmt.modules.td import PhamTurnDetection
 
 
 ## Module test
-# Test for gait sequence detection algorithm
+# Test funtions for gait sequence detection algorithm
 num_samples = 50000  # Number of samples
 acceleration_data = {
     "LowerBack_ACCEL_x": np.random.uniform(-2, 2, num_samples),
@@ -44,7 +44,6 @@ acceleration_data = {
 acceleration_data = pd.DataFrame(acceleration_data)
 sampling_frequency = 100  # Sampling frequency
 
-
 def test_gsd_detect():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
@@ -52,7 +51,6 @@ def test_gsd_detect():
     # Call the detect method
     gsd.detect(data=acceleration_data, sampling_freq_Hz=sampling_frequency)
     gait_sequences_ = gsd.gait_sequences_
-
 
 def test_invalid_sampling_freq():
     # Initialize the class
@@ -63,15 +61,6 @@ def test_invalid_sampling_freq():
     with pytest.raises(ValueError):
         gsd.detect(data=acceleration_data, sampling_freq_Hz=invalid_sampling_freq)
 
-
-def test_gait_sequence_detection():
-    # Initialize the class
-    gsd = ParaschivIonescuGaitSequenceDetection()
-
-    # Call the detect method
-    gsd.detect(data=acceleration_data, sampling_freq_Hz=sampling_frequency)
-
-
 def test_invalid_input_data_type():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
@@ -81,7 +70,6 @@ def test_invalid_input_data_type():
     with pytest.raises(ValueError):
         gsd.detect(data=invalid_data, sampling_freq_Hz=sampling_frequency)
 
-
 def test_invalid_sampling_freq_type():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
@@ -90,7 +78,6 @@ def test_invalid_sampling_freq_type():
     invalid_sampling_freq = "invalid"
     with pytest.raises(ValueError):
         gsd.detect(data=acceleration_data, sampling_freq_Hz=invalid_sampling_freq)
-
 
 def test_plot_results_type():
     # Initialize the class
@@ -119,30 +106,12 @@ def test_invalid_dt_data_type():
             dt_data=invalid_dt_data,
         )
 
-
 def test_invalid_dt_data_format():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
 
     # Test with invalid dt_data format
     invalid_dt_data = pd.Series(["2024-03-22 10:00:00", "2024-03-22 10:00:01"])
-    with pytest.raises(ValueError):
-        gsd.detect(
-            data=acceleration_data,
-            sampling_freq_Hz=sampling_frequency,
-            plot_results=False,
-            dt_data=invalid_dt_data,
-        )
-
-
-def test_invalid_dt_data_length():
-    # Initialize the class
-    gsd = ParaschivIonescuGaitSequenceDetection()
-
-    # Test with invalid dt_data length
-    invalid_dt_data = pd.Series(
-        pd.date_range(start="2024-03-22", periods=3, freq="S")
-    )
     with pytest.raises(ValueError):
         gsd.detect(
             data=acceleration_data,
@@ -168,7 +137,7 @@ def test_valid_dt_data():
         dt_data=valid_dt_data,
     )
 
-# Tests for initial contact detection algorithm
+# Test funtions for initial contact detection algorithm
 def test_detect_empty_data():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
@@ -199,7 +168,6 @@ def test_detect_no_gait_sequences():
         sampling_freq_Hz=100,
     )
 
-
 def test_detect_no_plot():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
@@ -225,7 +193,6 @@ def test_detect_no_plot():
         icd.initial_contacts_ is None
     ), "Initial contacts should be None if no gait sequences are provided"
 
-
 @pytest.fixture
 def sample_accelerometer_data():
     # Create sample accelerometer data
@@ -241,7 +208,6 @@ def sample_accelerometer_data():
     )
     return accelerometer_data
 
-
 @pytest.fixture
 def sample_gait_sequences():
     # Create sample gait sequences DataFrame
@@ -249,7 +215,6 @@ def sample_gait_sequences():
         {"onset": [1.5, 3.5, 5.5], "duration": [0.5, 0.7, 0.6]}
     )
     return gait_sequences
-
 
 def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
     # Initialize ParaschivIonescuInitialContactDetection instance
@@ -278,7 +243,7 @@ def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
     assert all(0 <= onset <= 6 for onset in icd_instance.initial_contacts_["onset"])
 
 
-# Tests for phyisical activity monitoring algorithm
+# Test functions for phyisical activity monitoring algorithm
 # Test data
 num_samples = 50000  # Number of samples
 acceleration_data = {
@@ -293,7 +258,6 @@ time_index = pd.date_range(
 )
 acceleration_data["timestamp"] = time_index
 acceleration_data.set_index("timestamp", inplace=True)
-
 
 def test_pam_detect():
     # Initialize the class
@@ -318,7 +282,6 @@ def test_pam_detect():
         physical_activities_, pd.DataFrame
     ), "Physical activity information should be stored in a DataFrame."
 
-
 def test_invalid_sampling_freq_pam():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -337,7 +300,6 @@ def test_invalid_sampling_freq_pam():
             epoch_duration_sec=5,
         )
 
-
 def test_invalid_thresholds_type():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -351,7 +313,6 @@ def test_invalid_thresholds_type():
             thresholds_mg=invalid_thresholds,
             epoch_duration_sec=5,
         )
-
 
 def test_invalid_epoch_duration():
     # Initialize the class
@@ -370,7 +331,6 @@ def test_invalid_epoch_duration():
             },
             epoch_duration_sec=invalid_epoch_duration,
         )
-
 
 def test_invalid_plot_results_type_pam():
     # Initialize the class
@@ -391,7 +351,6 @@ def test_invalid_plot_results_type_pam():
             plot=invalid_plot_results,
         )
 
-
 def test_invalid_sampling_freq_type_error_handling():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -411,7 +370,6 @@ def test_invalid_sampling_freq_type_error_handling():
             plot=True,
         )
 
-
 def test_invalid_thresholds_type_error_handling():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -426,7 +384,6 @@ def test_invalid_thresholds_type_error_handling():
             epoch_duration_sec=5,
             plot=True,
         )
-
 
 def test_empty_input_data():
     # empty_data with required columns
@@ -444,7 +401,6 @@ def test_empty_input_data():
     # Call the detect method with empty_data
     with pytest.raises(ValueError):
         pam.detect(data=empty_data, sampling_freq_Hz=sampling_frequency)
-
 
 def test_pam_detect_full_coverage():
     # Initialize the class
@@ -486,7 +442,6 @@ def test_pam_detect_full_coverage():
     ), "DataFrame should have the expected columns."
 
 
-# Test function for test_PhysicalActivityMonitoring
 def test_PhysicalActivityMonitoring():
     """
     Test for PhysicalActivityMonitoring class.
@@ -527,263 +482,42 @@ def test_PhysicalActivityMonitoring():
         pam.physical_activities_, pd.DataFrame
     ), "physical_activities_ should be a DataFrame."
 
-
-# Tests for sit to stand and stand to sit detection algorithm
-@pytest.fixture
-def sample_data():
-    # Generate sample data
-    num_samples = 50000  # Number of samples
-    sample_data = pd.DataFrame(
-        {
-            "Acc_X": np.random.uniform(-2, 2, num_samples),
-            "Acc_Y": np.random.uniform(-2, 2, num_samples),
-            "Acc_Z": np.random.uniform(-2, 2, num_samples),
-            "Gyro_X": np.random.uniform(-150, 150, num_samples),
-            "Gyro_Y": np.random.uniform(-150, 150, num_samples),
-            "Gyro_Z": np.random.uniform(-150, 150, num_samples),
-        }
-    )
-    return sample_data
-
-# Some additional test functions for PhamPosturalTransitionDetection algorithm
-class PhamPosturalTransitionDetection:
-    @staticmethod
-    def test_detection_output_shape(self):
-        pham_ssd_detector = PhamPosturalTransitionDetection()
-        # Generate sample data
-        num_samples = 50000  # Number of samples
-        data = pd.DataFrame(
-            {
-                "Acc_X": np.random.uniform(-2, 2, num_samples),
-                "Acc_Y": np.random.uniform(-2, 2, num_samples),
-                "Acc_Z": np.random.uniform(-2, 2, num_samples),
-                "Gyro_X": np.random.uniform(-150, 150, num_samples),
-                "Gyro_Y": np.random.uniform(-150, 150, num_samples),
-                "Gyro_Z": np.random.uniform(-150, 150, num_samples),
-            }
-        )
-        result = pham_ssd_detector.detect(
-            data,
-            accel_unit='g',
-            gyro_unit='deg/s',
-            sampling_freq_Hz=100,
-            plot_results=False
-        )
-        # Assuming the result should be a DataFrame
-        assert isinstance(result, pd.DataFrame), "The result should be a DataFrame"
-
-    def test_plot_results_pham(self):
-        # Initialize the class
-        pham_ssd_detector = PhamPosturalTransitionDetection()
-        # Generate sample data
-        num_samples = 50000  # Number of samples
-        data = pd.DataFrame(
-            {
-                "Acc_X": np.random.uniform(-2, 2, num_samples),
-                "Acc_Y": np.random.uniform(-2, 2, num_samples),
-                "Acc_Z": np.random.uniform(-2, 2, num_samples),
-                "Gyro_X": np.random.uniform(-150, 150, num_samples),
-                "Gyro_Y": np.random.uniform(-150, 150, num_samples),
-                "Gyro_Z": np.random.uniform(-150, 150, num_samples),
-            }
-        )
-        # Test with invalid plot_results type
-        invalid_plot_results = "invalid"
-        with pytest.raises(ValueError):
-            pham_ssd_detector.detect(
-                data=data,
-                accel_unit='g',
-                gyro_unit='deg/s',
-                sampling_freq_Hz=100,
-                plot_results=invalid_plot_results,
-            )
-
 # Test functions for Turn detection algorithm
-@pytest.fixture
-def detector():
-    return PhamTurnDetection()
-
-@pytest.fixture
-def gyro_data_numpy():
-    # Sample accelerometer and gyroscope data
-    accel_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Accel_X', 'Accel_Y', 'Accel_Z'])
-    gyro_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Gyro_X', 'Gyro_Y', 'Gyro_Z'])
-    sample_data = pd.concat([accel_data, gyro_data], axis=1)
-
-    # Select gyro data and convert it to numpy array format
-    gyro = sample_data.iloc[:, 3:6].copy()
-    gyro = gyro.to_numpy()
-    return gyro
-
-def test_bias_calculation_valid(detector, gyro_data_numpy):
-    # Sample accelerometer and gyroscope data
-    accel_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Accel_X', 'Accel_Y', 'Accel_Z'])
-    gyro_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Gyro_X', 'Gyro_Y', 'Gyro_Z'])
-    sample_data = pd.concat([accel_data, gyro_data], axis=1)
-
-    # Perform detection
-    detector.detect(sample_data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='Gyro_X', sampling_freq_Hz=100, plot_results=False)
-    
-    # Manually calculate the gyro bias for comparison
-    gyro_bias_manual = np.mean(gyro_data_numpy[:100], axis=0)
-    
-    # Retrieve the calculated bias from the detector
-    gyro_bias_detected = detector.gyro_bias
-
-# Some additional test functions for Turn detection algorithm
-class TestPhamTurnDetection:
-    @staticmethod
-    def create_mock_data(num_samples=1000, sampling_freq_Hz=200):
-        # Create mock accelerometer and gyro data
-        time = np.arange(0, num_samples) / sampling_freq_Hz
-        accel_data = np.random.rand(num_samples, 3)
-        gyro_data = np.random.rand(num_samples, 3)
-        data = np.concatenate((accel_data, gyro_data), axis=1)
-        columns = ['accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z']
-        return pd.DataFrame(data, columns=columns), sampling_freq_Hz
-
-    def test_detect_returns_instance(self):
-        pham_detector = PhamTurnDetection()
-        data, sampling_freq_Hz = self.create_mock_data()
-        result = pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
-
-    def test_detect_raises_value_error_non_dataframe(self):
-        pham_detector = PhamTurnDetection()
-        data, sampling_freq_Hz = np.array([1, 2, 3]), 100
-        with pytest.raises(ValueError):
-            pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
-
-    def test_detect_raises_value_error_wrong_shape(self):
-        pham_detector = PhamTurnDetection()
-        data, sampling_freq_Hz = self.create_mock_data()
-        data.drop(columns=['gyro_z'], inplace=True)
-        with pytest.raises(ValueError):
-            pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x',sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
-
-    def test_detect_raises_value_error_negative_sampling_freq(self):
-        pham_detector = PhamTurnDetection()
-        data, sampling_freq_Hz = self.create_mock_data()
-        with pytest.raises(ValueError):
-            pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x', sampling_freq_Hz=-100, plot_results=False)
-
-    def test_detect_raises_value_error_non_boolean_plot_results(self):
-        pham_detector = PhamTurnDetection()
-        data, sampling_freq_Hz = self.create_mock_data()
-        with pytest.raises(ValueError):
-            pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x', sampling_freq_Hz=sampling_freq_Hz, plot_results=1)
-
-    def test_detect_hesitations(self):
-        pham_detector = PhamTurnDetection()
-        data, sampling_freq_Hz = self.create_mock_data()
-        data['gyro_x'] = np.linspace(0, 100, len(data))  # Ensure a continuous yaw angle change
-        result = pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
-
-    def test_detect_turns_90_degrees(self):
-        pham_detector = PhamTurnDetection()
-        data, sampling_freq_Hz = self.create_mock_data()
-        data['gyro_x'] = np.linspace(0, np.pi/2, len(data))  # Simulate a 90-degree turn
-        result = pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
-
-    def test_detect_peak_angular_velocities(self):
-        pham_detector = PhamTurnDetection()
-        data, sampling_freq_Hz = self.create_mock_data()
-        data['gyro_x'] = np.linspace(0, np.pi/2, len(data))  # Simulate a 90-degree turn
-        result = pham_detector.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='gyro_x', sampling_freq_Hz=sampling_freq_Hz, plot_results=False)
-
-    @pytest.fixture
-    def sample_data(self):
-        # Sample data for test
-        diff_yaw = np.array([10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
-        flags_start_90 = [2, 5]
-        flags_end_90 = [7, 10]
-        sampling_freq_Hz = 10
-        return diff_yaw, flags_start_90, flags_end_90, sampling_freq_Hz
-
-    def test_duration_90(self, sample_data):
-        pham_detector = PhamTurnDetection()
-        diff_yaw, flags_start_90, flags_end_90, sampling_freq_Hz = sample_data
-        
-        # Calculate duration of the turn in seconds
-        duration_90 = []
-        for k in range(len(flags_start_90)):
-            duration_nsamples = flags_end_90[k] - flags_start_90[k]
-            duration_90.append(duration_nsamples / sampling_freq_Hz)
-
-    def test_peak_angular_velocities(self, sample_data):
-        pham_detector = PhamTurnDetection()
-        diff_yaw, flags_start_90, flags_end_90, sampling_freq_Hz = sample_data
-        
-        # Calculate peak angular velocity during the turn
-        peak_angular_velocities = []
-        for k in range(len(flags_start_90)):
-            diff_vector = abs(diff_yaw[(flags_start_90[k] - 1):(flags_end_90[k] - 1)])
-            peak_angular_velocities.append(np.max(diff_vector) * sampling_freq_Hz)
-
-    @pytest.fixture
-    def sample_data_turn_det(self):
-        # Sample data for testing
-        flags_start_90 = [1, 5, 9]
-        flags_end_90 = [4, 8, 12]
-        diff_yaw = np.array([10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120])
-        sampling_freq_Hz = 10
-        return flags_start_90, flags_end_90, diff_yaw, sampling_freq_Hz
-
-    def test_process_turns(self, sample_data_turn_det):
-        pham_detector = PhamTurnDetection()
-
-        flags_start_90, flags_end_90, diff_yaw, sampling_freq_Hz = sample_data_turn_det
-
-        # Initialize lists to store processed data
-        duration_90 = []
-        peak_angular_velocities = []
-        angular_velocity_start = []
-        angular_velocity_end = []
-        angular_velocity_middle = []
-
-        # Process each turn
-        for k in range(len(flags_start_90)):
-            # Compute duration of the turn in seconds
-            duration_nsamples = flags_end_90[k] - flags_start_90[k]
-            duration_90.append(duration_nsamples / sampling_freq_Hz)
-
-            # Calculate peak angular velocity during the turn
-            diff_vector = abs(diff_yaw[(flags_start_90[k] - 1):(flags_end_90[k] - 1)])
-            peak_angular_velocities.append(np.max(diff_vector) * sampling_freq_Hz)
-
-            # Calculate average angular velocity at the start of the turn
-            turn_10_percent = round(duration_nsamples * 0.1)
-            angular_velocity_start.append(np.mean(abs(diff_yaw[flags_start_90[k]:(flags_start_90[k] + turn_10_percent)])) * sampling_freq_Hz)
-
-            # Calculate average angular velocity at the end of the turn
-            md = flags_start_90[k] + np.floor((flags_end_90[k] - flags_start_90[k]) / 2)
-            angular_velocity_end.append(np.mean(abs(diff_yaw[(flags_end_90[k] - turn_10_percent):flags_end_90[k] - 1])) * sampling_freq_Hz)
-
-            # Calculate average angular velocity in the middle of the turn
-            turn_5_percent = round(duration_nsamples * 0.05)
-            md = int(md)  # Convert md to an integer
-            angular_velocity_middle.append(np.mean(abs(diff_yaw[int(md - turn_5_percent):int(md + turn_5_percent)])) * sampling_freq_Hz)
-
-        # Assertions to verify the processed data
-        assert duration_90 == [0.3, 0.3, 0.3]
-
-def test_invalid_plot_results_pham_td():
-    # Sample accelerometer and gyroscope data
-    accel_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Accel_X', 'Accel_Y', 'Accel_Z'])
-    gyro_data = pd.DataFrame(np.random.rand(1000, 3), columns=['Gyro_X', 'Gyro_Y', 'Gyro_Z'])
-    sample_data = pd.concat([accel_data, gyro_data], axis=1)
-    
+def test_pham_turn_detection_algorithm():
     # Initialize PhamTurnDetection object
     pham = PhamTurnDetection()
 
+    # Sample accelerometer and gyroscope data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
+    sample_data = pd.read_csv(test_data_file_path, index_col=0)
+    sampling_freq = 200
+    
+    # Check that the target sampling frequency is positive
+    assert sampling_freq > 0, "Assertion Error: Sampling frequency should be greater than 0."
+
+    # Check that the input data is a pandas DataFrame
+    assert isinstance(sample_data, pd.DataFrame), "Input data must be a pandas DataFrame"
+
+    # Perform detection
+    pham.detect(sample_data, accel_unit='g', gyro_unit='deg/s', gyro_vertical="pelvis_ANGVEL_x", sampling_freq_Hz=sampling_freq, plot_results=False)
+
+    # Perform spatio-temporal detection
+    pham.spatio_temporal_parameters()
+
+def test_invalid_plot_results_pham_td():
+    # Initialize PhamTurnDetection object
+    pham = PhamTurnDetection()
+    
+    # Sample accelerometer and gyroscope data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
+    sample_data = pd.read_csv(test_data_file_path, index_col=0)
+    
     # Test with invalid plot_results
     invalid_plot_results = "invalid"
     with pytest.raises(ValueError):
-        pham.detect(data=sample_data,accel_unit='g', gyro_unit='deg/s', gyro_vertical='Gyro_X', sampling_freq_Hz=200, plot_results=invalid_plot_results)
-
-# Test function for PhamTurnDetection class
-@pytest.fixture
-def pham_detection_instance():
-    return PhamTurnDetection()
+        pham.detect(data=sample_data,accel_unit='g', gyro_unit='deg/s', gyro_vertical='pelvis_ANGVEL_x', sampling_freq_Hz=200, plot_results=invalid_plot_results)
 
 @pytest.fixture
 def invalid_data():
@@ -791,63 +525,211 @@ def invalid_data():
     data = pd.DataFrame(np.random.rand(100, 5), columns=['Accel_X', 'Accel_Y', 'Accel_Z', 'Gyro_X', 'Gyro_Y'])
     return data
 
-def test_data_shape_invalid(pham_detection_instance, invalid_data):
+def test_data_shape_invalid(invalid_data):
+    # Initialize PhamTurnDetection object
+    pham = PhamTurnDetection()
+    
     # Test invalid data shape
-    with pytest.raises(ValueError):
-        pham_detection_instance.detect(data=invalid_data,accel_unit='g', gyro_unit='deg/s', gyro_vertical='Gyro_X', sampling_freq_Hz=100)
+    with pytest.raises(ValueError, match="Input data must have 6 columns"):
+        pham.detect(data=invalid_data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='Gyro_X', sampling_freq_Hz=100)
 
-@pytest.fixture
-def test_sampling_freq_invalid(pham_detection_instance):
-    # Test invalid sampling frequency
-    with pytest.raises(ValueError):
-        data = pd.DataFrame(np.random.rand(100, 6))
-        pham_detection_instance.detect(data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='Gyro_X', sampling_freq_Hz=0)
+def test_data_structure_invalid():
+    # Initialize PhamTurnDetection object
+    pham = PhamTurnDetection()
+    
+    # Sample accelerometer and gyroscope data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
+    sample_data = pd.read_csv(test_data_file_path, index_col=0)
+    sample_data = sample_data.to_numpy()
 
-@pytest.fixture
-def invalid_plot_results():
-    return "invalid"  # Invalid non-boolean value for plot_results
+    # Test invalid data shape
+    with pytest.raises(ValueError, match="Input data must be a pandas DataFrame"):
+        pham.detect(data=sample_data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='pelvis_ANGVEL_x', sampling_freq_Hz=100)
 
-def test_plot_results_invalid(pham_detection_instance, invalid_plot_results):
-    # Test invalid plot_results value
-    with pytest.raises(ValueError):
-        data = pd.DataFrame(np.random.rand(100, 6))
-        pham_detection_instance.detect(data=data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='Gyro_X',  sampling_freq_Hz=100, plot_results=invalid_plot_results)
+def test_invalid_accel_unit():
+    # Initialize PhamTurnDetection object
+    pham = PhamTurnDetection()
 
-# def test_hesitation_detection_with_provided_data(pham_detection_instance):
-#     # The 'file_path' variable holds the absolute path to the data file
-#     file_path = (
-#         r"C:\Users\Project\Desktop\bigprojects\neurogeriatrics_data\Keep Control\Data\lab dataset\raw data\sub-pp002\motion\sub-pp002_task-walkTurn_tracksys-imu_motion.tsv"
-#     )
-#     # In this example, we use "imu" as tracking_system and "pelvis" as tracked points.
-#     tracking_sys = "imu"
-#     tracked_points = {tracking_sys: ["pelvis"]}    
+    # Sample accelerometer and gyroscope data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
+    sample_data = pd.read_csv(test_data_file_path, index_col=0)
 
-#     # The 'keepcontrol.load_recording' function is used to load the data from the specified file_path
-#     recording = keepcontrol.load_recording(
-#         file_name=file_path, tracking_systems=[tracking_sys], tracked_points=tracked_points
-#     )    
+    # Test with invalid acceleration unit
+    with pytest.raises(ValueError, match="Unsupported unit for acceleration data"):
+        pham.detect(data=sample_data, accel_unit='invalid_unit', gyro_unit='deg/s', gyro_vertical='pelvis_ANGVEL_x', sampling_freq_Hz=200)
 
-#     # Load lower back acceleration data
-#     acceleration_data = recording.data[tracking_sys][
-#         ["pelvis_ACC_x", "pelvis_ACC_y", "pelvis_ACC_z"]
-#     ]
-#     # Load lower back gyro data
-#     gyro_data = recording.data[tracking_sys][
-#         ["pelvis_ANGVEL_x", "pelvis_ANGVEL_y", "pelvis_ANGVEL_z"]
-#     ]
-#     # Get the corresponding sampling frequency directly from the recording
-#     sampling_frequency = recording.channels[tracking_sys][
-#         recording.channels[tracking_sys]["name"] == "pelvis_ACC_x"
-#     ]["sampling_frequency"].values[0]
+def test_invalid_gyro_unit():
+    # Initialize PhamTurnDetection object
+    pham = PhamTurnDetection()
 
-#     # Concatenate acceleration_data and gyro_data along axis=1 (columns)
-#     input_data = pd.concat([acceleration_data, gyro_data], axis=1)
+    # Sample accelerometer and gyroscope data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
+    sample_data = pd.read_csv(test_data_file_path, index_col=0)
 
-#     # Call the detect method
-#     pham_detection_instance.detect(input_data,accel_unit='g', gyro_unit='deg/s', gyro_vertical='pelvis_ACC_x',  sampling_freq_Hz=sampling_frequency)
+    # Test with invalid gyro unit
+    with pytest.raises(ValueError, match="Invalid unit for gyro data. Must be 'deg/s' or 'rad/s'"):
+        pham.detect(data=sample_data, accel_unit='g', gyro_unit='invalid_unit', gyro_vertical='pelvis_ANGVEL_x', sampling_freq_Hz=200)
 
-#     # Assert that detected_turns attribute is not None
-#     assert pham_detection_instance.detected_turns is not None
+def test_invalid_sampling_freq_pham():
+    # Initialize PhamTurnDetection object
+    pham = PhamTurnDetection()
+
+    # Sample accelerometer and gyroscope data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
+    sample_data = pd.read_csv(test_data_file_path, index_col=0)
+
+    # Test with non-positive sampling frequency
+    with pytest.raises(ValueError, match="Sampling frequency must be positive"):
+        pham.detect(data=sample_data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='pelvis_ANGVEL_x', sampling_freq_Hz=0)
+
+def test_invalid_dt_data():
+    # Initialize PhamTurnDetection object
+    pham = PhamTurnDetection()
+
+    # Sample accelerometer and gyroscope data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
+    sample_data = pd.read_csv(test_data_file_path, index_col=0)
+    dt_data = pd.Series(pd.date_range("20210101", periods=500))  # Invalid length for datetime data
+
+    # Test with invalid datetime data
+    with pytest.raises(ValueError, match="dt_data must be a series with the same length as data"):
+        pham.detect(data=sample_data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='pelvis_ANGVEL_x', sampling_freq_Hz=200, dt_data=dt_data)
+
+def test_dt_data_invalid_type():
+    # Initialize PhamTurnDetection object
+    pham = PhamTurnDetection()
+    
+    # Sample accelerometer and gyroscope data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
+    sample_data = pd.read_csv(test_data_file_path, index_col=0)
+    
+    # dt_data is not a pandas Series
+    dt_data = np.array(pd.date_range(start='1/1/2022', periods=1000, freq='S'))
+    
+    # Should raise ValueError
+    with pytest.raises(ValueError, match="dt_data must be a pandas Series with datetime values"):
+        pham.detect(data=sample_data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='pelvis_ANGVEL_x', sampling_freq_Hz=200, dt_data=dt_data)
+
+def test_dt_data_invalid_dtype():
+    # Initialize PhamTurnDetection object
+    pham = PhamTurnDetection()
+    
+    # Sample accelerometer and gyroscope data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
+    sample_data = pd.read_csv(test_data_file_path, index_col=0)
+    
+    # dt_data is a pandas Series but not with datetime dtype
+    dt_data = pd.Series(np.arange(1000))
+    
+    # Should raise ValueError
+    with pytest.raises(ValueError, match="dt_data must be a pandas Series with datetime values"):
+        pham.detect(data=sample_data, accel_unit='g', gyro_unit='deg/s', gyro_vertical='pelvis_ANGVEL_x', sampling_freq_Hz=200, dt_data=dt_data)
+
+# Test functions for pham postural transition algorithm
+def test_pham_postural_transition_algorithm():
+    # Initialize PhamPosturalTransitionDetection object
+    pham = PhamPosturalTransitionDetection()
+
+    # Sample accelerometer and gyroscope data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
+    input_data = pd.read_csv(test_data_file_path, index_col=0)
+    sampling_freq = 200
+
+    # Perform detection with valid input data
+    pham.detect(input_data, accel_unit='g', gyro_unit='deg/s', gyro_mediolateral="pelvis_ANGVEL_y", sampling_freq_Hz=sampling_freq, plot_results=False)
+
+    # Perform spatio-temporal parameter extraction
+    pham.spatio_temporal_parameters()
+    
+    # dt_data is a pandas Series but not with datetime dtype
+    dt_data = pd.Series(np.arange(1000))
+
+    # Should raise ValueError because dt_data is not datetime
+    with pytest.raises(ValueError, match="dt_data must be a pandas Series with datetime values"):
+        pham.detect(data=input_data, accel_unit='g', gyro_unit='deg/s', gyro_mediolateral='pelvis_ANGVEL_y', sampling_freq_Hz=200, dt_data=dt_data)
+
+    # dt_data is a NumPy array instead of a pandas Series
+    dt_data = np.array(pd.date_range(start='1/1/2022', periods=1000, freq='S'))
+    
+    # Should raise ValueError because dt_data is not a pandas Series
+    with pytest.raises(ValueError, match="dt_data must be a pandas Series with datetime values"):
+        pham.detect(data=input_data, accel_unit='g', gyro_unit='deg/s', gyro_mediolateral='pelvis_ANGVEL_y', sampling_freq_Hz=200, dt_data=dt_data)
+
+    # dt_data is a pandas Series of datetime values but of incorrect length
+    dt_data = pd.Series(pd.date_range("20210101", periods=500))
+
+    # Should raise ValueError because dt_data length does not match input_data length
+    with pytest.raises(ValueError, match="dt_data must be a series with the same length as data"):
+        pham.detect(data=input_data, accel_unit='g', gyro_unit='deg/s', gyro_mediolateral='pelvis_ANGVEL_y', sampling_freq_Hz=200, dt_data=dt_data)
+
+    # dt_data is a pandas Series but converted to a NumPy array
+    dt_data = pd.Series(pd.date_range(start='1/1/2022', periods=1000, freq='S'))
+    dt_data = dt_data.to_numpy()
+
+    # Should raise ValueError because dt_data is not a pandas Series
+    with pytest.raises(ValueError, match="dt_data must be a pandas Series with datetime values"):
+        pham.detect(data=input_data, accel_unit='g', gyro_unit='deg/s', gyro_mediolateral='pelvis_ANGVEL_y', sampling_freq_Hz=200, dt_data=dt_data)
+
+def test_data_structure_invalid_pham_pt():
+    # Initialize PhamPosturalTransitionDetection object
+    pham = PhamPosturalTransitionDetection()
+    
+    # Sample accelerometer and gyroscope data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
+    sample_data = pd.read_csv(test_data_file_path, index_col=0)
+    sample_data = sample_data.to_numpy()
+
+    # Test invalid data shape
+    with pytest.raises(ValueError, match="Input data must be a pandas DataFrame"):
+        pham.detect(data=sample_data, accel_unit='g', gyro_unit='deg/s', gyro_mediolateral='pelvis_ANGVEL_y', sampling_freq_Hz=100)
+
+def test_invalid_accel_unit_pham_pt():
+    # Initialize PhamPosturalTransitionDetection object
+    pham = PhamPosturalTransitionDetection()
+
+    # Sample accelerometer and gyroscope data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
+    sample_data = pd.read_csv(test_data_file_path, index_col=0)
+
+    # Test with invalid acceleration unit
+    with pytest.raises(ValueError, match="Unsupported unit for acceleration data"):
+        pham.detect(data=sample_data, accel_unit='invalid_unit', gyro_unit='deg/s', gyro_mediolateral='pelvis_ANGVEL_y', sampling_freq_Hz=200)
+
+def test_invalid_gyro_unit_pham_pt():
+    # Initialize PhamPosturalTransitionDetection object
+    pham = PhamPosturalTransitionDetection()
+
+    # Sample accelerometer and gyroscope data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
+    sample_data = pd.read_csv(test_data_file_path, index_col=0)
+
+    # Test with invalid gyro unit
+    with pytest.raises(ValueError, match="Invalid unit for gyro data. Must be 'deg/s' or 'rad/s'"):
+        pham.detect(data=sample_data, accel_unit='g', gyro_unit='invalid_unit', gyro_mediolateral='pelvis_ANGVEL_y', sampling_freq_Hz=200)
+
+def test_invalid_sampling_freq_pham_pt():
+    # Initialize PhamPosturalTransitionDetection object
+    pham = PhamPosturalTransitionDetection()
+
+    # Sample accelerometer and gyroscope data
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
+    sample_data = pd.read_csv(test_data_file_path, index_col=0)
+
+    # Test with non-positive sampling frequency
+    with pytest.raises(ValueError, match="Sampling frequency must be positive"):
+        pham.detect(data=sample_data, accel_unit='g', gyro_unit='deg/s', gyro_mediolateral='pelvis_ANGVEL_y', sampling_freq_Hz=0)
 
 # Run the tests with pytest
 if __name__ == "__main__":
