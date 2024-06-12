@@ -179,12 +179,23 @@ class PhamTurnDetection:
         if not isinstance(plot_results, bool):
             raise ValueError("plot_results must be a boolean value")
 
-        # Select acceleration data and convert it to numpy array format
-        accel = data.iloc[:, 0:3].copy().to_numpy()
+        # Identify the columns in the DataFrame that correspond to accelerometer data
+        accel_columns = [col for col in data.columns if 'accel' in col.lower() or 'ACCEL' in col or 'acc' in col.lower() or 'ACC' in col]
+        
+        # Identify the columns in the DataFrame that correspond to gyroscope data
+        gyro_columns = [col for col in data.columns if 'gyro' in col.lower() or 'GYRO' in col or 'angvel' in col.lower() or 'ANGVEL' in col]
+
+        # Ensure that there are exactly 3 columns each for accelerometer and gyroscope data
+        if len(accel_columns) != 3 or len(gyro_columns) != 3:
+            raise ValueError("Data must contain 3 accelerometer and 3 gyroscope columns.")
 
         # Select acceleration data and convert it to numpy array format
-        gyro = data.iloc[:, 3:6].copy().to_numpy()
+        accel = data[accel_columns].copy().to_numpy()
 
+        # Select gyro data and convert it to numpy array format
+        gyro = data[gyro_columns].copy().to_numpy()
+        self.gyro = gyro
+        
         # Check unit of acceleration data if it is in g or m/s^2 (including variations)
         if accel_unit in ["m/s^2", "meters/s^2", "meter/s^2"]:
             # Convert acceleration data from m/s^2 to g (if not already is in g)
@@ -224,8 +235,8 @@ class PhamTurnDetection:
         # Subtract gyro bias from the original gyro signal
         gyro_unbiased = gyro - self.gyro_bias
 
-        # Get the index of the vertical component of gyro from data and minus 3 to find correspoding data in unbiased gyro
-        gyro_vertical_index = data.columns.get_loc(gyro_vertical) - 3
+        # Get the index of the vertical component of gyro from data
+        gyro_vertical_index = [i for i, col in enumerate(gyro_columns) if gyro_vertical in col][0]
 
         # Integrate x component of the gyro signal to get yaw angle (also convert gyro unit to deg/s)
         self.yaw = (

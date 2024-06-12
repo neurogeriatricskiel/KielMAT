@@ -183,15 +183,24 @@ class PhamPosturalTransitionDetection:
 
         # Calculate sampling period
         sampling_period = 1 / sampling_freq_Hz
+        
+        # Identify the columns in the DataFrame that correspond to accelerometer data
+        accel_columns = [col for col in data.columns if 'accel' in col.lower() or 'ACCEL' in col or 'acc' in col.lower() or 'ACC' in col]
+        
+        # Identify the columns in the DataFrame that correspond to gyroscope data
+        gyro_columns = [col for col in data.columns if 'gyro' in col.lower() or 'GYRO' in col or 'angvel' in col.lower() or 'ANGVEL' in col]
+
+        # Ensure that there are exactly 3 columns each for accelerometer and gyroscope data
+        if len(accel_columns) != 3 or len(gyro_columns) != 3:
+            raise ValueError("Data must contain 3 accelerometer and 3 gyroscope columns.")
 
         # Select acceleration data and convert it to numpy array format
-        accel = data.iloc[:, 0:3].copy()
-        accel = accel.to_numpy()
+        accel = data[accel_columns].copy().to_numpy()
 
         # Select gyro data and convert it to numpy array format
-        gyro = data.iloc[:, 3:6].copy()
-        self.gyro = gyro.to_numpy()
-
+        gyro = data[gyro_columns].copy().to_numpy()
+        self.gyro = gyro
+        
         # Extract vertical accelerometer data using the specified index
         self.gyro_mediolateral = data[gyro_mediolateral].to_numpy()
 
