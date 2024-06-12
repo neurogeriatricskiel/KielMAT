@@ -40,7 +40,7 @@ class PhamPosturalTransitionDetection:
     along with the detected postural transitions.
 
     Methods:
-        detect(data, gyro_vertical, accel_unit, gyro_unit, sampling_freq_Hz, dt_data, tracking_system, tracked_point, plot_results):
+        detect(data, gyro_mediolateral, accel_unit, gyro_unit, sampling_freq_Hz, dt_data, tracking_system, tracked_point, plot_results):
             Detects  sit to stand and stand to sit using accelerometer and gyro signals.
 
             Args:
@@ -183,7 +183,7 @@ class PhamPosturalTransitionDetection:
 
         # Calculate sampling period
         sampling_period = 1 / sampling_freq_Hz
-        
+
         # Identify the columns in the DataFrame that correspond to accelerometer data
         accel_columns = [col for col in data.columns if 'accel' in col.lower() or 'ACCEL' in col or 'acc' in col.lower() or 'ACC' in col]
         
@@ -201,7 +201,7 @@ class PhamPosturalTransitionDetection:
         gyro = data[gyro_columns].copy().to_numpy()
         self.gyro = gyro
         
-        # Extract vertical accelerometer data using the specified index
+        # Extract mediolateral gyro data using the specified index
         self.gyro_mediolateral = data[gyro_mediolateral].to_numpy()
 
         # Check unit of acceleration data if it is in g or m/s^2 (including variations)
