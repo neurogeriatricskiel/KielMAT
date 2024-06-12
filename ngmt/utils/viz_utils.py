@@ -83,7 +83,8 @@ def plot_pam(hourly_average_data, thresholds_mg):
         ax.plot(hourly_average_data.loc[date], label=str(date), color=color)
 
     # Customize plot
-    plt.xticks(range(24), [str(i).zfill(2) for i in range(24)])
+    ax.set_xticks(hourly_average_data.columns)
+    ax.set_xticklabels(hourly_average_data.columns)
     plt.xlabel("Time (h)", fontsize=14)
     plt.ylabel("ENMO (mg)", fontsize=14)
     plt.title("Hourly averaged ENMO for each day along with activity level thresholds")
