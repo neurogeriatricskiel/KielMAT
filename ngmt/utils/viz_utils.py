@@ -17,17 +17,14 @@ def plot_gait(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
     """
     plt.figure(figsize=(22, 14))
 
-    # Font size for all text elements
-    font_size = 14
-
     plt.plot(
         np.arange(len(detected_activity_signal)) / (60 * target_sampling_freq_Hz),
         detected_activity_signal,
         label="Pre-processed acceleration signal",
     )
     plt.title("Detected gait sequences", fontsize=18)
-    plt.xlabel("Time (minutes)", fontsize=font_size)
-    plt.ylabel("Acceleration (g)", fontsize=font_size)
+    plt.xlabel("Time (minutes)", fontsize=14)
+    plt.ylabel("Acceleration (g)", fontsize=14)
 
     # Fill the area between start and end times
     for index, sequence in gait_sequences_.iterrows():
@@ -41,8 +38,8 @@ def plot_gait(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
         loc="best",
     )
     plt.grid(visible=None, which="both", axis="both")
-    plt.xticks(fontsize=font_size)
-    plt.yticks(fontsize=font_size)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
     plt.show()
 
 # Function to plot results of the physical activity monitoring algorithm
@@ -56,9 +53,6 @@ def plot_pam(hourly_average_data, thresholds_mg):
     """
     # Plotting
     fig, ax = plt.subplots(figsize=(14, 8))
-
-    # Font size for all text elements
-    font_size = 14
 
     # Choose the 'turbo' colormap for coloring each day
     colormap = plt.cm.turbo
@@ -90,13 +84,13 @@ def plot_pam(hourly_average_data, thresholds_mg):
 
     # Customize plot
     plt.xticks(range(24), [str(i).zfill(2) for i in range(24)])
-    plt.xlabel("Time (h)", fontsize=font_size)
-    plt.ylabel("ENMO (mg)", fontsize=font_size)
+    plt.xlabel("Time (h)", fontsize=14)
+    plt.ylabel("ENMO (mg)", fontsize=14)
     plt.title("Hourly averaged ENMO for each day along with activity level thresholds")
-    plt.legend(loc="upper left", fontsize=font_size)
+    plt.legend(loc="upper left", fontsize=14)
     plt.grid(visible=None, which="both", axis="both")
-    plt.xticks(fontsize=font_size)
-    plt.yticks(fontsize=font_size)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
     plt.tight_layout()
     plt.show()
 
@@ -119,8 +113,6 @@ def plot_postural_transitions(accel, gyro, accel_unit, gyro_unit, postural_trans
     # Figure
     fig = plt.figure(figsize=(12, 6))
 
-    # Font size for all text elements
-    font_size = 14
 
     # Subplot 1: Acceleration data
     ax1 = plt.subplot(211)
@@ -134,20 +126,20 @@ def plot_postural_transitions(accel, gyro, accel_unit, gyro_unit, postural_trans
         duration = postural_transitions_["duration"][i]
         ax1.axvline(x=onset, color="r")
         ax1.axvspan(onset, (onset + duration), color="grey")
-    ax1.set_ylabel(f"Acceleration ({accel_unit})", fontsize=font_size)
-    ax1.set_xlabel(f"Time (sec)", fontsize=font_size)
+    ax1.set_ylabel(f"Acceleration ({accel_unit})", fontsize=14)
+    ax1.set_xlabel(f"Time (sec)", fontsize=14)
     ax1.legend(
         ["Acc x", "Acc y", "Acc z", "Event oset", "Event duration"],
         loc="upper left",
-        fontsize=font_size,
+        fontsize=14,
         framealpha=0.5
     )
     accel_min = np.min(accel)
     accel_max = np.max(accel)
     buffer = (accel_max - accel_min) * 0.1
     ax1.set_ylim(accel_min - buffer, accel_max + buffer)
-    plt.xticks(fontsize=font_size)
-    plt.yticks(fontsize=font_size)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
 
     # Subplot 2: Gyro data
     ax2 = plt.subplot(212)
@@ -161,20 +153,20 @@ def plot_postural_transitions(accel, gyro, accel_unit, gyro_unit, postural_trans
         duration = postural_transitions_["duration"][i]
         ax2.axvline(x=onset, color="r")
         ax2.axvspan(onset, (onset + duration), color="grey")
-    ax2.set_ylabel(f"Gyro ({gyro_unit})", fontsize=font_size)
-    ax2.set_xlabel(f"Time (sec)", fontsize=font_size)
+    ax2.set_ylabel(f"Gyro ({gyro_unit})", fontsize=14)
+    ax2.set_xlabel(f"Time (sec)", fontsize=14)
     ax2.legend(
         ["Gyr x", "Gyr y", "Gyr z", "Event oset", "Event duration"],
         loc="upper left",
-        fontsize=font_size,
+        fontsize=14,
         framealpha=0.5
     )
     gyro_min = np.min(gyro)
     gyro_max = np.max(gyro)
     buffer = (gyro_max - gyro_min) * 0.1
     ax2.set_ylim(gyro_min - buffer, gyro_max + buffer)
-    plt.xticks(fontsize=font_size)
-    plt.yticks(fontsize=font_size)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
     fig.tight_layout()
     plt.show()
 
@@ -194,9 +186,6 @@ def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq
     Returns:
         Plot detected turns on the data
     """
-    # Font size for all text elements
-    font_size = 14
-
     # Figure
     fig = plt.figure(figsize=(12, 6))
 
@@ -212,20 +201,20 @@ def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq
         duration = detected_turns["duration"][i]
         ax1.axvline(x=onset, color="r")
         ax1.axvspan(onset, (onset + duration), color="grey")
-    ax1.set_ylabel(f"Acceleration ({accel_unit})", fontsize=font_size)
-    ax1.set_xlabel("Time (s)", fontsize=font_size)
+    ax1.set_ylabel(f"Acceleration ({accel_unit})", fontsize=14)
+    ax1.set_xlabel("Time (s)", fontsize=14)
     ax1.legend(
         ["Acc x", "Acc y", "Acc z", "Turn onset", "Turn duration"],
         loc="upper left",
-        fontsize=font_size,
+        fontsize=14,
         framealpha=0.5
     )
     accel_min = np.min(accel)
     accel_max = np.max(accel)
     buffer = (accel_max - accel_min) * 0.1
     ax1.set_ylim(accel_min - buffer, accel_max + buffer)
-    plt.xticks(fontsize=font_size)
-    plt.yticks(fontsize=font_size)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
 
     # Subplot 2: Gyro data
     ax2 = plt.subplot(212)
@@ -239,19 +228,19 @@ def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq
         duration = detected_turns["duration"][i]
         ax2.axvline(x=onset, color="r")
         ax2.axvspan(onset, (onset + duration), color="grey")
-    ax2.set_ylabel("Gyro (rad/s)", fontsize=font_size)
-    ax2.set_xlabel("Time (s)", fontsize=font_size)
+    ax2.set_ylabel("Gyro (rad/s)", fontsize=14)
+    ax2.set_xlabel("Time (s)", fontsize=14)
     ax2.legend(
         ["Gyr x", "Gyr y", "Gyr z", "Turn onset", "Turn duration"],
         loc="upper left",
-        fontsize=font_size,
+        fontsize=14,
         framealpha=0.5
     )
     gyro_min = np.min(gyro)
     gyro_max = np.max(gyro)
     buffer = (gyro_max - gyro_min) * 0.1
     ax2.set_ylim(gyro_min - buffer, gyro_max + buffer)
-    plt.xticks(fontsize=font_size)
-    plt.yticks(fontsize=font_size)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
     fig.tight_layout()
     plt.show()
