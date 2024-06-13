@@ -200,7 +200,7 @@ class PhamPosturalTransitionDetection:
         # Select gyro data and convert it to numpy array format
         gyro = data[gyro_columns].copy().to_numpy()
         self.gyro = gyro
-        
+
         # Extract mediolateral gyro data using the specified index
         self.gyro_mediolateral = data[gyro_mediolateral].to_numpy()
 
@@ -216,7 +216,9 @@ class PhamPosturalTransitionDetection:
         # Check unit of gyro data if it is in deg/s or rad/s
         if gyro_unit in ["rad/s", "radians per second"]:
             # Convert gyro data from rad/s to deg/s (if not already is in deg/s)
-            gyro = np.rad2deg(gyro)
+            self.gyro = np.rad2deg(self.gyro)
+            self.gyro_mediolateral = np.rad2deg(self.gyro_mediolateral)
+
         elif gyro_unit in ["deg/s", "degrees per second"]:
             pass  # Gyro data is already in rad/s
         else:
@@ -279,7 +281,7 @@ class PhamPosturalTransitionDetection:
         stationary_2 = (accel_var <= self.thr_gyro_var).astype(int)
 
         # Convert unit of the gyro data from deg/s to rad/s
-        gyro = np.deg2rad(self.gyro)
+        self.gyro = np.deg2rad(self.gyro)
 
         # Calculate stationary of gyro variance
         gyro_norm = np.sqrt(self.gyro[:, 0] ** 2 + self.gyro[:, 1] ** 2 + self.gyro[:, 2] ** 2)
@@ -346,7 +348,7 @@ class PhamPosturalTransitionDetection:
             self.left_side = np.ones_like(self.local_peaks)
 
             # Initialize right side indices with length of gyro data
-            self.lef_side = len(self.gyro_mediolateral) * np.ones_like(self.local_peaks)
+            self.right_side = len(self.gyro_mediolateral) * np.ones_like(self.local_peaks)
 
             # Loop through each local peak
             for i in range(len(self.local_peaks)):
@@ -380,25 +382,34 @@ class PhamPosturalTransitionDetection:
                                 break
                 for j in range(len(dist2peak_right_side)):
                     if gyro_y_diff[postural_transitions + dist2peak_right_side[j]] < 0 and dist2peak_right_side[j] > (0.2*sampling_freq_Hz):
-                        self.lef_side[i] = postural_transitions + dist2peak_right_side[j]
+                        self.right_side[i] = postural_transitions + dist2peak_right_side[j]
                         break
 
-            # Calculate postural transition angle
-            self.postural_transition_angle = np.abs(tilt_angle_deg[self.local_peaks] - tilt_angle_deg[self.left_side])
-            if self.left_side[0] == 1:
-                self.postural_transition_angle[0] = abs(
-                    tilt_angle_deg[self.local_peaks[0]] - tilt_angle_deg[self.lef_side[0]]
-                )
+                # Calculate postural transition angle
+                self.postural_transition_angle = np.abs(tilt_angle_deg[self.local_peaks] - tilt_angle_deg[self.left_side])
+                if self.left_side[0] == 1:
+                    self.postural_transition_angle[0] = abs(
+                        tilt_angle_deg[self.local_peaks[0]] - tilt_angle_deg[self.right_side[0]]
+                    )
 
-            # Calculate duration of each postural transition
-            duration = (self.lef_side - self.left_side) / sampling_freq_Hz
+                # Calculate duration of each postural transition
+                duration = (self.right_side - self.left_side) / sampling_freq_Hz
 
-            # Convert peak times to integers
-            postural_transition_onset = time[self.local_peaks]
+                # Convert peak times to integers
+                postural_transition_onset = time[self.local_peaks] 
 
         # Remove too small postural transitions
         i = self.postural_transition_angle >= self.min_postural_transition_angle_deg
-        postural_transition_onset = self.left_side[i]/ sampling_freq_Hz
+        postural_transition_onset = self.left_side[i] / sampling_freq_Hz
+        duration = duration[i]
+
+        # Check if dt_data is provided for datetime conversion
+        if dt_data is not None:
+            # Convert onset times to datetime format
+            starting_datetime = dt_data.iloc[
+                0
+            ]  # Assuming dt_data is aligned with the signal data
+            postural_transition_onset = [starting_datetime + pd.Timedelta(seconds=t) for t in postural_transition_onset]
 
         # Create a DataFrame with postural transition information
         postural_transitions_ = pd.DataFrame(
@@ -442,41 +453,39 @@ class PhamPosturalTransitionDetection:
         # Initialize list for postural transition types
         postural_transition_type = []
         
-        i = self.postural_transition_angle >= self.min_postural_transition_angle_deg
-        postural_transition_type = [postural_transition_type[idx] for idx, val in enumerate(postural_transition_type) if i[idx]]
-
         # Distinguish between different types of postural transitions
         for i in range(len(self.local_peaks)):
-            gyro_temp = self.gyro_mediolateral[self.left_side[i] : self.lef_side[i]]
+            gyro_temp = self.gyro_mediolateral[self.left_side[i] : self.right_side[i]]
             min_peak = np.min(gyro_temp)
             max_peak = np.max(gyro_temp)
-            if (abs(min_peak) - max_peak) > 0.5:
-                postural_transition_type.append("stand to sit")
-            else:
+            if (abs(max_peak) - abs(min_peak)) > 0.5:
                 postural_transition_type.append("sit to stand")
+            else:
+                postural_transition_type.append("stand to sit")
         
-        # Calculate postural transition angle
-        valid_indices = self.postural_transition_angle >= 15
-        self.postural_transition_angle = self.postural_transition_angle[valid_indices]
+        # Postural transition type and angle determination
+        i = self.postural_transition_angle >= self.min_postural_transition_angle_deg
+        postural_transition_type = [postural_transition_type[idx] for idx, val in enumerate(postural_transition_type) if i[idx]]
+        self.postural_transition_angle = self.postural_transition_angle[i]
 
         # Calculate maximum flexion velocity and maximum extension velocity
         flexion_max_vel = np.zeros_like(self.local_peaks)
         extension_max_vel = np.zeros_like(self.local_peaks)
 
-        for idx in range(len(self.local_peaks)):
-            flexion_max_vel[idx] = max(abs(self.gyro_mediolateral[self.left_side[idx] : self.local_peaks[idx]]))
-            extension_max_vel[idx] = max(abs(self.gyro_mediolateral[self.local_peaks[idx] : self.lef_side[idx]]))
+        for id in range(len(self.local_peaks)):
+            flexion_max_vel[id] = max(abs(self.gyro_mediolateral[self.left_side[id] : self.local_peaks[id]]))
+            extension_max_vel[id] = max(abs(self.gyro_mediolateral[self.local_peaks[id] : self.right_side[id]]))
 
         # Filter the velocities based on valid indices
         flexion_max_vel = [
-            flexion_max_vel[idx] for idx, val in enumerate(flexion_max_vel) if valid_indices[idx]
+            flexion_max_vel[idx] for idx, val in enumerate(flexion_max_vel) if i[idx]
         ]
 
         # Calculate maximum extension velocity
         extension_max_vel = [
             extension_max_vel[idx]
             for idx, val in enumerate(extension_max_vel)
-            if valid_indices[idx]
+            if i[idx]
         ]
 
         # Create a DataFrame with the calculated spatio-temporal parameters
