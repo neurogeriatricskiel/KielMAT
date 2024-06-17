@@ -2,13 +2,13 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Wed 12 Jun 2024
+**Last update:** Mon 17 June 2024
 
 ## Learning objectives
 By the end of this tutorial:
 
-- You can load data from keepcontrol which is one of available datasets.
-- Apply the Postural Transition Detection algorithm.
+- You can load data from [`keepcontrol`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/datasets/keepcontrol.py) which is one of available datasets.
+- Apply the [`Postural Transition Detection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/ptd/_pham.py) algorithm.
 - Visualize the results of the algorithm.
 - Extract spatio-temporal parameters of the detected postural transitions.
 - Interpret the detected postural transitions for further analysis.

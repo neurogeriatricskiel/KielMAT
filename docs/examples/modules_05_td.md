@@ -2,13 +2,13 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Wed 12 Jun 2024
+**Last update:** Mon 17 June 2024
 
 ## Learning Objectives
 By the end of this tutorial:
 
-- You can load data from keepcontrol which is one of available datasets.
-- Apply the Pham turn detection algorithm.
+- You can load data from [`keepcontrol`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/datasets/keepcontrol.py) which is one of available datasets.
+- Apply the [`Pham Turn Detection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/td/_pham.py) algorithm.
 - Visualize the results of the algorithm.
 - Extract spatio-temporal parameters of the detected turns.
 - Interpret the detected turns for further analysis.
