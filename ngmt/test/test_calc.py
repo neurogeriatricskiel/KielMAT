@@ -1486,7 +1486,7 @@ def test_signal_decomposition_algorithm_invalid_input_type():
 # Test function for the 'signal_decomposition_algorithm' function: case 2
 def test_signal_decomposition_algorithm_negative_sampling_frequency():
     # Test with negative initial sampling frequency
-    vertical_accelerarion_data = np.array([1, 2, 3, 4, 5])
+    vertical_acceleration_data = np.array([1, 2, 3, 4, 5])
     initial_sampling_frequency = -100
 
     # Check that the function raises an error for negative sampling frequency
@@ -1494,7 +1494,7 @@ def test_signal_decomposition_algorithm_negative_sampling_frequency():
         ValueError, match="The initial sampling frequency must be a positive float."
     ):
         signal_decomposition_algorithm(
-            vertical_accelerarion_data, initial_sampling_frequency
+            vertical_acceleration_data, initial_sampling_frequency
         )
 
 
