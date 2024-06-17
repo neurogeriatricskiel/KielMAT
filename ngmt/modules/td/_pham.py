@@ -180,11 +180,11 @@ class PhamTurnDetection:
             raise ValueError("plot_results must be a boolean value")
 
         # Identify the columns in the DataFrame that correspond to accelerometer data
-        accel_columns = [col for col in data.columns if 'accel' in col.lower() or 'ACCEL' in col or 'acc' in col.lower() or 'ACC' in col]
+        accel_columns = [col for col in data.columns if 'ACCEL' in col]
         
         # Identify the columns in the DataFrame that correspond to gyroscope data
-        gyro_columns = [col for col in data.columns if 'gyro' in col.lower() or 'GYRO' in col or 'angvel' in col.lower() or 'ANGVEL' in col]
-
+        gyro_columns = [col for col in data.columns if 'GYRO' in col]
+        
         # Ensure that there are exactly 3 columns each for accelerometer and gyroscope data
         if len(accel_columns) != 3 or len(gyro_columns) != 3:
             raise ValueError("Data must contain 3 accelerometer and 3 gyroscope columns.")
