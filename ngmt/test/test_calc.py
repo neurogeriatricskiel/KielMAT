@@ -9,7 +9,11 @@ Here's a brief explanation of the code structure:
 3. Define a series of test functions, each targeting a specific function from the 'ngmt.utils.preprocessing' module.
 4. Inside each test function, we validate the correctness of the corresponding function and its inputs.
 5. We make use of 'assert' statements to check that the functions return expected results.
-6. The code is organized for clarity and maintainability.
+6. In some test functions for plot functions, the "monkeypatch" is used which is a feature provided by the pytest library.
+It allows to temporarily modify or replace attributes, methods, or functions during testing. Here, monkeypatch is being 
+used to replace the plt.show() function. This way, when run test functions where it won't actually display any plots, 
+allowing to focus on testing the logic of the function without the overhead of rendering plots.
+7. The code is organized for clarity and maintainability.
 
 To run the tests, follow these steps:
 
