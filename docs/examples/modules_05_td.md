@@ -69,59 +69,59 @@ recording = keepcontrol.load_recording(
 
 # Load lower back acceleration data
 accel_data = recording.data[tracking_sys][
-    ["pelvis_ACC_x", "pelvis_ACC_y", "pelvis_ACC_z"]
+    ["pelvis_ACCEL_x", "pelvis_ACCEL_y", "pelvis_ACCEL_z"]
 ]
 
 # Get the acceleration data unit from the recording
 accel_unit = recording.channels[tracking_sys][
-    recording.channels[tracking_sys]["name"].str.contains("ACC", case=False)
+    recording.channels[tracking_sys]["name"].str.contains("ACCEL", case=False)
 ]["units"].iloc[0]
 
 # Load lower back gyro data
 gyro_data = recording.data[tracking_sys][
-    ["pelvis_ANGVEL_x", "pelvis_ANGVEL_y", "pelvis_ANGVEL_z"]
+    ["pelvis_GYRO_x", "pelvis_GYRO_y", "pelvis_GYRO_z"]
 ]
 
 # Get the gyro data unit from the recording
 gyro_unit = recording.channels[tracking_sys][
-    recording.channels[tracking_sys]["name"].str.contains("ANGVEL", case=False)
+    recording.channels[tracking_sys]["name"].str.contains("GYRO", case=False)
 ]["units"].iloc[0]
 
 # Print acceleration and gyro data
-print(f"acceleration_data ({accel_unit}): {accel_data}")
+print(f"accel_data ({accel_unit}): {accel_data}")
 print(f"gyro_data ({gyro_unit}): {gyro_data}")
 ```
-acceleration_data (g):
+accel_data (g):
 
-                        pelvis_ACC_x      pelvis_ACC_y      pelvis_ACC_z
-            0           0.983901          -0.032714         0.164542
-            1           0.992177          -0.027832         0.171870
-            2           0.993660          -0.026852         0.163584
-            3           0.991220          -0.025391         0.171870
-            4           0.984858          -0.030754         0.167977
-            ...         ...                ...              ...
-            7141        0.984380           0.115229         0.228036
-            7142        0.982897           0.116690         0.218751
-            7143        0.966298           0.100583         0.217772
-            7144        0.957019           0.091299         0.211923
-            7145        0.957019           0.089839         0.211423
+                        pelvis_ACCEL_x      pelvis_ACCEL_y      pelvis_ACCEL_z
+            0           0.983901           -0.032714            0.164542
+            1           0.992177           -0.027832            0.171870
+            2           0.993660           -0.026852            0.163584
+            3           0.991220           -0.025391            0.171870
+            4           0.984858           -0.030754            0.167977
+            ...         ...                 ...                 ...
+            7141        0.984380            0.115229            0.228036
+            7142        0.982897            0.116690            0.218751
+            7143        0.966298            0.100583            0.217772
+            7144        0.957019            0.091299            0.211923
+            7145        0.957019            0.089839            0.211423
 
 [7146 rows x 3 columns]
 
 gyro_data (deg/s):        
 
-                        pelvis_ANGVEL_x     pelvis_ANGVEL_y     pelvis_ANGVEL_z
-            0           0.351765            -0.437449           -0.087013
-            1          -0.087941            -0.698968            0.174026
-            2           0.698645            -1.573867           -0.174026
-            3           0.087941            -1.661039           -0.786015
-            4           0.874528            -0.611795           -0.350952
-            ...         ...                 ...                 ...
-            7141        15.560731           -17.223774          -0.699003
-            7142        16.699083           -17.310947          -0.261038
-            7143        18.272255           -17.574051           0.524977
-            7144        18.970900           -18.185846           1.922982
-            7145        21.071722           -16.786325           2.534972
+                        pelvis_GYRO_x     pelvis_GYRO_y     pelvis_GYRO_z
+            0           0.351765         -0.437449         -0.087013
+            1          -0.087941         -0.698968          0.174026
+            2           0.698645         -1.573867         -0.174026
+            3           0.087941         -1.661039         -0.786015
+            4           0.874528         -0.611795         -0.350952
+            ...         ...               ...                ...
+            7141        15.560731        -17.223774        -0.699003
+            7142        16.699083        -17.310947        -0.261038
+            7143        18.272255        -17.574051         0.524977
+            7144        18.970900        -18.185846         1.922982
+            7145        21.071722        -16.786325         2.534972
 
 [7146 rows x 3 columns]
 
@@ -130,7 +130,7 @@ gyro_data (deg/s):
 ```python
 # Get the corresponding sampling frequency directly from the recording
 sampling_frequency = recording.channels[tracking_sys][
-    recording.channels[tracking_sys]["name"] == "pelvis_ACC_x"
+    recording.channels[tracking_sys]["name"] == "pelvis_ACCEL_x"
 ]["sampling_frequency"].values[0]
 
 # Print sampling frequency and its type
@@ -153,8 +153,8 @@ ax1 = plt.subplot(211)
 for i in range(3):
     ax1.plot(
         np.arange(len(accel_data)) / sampling_frequency,
-        accel_data[f"pelvis_ACC_{chr(120 + i)}"],
-        label=f"Acc {'xyz'[i]}",
+        accel_data[f"pelvis_ACCEL_{chr(120 + i)}"],
+        label=f"ACCEL {'xyz'[i]}",
     )
 ax1.set_ylabel(f"Acceleration ({accel_unit})", fontsize=font_size)
 ax1.set_xlabel(f"Time (s)", fontsize=font_size)
@@ -171,8 +171,8 @@ ax2 = plt.subplot(212)
 for i in range(3):
     ax2.plot(
         np.arange(len(gyro_data)) / sampling_frequency,
-        gyro_data[f"pelvis_ANGVEL_{chr(120 + i)}"],
-        label=f"Gyr {'xyz'[i]}",
+        gyro_data[f"pelvis_GYRO_{chr(120 + i)}"],
+        label=f"GYRO {'xyz'[i]}",
     )
 ax2.set_ylabel(f"Gyro ({gyro_unit})", fontsize=font_size)
 ax2.set_xlabel(f"Time (s)", fontsize=font_size)
@@ -220,7 +220,7 @@ pham = PhamTurnDetection()
 # Call the turn detection using pham.detect
 pham = pham.detect(
     data=input_data,
-    gyro_vertical="pelvis_ANGVEL_x",
+    gyro_vertical="pelvis_GYRO_x",
     accel_unit=accel_unit,
     gyro_unit=gyro_unit,
     sampling_freq_Hz=sampling_frequency,

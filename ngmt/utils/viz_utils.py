@@ -115,7 +115,7 @@ def plot_postural_transitions(accel, gyro, accel_unit, gyro_unit, postural_trans
     fig = plt.figure(figsize=(12, 6))
 
 
-    # Subplot 1: Acceleration data
+    # Subplot 1: ACCEL data
     ax1 = plt.subplot(211)
     for i in range(3):
         ax1.plot(
@@ -130,7 +130,7 @@ def plot_postural_transitions(accel, gyro, accel_unit, gyro_unit, postural_trans
     ax1.set_ylabel(f"Acceleration ({accel_unit})", fontsize=14)
     ax1.set_xlabel(f"Time (sec)", fontsize=14)
     ax1.legend(
-        ["Acc x", "Acc y", "Acc z", "Event oset", "Event duration"],
+        ["ACCEL x", "ACCEL y", "ACCEL z", "Event oset", "Event duration"],
         loc="upper left",
         fontsize=14,
         framealpha=0.5
@@ -142,7 +142,7 @@ def plot_postural_transitions(accel, gyro, accel_unit, gyro_unit, postural_trans
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
 
-    # Subplot 2: Gyro data
+    # Subplot 2: GYRO data
     ax2 = plt.subplot(212)
     for i in range(3):
         ax2.plot(
@@ -157,7 +157,7 @@ def plot_postural_transitions(accel, gyro, accel_unit, gyro_unit, postural_trans
     ax2.set_ylabel(f"Gyro ({gyro_unit})", fontsize=14)
     ax2.set_xlabel(f"Time (sec)", fontsize=14)
     ax2.legend(
-        ["Gyr x", "Gyr y", "Gyr z", "Event oset", "Event duration"],
+        ["GYRO x", "GYRO y", "GYRO z", "Event oset", "Event duration"],
         loc="upper left",
         fontsize=14,
         framealpha=0.5
@@ -190,7 +190,7 @@ def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq
     # Figure
     fig = plt.figure(figsize=(12, 6))
 
-    # Subplot 1: Acceleration data
+    # Subplot 1: ACCEL data
     ax1 = plt.subplot(211)
     for i in range(3):
         ax1.plot(
@@ -205,7 +205,7 @@ def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq
     ax1.set_ylabel(f"Acceleration ({accel_unit})", fontsize=14)
     ax1.set_xlabel("Time (s)", fontsize=14)
     ax1.legend(
-        ["Acc x", "Acc y", "Acc z", "Turn onset", "Turn duration"],
+        ["ACCEL x", "ACCEL y", "ACCEL z", "Turn onset", "Turn duration"],
         loc="upper left",
         fontsize=14,
         framealpha=0.5
@@ -217,7 +217,7 @@ def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
 
-    # Subplot 2: Gyro data
+    # Subplot 2: GYRO data
     ax2 = plt.subplot(212)
     for i in range(3):
         ax2.plot(
@@ -232,7 +232,7 @@ def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq
     ax2.set_ylabel("Gyro (rad/s)", fontsize=14)
     ax2.set_xlabel("Time (s)", fontsize=14)
     ax2.legend(
-        ["Gyr x", "Gyr y", "Gyr z", "Turn onset", "Turn duration"],
+        ["GYRO x", "GYRO y", "GYRO z", "Turn onset", "Turn duration"],
         loc="upper left",
         fontsize=14,
         framealpha=0.5

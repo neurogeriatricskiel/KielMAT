@@ -73,7 +73,7 @@ class PhamPosturalTransitionDetection:
         >>> pham = PhamPosturalTransitionDetection()
         >>> pham.detect(
                 data=input_data,
-                gyro_mediolateral="pelvis_ANGVEL_y",
+                gyro_mediolateral="pelvis_GYRO_y",
                 accel_unit="g",
                 gyro_unit="deg/s",
                 sampling_freq_Hz=200.0,

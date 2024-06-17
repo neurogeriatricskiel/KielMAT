@@ -71,7 +71,7 @@ class PhamTurnDetection:
         >>> pham = PhamTurnDetection()
         >>> pham.detect(
                 data=input_data,
-                gyro_vertical="pelvis_ANGVEL_x",
+                gyro_vertical="pelvis_GYRO_x",
                 accel_unit="g",
                 gyro_unit="rad/s",
                 sampling_freq_Hz=200.0,
@@ -184,7 +184,7 @@ class PhamTurnDetection:
         
         # Identify the columns in the DataFrame that correspond to gyroscope data
         gyro_columns = [col for col in data.columns if 'GYRO' in col]
-        
+
         # Ensure that there are exactly 3 columns each for accelerometer and gyroscope data
         if len(accel_columns) != 3 or len(gyro_columns) != 3:
             raise ValueError("Data must contain 3 accelerometer and 3 gyroscope columns.")

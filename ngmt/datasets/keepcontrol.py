@@ -5,6 +5,12 @@ import os
 from ngmt.utils.ngmt_dataclass import NGMTRecording
 
 
+# See: https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#restricted-keyword-list-for-channel-type
+MAP_CHANNEL_TYPES = {
+    "ACC": "ACCEL",
+    "ANGVEL": "GYRO",
+}
+
 def load_recording(
     file_name: str | pathlib.Path,
     tracking_systems: str | list[str],
@@ -77,6 +83,15 @@ def load_recording(
             df_channels = df_channels[
                 (df_channels["tracked_point"].isin(tracked_points[tracksys]))
             ]
+
+            # Map channel types to BIDS specification types
+            df_channels["type"] = df_channels["type"].map(MAP_CHANNEL_TYPES).fillna(df_channels["type"])
+            rename_dict_channels = {col: col.replace('ACC', 'ACCEL').replace('ANGVEL', 'GYRO') for col in df_channels["name"]}
+            df_channels["name"].replace(rename_dict_channels, inplace=True)
+            
+            # Rename the columns in the data DataFrame to match the mapped types
+            rename_dict = {col: col.replace('ACC', 'ACCEL').replace('ANGVEL', 'GYRO') for col in df_data.columns}
+            df_data.rename(columns=rename_dict, inplace=True)
 
             # Put data and channels in output dictionaries
             data_dict[tracksys] = df_data

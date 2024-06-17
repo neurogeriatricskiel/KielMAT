@@ -1477,9 +1477,7 @@ def test_signal_decomposition_algorithm_invalid_input_type():
     initial_sampling_frequency = 100
 
     # Check that the function raises an error for invalid input type
-    with pytest.raises(
-        ValueError, match="vertical_acceleration_data must be a numpy.ndarray"
-    ):
+    with pytest.raises(ValueError, match="vertical_acceleration_data must be a numpy.ndarray"):
         signal_decomposition_algorithm(
             vertical_acceleration_data, initial_sampling_frequency
         )
@@ -1488,7 +1486,7 @@ def test_signal_decomposition_algorithm_invalid_input_type():
 # Test function for the 'signal_decomposition_algorithm' function: case 2
 def test_signal_decomposition_algorithm_negative_sampling_frequency():
     # Test with negative initial sampling frequency
-    vertical_acceleration_data = np.array([1, 2, 3, 4, 5])
+    vertical_accelerarion_data = np.array([1, 2, 3, 4, 5])
     initial_sampling_frequency = -100
 
     # Check that the function raises an error for negative sampling frequency
@@ -1496,7 +1494,7 @@ def test_signal_decomposition_algorithm_negative_sampling_frequency():
         ValueError, match="The initial sampling frequency must be a positive float."
     ):
         signal_decomposition_algorithm(
-            vertical_acceleration_data, initial_sampling_frequency
+            vertical_accelerarion_data, initial_sampling_frequency
         )
 
 
@@ -2133,9 +2131,9 @@ def sample_data():
     # Sample data for testing
     data = pd.DataFrame({
         'Time': [0.1, 0.2, 0.3],
-        'Accel_x': [1.0, 2.0, 3.0],
-        'Accel_y': [0.5, 1.5, 2.5],
-        'Accel_z': [0.2, 0.3, 0.4]
+        'ACCEL_x': [1.0, 2.0, 3.0],
+        'ACCEL_y': [0.5, 1.5, 2.5],
+        'ACCEL_z': [0.2, 0.3, 0.4]
     })
     return data
 
@@ -2143,7 +2141,7 @@ def sample_data():
 def sample_channels():
     # Sample channels data for testing
     channels = pd.DataFrame({
-        'name': ['Accel_x', 'Accel_y', 'Accel_z'],
+        'name': ['ACCEL_x', 'ACCEL_y', 'ACCEL_z'],
         'component': ['x', 'y', 'z'],
         'ch_type': ['ACCEL', 'ACCEL', 'ACCEL']
     })
@@ -2193,15 +2191,15 @@ def test_invalid_file_path(tmp_path):
 def sample_data():
     return pd.DataFrame({
         'Time': [0.1, 0.2, 0.3],
-        'Accel_x': [1.0, 2.0, 3.0],
-        'Accel_y': [0.5, 1.5, 2.5],
-        'Accel_z': [0.2, 0.3, 0.4]
+        'ACCEL_x': [1.0, 2.0, 3.0],
+        'ACCEL_y': [0.5, 1.5, 2.5],
+        'ACCEL_z': [0.2, 0.3, 0.4]
     })
 
 @pytest.fixture
 def sample_channels():
     return pd.DataFrame({
-        'name': ['Accel_x', 'Accel_y', 'Accel_z'],
+        'name': ['ACCEL_x', 'ACCEL_y', 'ACCEL_z'],
         'component': ['x', 'y', 'z'],
         'ch_type': ['ACCEL', 'ACCEL', 'ACCEL']
     })
