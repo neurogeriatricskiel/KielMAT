@@ -8,6 +8,7 @@ from typing import Optional, TypeVar
 
 Self = TypeVar("Self", bound="PhamTurnDetection")
 
+
 class PhamTurnDetection:
     """
     This algorithm aims to detect turns using accelerometer and gyroscope data collected from a lower back
@@ -180,14 +181,16 @@ class PhamTurnDetection:
             raise ValueError("plot_results must be a boolean value")
 
         # Identify the columns in the DataFrame that correspond to accelerometer data
-        accel_columns = [col for col in data.columns if 'ACCEL' in col]
-        
+        accel_columns = [col for col in data.columns if "ACCEL" in col]
+
         # Identify the columns in the DataFrame that correspond to gyroscope data
-        gyro_columns = [col for col in data.columns if 'GYRO' in col]
+        gyro_columns = [col for col in data.columns if "GYRO" in col]
 
         # Ensure that there are exactly 3 columns each for accelerometer and gyroscope data
         if len(accel_columns) != 3 or len(gyro_columns) != 3:
-            raise ValueError("Data must contain 3 accelerometer and 3 gyroscope columns.")
+            raise ValueError(
+                "Data must contain 3 accelerometer and 3 gyroscope columns."
+            )
 
         # Select acceleration data and convert it to numpy array format
         accel = data[accel_columns].copy().to_numpy()
@@ -195,18 +198,26 @@ class PhamTurnDetection:
         # Select gyro data and convert it to numpy array format
         gyro = data[gyro_columns].copy().to_numpy()
         self.gyro = gyro
-        
-        # Check unit of acceleration data if it is in g or m/s^2 (including variations)
-        if accel_unit in ["m/s^2", "meters/s^2", "meter/s^2"]:
-            # Convert acceleration data from m/s^2 to g (if not already is in g)
+
+        # Convert variations of acceleration unit to "m/s^2"
+        if accel_unit in ["meters/s^2", "meter/s^2"]:
+            accel_unit = "m/s^2"
+
+        # Check unit of acceleration data if it is in "m/s^2" or "g"
+        if accel_unit == "m/s^2":
+            # Convert acceleration data from "m/s^2" to "g"
             accel /= 9.81
         elif accel_unit in ["g", "G"]:
             pass  # No conversion needed
         else:
             raise ValueError("Unsupported unit for acceleration data")
 
+        # Convert variations of gyro unit to "deg/s"
+        if accel_unit in ["degrees per second", "°/s"]:
+            accel_unit = "deg/s"
+
         # Check unit of gyro data if it is in deg/s or rad/s
-        if gyro_unit in ["deg/s", "degrees per second"]:
+        if gyro_unit == "deg/s":
             # Convert gyro data from deg/s to rad/s (if not already is in rad/s)
             gyro = np.deg2rad(gyro)
         elif gyro_unit in ["rad/s", "radians per second"]:
@@ -236,7 +247,9 @@ class PhamTurnDetection:
         gyro_unbiased = gyro - self.gyro_bias
 
         # Get the index of the vertical component of gyro from data
-        gyro_vertical_index = [i for i, col in enumerate(gyro_columns) if gyro_vertical in col][0]
+        gyro_vertical_index = [
+            i for i, col in enumerate(gyro_columns) if gyro_vertical in col
+        ][0]
 
         # Integrate x component of the gyro signal to get yaw angle (also convert gyro unit to deg/s)
         self.yaw = (

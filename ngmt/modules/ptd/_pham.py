@@ -8,34 +8,35 @@ from typing import Optional, TypeVar
 
 Self = TypeVar("Self", bound="PhamPosturalTransitionDetection")
 
+
 class PhamPosturalTransitionDetection:
     """
     This algorithm aims to detect postural transitions (e.g., sit to stand or stand to sit movements)
     using accelerometer and gyroscope data collected from a lower back inertial measurement unit (IMU)
     sensor.
 
-    The algorithm is designed to be robust in detecting postural transitions using inertial sensor data 
-    and provides detailed information about these transitions. It starts by loading the accelerometer and 
-    gyro data, which includes three columns corresponding to the acceleration and gyro signals across 
-    the x, y, and z axes, along with the sampling frequency of the data. It first checks the validity of 
-    the input data. Then, it calculates the sampling period, selects accelerometer and gyro data. Tilt angle 
-    estimation is performed using gyro data in lateral or anteroposterior direction which represent movements 
-    or rotations in the mediolateral direction. The tilt angle is decomposed using wavelet transformation to 
-    identify stationary periods. Stationary periods are detected using accelerometer variance and gyro variance. 
+    The algorithm is designed to be robust in detecting postural transitions using inertial sensor data
+    and provides detailed information about these transitions. It starts by loading the accelerometer and
+    gyro data, which includes three columns corresponding to the acceleration and gyro signals across
+    the x, y, and z axes, along with the sampling frequency of the data. It first checks the validity of
+    the input data. Then, it calculates the sampling period, selects accelerometer and gyro data. Tilt angle
+    estimation is performed using gyro data in lateral or anteroposterior direction which represent movements
+    or rotations in the mediolateral direction. The tilt angle is decomposed using wavelet transformation to
+    identify stationary periods. Stationary periods are detected using accelerometer variance and gyro variance.
     Then, peaks in the wavelet-transformed tilt signal are detected as potential postural transition events.
 
     If there's enough stationary data, further processing is done to estimate the orientation using
     quaternions and to identify the beginning and end of postural transitions using gyro data. Otherwise,
     if there's insufficient stationary data, direction changes in gyro data are used to infer postural
-    transitions. Finally, the detected postural transitions along with their characteristics (onset, duration, etc.) 
+    transitions. Finally, the detected postural transitions along with their characteristics (onset, duration, etc.)
     are stored in a pandas DataFrame (postural_transitions_ attribute).
-    
-    In addition, spatial-temporal parameters are calculated using detected postural transitions and their 
-    characteristics by the spatio_temporal_parameters method. As a return, the postural transition id along 
-    with its spatial-temporal parameters including type of postural transition (sit to stand or stand to sit), 
-    angle of postural transition, maximum flexion velocity, and maximum extension velocity are stored in a pandas 
+
+    In addition, spatial-temporal parameters are calculated using detected postural transitions and their
+    characteristics by the spatio_temporal_parameters method. As a return, the postural transition id along
+    with its spatial-temporal parameters including type of postural transition (sit to stand or stand to sit),
+    angle of postural transition, maximum flexion velocity, and maximum extension velocity are stored in a pandas
     DataFrame (parameters_ attribute).
-    
+
     If requested (plot_results set to True), it generates plots of the accelerometer and gyroscope data
     along with the detected postural transitions.
 
@@ -112,22 +113,22 @@ class PhamPosturalTransitionDetection:
             thr_gyro_var (float): Threshold value for identifying periods where the gyro variance is low. Default is 2e-4.
             min_turn_angle_deg (float): Minimum angle which is considered as postural transition in degrees. Default is 15.0.
         """
-        self.cutoff_freq_hz=cutoff_freq_hz
-        self.thr_accel_var=thr_accel_var
-        self.thr_gyro_var=thr_gyro_var
-        self.min_postural_transition_angle_deg=min_postural_transition_angle_deg
+        self.cutoff_freq_hz = cutoff_freq_hz
+        self.thr_accel_var = thr_accel_var
+        self.thr_gyro_var = thr_gyro_var
+        self.min_postural_transition_angle_deg = min_postural_transition_angle_deg
 
     def detect(
-        self, 
+        self,
         data: pd.DataFrame,
         gyro_mediolateral: str,
-        accel_unit: str, 
-        gyro_unit: str, 
+        accel_unit: str,
+        gyro_unit: str,
         sampling_freq_Hz: float,
         dt_data: Optional[pd.Series] = None,
         tracking_system: Optional[str] = None,
         tracked_point: Optional[str] = None,
-        plot_results: bool = False
+        plot_results: bool = False,
     ) -> Self:
         """
         Detects postural transitions based on the input accelerometer and gyro data.
@@ -166,7 +167,7 @@ class PhamPosturalTransitionDetection:
         # Check if data is a DataFrame
         if not isinstance(data, pd.DataFrame):
             raise ValueError("Input data must be a pandas DataFrame")
-        
+
         # Error handling for invalid input data
         if not isinstance(data, pd.DataFrame) or data.shape[1] != 6:
             raise ValueError(
@@ -185,14 +186,16 @@ class PhamPosturalTransitionDetection:
         sampling_period = 1 / sampling_freq_Hz
 
         # Identify the columns in the DataFrame that correspond to accelerometer data
-        accel_columns = [col for col in data.columns if 'ACCEL' in col]
-        
+        accel_columns = [col for col in data.columns if "ACCEL" in col]
+
         # Identify the columns in the DataFrame that correspond to gyroscope data
-        gyro_columns = [col for col in data.columns if 'GYRO' in col]
+        gyro_columns = [col for col in data.columns if "GYRO" in col]
 
         # Ensure that there are exactly 3 columns each for accelerometer and gyroscope data
         if len(accel_columns) != 3 or len(gyro_columns) != 3:
-            raise ValueError("Data must contain 3 accelerometer and 3 gyroscope columns.")
+            raise ValueError(
+                "Data must contain 3 accelerometer and 3 gyroscope columns."
+            )
 
         # Select acceleration data and convert it to numpy array format
         accel = data[accel_columns].copy().to_numpy()
@@ -204,9 +207,13 @@ class PhamPosturalTransitionDetection:
         # Extract mediolateral gyro data using the specified index
         self.gyro_mediolateral = data[gyro_mediolateral].to_numpy()
 
-        # Check unit of acceleration data if it is in g or m/s^2 (including variations)
-        if accel_unit in ["m/s^2", "meters/s^2", "meter/s^2"]:
-            # Convert acceleration data from m/s^2 to g (if not already is in g)
+        # Convert variations of acceleration unit to "m/s^2"
+        if accel_unit in ["meters/s^2", "meter/s^2"]:
+            accel_unit = "m/s^2"
+
+        # Check unit of acceleration data if it is in "m/s^2" or "g"
+        if accel_unit == "m/s^2":
+            # Convert acceleration data from "m/s^2" to "g"
             accel /= 9.81
         elif accel_unit in ["g", "G"]:
             pass  # No conversion needed
@@ -219,8 +226,12 @@ class PhamPosturalTransitionDetection:
             self.gyro = np.rad2deg(self.gyro)
             self.gyro_mediolateral = np.rad2deg(self.gyro_mediolateral)
 
-        elif gyro_unit in ["deg/s", "degrees per second"]:
-            pass  # Gyro data is already in rad/s
+        # Check different variations of gyro unit
+        elif gyro_unit in ["degrees per second", "°/s"]:
+            gyro_unit = "deg/s"
+
+        elif gyro_unit == "deg/s":
+            pass  # Gyro data is already in deg/s
         else:
             raise ValueError("Invalid unit for gyro data. Must be 'deg/s' or 'rad/s'")
 
@@ -251,19 +262,21 @@ class PhamPosturalTransitionDetection:
         # Calculate difference
         tilt_dwt = tilt_dwt_3 - tilt_dwt_10
 
-        # Find peaks in denoised tilt signal 
+        # Find peaks in denoised tilt signal
         # Peaks of the tilt_dwt signal with magnitude and prominence >0.2 were defined as postural transition events
         # Separate positive and negative peak detection
-        positive_peaks, _ = scipy.signal.find_peaks(tilt_dwt, height=-0.2, prominence=0.2)
-        negative_peaks, _ = scipy.signal.find_peaks(tilt_dwt, height=0.2, prominence=0.2)
+        positive_peaks, _ = scipy.signal.find_peaks(
+            tilt_dwt, height=-0.2, prominence=0.2
+        )
+        negative_peaks, _ = scipy.signal.find_peaks(
+            tilt_dwt, height=0.2, prominence=0.2
+        )
 
         # Merge, sort, and eliminate redundant peaks
         self.local_peaks = np.unique(np.concatenate((positive_peaks, negative_peaks)))
 
         # Calculate the norm of acceleration
-        accel_norm = np.sqrt(
-            accel[:, 0] ** 2 + accel[:, 1] ** 2 + accel[:, 2] ** 2
-        )
+        accel_norm = np.sqrt(accel[:, 0] ** 2 + accel[:, 1] ** 2 + accel[:, 2] ** 2)
 
         # Calculate absolute value of the acceleration signal
         accel_norm = np.abs(accel_norm)
@@ -273,9 +286,7 @@ class PhamPosturalTransitionDetection:
         stationary_1 = (stationary_1).astype(int)
 
         # Compute the variance of the moving window acceleration
-        accel_var = preprocessing.moving_var(
-            data=accel_norm, window=sampling_freq_Hz
-        )
+        accel_var = preprocessing.moving_var(data=accel_norm, window=sampling_freq_Hz)
 
         # Calculate stationary_2 from acceleration variance
         stationary_2 = (accel_var <= self.thr_gyro_var).astype(int)
@@ -284,7 +295,9 @@ class PhamPosturalTransitionDetection:
         self.gyro = np.deg2rad(self.gyro)
 
         # Calculate stationary of gyro variance
-        gyro_norm = np.sqrt(self.gyro[:, 0] ** 2 + self.gyro[:, 1] ** 2 + self.gyro[:, 2] ** 2)
+        gyro_norm = np.sqrt(
+            self.gyro[:, 0] ** 2 + self.gyro[:, 1] ** 2 + self.gyro[:, 2] ** 2
+        )
 
         # Compute the variance of the moving window of gyro
         gyro_var = preprocessing.moving_var(data=gyro_norm, window=sampling_freq_Hz)
@@ -310,18 +323,23 @@ class PhamPosturalTransitionDetection:
             np.sum(stationary[: int(sampling_freq_Hz * init_period)]) >= 200
         ):  # If the process is stationary in the first 2s
             # If there is enough stationary data, perform sensor fusion using accelerometer and gyro data
-            postural_transition_onset, postural_transition_type, self.postural_transition_angle, duration, self.flexion_max_vel, self.extension_max_vel = (
-                preprocessing.process_postural_transitions_stationary_periods(
-                    time,
-                    accel,
-                    self.gyro,
-                    stationary,
-                    tilt_angle_deg,
-                    sampling_period,
-                    sampling_freq_Hz,
-                    init_period,
-                    self.local_peaks,
-                )
+            (
+                postural_transition_onset,
+                postural_transition_type,
+                self.postural_transition_angle,
+                duration,
+                self.flexion_max_vel,
+                self.extension_max_vel,
+            ) = preprocessing.process_postural_transitions_stationary_periods(
+                time,
+                accel,
+                self.gyro,
+                stationary,
+                tilt_angle_deg,
+                sampling_period,
+                sampling_freq_Hz,
+                init_period,
+                self.local_peaks,
             )
 
             # Create a DataFrame with postural transition information
@@ -338,7 +356,9 @@ class PhamPosturalTransitionDetection:
         else:
             # Handle cases where there is not enough stationary data
             # Find indices where the product of consecutive changes sign, indicating a change in direction
-            iZeroCr = np.where((self.gyro_mediolateral[:-1] * self.gyro_mediolateral[1:]) < 0)[0]
+            iZeroCr = np.where(
+                (self.gyro_mediolateral[:-1] * self.gyro_mediolateral[1:]) < 0
+            )[0]
 
             # Calculate the difference between consecutive values
             gyro_y_diff = np.diff(self.gyro_mediolateral, axis=0)
@@ -348,7 +368,9 @@ class PhamPosturalTransitionDetection:
             self.left_side = np.ones_like(self.local_peaks)
 
             # Initialize right side indices with length of gyro data
-            self.right_side = len(self.gyro_mediolateral) * np.ones_like(self.local_peaks)
+            self.right_side = len(self.gyro_mediolateral) * np.ones_like(
+                self.local_peaks
+            )
 
             # Loop through each local peak
             for i in range(len(self.local_peaks)):
@@ -367,36 +389,55 @@ class PhamPosturalTransitionDetection:
                 # Iterate over distances to zero-crossing points on the left side of the peak (in reverse order)
                 for j in range(len(dist2peak_left_side) - 1, -1, -1):
                     # Check if slope is down and the left side not too close to the peak (more than 200ms)
-                    if gyro_y_diff[postural_transitions + dist2peak_left_side[j]] < 0 and -dist2peak_left_side[j] > (0.2*sampling_freq_Hz):
+                    if gyro_y_diff[
+                        postural_transitions + dist2peak_left_side[j]
+                    ] < 0 and -dist2peak_left_side[j] > (0.2 * sampling_freq_Hz):
                         if j > 0:
                             # If the left side peak is far enough or small enough
-                            if (dist2peak_left_side[j] - dist2peak_left_side[j - 1]) >= (0.2*sampling_freq_Hz) or (
-                                tilt_angle_deg[postural_transitions + dist2peak_left_side[j - 1]]
-                                - tilt_angle_deg[postural_transitions + dist2peak_left_side[j]]
+                            if (
+                                dist2peak_left_side[j] - dist2peak_left_side[j - 1]
+                            ) >= (0.2 * sampling_freq_Hz) or (
+                                tilt_angle_deg[
+                                    postural_transitions + dist2peak_left_side[j - 1]
+                                ]
+                                - tilt_angle_deg[
+                                    postural_transitions + dist2peak_left_side[j]
+                                ]
                             ) > 1:
                                 # Store the index of the left side
-                                self.left_side[i] = postural_transitions + dist2peak_left_side[j]
+                                self.left_side[i] = (
+                                    postural_transitions + dist2peak_left_side[j]
+                                )
                                 break
                             else:
-                                self.left_side[i] = postural_transitions + dist2peak_left_side[j]
+                                self.left_side[i] = (
+                                    postural_transitions + dist2peak_left_side[j]
+                                )
                                 break
                 for j in range(len(dist2peak_right_side)):
-                    if gyro_y_diff[postural_transitions + dist2peak_right_side[j]] < 0 and dist2peak_right_side[j] > (0.2*sampling_freq_Hz):
-                        self.right_side[i] = postural_transitions + dist2peak_right_side[j]
+                    if gyro_y_diff[
+                        postural_transitions + dist2peak_right_side[j]
+                    ] < 0 and dist2peak_right_side[j] > (0.2 * sampling_freq_Hz):
+                        self.right_side[i] = (
+                            postural_transitions + dist2peak_right_side[j]
+                        )
                         break
 
                 # Calculate postural transition angle
-                self.postural_transition_angle = np.abs(tilt_angle_deg[self.local_peaks] - tilt_angle_deg[self.left_side])
+                self.postural_transition_angle = np.abs(
+                    tilt_angle_deg[self.local_peaks] - tilt_angle_deg[self.left_side]
+                )
                 if self.left_side[0] == 1:
                     self.postural_transition_angle[0] = abs(
-                        tilt_angle_deg[self.local_peaks[0]] - tilt_angle_deg[self.right_side[0]]
+                        tilt_angle_deg[self.local_peaks[0]]
+                        - tilt_angle_deg[self.right_side[0]]
                     )
 
                 # Calculate duration of each postural transition
                 duration = (self.right_side - self.left_side) / sampling_freq_Hz
 
                 # Convert peak times to integers
-                postural_transition_onset = time[self.local_peaks] 
+                postural_transition_onset = time[self.local_peaks]
 
         # Remove too small postural transitions
         i = self.postural_transition_angle >= self.min_postural_transition_angle_deg
@@ -409,7 +450,10 @@ class PhamPosturalTransitionDetection:
             starting_datetime = dt_data.iloc[
                 0
             ]  # Assuming dt_data is aligned with the signal data
-            postural_transition_onset = [starting_datetime + pd.Timedelta(seconds=t) for t in postural_transition_onset]
+            postural_transition_onset = [
+                starting_datetime + pd.Timedelta(seconds=t)
+                for t in postural_transition_onset
+            ]
 
         # Create a DataFrame with postural transition information
         postural_transitions_ = pd.DataFrame(
@@ -427,14 +471,18 @@ class PhamPosturalTransitionDetection:
 
         # If Plot_results set to true
         if plot_results:
-
             viz_utils.plot_postural_transitions(
-                accel, self.gyro, accel_unit, gyro_unit, postural_transitions_, sampling_freq_Hz
+                accel,
+                self.gyro,
+                accel_unit,
+                gyro_unit,
+                postural_transitions_,
+                sampling_freq_Hz,
             )
 
         # Return an instance of the class
         return self
-    
+
     def spatio_temporal_parameters(self: Self) -> None:
         """
         Extracts spatio-temporal parameters of the detected postural transitions.
@@ -448,11 +496,13 @@ class PhamPosturalTransitionDetection:
                 - maximum_extension_velocity: Maximum extension velocity in deg/s.
         """
         if self.postural_transitions_ is None:
-            raise ValueError("No postural transition detected. Please run the detect method first.")
+            raise ValueError(
+                "No postural transition detected. Please run the detect method first."
+            )
 
         # Initialize list for postural transition types
         postural_transition_type = []
-        
+
         # Distinguish between different types of postural transitions
         for i in range(len(self.local_peaks)):
             gyro_temp = self.gyro_mediolateral[self.left_side[i] : self.right_side[i]]
@@ -462,10 +512,14 @@ class PhamPosturalTransitionDetection:
                 postural_transition_type.append("sit to stand")
             else:
                 postural_transition_type.append("stand to sit")
-        
+
         # Postural transition type and angle determination
         i = self.postural_transition_angle >= self.min_postural_transition_angle_deg
-        postural_transition_type = [postural_transition_type[idx] for idx, val in enumerate(postural_transition_type) if i[idx]]
+        postural_transition_type = [
+            postural_transition_type[idx]
+            for idx, val in enumerate(postural_transition_type)
+            if i[idx]
+        ]
         self.postural_transition_angle = self.postural_transition_angle[i]
 
         # Calculate maximum flexion velocity and maximum extension velocity
@@ -473,8 +527,12 @@ class PhamPosturalTransitionDetection:
         extension_max_vel = np.zeros_like(self.local_peaks)
 
         for id in range(len(self.local_peaks)):
-            flexion_max_vel[id] = max(abs(self.gyro_mediolateral[self.left_side[id] : self.local_peaks[id]]))
-            extension_max_vel[id] = max(abs(self.gyro_mediolateral[self.local_peaks[id] : self.right_side[id]]))
+            flexion_max_vel[id] = max(
+                abs(self.gyro_mediolateral[self.left_side[id] : self.local_peaks[id]])
+            )
+            extension_max_vel[id] = max(
+                abs(self.gyro_mediolateral[self.local_peaks[id] : self.right_side[id]])
+            )
 
         # Filter the velocities based on valid indices
         flexion_max_vel = [
