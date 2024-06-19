@@ -92,7 +92,7 @@ class PhamTurnDetection:
             1   right               199.69          144.67
 
     References:
-        [1] Pham et al. (2017). Algorithm for Turning Detection and Analysis Validated under Home-Like Conditions...
+        [1] Pham et al. (2017). Algorithm for Turning Detection and Analysis Validated under Home-Like Conditions... https://doi.org/10.3389/fneur.2017.00135
     """
 
     def __init__(

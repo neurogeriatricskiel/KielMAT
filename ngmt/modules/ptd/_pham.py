@@ -94,7 +94,7 @@ class PhamPosturalTransitionDetection:
             1   stand to sit                   47.12                            91                      120
 
     References:
-        [1] Pham et al. (2018). Validation of a Lower Back "Wearable"-Based Sit-to-Stand and Stand-to-Sit Algorithm...
+        [1] Pham et al. (2018). Validation of a Lower Back "Wearable"-Based Sit-to-Stand and Stand-to-Sit Algorithm... https://doi.org/10.3389/fneur.2018.00652
     """
 
     def __init__(
