@@ -218,7 +218,7 @@ class PhamPosturalTransitionDetection:
         elif accel_unit in ["g", "G"]:
             pass  # No conversion needed
         else:
-            raise ValueError("Unsupported unit for acceleration data")
+            raise ValueError("Invalid unit for acceleration data. Must be 'm/s^2' or 'g'")
 
         # Check unit of gyro data if it is in deg/s or rad/s
         if gyro_unit in ["rad/s", "radians per second"]:
