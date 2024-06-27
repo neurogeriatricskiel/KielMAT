@@ -66,7 +66,7 @@ def import_axivity(file_path: str, tracked_point: str):
 
 
 # Importher for APDM Mobility Lab for different versions
-def import_apdm_mobilityLab(
+def import_apdm_mobilitylab(
     file_name: str | Path, 
     tracked_points: str | list[str]
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -124,29 +124,25 @@ def import_apdm_mobilityLab(
         # Check the version
         if version == 5:
             sensors_group = hfile['Sensors']
-            sensor_names = list(sensors_group.keys())
 
-            # Mapping of sensor names to monitor labels for version 5
+            # Structure for version 5
+            monitor_labels = list(sensors_group.keys())
             sensor_to_label = {
-                "15403": "Right Leg",
-                "15514": "Left Leg",
-                "15520": "Left Arm",
-                "16159": "Lumbar",
-                "16304": "Right Arm",
-                "16608": "Trunk"
+                sensor_id: sensors_group[sensor_id]['Configuration'].attrs['Label 0'].decode('utf-8')
+                for sensor_id in monitor_labels
             }
 
             # Convert tracked_points to sensor IDs using sensor_to_label mapping
             tracked_points = [sensor for sensor, label in sensor_to_label.items() if label in tracked_points]
 
             # Track invalid tracked points
-            invalid_tracked_points = [tp for tp in tracked_points if tp not in sensor_names]
+            invalid_tracked_points = [tp for tp in tracked_points if tp not in monitor_labels]
 
             if invalid_tracked_points:
                 raise ValueError(f"The following tracked points do not exist in sensor names: {invalid_tracked_points}")
 
             # Iterate over each sensor
-            for sensor_name in sensor_names:
+            for sensor_name in monitor_labels:
                 if sensor_name not in tracked_points:
                     continue  # to next sensor name
 
