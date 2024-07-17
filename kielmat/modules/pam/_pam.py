@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from ngmt.config import cfg_colors
-from ngmt.utils import preprocessing
+from kielmat.config import cfg_colors
+from kielmat.utils import preprocessing
 
 
 class PhysicalActivityMonitoring:

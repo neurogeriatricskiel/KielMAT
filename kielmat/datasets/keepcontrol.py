@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pathlib
 import os
-from ngmt.utils.ngmt_dataclass import NGMTRecording
-from ngmt.utils.ngmt_dataclass import REQUIRED_COLUMNS
+from kielmat.utils.kielmat_dataclass import KielMATRecording
+from kielmat.utils.kielmat_dataclass import REQUIRED_COLUMNS
 
 
 def load_recording(
@@ -23,7 +23,7 @@ def load_recording(
             If a dictionary is provided, it should map each tracking system to either a single tracked point or a list of tracked points.
 
     Returns:
-        NGMTRecording : An instance of the NGMTRecording dataclass containing the loaded data and channels.
+        KielMATRecording : An instance of the KielMATRecording dataclass containing the loaded data and channels.
     """
     # Put tracking systems in a list
     if isinstance(tracking_systems, str):
@@ -85,4 +85,4 @@ def load_recording(
             ]
             data_dict[tracksys] = df_data
             channels_dict[tracksys] = df_channels[col_names]
-    return NGMTRecording(data=data_dict, channels=channels_dict)
+    return KielMATRecording(data=data_dict, channels=channels_dict)

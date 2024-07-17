@@ -45,8 +45,8 @@ VALID_CHANNEL_STATUS_VALUES = ["good", "bad", "n/a"]
 
 
 @dataclass(kw_only=True)
-class NGMTRecording:
-    """Dataclass to hold any data and associated infos for a NGMT recording.
+class KielMATRecording:
+    """Dataclass to hold any data and associated infos for a KielMAT recording.
 
     Attributes:
         data (dict): The data is stored as a pandas DataFrame for each unique tracking system.

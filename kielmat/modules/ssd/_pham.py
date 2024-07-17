@@ -2,8 +2,8 @@
 import numpy as np
 import pandas as pd
 import scipy.signal
-from ngmt.utils import preprocessing
-from ngmt.config import cfg_colors
+from kielmat.utils import preprocessing
+from kielmat.config import cfg_colors
 
 
 class PhamSittoStandStandtoSitDetection:

@@ -5,7 +5,7 @@ import seaborn as sns
 import os
 import pathlib
 import polars as pl
-from ngmt.utils.ngmt_dataclass import NGMTRecording
+from kielmat.utils.kielmat_dataclass import KielMATRecording
 
 
 SAMPLING_FREQ_HZ: float = 100.0  # sampling frequency
@@ -19,7 +19,7 @@ def load_recording(
     tracked_points: str | list[str] | dict[str, str] | dict[str, list[str]] = {
         "imu": ["LARM"]
     },
-) -> NGMTRecording:
+) -> KielMATRecording:
     """
     Load a recording from the FAIRPARK II validation study.
 
@@ -32,7 +32,7 @@ def load_recording(
             If a dictionary is provided, it should map each tracking system to either a single tracked point or a list of tracked points.
 
     Returns:
-        NGMTRecording : An instance of the NGMTRecording dataclass containing the loaded data and channels.
+        KielMATRecording : An instance of the KielMATRecording dataclass containing the loaded data and channels.
     """
     # Put tracking systems in a list
     if isinstance(tracking_systems, str):
@@ -90,6 +90,6 @@ def load_recording(
         "sampling_frequency": [SAMPLING_FREQ_HZ for _ in range(len(df.columns))],
     }
 
-    return NGMTRecording(
+    return KielMATRecording(
         data={"imu": df}, channels={"imu": pd.DataFrame(channels_dict)}
     )

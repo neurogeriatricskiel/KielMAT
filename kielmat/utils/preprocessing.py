@@ -9,13 +9,13 @@ import scipy.io
 import scipy.integrate
 import scipy.ndimage
 import pywt
-from ngmt.utils import quaternion
-from ngmt.config import cfg_colors
+from kielmat.utils import quaternion
+from kielmat.config import cfg_colors
 
 
 # use the importlib.resources package to access the FIR_2_3Hz_40.mat file
 with pkg_resources.path(
-    "ngmt.utils", "FIR_2_3Hz_40.mat"
+    "kielmat.utils", "FIR_2_3Hz_40.mat"
 ) as mat_filter_coefficients_file:
     pass
 

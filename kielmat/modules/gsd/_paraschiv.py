@@ -4,8 +4,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.signal
 from typing import Optional
-from ngmt.utils import preprocessing
-from ngmt.config import cfg_colors
+from kielmat.utils import preprocessing
+from kielmat.config import cfg_colors
 
 
 class ParaschivIonescuGaitSequenceDetection:
