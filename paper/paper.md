@@ -68,6 +68,6 @@ NGMT is a community effort, and any contribution is welcomed. The project is hos
 
 # Acknowledgements
 The authors would like to thank every person who provided data which has been used in the development and validation of the algorithms in the NGMT toolbox.
-The authors declare no competing interests.
+The data collection have been performed in accordance with the Declaration of Helsinki. The authors declare no competing interests.
 
 # References
