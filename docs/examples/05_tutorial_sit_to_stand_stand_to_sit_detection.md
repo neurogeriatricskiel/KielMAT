@@ -16,7 +16,7 @@ By the end of this tutorial:
 
 This example can be referenced by citing the package.
 
-The example illustrates how to use Pham Sit to Stand and Stand to Sit Detection algorithm to identify sit to stand and stand to sit movements using body acceleration and gyro data recorded with a lower back IMU sensor. The sit to stand and stand to sit detection algorithm is implemented using [`kmat.modules.ssd._pham`](https://github.com/neurogeriatricskiel/KMAT/tree/main/kmat/modules/ssd/_pham.py). This algorithm is based on the research of Pham et al [`1`].
+The example illustrates how to use Pham Sit to Stand and Stand to Sit Detection algorithm to identify sit to stand and stand to sit movements using body acceleration and gyro data recorded with a lower back IMU sensor. The sit to stand and stand to sit detection algorithm is implemented using [`ngmt.modules.ssd._pham`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/ssd/_pham.py). This algorithm is based on the research of Pham et al [`1`].
 
 This algorithm aims to detect postural transitions (e.g., sit-to-stand or stand-to-sit movements) using accelerometer and gyroscope data collected from a lower back inertial measurement unit (IMU) sensor. This algorithm is designed to be robust in detecting sit-to-stand and stand-to-sit transitions using inertial sensor data and provides detailed information about these transitions.
 
@@ -32,15 +32,15 @@ If requested (plot_results set to True), it generates plots of the accelerometer
 [`1`] Pham et al. (2018). Validation of a Lower Back "Wearable"-Based Sit-to-Stand and  Stand-to-Sit Algorithm for Patients With Parkinson's Disease and Older Adults in a Home-Like  Environment. Frontiers in Neurology, 9, 652. https://doi.org/10.3389/fneur.2018.00652
 
 ## Import libraries
-The necessary libraries such as numpy, matplotlib.pyplot, dataset and PhamSittoStandStandtoSitDetection sit to stand and stand to sit detection algortihm are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the `kmat` library and its dependencies if you haven't already.
+The necessary libraries such as numpy, matplotlib.pyplot, dataset and PhamSittoStandStandtoSitDetection sit to stand and stand to sit detection algortihm are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the `ngmt` library and its dependencies if you haven't already.
 
 
 ```python
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from kmat.datasets import keepcontrol
-from kmat.modules.ssd import PhamSittoStandStandtoSitDetection
+from ngmt.datasets import keepcontrol
+from ngmt.modules.ssd import PhamSittoStandStandtoSitDetection
 ```
 
 ## Data Preparation
@@ -169,7 +169,7 @@ plt.show()
     
 
 ## Applying Pham sit to stand and stand to sit detection algorithm
-Now, we are running Pham sit to stand and stand to sit detection algorithm from pham module [`KMAT.kmat.modules.ssd._pham.SittoStandStandtoSitDetection`](https://github.com/neurogeriatricskiel/KMAT/tree/main/kmat/modules/ssd/_pham.py) to detect sit to stand and stand to sit movements.
+Now, we are running Pham sit to stand and stand to sit detection algorithm from pham module [`NGMT.ngmt.modules.ssd._pham.SittoStandStandtoSitDetection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/ssd/_pham.py) to detect sit to stand and stand to sit movements.
 
 The following python code first prepares the input data by combining acceleration and gyro data into a single DataFrame called `input_data`.
 

@@ -1,18 +1,18 @@
 ## Contributing guide
-Thanks for considering contributing to our toolbox! KMAT is an open-source project and we welcome contributions from anyone to further enhance this project
+Thanks for considering contributing to our toolbox! NGMT is an open-source project and we welcome contributions from anyone to further enhance this project
 
 There are lots of ways to contribute, such as:  
 - Use the software, and when you find bugs, tell us about them! We can only fix the bugs we know about.  
 - Tell us about parts of the documentation that you find confusing or unclear.  
-- Tell us about things you wish KMAT could do, or things it can do but you wish they were easier.  
+- Tell us about things you wish NGMT could do, or things it can do but you wish they were easier.  
 - Fix bugs.  
 - Implement new features.  
 - Improve existing tutorials or write new ones.
 
-To report bugs, request new features, or ask about confusing documentation, it’s usually best to open a [new issue](https://github.com/neurogeriatricskiel/KMAT/issues/new/choose) on GitHub. For better reproducibility, be sure to include information about your operating system and KMAT version, and (if applicable) include a reproducible code sample that is as short as possible and ideally uses one of [our example datasets](https://neurogeriatricskiel.github.io/KMAT/datasets/).
+To report bugs, request new features, or ask about confusing documentation, it’s usually best to open a [new issue](https://github.com/neurogeriatricskiel/NGMT/issues/new/choose) on GitHub. For better reproducibility, be sure to include information about your operating system and NGMT version, and (if applicable) include a reproducible code sample that is as short as possible and ideally uses one of [our example datasets](https://neurogeriatricskiel.github.io/NGMT/datasets/).
 
 ### Overview
-In general you'll be working with three different copies of the the KMAT codebase: the official remote copy at [https://github.com/neurogeriatricskiel/KMAT](https://github.com/neurogeriatricskiel/KMAT) (usually called ``upstream``), your remote `fork` of the upstream repository (similar URL, but with your username in place of ``KMAT``, and usually called ``origin``), and the local copy of the codebase on your computer. The typical contribution process is to:
+In general you'll be working with three different copies of the the NGMT codebase: the official remote copy at [https://github.com/neurogeriatricskiel/NGMT](https://github.com/neurogeriatricskiel/NGMT) (usually called ``upstream``), your remote `fork` of the upstream repository (similar URL, but with your username in place of ``NGMT``, and usually called ``origin``), and the local copy of the codebase on your computer. The typical contribution process is to:
 
 1. synchronize your local copy with ``upstream``
 2. make changes to your local copy

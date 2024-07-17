@@ -1,8 +1,8 @@
 import actipy
 import h5py
 import numpy as np
-from kmat.utils.kmat_dataclass import KMATRecording
-from kmat.utils.file_io import get_unit_from_type
+from ngmt.utils.ngmt_dataclass import NGMTRecording
+from ngmt.utils.file_io import get_unit_from_type
 import pandas as pd
 from pathlib import Path
 
@@ -10,7 +10,7 @@ from pathlib import Path
 def import_axivity(file_path: str, tracked_point: str):
     """
     Imports Axivity data from the specified file path and
-    return the data and channel formatted to be used in a KMATRecording object.
+    return the data and channel formatted to be used in a NGMTRecording object.
 
     Args:
         file_path (str or Path): The path to the Axivity data file.
@@ -48,7 +48,7 @@ def import_axivity(file_path: str, tracked_point: str):
     accel_col_names = [col for col in data.columns if col[-1] in ["x", "y", "z"]]
     n_channels = len(accel_col_names)
 
-    # Create the column names for the KMATRecording object
+    # Create the column names for the NGMTRecording object
     col_names = [f"{tracked_point}_{s}_{x}" for s in ["ACCEL"] for x in ["x", "y", "z"]]
 
     # Create the channel dictionary following the BIDS naming conventions

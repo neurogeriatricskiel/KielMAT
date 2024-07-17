@@ -17,7 +17,7 @@ By the end of this tutorial, you will be able to:
 
 This example serves as a reference on how to use the physical activity monitoring algorithm. This example can be cited by referencing the package.
 
-The example illustrates how the physical activity monitoring algorithm determines the intensity level of sedentary, light, moderate, and vigorous physical activities using body acceleration recorded with a triaxial accelerometer worn on the wrist. The physical activity monitoring algorithm is implemented in the main module [`kmat.modules.pam._pam`](https://github.com/neurogeriatricskiel/KMAT/tree/main/kmat/modules/pam/_pam.py).
+The example illustrates how the physical activity monitoring algorithm determines the intensity level of sedentary, light, moderate, and vigorous physical activities using body acceleration recorded with a triaxial accelerometer worn on the wrist. The physical activity monitoring algorithm is implemented in the main module [`ngmt.modules.pam._pam`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/pam/_pam.py).
 
 The algorithm determines the intensity level of physical activities based on the following steps:
 
@@ -36,7 +36,7 @@ The algorithm determines the intensity level of physical activities based on the
 
 
 ## Import Libraries
-The necessary libraries such as pandas, physical activity monitoring and fairpark data loader are imported. Make sure that you have all the required libraries and modules installed before running this code. You may also need to install the 'kmat' library and its dependencies if you haven't already.
+The necessary libraries such as pandas, physical activity monitoring and fairpark data loader are imported. Make sure that you have all the required libraries and modules installed before running this code. You may also need to install the 'ngmt' library and its dependencies if you haven't already.
 
 
 
@@ -45,9 +45,9 @@ import pandas as pd
 pd.options.mode.chained_assignment = None
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from kmat.modules.pam import PhysicalActivityMonitoring
-from kmat.datasets import fairpark
-from kmat.config import cfg_colors
+from ngmt.modules.pam import PhysicalActivityMonitoring
+from ngmt.datasets import fairpark
+from ngmt.config import cfg_colors
 ```
 
 ## Data Preparation
@@ -163,7 +163,7 @@ plt.show()
 ![](03_tutorial_physical_activity_monitoring_files/03_tutorial_physical_activity_monitoring_1.png)
 
 ## Apply Physical Activity Monitoring Algorithm
-Now, we are running the physical activity monitoring algorithm from the main module [`kmat.modules.pam._pam`](https://github.com/neurogeriatricskiel/KMAT/tree/main/kmat/modules/pam/_pam.py). The inputs of the algorithm are as follows:
+Now, we are running the physical activity monitoring algorithm from the main module [`ngmt.modules.pam._pam`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/pam/_pam.py). The inputs of the algorithm are as follows:
 
 - **Input Data:** `data` Includes data with a time index along with accelerometer data (N, 3) for x, y, and z axes in pandas Dataframe format.
 - **Acceleration Unit:** `acceleration_unit` is the unit of the acceleration data.

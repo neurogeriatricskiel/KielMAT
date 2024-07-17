@@ -5,8 +5,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.io
 import scipy.signal
-from kmat.utils import preprocessing
-from kmat.config import cfg_colors
+from ngmt.utils import preprocessing
+from ngmt.config import cfg_colors
 
 
 class ParaschivIonescuInitialContactDetection:

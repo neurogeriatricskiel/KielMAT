@@ -5,7 +5,7 @@
 ## Learning objectives
 By the end of this tutorial:
 - you can load data from a recording that belongs to one of the available datasets,
-- you know which attributes are available for an instance of the `KMATRecording`
+- you know which attributes are available for an instance of the `NGMTRecording`
 - you can do some basic selecting and slicing of data
 
 ## Imports
@@ -18,12 +18,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from pathlib import Path
-from kmat.datasets import mobilised
+from ngmt.datasets import mobilised
 ```
 
 ## Import data
 
-Let us consider a single recording, namely of the randomly selected subject `sub-3011` from the `Mobilise-D` dataset, and load the data. For that we use the `load_recording()` function that is available in the `kmat.datasets.mobilised` module.
+Let us consider a single recording, namely of the randomly selected subject `sub-3011` from the `Mobilise-D` dataset, and load the data. For that we use the `load_recording()` function that is available in the `ngmt.datasets.mobilised` module.
 
 
 ```python
@@ -441,7 +441,7 @@ print(recording.data)  # print(recording.__dict__["data"])
     [1074285 rows x 27 columns]}
     
 
-We see that that `data` attribute is in the form of a Python `dict`, where the keys correspond to the tracking systems that we have requested when calling the `load_recording()` function. KMAT is setup so that the keys of the `channels` attribute match with these keys, so that the channel descriptions are availbale per tracking system.
+We see that that `data` attribute is in the form of a Python `dict`, where the keys correspond to the tracking systems that we have requested when calling the `load_recording()` function. NGMT is setup so that the keys of the `channels` attribute match with these keys, so that the channel descriptions are availbale per tracking system.
 
 
 ```python

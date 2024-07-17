@@ -1,14 +1,14 @@
-[![codecov](https://codecov.io/gh/neurogeriatricskiel/KMAT/graph/badge.svg?token=L578RHZ699)](https://codecov.io/gh/neurogeriatricskiel/KMAT)
-[![build docs](https://github.com/neurogeriatricskiel/KMAT/actions/workflows/mkdocs.yml/badge.svg)](https://github.com/neurogeriatricskiel/KMAT/actions/workflows/mkdocs.yml)
+[![codecov](https://codecov.io/gh/neurogeriatricskiel/NGMT/graph/badge.svg?token=L578RHZ699)](https://codecov.io/gh/neurogeriatricskiel/NGMT)
+[![build docs](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/mkdocs.yml/badge.svg)](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/mkdocs.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-![GitHub issues](https://img.shields.io/github/issues-raw/neurogeriatricskiel/KMAT)
-![GitHub contributors](https://img.shields.io/github/contributors/neurogeriatricskiel/KMAT)
-[![lint-and-test](https://github.com/neurogeriatricskiel/KMAT/actions/workflows/test-and-lint.yml/badge.svg)](https://github.com/neurogeriatricskiel/KMAT/actions/workflows/test-and-lint.yml)
+![GitHub issues](https://img.shields.io/github/issues-raw/neurogeriatricskiel/NGMT)
+![GitHub contributors](https://img.shields.io/github/contributors/neurogeriatricskiel/NGMT)
+[![lint-and-test](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml/badge.svg)](https://github.com/neurogeriatricskiel/NGMT/actions/workflows/test-and-lint.yml)
 
-# KMAT
+# NGMT
 ![NeurogeriatricsLogo](ng_logo.png)
 
-Welcome to the Kiel Motion Analysis Toolbox (KMAT). We are a Python based toolbox for processing motion data.
+Welcome to the NeuroGeriatricsMotionToolbox (NGMT). We are a Python based toolbox for processing motion data.
 
 > The toolbox is currently under development and is not yet ready for use.
 
@@ -23,20 +23,20 @@ The idea is that various motion data can be loaded into our dedicated dataclasse
 ## Data classes
 ### Data classes: conceptual framework
 
-Motion data is recorded with many different systems and modalities, each with their own proprietary data format. KMAT deals with this by organizing both data and metadata in a [BIDS-like format](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html). The BIDS format suggests that [motion recording data](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#motion-recording-data) from a single tracking system is organized in a single `*_tracksys-<label>_motion.tsv` file. 
+Motion data is recorded with many different systems and modalities, each with their own proprietary data format. NGMT deals with this by organizing both data and metadata in a [BIDS-like format](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html). The BIDS format suggests that [motion recording data](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#motion-recording-data) from a single tracking system is organized in a single `*_tracksys-<label>_motion.tsv` file. 
 
 > [!NOTE]  
 > A tracking system is defined as a group of motion channels that share hardware properties (the recording device) and software properties (the recording duration and number of samples).
 
-In KMAT, data from a single tracking system is therefore loaded into a single `pandas.DataFrame`. The column headers of this `pandas.DataFrame` refer to the channels, and the corresponding [channels information](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#channels-description-_channelstsv) is likewise available as a `pandas.DataFrame`.
+In NGMT, data from a single tracking system is therefore loaded into a single `pandas.DataFrame`. The column headers of this `pandas.DataFrame` refer to the channels, and the corresponding [channels information](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#channels-description-_channelstsv) is likewise available as a `pandas.DataFrame`.
 
 Similarly, if any [events](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/task-events.html) are available for the given recording, these are loaded into a single `pandas.DataFrame` for each tracking system as well.
 
 ### Data classes: in practice
-These concepts are translated into a KMAT dataclass for each recording: `KMATRecording`:
+These concepts are translated into a NGMT dataclass for each recording: `NGMTRecording`:
 ```mermaid
 classDiagram
-   class KMATRecording {
+   class NGMTRecording {
       data: dict[str, pd.DataFrame]
       channels: dict[str, pd.DataFrame]
       info: None | dict[str, Any] = None
@@ -45,9 +45,9 @@ classDiagram
    }
 
 ```
- A recording consists of the motion data from one or more tracking systems, where each tracking system may consist motion data from one or more tracked points. Therefore, the motion data (`KMATRecording.data`) are organized as a dictionary where the dictionary keys refer to the tracking systems, and the corresponding values the actual (raw) data as a `pandas.DataFrame`. The description of data channels (`KMATRecording.channels`) is availabe as a dictionary with the same keys, and the values contain the channels description.
+ A recording consists of the motion data from one or more tracking systems, where each tracking system may consist motion data from one or more tracked points. Therefore, the motion data (`NGMTRecording.data`) are organized as a dictionary where the dictionary keys refer to the tracking systems, and the corresponding values the actual (raw) data as a `pandas.DataFrame`. The description of data channels (`NGMTRecording.channels`) is availabe as a dictionary with the same keys, and the values contain the channels description.
 ```python
->>> from kmat.datasets import mobilised
+>>> from ngmt.datasets import mobilised
 >>> file_name = "/mnt/neurogeriatrics_data/Mobilise-D/rawdata/sub-3011/Free-living/data.mat"
 >>> recording = mobilised.load_recording(file_name, tracking_systems=["SU", "SU_INDIP"], tracked_points=["LowerBack"])
 >>> recording.data
@@ -90,15 +90,15 @@ classDiagram
 ```
 
 > [!NOTE]  
-> In the examples you find a [tutorial (the basics of KMAT)](https://neurogeriatricskiel.github.io/KMAT/00_tutorial_basics/) that explains the basics of the dataclass and how to work with them.
+> In the examples you find a [tutorial (the basics of NGMT)](https://neurogeriatricskiel.github.io/NGMT/00_tutorial_basics/) that explains the basics of the dataclass and how to work with them.
 
 ## Documentation
-The full documentation can be found [here](https://neurogeriatricskiel.github.io/KMAT/).
+The full documentation can be found [here](https://neurogeriatricskiel.github.io/NGMT/).
 
 ## Installation
-The toolbox has been released on [pypi](https://pypi.org/project/kmat/) and can be installed via pip:
+The toolbox has been released on [pypi](https://pypi.org/project/ngmt/) and can be installed via pip:
 ```bash
-pip install kmat
+pip install ngmt
 ```
 
 ## Authors

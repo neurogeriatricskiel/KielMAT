@@ -1,12 +1,12 @@
 # See: https://git-scm.com/docs/gitignore
 __pycache__/
 projects/
-/kmat.egg-info
+/ngmt.egg-info
 
 my_messy_code/mytestconde.py
 
 /my_messy_code/*
-kmat/examples_gait_sqeuence.py
+ngmt/examples_gait_sqeuence.py
 
 examples/data
 
