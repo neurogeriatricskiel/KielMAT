@@ -110,13 +110,16 @@ classDiagram
 
     In the examples you find a [tutorial (the basics of NGMT)](https://neurogeriatricskiel.github.io/NGMT/examples/00_tutorial_basics/) that explains the basics of the dataclass and how to work with them.
 
-
 ## Installation
 The toolbox has been released on [pypi](https://pypi.org/project/ngmt/) and can be installed via pip:
 ```bash
 pip install ngmt
 ```
 It requires Python 3.10 or higher.
+
+## Contributing
+We welcome contributions to NGMT! Please refer to our [contributing guide](https://neurogeriatricskiel.github.io/NGMT/contributing) for more details.
+
 
 ## Authors
 
