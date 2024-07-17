@@ -10,7 +10,7 @@ from typing import Union
 # Importher for Axivity
 def import_axivity(file_path: str, tracked_point: str):
     """
-    Imports Axivity data from the specified file path and 
+    Imports Axivity data from the specified file path and
     return the data and channel formatted to be used in a NGMTRecording object.
 
     Args:
@@ -117,7 +117,7 @@ def import_apdm_mobilitylab(
             "type": [],
             "tracked_point": [],
             "units": [],
-            "sampling_frequency": []
+            "sampling_frequency": [],
         }
         data_dict = {}
 
@@ -213,3 +213,4 @@ def import_apdm_mobilitylab(
     channels = pd.DataFrame(channels_dict)
 
     return data, channels
+
