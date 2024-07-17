@@ -1,4 +1,4 @@
-site_name: NeuroGeriatricsMotionToolbox
+site_name: Kiel Motion Analysis Toolbox
 
 extra_css:
   - 'style.css'
@@ -10,11 +10,11 @@ plugins:
       default_handler: python
       handlers:
         python:
-          paths: [ngmt]
+          paths: [kmat]
 
 theme:
   name: material
-  logo: ngmt_logo_transBG.png
+  logo: kmat_logo_transBG.png
   language: en
   font:
     text: "Roboto"
@@ -40,8 +40,8 @@ nav:
   - Home: index.md
   - Examples: 
     - examples/index.md
-    - Tutorial basics: examples/basic_00_intro_ngmt.md
-    - Load data into NGMT: examples/basic_01_load_Data.md
+    - Tutorial basics: examples/basic_00_intro_kmat.md
+    - Load data into KMAT: examples/basic_01_load_Data.md
     - Events in dataclass: examples/basic_02_events.md
     - Gait Sequence Detection: examples/modules_01_gsd.md
     - Initial Contact Detection: examples/modules_02_icd.md

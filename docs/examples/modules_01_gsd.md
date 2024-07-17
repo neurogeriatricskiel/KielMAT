@@ -15,7 +15,7 @@ By the end of this tutorial:
 
 This example can be referenced by citing the package.
 
-The example illustrates how the Paraschiv-Ionescu gait sequence detection algorithm is used to detect gait sequences using body acceleration recorded with a triaxial accelerometer worn or fixed on the lower back. The gait sequence detection algorithm is implemented using [`ngmt.modules.gsd._paraschiv`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/gsd/_paraschiv.py). This algorithm is based on the research of Paraschiv-Ionescu et al ['1'-'2'].
+The example illustrates how the Paraschiv-Ionescu gait sequence detection algorithm is used to detect gait sequences using body acceleration recorded with a triaxial accelerometer worn or fixed on the lower back. The gait sequence detection algorithm is implemented using [`kmat.modules.gsd._paraschiv`](https://github.com/neurogeriatricskiel/KMAT/tree/main/kmat/modules/gsd/_paraschiv.py). This algorithm is based on the research of Paraschiv-Ionescu et al ['1'-'2'].
 
 The algorithm detects gait sequences based on identified steps. It starts by loading the accelerometer data, which includes three columns corresponding to the acceleration signals across the x, y, and z axes, along with the sampling frequency of the data. To simplify the analysis, the norm of acceleration across the x, y, and z axes is computed. Next, the signal is resampled at a 40 Hz sampling frequency using interpolation. Smoothing is then applied through a Savitzky-Golay filter and a Finite Impulse Response (FIR) low-pass filter to remove noise and drifts from the signal. The continuous wavelet transform is applied to capture gait-related features, followed by additional smoothing using successive Gaussian-weighted filters. The processed data is then analyzed to detect gait sequences.
 
@@ -30,7 +30,7 @@ Next, the algorithm takes the last steps to detect walking bouts in the signal. 
 
 
 ## Import libraries
-The necessary libraries such as numpy, matplotlib.pyplot, dataset, and Paraschiv-Ionescu gait sequence detection algorithms are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the 'ngmt' library and its dependencies if you haven't already.
+The necessary libraries such as numpy, matplotlib.pyplot, dataset, and Paraschiv-Ionescu gait sequence detection algorithms are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the 'kmat' library and its dependencies if you haven't already.
 
 
 ```python
@@ -39,9 +39,9 @@ import matplotlib.pyplot as plt
 import os
 from pathlib import Path
 
-from ngmt.datasets import mobilised
-from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
-from ngmt.config import cfg_colors
+from kmat.datasets import mobilised
+from kmat.modules.gsd import ParaschivIonescuGaitSequenceDetection
+from kmat.config import cfg_colors
 ```
 
 ## Data Preparation
@@ -185,7 +185,7 @@ plt.show()
 
 
 ## Applying Paraschiv-Ionescu Gait Sequence Detection Algorithm
-Now, we are running Paraschiv-Ionescu gait sequence detection algorithm from gsd module [`NGMT.ngmt.modules.gsd._paraschiv.ParaschivIonescuGaitSequenceDetection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/gsd/_paraschiv.py) to detect gait sequences.
+Now, we are running Paraschiv-Ionescu gait sequence detection algorithm from gsd module [`KMAT.kmat.modules.gsd._paraschiv.ParaschivIonescuGaitSequenceDetection`](https://github.com/neurogeriatricskiel/KMAT/tree/main/kmat/modules/gsd/_paraschiv.py) to detect gait sequences.
 
 In order to apply gait sequence detection algorithm, an instance of the ParaschivIonescuGaitSequenceDetection class is created using the constructor, `ParaschivIonescuGaitSequenceDetection()`. The `gsd` variable holds the instance, allowing us to access its methods. The inputs of the algorithm are as follows:
 

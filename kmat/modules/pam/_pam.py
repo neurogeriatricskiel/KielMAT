@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from ngmt.config import cfg_colors
-from ngmt.utils import preprocessing
+from kmat.config import cfg_colors
+from kmat.utils import preprocessing
 
 
 class PhysicalActivityMonitoring:

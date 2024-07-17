@@ -1,6 +1,6 @@
 # Introduction and explanation regarding the test suite
 """
-This code is a test suite for various signal processing and analysis functions which exist in the NGMT toolbox. 
+This code is a test suite for various signal processing and analysis functions which exist in the KMAT toolbox. 
 It employs pytest, a Python testing framework, to verify the correctness of these functions. 
 Here's a brief explanation of the code structure:
 
@@ -24,10 +24,10 @@ By running these tests, the reliability and correctness of the modules will be e
 import pytest
 import numpy as np
 import pandas as pd
-from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
-from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
-from ngmt.modules.pam import PhysicalActivityMonitoring
-from ngmt.modules.ssd import PhamSittoStandStandtoSitDetection
+from kmat.modules.gsd import ParaschivIonescuGaitSequenceDetection
+from kmat.modules.icd import ParaschivIonescuInitialContactDetection
+from kmat.modules.pam import PhysicalActivityMonitoring
+from kmat.modules.ssd import PhamSittoStandStandtoSitDetection
 
 ## Module test
 # Test for gait sequence detection algorithm

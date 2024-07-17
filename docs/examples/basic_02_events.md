@@ -12,12 +12,12 @@ By the end of this tutorial:
 - Export [events to BIDS format](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/task-events.html).
 
 ## Import libraries
-The necessary libraries such as numpy, matplotlib.pyplot, dataset (mobilised), Paraschiv-Ionescu gait sequence detection, and Paraschiv-Ionescu initial contact detection algorithms are imported from their corresponding modules. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the 'ngmt' library and its dependencies if you haven't already.
+The necessary libraries such as numpy, matplotlib.pyplot, dataset (mobilised), Paraschiv-Ionescu gait sequence detection, and Paraschiv-Ionescu initial contact detection algorithms are imported from their corresponding modules. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the 'kmat' library and its dependencies if you haven't already.
 
 
 ```python
-from ngmt.datasets import mobilised
-from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
+from kmat.datasets import mobilised
+from kmat.modules.gsd import ParaschivIonescuGaitSequenceDetection
 ```
 
 First load the data and put in the desired dataclasses.
@@ -105,7 +105,7 @@ print(f"events: {recording.events}")
 ### Store events to events.tsv file following the BIDS convention
 
 Add some information about the recording first which is necessary for the BIDS file name convention.
-NGMT has some implemented check on the information to make sure that the file name is in the correct format.
+KMAT has some implemented check on the information to make sure that the file name is in the correct format.
 
 
 ```python

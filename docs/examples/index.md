@@ -1,14 +1,14 @@
 # Overview
 
-This is a collection of examples to explain various parts of the NGMT toolbox.
+This is a collection of examples to explain various parts of the KMAT toolbox.
 
-## Basic NGMT usage
+## Basic KMAT usage
 
-### [Example 0: Introduction to the NGMT toolbox](basic_00_intro_ngmt.md)
-### [Example 1: Load data into NGMT](basic_01_load_Data.md)
+### [Example 0: Introduction to the KMAT toolbox](basic_00_intro_kmat.md)
+### [Example 1: Load data into KMAT](basic_01_load_Data.md)
 ### [Example 2: Events in dataclass](basic_02_events.md)
 
-## Modules of NGMT
+## Modules of KMAT
 
 ### [Example 1: Gait Sequence Detection](modules_01_gsd.md)
 ### [Example 2: Initial Contact Detection](modules_02_icd.md)

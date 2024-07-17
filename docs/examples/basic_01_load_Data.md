@@ -1,13 +1,13 @@
-# Tutorial: Load data into an `NGMTRecording` object
+# Tutorial: Load data into an `KMATRecording` object
 
 **Author:** Julius Welzel
 **Last update:** Fri 22 Mar 2024
 
 ## Learning objectives
 By the end of this tutorial:
-- you can load data and channel information into an `NGMTRecording` object
-- you can add Recording specific information to the `NGMTRecording` object
-- you are educated about the relationship between a `NGMTRecording` object and the [BIDS standard](https://bids-specification.readthedocs.io/en/stable/).
+- you can load data and channel information into an `KMATRecording` object
+- you can add Recording specific information to the `KMATRecording` object
+- you are educated about the relationship between a `KMATRecording` object and the [BIDS standard](https://bids-specification.readthedocs.io/en/stable/).
 
 ## Imports
 
@@ -19,8 +19,8 @@ from pathlib import Path
 import pandas as pd
 import os
 
-from ngmt.utils.ngmt_dataclass import NGMTRecording # Import the NGMTRecording class
-from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection # Import the Gait Sequence Detection module
+from kmat.utils.kmat_dataclass import KMATRecording # Import the KMATRecording class
+from kmat.modules.gsd import ParaschivIonescuGaitSequenceDetection # Import the Gait Sequence Detection module
 ```
 
 ## Read the raw data and metadata into python
@@ -29,7 +29,7 @@ Let us consider a single recording, a accelerometer located at the lower back.
 The sensor only provided the raw data in a csv file without any metadata. We only know the metadata from the sensor manual and from setting up the sensor.
 Depending on the sensor, the metadata might be stored in a separate file or in the same file as the raw data as a header.
 
-To import data from your own devices, check if NGMT already has a reader for your device. If not, you can write your own reader and contribute it to the NGMT project.
+To import data from your own devices, check if KMAT already has a reader for your device. If not, you can write your own reader and contribute it to the KMAT project.
 
 
 ```python
@@ -62,7 +62,7 @@ print(f"Minutes of data: {n_minutes:.2f}")
     Minutes of data: 18.33
     
 
-Now we can load the data into an `NGMTRecording` object.
+Now we can load the data into an `KMATRecording` object.
 For this we have to construct the channel information oursleves. We know that the data is sampled at 100 Hz and we have three channels: `x`, `y`, and `z`.
 For more information in the channel information, see the [BIDS standard](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#channels-description-_channelstsv).
 
@@ -93,7 +93,7 @@ channels_dict = {
     "sampling_frequency": [fs] * n_channels,
 }
 
-recording =  NGMTRecording(
+recording =  KMATRecording(
     data={"imu": acc_data}, channels={"lb_imu": pd.DataFrame(channels_dict)}
 )
 ```
@@ -189,4 +189,4 @@ print(f"Longest gait sequence: {max_dur:.2f} seconds starting at about {max_dur_
     Longest gait sequence: 327.35 seconds starting at about 8.26 minutes into the recording.
     
 
-That's it for this tutorial. You have learned how to load data and channel information into an `NGMTRecording` object and how to add Recording specific information to the `NGMTRecording` object. 
+That's it for this tutorial. You have learned how to load data and channel information into an `KMATRecording` object and how to add Recording specific information to the `KMATRecording` object. 

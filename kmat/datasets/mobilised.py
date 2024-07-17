@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 import pathlib
-from ngmt.utils import matlab_loader
-from ngmt.utils.ngmt_dataclass import NGMTRecording
+from kmat.utils import matlab_loader
+from kmat.utils.kmat_dataclass import KMATRecording
 
 
 # See: https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#restricted-keyword-list-for-channel-type
@@ -47,7 +47,7 @@ def load_recording(
             If a dictionary is provided, it should map each tracking system to either a single tracked point or a list of tracked points.
 
     Returns:
-        NGMTRecording : An instance of the NGMTRecording dataclass containing the loaded data and channels.
+        KMATRecording : An instance of the KMATRecording dataclass containing the loaded data and channels.
     """
     # Put tracking systems into a list
     if isinstance(tracking_systems, str):
@@ -133,4 +133,4 @@ def load_recording(
 
         channel_data[tracksys] = pd.DataFrame(channel_data[tracksys])
 
-    return NGMTRecording(data=recording_data, channels=channel_data)
+    return KMATRecording(data=recording_data, channels=channel_data)
