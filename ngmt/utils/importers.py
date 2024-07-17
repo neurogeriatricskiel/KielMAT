@@ -7,7 +7,7 @@ from ngmt.utils.file_io import get_unit_from_type
 from pathlib import Path
 from typing import Union
 
-# Importher for Axivity
+# Importer for Axivity
 def import_axivity(file_path: str, tracked_point: str):
     """
     Imports Axivity data from the specified file path and
@@ -65,7 +65,7 @@ def import_axivity(file_path: str, tracked_point: str):
     return data, channels
 
 
-# Importher for APDM Mobility Lab for different versions
+# Importer for APDM Mobility Lab for different versions
 def import_apdm_mobilitylab(
     file_name: str | Path, 
     tracked_points: str | list[str]
