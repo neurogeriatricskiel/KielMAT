@@ -8,7 +8,7 @@
 # KielMAT
 ![NeurogeriatricsLogo](ng_logo.png)
 
-Welcome to the NeuroGeriatricsMotionToolbox (KielMAT). We are a Python based toolbox for processing motion data.
+Welcome to the KielMotionAnalysisToolbox (KielMAT). We are a Python based toolbox for processing motion data.
 
 > The toolbox is currently under development and is not yet ready for use.
 
