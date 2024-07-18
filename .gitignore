@@ -2,6 +2,7 @@
 __pycache__/
 projects/
 /ngmt.egg-info
+ngmt/datasets/_*
 
 my_messy_code/mytestconde.py
 
