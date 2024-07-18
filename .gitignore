@@ -2,6 +2,8 @@
 __pycache__/
 projects/
 /kielmat.egg-info
+# from before the package was renamed
+/ngmt.egg-info 
 
 my_messy_code/mytestconde.py
 
@@ -20,3 +22,7 @@ examples/data
 # local changelog generator
 create_changelog.py
 changelog.yml
+
+# example data
+kiemat/datasets/_*
+ngmt/datasets/_*
