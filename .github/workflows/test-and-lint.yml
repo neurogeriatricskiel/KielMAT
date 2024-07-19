@@ -2,13 +2,15 @@ name: lint-and-test
 
 on:
   # Trigger the workflow on push or pull request,
-  # but only for the main branch
+  # but only for the main branch and development-main
   push:
     branches:
       - main
+      - development-main
   pull_request:
     branches:
       - main
+      - development-main
 
 jobs:
   test:
