@@ -159,7 +159,9 @@ def load_recording(
             for tracked_point in tracked_points[tracksys]
         ):
             logging.warning(f"Invalid tracked points for tracking system {tracksys}.")
-            logging.warning(f"Valid tracked points are: {VALID_TRACKED_POINTS[tracksys]}")
+            logging.warning(
+                f"Valid tracked points are: {VALID_TRACKED_POINTS[tracksys]}"
+            )
             invalid_points = [
                 tracked_point
                 for tracked_point in tracked_points[tracksys]
@@ -180,13 +182,13 @@ def load_recording(
         # check if file exists, if not log message and return
         if not file_name:
             logging.warning(
-            f"No files found for ID {id}, task {task}, and tracking system {tracksys}."
+                f"No files found for ID {id}, task {task}, and tracking system {tracksys}."
             )
             return
         # check if multiple files are found, if so log message and return
         if len(file_name) > 1:
             logging.warning(
-            f"Multiple files found for ID {id}, task {task}, and tracking system {tracksys}."
+                f"Multiple files found for ID {id}, task {task}, and tracking system {tracksys}."
             )
             return
 
