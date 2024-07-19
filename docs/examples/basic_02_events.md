@@ -24,19 +24,11 @@ First load the data and put in the desired dataclasses.
 
 
 ```python
-# The 'file_path' variable holds the absolute path to the data file
-file_path = (
-    r"..\examples\data\exMobiliseFreeLiving.mat"
-)
+# load the data from mobilised dataset
+recording = mobilised.load_recording()
 
-# In this example, we use "SU" as tracking_system and "LowerBack" as tracked points.
-tracking_sys = "SU"
-tracked_points = {tracking_sys: ["LowerBack"]}
-
-# The 'mobilised.load_recording' function is used to load the data from the specified file_path
-recording = mobilised.load_recording(
-    file_name=file_path, tracking_systems=[tracking_sys], tracked_points=tracked_points
-)
+# specify which tracking system you want to use
+tracking_sys = 'SU'
 ```
 
 
@@ -74,7 +66,7 @@ gsd = gsd.detect(
 )
 ```
 
-    72 gait sequence(s) detected.
+    36 gait sequence(s) detected.
     
 
 
@@ -85,21 +77,43 @@ recording.add_events(tracking_system=tracking_sys, new_events=gait_sequence_even
 print(f"events: {recording.events}")
 ```
 
-    events: {'SU':         
-        onset       duration    event_type         tracking_system
-    0      17.450     6.525     gait sequence      None
-    1      96.500     5.350     gait sequence      None
-    2     145.150     7.500     gait sequence      None
-    3     451.425    21.375     gait sequence      None
-    4     500.700     6.775     gait sequence      None
-    ..        ...       ...               ...       ...
-    67   9965.875    10.700     gait sequence      None
-    68  10035.875    11.700     gait sequence      None
-    69  10078.075    18.575     gait sequence      None
-    70  10251.475     8.925     gait sequence      None
-    71  10561.200    11.325     gait sequence      None
-    
-    [72 rows x 4 columns]}
+    events: {'SU':        onset  duration     event_type tracking_system
+    0     22.650    17.075  gait sequence            None
+    1     49.150     7.475  gait sequence            None
+    2     97.025   120.400  gait sequence            None
+    3    229.550     9.225  gait sequence            None
+    4    247.900    29.075  gait sequence            None
+    5    296.225   189.600  gait sequence            None
+    6    490.300    25.575  gait sequence            None
+    7    562.925    15.075  gait sequence            None
+    8    581.900    18.875  gait sequence            None
+    9    607.050    56.600  gait sequence            None
+    10   667.325   101.900  gait sequence            None
+    11   784.500    42.775  gait sequence            None
+    12   835.675   174.675  gait sequence            None
+    13  1034.900    42.050  gait sequence            None
+    14  1103.075    39.475  gait sequence            None
+    15  1153.750    13.125  gait sequence            None
+    16  1184.900     5.775  gait sequence            None
+    17  1219.175    21.225  gait sequence            None
+    18  1244.450    40.675  gait sequence            None
+    19  1480.025     5.250  gait sequence            None
+    20  1500.625    47.275  gait sequence            None
+    21  1582.600    13.375  gait sequence            None
+    22  1605.600    10.700  gait sequence            None
+    23  1624.700    36.275  gait sequence            None
+    24  1674.075     6.700  gait sequence            None
+    25  5301.850     9.525  gait sequence            None
+    26  5412.575    10.500  gait sequence            None
+    27  5481.150    12.550  gait sequence            None
+    28  5498.500     6.500  gait sequence            None
+    29  5528.475    23.200  gait sequence            None
+    30  5593.175    39.650  gait sequence            None
+    31  5676.900    13.200  gait sequence            None
+    32  5723.425    32.125  gait sequence            None
+    33  5770.050    13.575  gait sequence            None
+    34  5796.100     6.700  gait sequence            None
+    35  6762.300   125.400  gait sequence            None}
     
 
 ### Store events to events.tsv file following the BIDS convention
@@ -125,5 +139,5 @@ Now as we have the events in the dataclass, we can export them to a [BIDS compat
 
 
 ```python
-recording.export_events(file_path = r'../examples/data', file_name='gait_sequence.csv', bids_compatible=True)
+recording.export_events(file_path = r'../examples/data', file_name='gait_sequence.csv')
 ```

@@ -35,17 +35,21 @@ import matplotlib.pyplot as plt
 import os
 from pathlib import Path
 
-from kielmat.datasets import mobilised
+from kielmat.datasets import keepcontrol
 from kielmat.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from kielmat.modules.icd import ParaschivIonescuInitialContactDetection
 from kielmat.config import cfg_colors
 ```
 
+    c:\Users\User\Desktop\kiel\NGMT\.venv\lib\site-packages\tqdm\auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+      from .autonotebook import tqdm as notebook_tqdm
+    
+
 ## Data Preparation
 
-To implement the Paraschiv-Ionescu initial contact algorithm, we load example data from a congestive heart failure (CHF) cohort, which is publicly available on the Zenodo repository [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7547125.svg)](https://doi.org/10.5281/zenodo.7547125). 
+To implement the Paraschiv-Ionescu initial contact algorithm, we load example data from a KeepControl, which is publicly available on [OpenNeuro](https://openneuro.org/datasets/ds005258). 
 
-The participant was assessed for 2.5 hours in the real-world while doing different daily life activities and also was asked to perform specific tasks such as outdoor walking, walking up and down a slope and stairs and moving from one room to another [`1`].
+The participant was walking at a slow speed for a distance of 20m.
 
 #### Refertences
 
@@ -54,27 +58,21 @@ The participant was assessed for 2.5 hours in the real-world while doing differe
 
 
 ```python
-# The 'file_path' variable holds the absolute path to the data file
-file_path = Path(os.getcwd()).parent.joinpath("examples","data","exMobiliseFreeLiving.mat")
+recording = keepcontrol.load_recording(tracking_systems="imu", tracked_points="pelvis")
+```
 
-# In this example, we use "SU" as tracking_system and "LowerBack" as tracked points.
-tracking_sys = "SU"
-tracked_points = {tracking_sys: ["LowerBack"]}
+    Warning: The value of the key 'Subject' should be lower case. Converted to lower case.
+    Warning: The value of the key 'Task' should be lower case. Converted to lower case.
+    
 
-# The 'mobilised.load_recording' function is used to load the data from the specified file_path
-recording = mobilised.load_recording(
-    file_name=file_path, tracking_systems=[tracking_sys], tracked_points=tracked_points
-)
 
-# Load lower back acceleration data
-acceleration_data = recording.data[tracking_sys][
-    ["LowerBack_ACCEL_x", "LowerBack_ACCEL_y", "LowerBack_ACCEL_z"]
-]
+```python
+# find the channel with acceleration data
+chns_oi = [ch for ch in recording.channels["imu"]["name"] if "accel" in ch]
+acceleration_data = recording.data["imu"][chns_oi]
 
-# Get the corresponding sampling frequency directly from the recording
-sampling_frequency = recording.channels[tracking_sys][
-    recording.channels[tracking_sys]["name"] == "LowerBack_ACCEL_x"
-]["sampling_frequency"].values[0]
+# set the sampling frequency
+sampling_frequency = float(recording.channels["imu"]["sampling_frequency"].unique()[0])
 ```
 
 ## Visualisation of the Data
@@ -96,7 +94,7 @@ colors = cfg_colors["raw"]
 for i in range(3):
     plt.plot(
         time_in_minute,
-        acceleration_data[f"LowerBack_ACCEL_{chr(120 + i)}"],
+        acceleration_data.iloc[:,i],
         color=colors[i],
         label=f"Acc {'xyz'[i]}",
     )
@@ -125,7 +123,7 @@ plt.show()
 
 
     
-![png](modules_02_icd_files/modules_02_icd_7_0.png)
+![png](modules_02_icd_files/modules_02_icd_8_0.png)
     
 
 
@@ -144,7 +142,7 @@ plt.figure(figsize=(22, 14))
 for i in range(3):
     plt.plot(
         time_seconds,
-        acceleration_data[f"LowerBack_ACCEL_{chr(120 + i)}"],
+        acceleration_data.iloc[:,i],
         color=colors[i],
         label=f"Acc {'xyz'[i]}",
     )
@@ -177,7 +175,7 @@ plt.show()
 
 
     
-![png](modules_02_icd_files/modules_02_icd_9_0.png)
+![png](modules_02_icd_files/modules_02_icd_10_0.png)
     
 
 
@@ -213,28 +211,30 @@ icd = icd.detect(
     data=acceleration_data,
     gait_sequences=gait_sequences,
     sampling_freq_Hz=sampling_frequency,
-    v_acc_col_name="LowerBack_ACCEL_y"
+    v_acc_col_name="pelvis_accel_x"
 )
 
 # Print initial contacts information
 print(icd.initial_contacts_)
 ```
 
-    72 gait sequence(s) detected.
-              onset       event_type  duration tracking_systems
-    0        17.900  initial contact         0             None
-    1        19.075  initial contact         0             None
-    2        20.175  initial contact         0             None
-    3        20.625  initial contact         0             None
-    4        21.575  initial contact         0             None
-    ...         ...              ...       ...              ...
-    1128  10567.250  initial contact         0             None
-    1129  10568.575  initial contact         0             None
-    1130  10569.475  initial contact         0             None
-    1131  10570.350  initial contact         0             None
-    1132  10572.075  initial contact         0             None
-    
-    [1133 rows x 4 columns]
+    1 gait sequence(s) detected.
+        onset       event_type  duration tracking_systems
+    0   0.625  initial contact         0             None
+    1   1.200  initial contact         0             None
+    2   1.675  initial contact         0             None
+    3   2.450  initial contact         0             None
+    4   3.150  initial contact         0             None
+    5   3.850  initial contact         0             None
+    6   4.500  initial contact         0             None
+    7   5.175  initial contact         0             None
+    8   5.850  initial contact         0             None
+    9   6.550  initial contact         0             None
+    10  7.200  initial contact         0             None
+    11  7.850  initial contact         0             None
+    12  8.500  initial contact         0             None
+    13  9.175  initial contact         0             None
+    14  9.850  initial contact         0             None
     
 
 ## Visualization of the Detected Initial Contacts
@@ -270,7 +270,7 @@ fig, ax = plt.subplots(figsize=(22, 14))
 for i in range(3):
     ax.plot(
         time_seconds,
-        acceleration_data[f"LowerBack_ACCEL_{chr(120 + i)}"],
+        acceleration_data.iloc[:,i],
         color=colors[i],
         label=f"Acc {'xyz'[i]}",
     )
@@ -306,23 +306,32 @@ ax.legend(
 plt.show()
 ```
 
-    First Gait Sequence: onset                      17.45
-    duration                   6.525
+    First Gait Sequence: onset                        0.0
+    duration                    11.0
     event_type         gait sequence
     tracking_system             None
     Name: 0, dtype: object
     
     Initial Contacts within the First Gait Sequence:     onset       event_type  duration tracking_systems
-    0  17.900  initial contact         0             None
-    1  19.075  initial contact         0             None
-    2  20.175  initial contact         0             None
-    3  20.625  initial contact         0             None
-    4  21.575  initial contact         0             None
-    5  23.000  initial contact         0             None
+    0   0.625  initial contact         0             None
+    1   1.200  initial contact         0             None
+    2   1.675  initial contact         0             None
+    3   2.450  initial contact         0             None
+    4   3.150  initial contact         0             None
+    5   3.850  initial contact         0             None
+    6   4.500  initial contact         0             None
+    7   5.175  initial contact         0             None
+    8   5.850  initial contact         0             None
+    9   6.550  initial contact         0             None
+    10  7.200  initial contact         0             None
+    11  7.850  initial contact         0             None
+    12  8.500  initial contact         0             None
+    13  9.175  initial contact         0             None
+    14  9.850  initial contact         0             None
     
 
 
     
-![png](modules_02_icd_files/modules_02_icd_13_1.png)
+![png](modules_02_icd_files/modules_02_icd_14_1.png)
     
 

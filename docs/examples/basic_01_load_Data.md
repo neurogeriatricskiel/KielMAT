@@ -34,7 +34,7 @@ To import data from your own devices, check if KielMAT already has a reader for 
 
 ```python
 # Set the filepath
-file_path = Path(os.getcwd()).parent.joinpath("examples","data","exAccelDataMobilise.csv")
+file_path = Path(os.getcwd()).parent.joinpath("examples","data","ExampleAccelDataRaw.csv")
 
 # read the csv data
 acc_data = pd.read_csv(file_path)
