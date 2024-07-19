@@ -15,7 +15,7 @@ By the end of this tutorial:
 
 This example can be referenced by citing the package.
 
-The example illustrates how the Paraschiv-Ionescu gait sequence detection algorithm is used to detect gait sequences using body acceleration recorded with a triaxial accelerometer worn or fixed on the lower back. The gait sequence detection algorithm is implemented using [`ngmt.modules.gsd._paraschiv`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/gsd/_paraschiv.py). This algorithm is based on the research of Paraschiv-Ionescu et al ['1'-'2'].
+The example illustrates how the Paraschiv-Ionescu gait sequence detection algorithm is used to detect gait sequences using body acceleration recorded with a triaxial accelerometer worn or fixed on the lower back. The gait sequence detection algorithm is implemented using [`kielmat.modules.gsd._paraschiv`](https://github.com/neurogeriatricskiel/KielMAT/tree/main/kielmat/modules/gsd/_paraschiv.py). This algorithm is based on the research of Paraschiv-Ionescu et al ['1'-'2'].
 
 The algorithm detects gait sequences based on identified steps. It starts by loading the accelerometer data, which includes three columns corresponding to the acceleration signals across the x, y, and z axes, along with the sampling frequency of the data. To simplify the analysis, the norm of acceleration across the x, y, and z axes is computed. Next, the signal is resampled at a 40 Hz sampling frequency using interpolation. Smoothing is then applied through a Savitzky-Golay filter and a Finite Impulse Response (FIR) low-pass filter to remove noise and drifts from the signal. The continuous wavelet transform is applied to capture gait-related features, followed by additional smoothing using successive Gaussian-weighted filters. The processed data is then analyzed to detect gait sequences.
 
@@ -30,7 +30,7 @@ Next, the algorithm takes the last steps to detect walking bouts in the signal. 
 
 
 ## Import libraries
-The necessary libraries such as numpy, matplotlib.pyplot, dataset, and Paraschiv-Ionescu gait sequence detection algorithms are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the 'ngmt' library and its dependencies if you haven't already.
+The necessary libraries such as numpy, matplotlib.pyplot, dataset, and Paraschiv-Ionescu gait sequence detection algorithms are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the 'kielmat' library and its dependencies if you haven't already.
 
 
 ```python
@@ -39,9 +39,9 @@ import matplotlib.pyplot as plt
 import os
 from pathlib import Path
 
-from ngmt.datasets import mobilised
-from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
-from ngmt.config import cfg_colors
+from kielmat.datasets import mobilised
+from kielmat.modules.gsd import ParaschivIonescuGaitSequenceDetection
+from kielmat.config import cfg_colors
 ```
 
 ## Data Preparation
@@ -65,9 +65,7 @@ tracking_sys = "SU"
 tracked_points = {tracking_sys: ["LowerBack"]}
 
 # The 'mobilised.load_recording' function is used to load the data from the specified file_path
-recording = mobilised.load_recording(
-    file_name=file_path, tracking_systems=[tracking_sys], tracked_points=tracked_points
-)
+recording = mobilised.load_recording()
 
 # Load lower back acceleration data
 acceleration_data = recording.data[tracking_sys][
@@ -185,7 +183,7 @@ plt.show()
 
 
 ## Applying Paraschiv-Ionescu Gait Sequence Detection Algorithm
-Now, we are running Paraschiv-Ionescu gait sequence detection algorithm from gsd module [`NGMT.ngmt.modules.gsd._paraschiv.ParaschivIonescuGaitSequenceDetection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/gsd/_paraschiv.py) to detect gait sequences.
+Now, we are running Paraschiv-Ionescu gait sequence detection algorithm from gsd module [`KielMAT.kielmat.modules.gsd._paraschiv.ParaschivIonescuGaitSequenceDetection`](https://github.com/neurogeriatricskiel/KielMAT/tree/main/kielmat/modules/gsd/_paraschiv.py) to detect gait sequences.
 
 In order to apply gait sequence detection algorithm, an instance of the ParaschivIonescuGaitSequenceDetection class is created using the constructor, `ParaschivIonescuGaitSequenceDetection()`. The `gsd` variable holds the instance, allowing us to access its methods. The inputs of the algorithm are as follows:
 
@@ -215,7 +213,7 @@ recording.add_events(tracking_system=tracking_sys, new_events=gait_sequence_even
 print(recording.events)
 ```
 
-    72 gait sequence(s) detected.
+    36 gait sequence(s) detected.
     
 
 
@@ -224,20 +222,43 @@ print(recording.events)
     
 
 
-    {'SU':         onset  duration     event_type tracking_system
-    0      17.450     6.525  gait sequence            None
-    1      96.500     5.350  gait sequence            None
-    2     145.150     7.500  gait sequence            None
-    3     451.425    21.375  gait sequence            None
-    4     500.700     6.775  gait sequence            None
-    ..        ...       ...            ...             ...
-    67   9965.875    10.700  gait sequence            None
-    68  10035.875    11.700  gait sequence            None
-    69  10078.075    18.575  gait sequence            None
-    70  10251.475     8.925  gait sequence            None
-    71  10561.200    11.325  gait sequence            None
-    
-    [72 rows x 4 columns]}
+    {'SU':        onset  duration     event_type tracking_system
+    0     22.650    17.075  gait sequence            None
+    1     49.150     7.475  gait sequence            None
+    2     97.025   120.400  gait sequence            None
+    3    229.550     9.225  gait sequence            None
+    4    247.900    29.075  gait sequence            None
+    5    296.225   189.600  gait sequence            None
+    6    490.300    25.575  gait sequence            None
+    7    562.925    15.075  gait sequence            None
+    8    581.900    18.875  gait sequence            None
+    9    607.050    56.600  gait sequence            None
+    10   667.325   101.900  gait sequence            None
+    11   784.500    42.775  gait sequence            None
+    12   835.675   174.675  gait sequence            None
+    13  1034.900    42.050  gait sequence            None
+    14  1103.075    39.475  gait sequence            None
+    15  1153.750    13.125  gait sequence            None
+    16  1184.900     5.775  gait sequence            None
+    17  1219.175    21.225  gait sequence            None
+    18  1244.450    40.675  gait sequence            None
+    19  1480.025     5.250  gait sequence            None
+    20  1500.625    47.275  gait sequence            None
+    21  1582.600    13.375  gait sequence            None
+    22  1605.600    10.700  gait sequence            None
+    23  1624.700    36.275  gait sequence            None
+    24  1674.075     6.700  gait sequence            None
+    25  5301.850     9.525  gait sequence            None
+    26  5412.575    10.500  gait sequence            None
+    27  5481.150    12.550  gait sequence            None
+    28  5498.500     6.500  gait sequence            None
+    29  5528.475    23.200  gait sequence            None
+    30  5593.175    39.650  gait sequence            None
+    31  5676.900    13.200  gait sequence            None
+    32  5723.425    32.125  gait sequence            None
+    33  5770.050    13.575  gait sequence            None
+    34  5796.100     6.700  gait sequence            None
+    35  6762.300   125.400  gait sequence            None}
     
 
 ## Detailed Visualization of the Detected Gait Sequences
@@ -289,8 +310,8 @@ plt.show()
 ```
 
     First gait sequence:
-     onset                      17.45
-    duration                   6.525
+     onset                      22.65
+    duration                  17.075
     event_type         gait sequence
     tracking_system             None
     Name: 0, dtype: object
