@@ -1,13 +1,14 @@
 # See: https://git-scm.com/docs/gitignore
 __pycache__/
 projects/
-/ngmt.egg-info
-ngmt/datasets/_*
+/kielmat.egg-info
+# from before the package was renamed
+/ngmt.egg-info 
 
 my_messy_code/mytestconde.py
 
 /my_messy_code/*
-ngmt/examples_gait_sqeuence.py
+kielmat/examples_gait_sqeuence.py
 
 examples/data
 
@@ -21,3 +22,7 @@ examples/data
 # local changelog generator
 create_changelog.py
 changelog.yml
+
+# example data
+kiemat/datasets/_*
+ngmt/datasets/_*
