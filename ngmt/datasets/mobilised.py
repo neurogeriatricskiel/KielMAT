@@ -4,8 +4,8 @@ from pathlib import Path
 from pooch import DOIDownloader
 from zipfile import ZipFile
 from typing import Literal, Any
-from ngmt.utils import matlab_loader
-from ngmt.utils.ngmt_dataclass import NGMTRecording
+from kielmat.utils import matlab_loader
+from kielmat.utils.kielmat_dataclass import KielMATRecording
 
 
 # See: https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#restricted-keyword-list-for-channel-type
@@ -69,7 +69,7 @@ def load_recording(
     file_name: str = "data.mat",
     dataset_path: str | Path = Path(__file__).parent / "_mobilised",
     progressbar: None | bool = None,
-) -> NGMTRecording:
+) -> KielMATRecording:
     """Load a recording from the Mobilise-D dataset.
 
     If the dataset has not yet been downloaded, then is fetched from the Zenodo repository using the pooch package.
@@ -81,7 +81,7 @@ def load_recording(
         progressbar (None | bool, optional): Whether to display a progressbar when fetching the data. Defaults to None.
 
     Returns:
-        NGMTRecording: An instance of the NGMTRecording dataclass containing the loaded data and channels.
+        KielMATRecording: An instance of the KielMATRecording dataclass containing the loaded data and channels.
     """
 
     # Fetch the dataset if it does not exist
@@ -146,7 +146,7 @@ def load_recording(
                 for _ in range(len(MAP_CHANNEL_COMPONENTS[ch_type]))
             ]
 
-    return NGMTRecording(
+    return KielMATRecording(
         data={
             track_sys: pd.DataFrame(
                 data=recording_data[track_sys], columns=channel_data[track_sys]["name"]
