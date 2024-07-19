@@ -1,4 +1,4 @@
-from ngmt.datasets import mobilised
+from kielmat.datasets import mobilised
 
 
 def main() -> None:

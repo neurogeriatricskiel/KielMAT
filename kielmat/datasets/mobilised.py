@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
-import pathlib
+from pathlib import Path
+from pooch import DOIDownloader
+from zipfile import ZipFile
+from typing import Literal, Any
 from kielmat.utils import matlab_loader
 from kielmat.utils.kielmat_dataclass import KielMATRecording
 
@@ -11,7 +14,7 @@ MAP_CHANNEL_TYPES = {
     "Gyr": "GYRO",
     "Mag": "MAGN",
     "Bar": "BARO",
-    # "Temp": "TEMP"
+    # "Temp": "TEMP",
 }
 
 MAP_CHANNEL_COMPONENTS = {
@@ -30,107 +33,124 @@ MAP_CHANNEL_UNITS = {
 }
 
 
-def load_recording(
-    file_name: str | pathlib.Path,
-    tracking_systems: str | list[str],
-    tracked_points: str | list[str] | dict[str, str] | dict[str, list[str]],
-):
-    """
-    Load a recording from the Mobilise-D dataset.
+def fetch_dataset(
+    progressbar: bool = True,
+    dataset_path: str | Path = Path(__file__).parent / "_mobilised",
+) -> None:
+    """Fetch the Mobilise-D dataset from the Zenodo repository.
 
     Args:
-        file_name (str or pathlib.Path ): The absolute or relative path to the data file.
-        tracking_systems (str or list of str) : A string or list of strings of tracking systems for which data are to be returned.
-        tracked_points (str or list of str or dict[str, str] or dict[str, list of str]) :
-            Defines for which tracked points data are to be returned.
-            If a string or list of strings is provided, then these will be mapped to each requested tracking system.
-            If a dictionary is provided, it should map each tracking system to either a single tracked point or a list of tracked points.
+        progressbar (bool, optional): Whether to display a progressbar. Defaults to True.
+        dataset_path (str | Path, optional): The path where the dataset is stored. Defaults to Path(__file__).parent/"_mobilised".
+    """
+    dataset_path = Path(dataset_path) if isinstance(dataset_path, str) else dataset_path
+
+    # Check if zip archive has already been downloaded
+    if not dataset_path.exists():
+        dataset_path.parent.joinpath("_mobilised").mkdir(parents=True, exist_ok=True)
+    _output_file = dataset_path.joinpath("Mobilise-D_dataset.zip")
+
+    if not _output_file.exists():
+        # Set the URL to the dataset
+        _url = "doi:10.5281/zenodo.7547125/Mobilise-D dataset_1-18-2023.zip"
+
+        # Instantiate a downloader object
+        downloader = DOIDownloader(progressbar=progressbar)
+        downloader(url=_url, output_file=_output_file, pooch=None)
+
+    # Extract the dataset
+    with ZipFile(_output_file, "r") as zip_ref:
+        zip_ref.extractall(dataset_path)
+    return
+
+
+def load_recording(
+    cohort: Literal["PFF", "PD", "MS", "HA", "COPD", "CHF"] = "PFF",
+    file_name: str = "data.mat",
+    dataset_path: str | Path = Path(__file__).parent / "_mobilised",
+    progressbar: None | bool = None,
+) -> KielMATRecording:
+    """Load a recording from the Mobilise-D dataset.
+
+    If the dataset has not yet been downloaded, then is fetched from the Zenodo repository using the pooch package.
+
+    Args:
+        cohort (Literal[&quot;PFF&quot;, &quot;PD&quot;, &quot;MS&quot;, &quot;HA&quot;, &quot;COPD&quot;, &quot;CHF&quot;], optional): The cohort from which data should be loaded. Defaults to "PFF".
+        file_name (str, optional): The filename of the data file. Defaults to "data.mat".
+        dataset_path (str | Path, optional): The path to the dataset. Defaults to Path(__file__).parent/"_mobilised".
+        progressbar (None | bool, optional): Whether to display a progressbar when fetching the data. Defaults to None.
 
     Returns:
-        KielMATRecording : An instance of the KielMATRecording dataclass containing the loaded data and channels.
+        KielMATRecording: An instance of the KielMATRecording dataclass containing the loaded data and channels.
     """
-    # Put tracking systems into a list
-    if isinstance(tracking_systems, str):
-        tracking_systems = [tracking_systems]
 
-    # Tracked points will be a dictionary mapping
-    # each tracking system to a list of tracked points of interest
-    if isinstance(tracked_points, str):
-        tracked_points = [tracked_points]
-    if isinstance(tracked_points, list):
-        tracked_points = {tracksys: tracked_points for tracksys in tracking_systems}
-    for k, v in tracked_points.items():
-        if isinstance(v, str):
-            tracked_points[k] = [v]
+    # Fetch the dataset if it does not exist
+    progressbar = False if not progressbar else progressbar
+    file_path = Path(dataset_path) / cohort / file_name
+    if not file_path.exists():
+        fetch_dataset(progressbar=progressbar, dataset_path=dataset_path)
 
-    # Load data
-    data_dict = matlab_loader.load_matlab(file_name, top_level="data")
+    # Load the data from the file path
+    data_dict = matlab_loader.load_matlab(file_path, top_level="data")
+    data_dict = data_dict["TimeMeasure1"][
+        "Recording4"
+    ]  # to simplify the data structure
 
-    # Extract data for given tracking system
-    recording_data = dict()
-    channel_data = dict()
-    for tracksys in tracking_systems:
-        channel_data[tracksys] = {
+    # Get the data into a numpy ndarray
+    track_sys = "SU"
+    recording_data = {"SU": None}
+    channel_data = {
+        "SU": {
             "name": [],
             "component": [],
             "type": [],
             "tracked_point": [],
             "units": [],
             "sampling_frequency": [],
-        }  # ['name', 'component', 'type', 'tracked_point', 'units', 'sampling_frequency']
+        }
+    }
+    for tracked_point in data_dict[track_sys].keys():
+        for ch_type in data_dict[track_sys][tracked_point].keys():
+            if ch_type not in MAP_CHANNEL_TYPES.keys():
+                continue  # to next channel type
 
-        data_arr = None
-        for tracked_point in data_dict["TimeMeasure1"]["Recording4"][tracksys].keys():
-            if tracked_point in tracked_points[tracksys]:
-                for ch_type in data_dict["TimeMeasure1"]["Recording4"][tracksys][
-                    tracked_point
-                ].keys():
-                    if ch_type in MAP_CHANNEL_TYPES.keys():
-                        if data_arr is None:
-                            data_arr = data_dict["TimeMeasure1"]["Recording4"][
-                                tracksys
-                            ][tracked_point][ch_type]
+            # Accumulate the data
+            if recording_data[track_sys] is None:
+                recording_data[track_sys] = data_dict[track_sys][tracked_point][ch_type]
+            else:
+                recording_data[track_sys] = np.column_stack(
+                    (recording_data[track_sys], data_dict[track_sys][tracked_point][ch_type])  # type: ignore
+                )  # type: ignore
 
-                        else:
-                            data_arr = np.column_stack(
-                                (
-                                    data_arr,
-                                    data_dict["TimeMeasure1"]["Recording4"][tracksys][
-                                        tracked_point
-                                    ][ch_type],
-                                )
-                            )
-                        channel_data[tracksys]["name"] += [
-                            f"{tracked_point}_{MAP_CHANNEL_TYPES[ch_type]}_{ch_comp}"
-                            for ch_comp in MAP_CHANNEL_COMPONENTS[ch_type]
-                        ]
-                        channel_data[tracksys]["type"] += [
-                            MAP_CHANNEL_TYPES[ch_type]
-                            for _ in range(len(MAP_CHANNEL_COMPONENTS[ch_type]))
-                        ]
-                        channel_data[tracksys]["component"] += [
-                            ch_comp for ch_comp in MAP_CHANNEL_COMPONENTS[ch_type]
-                        ]
-                        channel_data[tracksys]["tracked_point"] += [
-                            tracked_point
-                            for ch_comp in range(len(MAP_CHANNEL_COMPONENTS[ch_type]))
-                        ]
-                        channel_data[tracksys]["units"] += [
-                            MAP_CHANNEL_UNITS[ch_type]
-                            for _ in range(len(MAP_CHANNEL_COMPONENTS[ch_type]))
-                        ]
-                        channel_data[tracksys]["sampling_frequency"] += [
-                            data_dict["TimeMeasure1"]["Recording4"][tracksys][
-                                tracked_point
-                            ]["Fs"][ch_type]
-                            for _ in range(len(MAP_CHANNEL_COMPONENTS[ch_type]))
-                        ]
+            # Accumulate the channel data
+            channel_data[track_sys]["name"] += [
+                f"{tracked_point}_{MAP_CHANNEL_TYPES[ch_type]}_{ch_comp}"
+                for ch_comp in MAP_CHANNEL_COMPONENTS[ch_type]
+            ]
+            channel_data[track_sys]["type"] += [
+                MAP_CHANNEL_TYPES[ch_type]
+                for _ in range(len(MAP_CHANNEL_COMPONENTS[ch_type]))
+            ]
+            channel_data[track_sys]["component"] += [
+                ch_comp for ch_comp in MAP_CHANNEL_COMPONENTS[ch_type]
+            ]
+            channel_data[track_sys]["tracked_point"] += [
+                tracked_point for ch_comp in range(len(MAP_CHANNEL_COMPONENTS[ch_type]))
+            ]
+            channel_data[track_sys]["units"] += [
+                MAP_CHANNEL_UNITS[ch_type]
+                for _ in range(len(MAP_CHANNEL_COMPONENTS[ch_type]))
+            ]
+            channel_data[track_sys]["sampling_frequency"] += [
+                data_dict[track_sys][tracked_point]["Fs"][ch_type]
+                for _ in range(len(MAP_CHANNEL_COMPONENTS[ch_type]))
+            ]
 
-        if data_arr is not None:
-            recording_data[tracksys] = pd.DataFrame(
-                data=data_arr, columns=channel_data[tracksys]["name"]
+    return KielMATRecording(
+        data={
+            track_sys: pd.DataFrame(
+                data=recording_data[track_sys], columns=channel_data[track_sys]["name"]
             )
-
-        channel_data[tracksys] = pd.DataFrame(channel_data[tracksys])
-
-    return KielMATRecording(data=recording_data, channels=channel_data)
+        },
+        channels={track_sys: pd.DataFrame(channel_data[track_sys])},
+    )
