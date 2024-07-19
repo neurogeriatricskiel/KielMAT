@@ -75,7 +75,7 @@ def load_recording(
     If the dataset has not yet been downloaded, then is fetched from the Zenodo repository using the pooch package.
 
     Args:
-        cohort (Literal[&quot;PFF&quot;, &quot;PD&quot;, &quot;MS&quot;, &quot;HA&quot;, &quot;COPD&quot;, &quot;CHF&quot;], optional): The cohort from which data should be loaded. Defaults to "PFF".
+        cohort (Literal["PFF", "PD", "MS", "HA", "COPD", "CHF"], optional): The cohort from which data should be loaded. Defaults to "PFF".
         file_name (str, optional): The filename of the data file. Defaults to "data.mat".
         dataset_path (str | Path, optional): The path to the dataset. Defaults to Path(__file__).parent/"_mobilised".
         progressbar (None | bool, optional): Whether to display a progressbar when fetching the data. Defaults to None.
