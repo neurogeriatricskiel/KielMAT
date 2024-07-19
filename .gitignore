@@ -10,8 +10,6 @@ my_messy_code/mytestconde.py
 /my_messy_code/*
 kielmat/examples_gait_sqeuence.py
 
-examples/data
-
 .vscode/
 
 *.pyc
