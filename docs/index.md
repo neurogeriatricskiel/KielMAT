@@ -6,7 +6,7 @@
 [![lint-and-test](https://github.com/neurogeriatricskiel/KielMAT/actions/workflows/test-and-lint.yml/badge.svg)](https://github.com/neurogeriatricskiel/KielMAT/actions/workflows/test-and-lint.yml)
 
 # KielMAT
-![NeurogeriatricsLogo](ng_logo.png)
+![KielMATLogo](kielmat_logo_transBG.png)
 
 Welcome to the KielMotionAnalysisToolbox (KielMAT). We are a Python based toolbox for processing motion data.
 

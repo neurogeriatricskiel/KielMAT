@@ -11,6 +11,8 @@ plugins:
       handlers:
         python:
           paths: [kielmat]
+          options:
+            verbose: True
 
 theme:
   name: material
