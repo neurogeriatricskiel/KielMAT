@@ -31,7 +31,18 @@ VALID_CHANNEL_TYPES = {
 }
 
 # See: https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#restricted-keyword-list-for-channel-component
-VALID_COMPONENT_TYPES = {"x", "y", "z", "quat_x", "quat_y", "quat_z", "quat_w", "n/a", "NaN", "nan"}
+VALID_COMPONENT_TYPES = {
+    "x",
+    "y",
+    "z",
+    "quat_x",
+    "quat_y",
+    "quat_z",
+    "quat_w",
+    "n/a",
+    "NaN",
+    "nan",
+}
 
 # See https://bids-specification.readthedocs.io/en/stable/modality-agnostic-files.html#participants-file
 VALID_INFO_KEYS = {
@@ -95,7 +106,13 @@ class KielMATRecording:
                 raise TypeError(
                     f"Column 'name' in '{system_name}' must be of type string."
                 )
-            invalid_components = set([item for item in df["component"] if item not in VALID_COMPONENT_TYPES and not pd.isna(item)])
+            invalid_components = set(
+                [
+                    item
+                    for item in df["component"]
+                    if item not in VALID_COMPONENT_TYPES and not pd.isna(item)
+                ]
+            )
             if invalid_components:
                 raise ValueError(
                     f"Column 'component' in '{system_name}' contains invalid values: {invalid_components}."
