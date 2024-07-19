@@ -5,6 +5,8 @@ import openneuro
 from typing import Union, Optional
 from kielmat.utils.kielmat_dataclass import KielMATRecording
 from kielmat.utils.kielmat_dataclass import REQUIRED_COLUMNS
+import logging
+import warnings
 
 # Dict of valid tracked points for the Keep Control dataset for each tracking system
 VALID_TRACKED_POINTS = {
@@ -102,13 +104,6 @@ def fetch_dataset(
             dataset="ds005258",  # this is the example Keep Control dataset on OpenNeuro, maintained by Julius Welzel
             target_dir=dataset_path,
         )
-
-        print(f"Dataset has been downloaded to {dataset_path}")
-
-    # print message to user if dataset has already been downloaded
-    else:
-        print(f"Dataset has already been downloaded to {dataset_path}")
-
     return
 
 
@@ -157,20 +152,20 @@ def load_recording(
         tracked_points = {tracksys: tracked_points for tracksys in tracking_systems}
     # use the VALID_TRACKED_POINTS dictionary to get the valid tracked points for each tracking system
     # return error of some tracked_points are not valid
-    # print which of the specified tracked points are not valid
+    # log which of the specified tracked points are not valid
     for tracksys in tracking_systems:
         if not all(
             tracked_point in VALID_TRACKED_POINTS[tracksys]
             for tracked_point in tracked_points[tracksys]
         ):
-            print(f"Invalid tracked points for tracking system {tracksys}.")
-            print(f"Valid tracked points are: {VALID_TRACKED_POINTS[tracksys]}")
+            logging.warning(f"Invalid tracked points for tracking system {tracksys}.")
+            logging.warning(f"Valid tracked points are: {VALID_TRACKED_POINTS[tracksys]}")
             invalid_points = [
                 tracked_point
                 for tracked_point in tracked_points[tracksys]
                 if tracked_point not in VALID_TRACKED_POINTS[tracksys]
             ]
-            print(f"Invalid tracked points are: {invalid_points}")
+            logging.warning(f"Invalid tracked points are: {invalid_points}")
             return
 
     # Load data and channels for each tracking system
@@ -182,16 +177,16 @@ def load_recording(
                 f"sub-{id}/motion/sub-{id}_task-{task}_tracksys-{tracksys}_*motion.tsv"
             )
         )
-        # check if file exists, if not print message to user and return
+        # check if file exists, if not log message and return
         if not file_name:
-            print(
-                f"No files found for ID {id}, task {task}, and tracking system {tracksys}."
+            logging.warning(
+            f"No files found for ID {id}, task {task}, and tracking system {tracksys}."
             )
             return
-        # check if multiple files are found, if so print message to user and return
+        # check if multiple files are found, if so log message and return
         if len(file_name) > 1:
-            print(
-                f"Multiple files found for ID {id}, task {task}, and tracking system {tracksys}."
+            logging.warning(
+            f"Multiple files found for ID {id}, task {task}, and tracking system {tracksys}."
             )
             return
 
