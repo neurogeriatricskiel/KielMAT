@@ -31,7 +31,7 @@ VALID_CHANNEL_TYPES = {
 }
 
 # See: https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#restricted-keyword-list-for-channel-component
-VALID_COMPONENT_TYPES = {"x", "y", "z", "quat_x", "quat_y", "quat_z", "quat_w", "n/a"}
+VALID_COMPONENT_TYPES = {"x", "y", "z", "quat_x", "quat_y", "quat_z", "quat_w", "n/a", "NaN", "nan"}
 
 # See https://bids-specification.readthedocs.io/en/stable/modality-agnostic-files.html#participants-file
 VALID_INFO_KEYS = {
@@ -41,7 +41,7 @@ VALID_INFO_KEYS = {
 }
 
 
-VALID_CHANNEL_STATUS_VALUES = ["good", "bad", "n/a"]
+VALID_CHANNEL_STATUS_VALUES = ["good", "bad", "n/a", "NaN", "nan"]
 
 
 @dataclass(kw_only=True)
@@ -95,9 +95,10 @@ class KielMATRecording:
                 raise TypeError(
                     f"Column 'name' in '{system_name}' must be of type string."
                 )
-            if not all(item in VALID_COMPONENT_TYPES for item in df["component"]):
+            invalid_components = set([item for item in df["component"] if item not in VALID_COMPONENT_TYPES and not pd.isna(item)])
+            if invalid_components:
                 raise ValueError(
-                    f"Column 'component' in '{system_name}' contains invalid values."
+                    f"Column 'component' in '{system_name}' contains invalid values: {invalid_components}."
                 )
             if not all(isinstance(typ, str) and typ.isupper() for typ in df["type"]):
                 raise ValueError(
