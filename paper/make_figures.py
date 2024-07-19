@@ -1,15 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from ngmt.datasets import mobilised
-from ngmt.modules.pam import PhysicalActivityMonitoring
-from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
-from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
+from kielmat.datasets import mobilised
+from kielmat.modules.pam import PhysicalActivityMonitoring
+from kielmat.modules.gsd import ParaschivIonescuGaitSequenceDetection
+from kielmat.modules.icd import ParaschivIonescuInitialContactDetection
 
 plt.rcParams.update(
     {f"axes.spines.{which}": False for which in ["top", "right", "bottom", "left"]}
 )
 
-# from ngmt.config import cfg_colors
+# from kielmat.config import cfg_colors
 
 FILE_PATH = "/mnt/neurogeriatrics_data/Mobilise-D/rawdata/sub-4005/Free-living/data.mat"
 TRACKSYS = "SU"
