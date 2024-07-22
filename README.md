@@ -7,7 +7,7 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/kielmat)
 
 
-![KielMATLogo](kielmat_logo_transBG.png)
+![](kielmat_logo_transBG.png)
 
 Welcome to the KielMotionAnalysisToolbox (KielMAT). We are a Python based toolbox for processing motion data.
 
@@ -17,8 +17,6 @@ The toolbox is aimed at motion researchers who want to use Python-based open-sou
 |--------------------------------|------------------------------------------------|----------------------------------------|
 | Gait sequence detection (GSD)  | Detects gaits                      | 3D accelerations from the lower back   |
 | Initial contact detection (ICD)| Detects initial contact during gait     | 3D accelerations from the lower back   |
-| Postural transition detection (SSD) | Detects sit-to-stand and stand-to-sit movements        | 3D accelerations and gyroscope from the lower back   |
-| Physical activity monitoring (PAM) | Monitors physical activity levels          | 3D accelerations from the wrist        |
 | More to follow...              | Additional modules to be added                |                                        |
 
 The idea is that various motion data can be loaded into our dedicated dataclass which rely on principles from the [Motion-BIDS](https://bids-specification.readthedocs.io/en/latest/modality-specific-files/motion.html) standard.
