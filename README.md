@@ -13,6 +13,7 @@ Welcome to the KielMotionAnalysisToolbox (KielMAT). We are a Python based toolbo
 
 The toolbox is aimed at motion researchers who want to use Python-based open-source software to process their data. We have implemented validated algorithms in modules to process motion data, as shown in the table below:
 
+## Overview of modules
 | Module                         | Description                                    | Data                               |
 |--------------------------------|------------------------------------------------|----------------------------------------|
 | Gait sequence detection (GSD)  | Detects gaits                      | 3D accelerations from the lower back   |
@@ -24,7 +25,7 @@ The idea is that various motion data can be loaded into our dedicated dataclass 
 ## Data classes
 ### Data classes: conceptual framework
 
-Motion data is recorded with many different systems and modalities, each with their own proprietary data format. KielMAT deals with this by organizing both data and metadata in a [BIDS-like format](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html). The BIDS format suggests that [motion recording data](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#motion-recording-data) from a single tracking system is organized in a single `*_tracksys-<label>_motion.tsv` file. 
+Motion data is recorded with many different systems and modalities, each with their own proprietary data format. KielMAT deals with this by organizing both data and metadata in a [BIDS-like format](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html). The BIDS format suggests that [motion recording data](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#motion-recording-data) from a single tracking system is organized in a single `*_tracksys-<label>_motion.tsv` file.
 
 !!! note
 
