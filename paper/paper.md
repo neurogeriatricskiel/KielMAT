@@ -67,13 +67,13 @@ The data can be passed to algorithms that are organized in different modules, su
 </div>
 
 # Installation and usage
-The KielMAT package is implemented in Python (>=3.10) and is freely available under a Non-Profit Open Software License version 3.0. The stable version of the package can be installed from PyPI.org using `pip install kielmat`. Users and developers can also install the toolbox from source from GitHub. The documentation of the toolbox provides detailed instructions on [installation](https://neurogeriatricskiel.github.io/KielMAT/#installation), [conceptual framework](https://neurogeriatricskiel.github.io/KielMAT/#data-classes-conceptual-framework) and [tutorial notebooks](https://neurogeriatricskiel.github.io/KielMAT/examples/) for basic usage and specific algorithms.
+The KielMAT package is implemented in Python (>=3.10) and is freely available under a Non-Profit Open Software License version 3.0. The stable version of the package can be installed from PyPI.org using `pip install kielmat`. Users and developers can also install the toolbox from source from GitHub. The documentation of the toolbox provides detailed instructions on [installation](https://neurogeriatricskiel.github.io/KielMAT/#installation), [conceptual framework](https://neurogeriatricskiel.github.io/KielMAT/#data-classes-conceptual-framework) and [tutorial notebooks](https://neurogeriatricskiel.github.io/KielMAT/examples/) for basic usage and specific algorithms. Data used in the examples have been collected in accordance with the Declaration of Helsinki.
 
 # How to contribute
 KielMAT is a community effort, and any contribution is welcomed. The project is hosted on [https://github.com/neurogeriatricskiel/KielMAT](https://github.com/neurogeriatricskiel/KielMAT). In case you want to add new algorithms, it is suggested to fork the project and, after finalizing the changes, to [create a pull request from a fork](https://docs.github.com/de/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
 
 # Acknowledgements
 The authors would like to thank every person who provided data which has been used in the development and validation of the algorithms in the KielMAT toolbox.
-The data collection have been performed in accordance with the Declaration of Helsinki. The authors declare no competing interests.
+The authors declare no competing interests.
 
 # References
