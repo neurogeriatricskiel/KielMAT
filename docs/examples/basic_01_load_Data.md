@@ -15,9 +15,7 @@ We start by importing some Python libraries. You should be familiar with most of
 
 
 ```python
-from pathlib import Path
 import pandas as pd
-import os
 
 from kielmat.utils.kielmat_dataclass import KielMATRecording # Import the KielMATRecording class
 from kielmat.modules.gsd import ParaschivIonescuGaitSequenceDetection # Import the Gait Sequence Detection module
@@ -33,11 +31,11 @@ To import data from your own devices, check if KielMAT already has a reader for 
 
 
 ```python
-# Set the filepath
-file_path = Path(os.getcwd()).parent.joinpath("examples","data","ExampleAccelDataRaw.csv")
+# Set the url for the raw data on GH
+file_url = 'https://raw.githubusercontent.com/neurogeriatricskiel/KielMAT/main/examples/data/ExampleAccelDataRaw.csv'
 
-# read the csv data
-acc_data = pd.read_csv(file_path)
+# read the csv data from the url
+acc_data = pd.read_csv(file_url)
 
 # specifiy the sampling rate
 fs = 100 # Hz
