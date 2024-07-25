@@ -22,6 +22,13 @@ The toolbox is aimed at motion researchers who want to use Python-based open-sou
 
 The idea is that various motion data can be loaded into our dedicated dataclass which rely on principles from the [Motion-BIDS](https://bids-specification.readthedocs.io/en/latest/modality-specific-files/motion.html) standard.
 
+## Installation
+The toolbox has been released on [pypi](https://pypi.org/project/kielmat/) and can be installed via pip:
+```bash
+pip install kielmat
+```
+It requires Python 3.10 or higher.
+
 ## Data classes
 ### Data classes: conceptual framework
 
@@ -109,12 +116,6 @@ classDiagram
 
     In the examples you find a [tutorial (the basics of KielMAT)](https://neurogeriatricskiel.github.io/KielMAT/examples/00_tutorial_basics/) that explains the basics of the dataclass and how to work with them.
 
-## Installation
-The toolbox has been released on [pypi](https://pypi.org/project/kielmat/) and can be installed via pip:
-```bash
-pip install kielmat
-```
-It requires Python 3.10 or higher.
 
 ## Contributing
 We welcome contributions to KielMAT! Please refer to our [contributing guide](https://neurogeriatricskiel.github.io/KielMAT/contributing) for more details.
