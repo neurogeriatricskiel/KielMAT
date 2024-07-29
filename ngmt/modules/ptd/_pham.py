@@ -4,10 +4,7 @@ import pandas as pd
 import scipy.signal
 from ngmt.utils import preprocessing
 from ngmt.utils import viz_utils
-from typing import Optional, TypeVar
-
-Self = TypeVar("Self", bound="PhamPosturalTransitionDetection")
-
+from typing import Optional, Self
 
 class PhamPosturalTransitionDetection:
     """

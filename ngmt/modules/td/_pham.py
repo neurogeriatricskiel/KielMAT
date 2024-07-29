@@ -4,10 +4,7 @@ import pandas as pd
 import scipy
 from ngmt.utils import preprocessing
 from ngmt.utils import viz_utils
-from typing import Optional, TypeVar
-
-Self = TypeVar("Self", bound="PhamTurnDetection")
-
+from typing import Optional, Self
 
 class PhamTurnDetection:
     """
