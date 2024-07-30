@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) (+ the Migration Guide section),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.5]
+
+Fifth release of KielMAT (formerly known as NGMT) for JOSS publication.
+
+### Changelog for Merge #102
+
+### Added:
+
+- **Dataset Management:**
+  - Fetch data from OpenNeuro, specifically for KeepControl and Mobilise-D datasets ([PR #99](https://github.com/neurogeriatricskiel/KielMAT/pull/99), [PR #101](https://github.com/neurogeriatricskiel/KielMAT/pull/101)).
+- **Documentation:**
+  - Revised various sections: Declaration of Helsinki, data usage per module, contributing guidelines, summary, statement of need, state of the field.
+  - Added a new logo to the documentation ([PR #98](https://github.com/neurogeriatricskiel/KielMAT/pull/98)).
+- **Tests:**
+  - Added initial tests for loading recordings and the HDF5Decoder.
+
+### Fixed:
+- **Dependencies:**
+  - Removed `tqdm` as a dependency.
+- **Examples and Tutorials:**
+  - Updated examples to ensure they work with publicly available datasets ([PR #100](https://github.com/neurogeriatricskiel/KielMAT/pull/100)).
+  - Fixed spelling errors and other minor issues.
+
+### Other Changes:
+- **Dataset Management:**
+  - Initial rewrite of the datasets submodule.
+- **Documentation:**
+  - Updated documentation for example data and tutorials.
+  - Updated basic tutorial and examples, including gait sequence detection and loading data.
+- **Project Renaming:**
+  - Renamed the project and associated modules to Kiel Motion Analysis Toolbox (KielMAT) and various iterations of this name ([PR #97](https://github.com/neurogeriatricskiel/KielMAT/pull/97)).
+
 ## [0.0.4] 
 
 Forth release of KielMAT for for JOSS publication.

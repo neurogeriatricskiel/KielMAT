@@ -68,7 +68,7 @@ def load_recording(
     cohort: Literal["PFF", "PD", "MS", "HA", "COPD", "CHF"] = "PFF",
     file_name: str = "data.mat",
     dataset_path: str | Path = Path(__file__).parent / "_mobilised",
-    progressbar: None | bool = None,
+    progressbar: bool = True,
 ) -> KielMATRecording:
     """Load a recording from the Mobilise-D dataset.
 
@@ -78,7 +78,7 @@ def load_recording(
         cohort (Literal["PFF", "PD", "MS", "HA", "COPD", "CHF"], optional): The cohort from which data should be loaded. Defaults to "PFF".
         file_name (str, optional): The filename of the data file. Defaults to "data.mat".
         dataset_path (str | Path, optional): The path to the dataset. Defaults to Path(__file__).parent/"_mobilised".
-        progressbar (None | bool, optional): Whether to display a progressbar when fetching the data. Defaults to None.
+        progressbar (bool, optional): Whether to display a progressbar when fetching the data. Defaults to True.
 
     Returns:
         KielMATRecording: An instance of the KielMATRecording dataclass containing the loaded data and channels.
