@@ -151,7 +151,7 @@ class KielMATRecording:
             )
 
     def add_info(self, key: str, value: Any) -> None:
-        """Add information to the info dictionary. Valid keys are : 'Subject', 'Session', 'Task'.
+        """Add information to the info dictionary. Valid keys are : 'subject_id', 'session', 'task'.
 
         Args:
             key (str): The key for the information.
@@ -161,7 +161,7 @@ class KielMATRecording:
             ValueError: If the provided 'key' is not one of the valid info keys.
 
         Examples:
-            >>> recording.add_info("Subject", "01")
+            >>> recording.add_info("subject_id", "01")
         """
         if self.info is None:
             self.info = {}

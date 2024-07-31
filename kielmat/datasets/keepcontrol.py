@@ -109,7 +109,7 @@ def fetch_dataset(
 
 def load_recording(
     dataset_path: str | Path = Path(__file__).parent / "_keepcontrol",
-    id: str = "pp001",
+    subject_id: str = "pp001",
     task: str = "walkSlow",
     tracking_systems: Union[str, list[str]] = ["imu", "omc"],
     tracked_points: Optional[Union[None, str, list[str]]] = None,
@@ -118,7 +118,7 @@ def load_recording(
     Load a recording from the Keep Control validation study.
     Args:
         dataset_path (str or Path, optional): The path to the dataset. Defaults to the "_keepcontrol" directory in the same directory as this file.
-        id (str): The ID of the recording.
+        subject_id (str): The ID of the subject of the recording.
         tracking_systems (str or list of str): A string or list of strings representing the tracking systems for which data should be returned.
         tracked_points (None, str or list of str, optional): The tracked points of interest. If None, all tracked points will be returned. Defaults to None.
     Returns:
@@ -130,7 +130,7 @@ def load_recording(
         fetch_dataset()
 
     # check if id contains sub or sub- substring, if so replace it with ''
-    id = id.replace("sub", "").replace("-", "")
+    subject_id = subject_id.replace("sub", "").replace("-", "")
 
     # check if task contains task or task- substring, if so replace it with ''
     task = task.replace("task", "").replace("-", "")
