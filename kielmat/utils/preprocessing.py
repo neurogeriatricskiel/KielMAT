@@ -9,7 +9,7 @@ import scipy.io
 import scipy.integrate
 import scipy.ndimage
 import pywt
-from ngmt.utils import quaternion
+from kielmat.utils import quaternion
 
 
 # use the importlib.resources package to access the FIR_2_3Hz_40.mat file

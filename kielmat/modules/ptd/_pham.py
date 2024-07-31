@@ -2,8 +2,8 @@
 import numpy as np
 import pandas as pd
 import scipy.signal
-from ngmt.utils import preprocessing
-from ngmt.utils import viz_utils
+from kielmat.utils import preprocessing
+from kielmat.utils import viz_utils
 from typing import Optional, Self
 
 class PhamPosturalTransitionDetection:

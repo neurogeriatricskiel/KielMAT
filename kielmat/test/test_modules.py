@@ -26,11 +26,11 @@ import pandas as pd
 import os
 from datetime import datetime
 from unittest.mock import patch
-from ngmt.modules.gsd import ParaschivIonescuGaitSequenceDetection
-from ngmt.modules.icd import ParaschivIonescuInitialContactDetection
-from ngmt.modules.pam import PhysicalActivityMonitoring
-from ngmt.modules.ptd import PhamPosturalTransitionDetection
-from ngmt.modules.td import PhamTurnDetection
+from kielmat.modules.gsd import ParaschivIonescuGaitSequenceDetection
+from kielmat.modules.icd import ParaschivIonescuInitialContactDetection
+from kielmat.modules.pam import PhysicalActivityMonitoring
+from kielmat.modules.ptd import PhamPosturalTransitionDetection
+from kielmat.modules.td import PhamTurnDetection
 
 
 ## Module test

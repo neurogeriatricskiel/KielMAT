@@ -1,13 +1,13 @@
 import numpy as np
 import pandas as pd
-from ngmt.utils.ngmt_dataclass import (
+from kielmat.utils.ngmt_dataclass import (
     FileInfo,
     ChannelData,
     RecordingData,
     MotionData,
 )
 from datetime import datetime, timedelta
-from ngmt.utils.file_io import get_unit_from_type
+from kielmat.utils.file_io import get_unit_from_type
 
 
 def import_polar_watch(data_file_path: str):

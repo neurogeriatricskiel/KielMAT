@@ -35,9 +35,9 @@ import unittest
 import scipy
 from unittest.mock import patch
 from pathlib import Path
-from ngmt.datasets import keepcontrol
-from ngmt.utils.ngmt_dataclass import NGMTRecording
-from ngmt.utils.preprocessing import (
+from kielmat.datasets import keepcontrol
+from kielmat.utils.ngmt_dataclass import NGMTRecording
+from kielmat.utils.preprocessing import (
     resample_interpolate,
     lowpass_filter,
     highpass_filter,
@@ -58,13 +58,13 @@ from ngmt.utils.preprocessing import (
     wavelet_decomposition,
     moving_var,
 )
-from ngmt.utils.viz_utils import (
+from kielmat.utils.viz_utils import (
     plot_gait,
     plot_pam,
     plot_postural_transitions,
     plot_turns,
 )
-from ngmt.utils.quaternion import (
+from kielmat.utils.quaternion import (
     quatinv,
     quatnormalize,
     quatnorm,
