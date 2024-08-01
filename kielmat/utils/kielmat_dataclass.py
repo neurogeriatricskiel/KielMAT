@@ -44,11 +44,26 @@ VALID_COMPONENT_TYPES = {
     "nan",
 }
 
-# See https://bids-specification.readthedocs.io/en/stable/modality-agnostic-files.html#participants-file
 VALID_INFO_KEYS = {
-    "Subject",
-    "Session",
-    "Task",
+    # Keys from the file name labels, See https://bids-specification.readthedocs.io/en/stable/common-principles.html#filenames
+    "session",
+    "task",
+    "run",
+    # Keys from the participants.tsv file, # See https://bids-specification.readthedocs.io/en/stable/modality-agnostic-files.html#participants-file
+    "subject_id",
+    "age",
+    "sex",
+    "group",
+    "handedness",
+    # Keys from the motion.json file
+    "sampling_frequency",
+    "task_description",
+    "instructions",
+    "manufacturer",
+    "manufacturer_model_name",
+    "software_versions",
+    "missing_values",
+    "tracking_system_name",
 }
 
 
@@ -151,20 +166,22 @@ class KielMATRecording:
             )
 
     def add_info(self, key: str, value: Any) -> None:
-        """Add information to the info dictionary. Valid keys are : 'subject_id', 'session', 'task'.
-
+        """Add information to the info dictionary. Valid keys are : 'session', 'task', 'run', 'subject_id', 'age', 'sex', 'group', 'handedness', 'sampling_frequency', 'task_description', 'instructions', 'manufacturer', 'manufacturer_model_name', 'software_versions', 'missing_values', 'tracking_system_name'.
+    
         Args:
             key (str): The key for the information.
             value (Any): The value of the information.
-
+    
         Raises:
             ValueError: If the provided 'key' is not one of the valid info keys.
-
+    
         Examples:
             >>> recording.add_info("subject_id", "01")
+            >>> recording.add_info("task", "treadmill")
+            >>> recording.add_info("sampling_frequency", 100)
         """
-        if self.info is None:
-            self.info = {}
+        if self.recording_info is None:
+            self.recording_info = {}
 
         # Check if the key belongs to a list of keywords
         if key not in VALID_INFO_KEYS:
@@ -172,19 +189,19 @@ class KielMATRecording:
                 f"Warning: Invalid info key '{key}'. Valid info keys are: {VALID_INFO_KEYS}"
             )
 
-        # add the key-value pair to the info dictionary
-        self.info[key] = value
+        # add the key-value pair to the recording_info dictionary
+        self.recording_info[key] = value
 
         # Check if the value are lower case, if not, convert to lower case and give warning
         if isinstance(value, str):
-            self.info[key] = value.lower()
+            self.recording_info[key] = value.lower()
             print(
                 f"Warning: The value of the key '{key}' should be lower case. Converted to lower case."
             )
 
         # check if value contains underscore or space, if yes, remove and give warning
         if "_" in value or " " in value:
-            self.info[key] = value.replace("_", "").replace(" ", "")
+            self.recording_info[key] = value.replace("_", "").replace(" ", "")
             print(
                 f"Warning: The value of the key '{key}' should not contain underscore or space. Removed underscore and space."
             )
