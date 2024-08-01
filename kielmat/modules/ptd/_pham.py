@@ -127,7 +127,7 @@ class PhamPosturalTransitionDetection:
         tracking_system: Optional[str] = None,
         tracked_point: Optional[str] = None,
         plot_results: bool = False,
-    ) -> 'PhamPosturalTransitionDetection':
+    ) -> "PhamPosturalTransitionDetection":
         """
         Detects postural transitions based on the input accelerometer and gyro data.
 

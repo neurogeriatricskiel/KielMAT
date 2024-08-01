@@ -125,7 +125,7 @@ class PhamTurnDetection:
         tracking_system: Optional[str] = None,
         tracked_point: Optional[str] = None,
         plot_results: bool = False,
-    ) -> 'PhamTurnDetection':
+    ) -> "PhamTurnDetection":
         """
         Detects truns based on the input accelerometer and gyro data.
 
