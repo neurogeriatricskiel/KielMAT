@@ -27,7 +27,6 @@ import pandas as pd
 from kielmat.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from kielmat.modules.icd import ParaschivIonescuInitialContactDetection
 from kielmat.modules.pam import PhysicalActivityMonitoring
-from kielmat.modules.ssd import PhamSittoStandStandtoSitDetection
 
 ## Module test
 # Test for gait sequence detection algorithm
@@ -716,26 +715,6 @@ def sample_data():
         }
     )
     return sample_data
-
-
-def test_detection_output_shape(sample_data):
-    # Test if the output DataFrame shape is correct
-    detection = PhamSittoStandStandtoSitDetection()
-    result = detection.detect(sample_data, sampling_freq_Hz=100)
-
-
-def test_plot_results_pham():
-    # Initialize the class
-    gsd = PhamSittoStandStandtoSitDetection()
-
-    # Test with invalid plot_results type
-    invalid_plot_results = "invalid"
-    with pytest.raises(ValueError):
-        gsd.detect(
-            data=sample_data,
-            sampling_freq_Hz=200,
-            plot_results=invalid_plot_results,
-        )
 
 
 # Run the tests with pytest

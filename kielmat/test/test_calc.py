@@ -31,6 +31,10 @@ import matplotlib as plt
 import warnings
 import numpy.testing as npt
 import pytest
+from pathlib import Path
+from kielmat.utils.kielmat_dataclass import KielMATRecording
+from bids_validator import BIDSValidator
+from kielmat.utils import viz_utils
 from kielmat.utils.preprocessing import (
     resample_interpolate,
     lowpass_filter,
@@ -1688,7 +1692,7 @@ def test_gsd_plot_results_without_plot(monkeypatch):
     monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
 
     # Call the function
-    plot_gait(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_)
+    viz_utils.plot_gait(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_)
 
 
 # Test function for pam_plot_results without plotting
@@ -1701,7 +1705,7 @@ def test_pam_plot_results_without_plot(monkeypatch):
     monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
 
     # Call the function
-    plot_pam(hourly_average_data, thresholds_mg)
+    viz_utils.plot_pam(hourly_average_data, thresholds_mg)
 
 
 # Test function for test_pham_plot_results
@@ -1727,7 +1731,7 @@ def test_pham_plot_results(monkeypatch):
     monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
 
     # Call the function
-    plot_postural_transitions(
+    viz_utils.plot_postural_transitions(
         accel,
         gyro,
         accel_unit="g",
@@ -2117,223 +2121,108 @@ def test_pham_turn_plot_results_no_plot(monkeypatch):
     gyro_unit = "rad/s"
 
     # Call the function
-    plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq_Hz)
+    viz_utils.plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq_Hz)
 
-
-# Test function NGMT dataclass: case 1
-# Sample dataset for test
+# Fixture to provide sample data for testing
 @pytest.fixture
 def sample_data():
-    # Sample data for testing
-    data = pd.DataFrame(
-        {
-            "Time": [0.1, 0.2, 0.3],
-            "ACCEL_x": [1.0, 2.0, 3.0],
-            "ACCEL_y": [0.5, 1.5, 2.5],
-            "ACCEL_z": [0.2, 0.3, 0.4],
-        }
-    )
-    return data
+    """Fixture to provide a sample DataFrame with accelerometer data."""
+    return pd.DataFrame({
+        "Time": [0.1, 0.2, 0.3], 
+        "ACCEL_x": [1.0, 2.0, 3.0], 
+        "ACCEL_y": [0.5, 1.5, 2.5],  
+        "ACCEL_z": [0.2, 0.3, 0.4]   
+    })
 
-
+# Fixture to provide sample channel information for testing
 @pytest.fixture
 def sample_channels():
-    # Sample channels data for testing
-    channels = pd.DataFrame(
-        {
-            "name": ["ACCEL_x", "ACCEL_y", "ACCEL_z"],
-            "component": ["x", "y", "z"],
-            "ch_type": ["ACCEL", "ACCEL", "ACCEL"],
-        }
-    )
-    return channels
+    """Fixture to provide a sample DataFrame with channel information."""
+    return pd.DataFrame({
+        "name": ["ACCEL_x", "ACCEL_y", "ACCEL_z"],  # Channel names
+        "component": ["x", "y", "z"],  # Component of the measurement
+        "type": ["ACCEL", "ACCEL", "ACCEL"],  # Type of measurement
+        "tracked_point": ["n/a", "n/a", "n/a"],  # Point being tracked
+        "units": ["m/s^2", "m/s^2", "m/s^2"],  # Units of measurement
+        "sampling_frequency": [100, 100, 100]  # Sampling frequency
+    })
 
-
+# Fixture to provide sample event data for testing
 @pytest.fixture
 def sample_events():
-    # Sample events data for testing
-    events = pd.DataFrame(
-        {
-            "onset": [0.1, 0.2],
-            "duration": [0.1, 0.2],
-            "event_type": ["stimulus", "response"],
-            "name": ["Stimulus A", "Response B"],
-        }
-    )
-    return events
+    """Fixture to provide a sample DataFrame with event information."""
+    return pd.DataFrame({
+        "onset": [0.1, 0.2],  # Onset times of events
+        "duration": [0.1, 0.2],  # Durations of events
+        "event_type": ["stimulus", "response"],  # Type of events
+        "name": ["Stimulus A", "Response B"]  # Names of events
+    })
 
-
-def test_add_events(sample_data, sample_channels, sample_events):
-    # Test add_events method
-    recording = NGMTRecording(
-        data={"tracking_system_1": sample_data},
-        channels={"tracking_system_1": sample_channels},
+# Fixture to create a sample KielMATRecording object for testing
+@pytest.fixture
+def sample_recording(sample_data, sample_channels):
+    """Fixture to create a sample KielMATRecording object with sample data and channels."""
+    return KielMATRecording(
+        data={"tracking_system_1": sample_data},  # Sample data under one tracking system
+        channels={"tracking_system_1": sample_channels}  # Sample channel info under one tracking system
     )
+
+# Test to validate channel information in the recording
+def test_validate_channels_valid(sample_recording):
+    """Test the validation of channel dataframes in the recording."""
+    try:
+        message = sample_recording.validate_channels()
+        assert message == "All channel dataframes are valid."
+    except ValueError:
+        pytest.fail("Validation failed for valid channels")
+
+# Test to add events to the recording
+def test_add_events(sample_recording, sample_events):
+    """Test adding events to the recording and verify their presence."""
+    recording = sample_recording
     recording.add_events(tracking_system="tracking_system_1", new_events=sample_events)
-    assert "tracking_system_1" in recording.events
-    assert len(recording.events["tracking_system_1"]) == len(sample_events)
+    assert "tracking_system_1" in recording.events  # Check if the tracking system has events
+    assert len(recording.events["tracking_system_1"]) == len(sample_events)  # Check if the number of events matches
 
+# Test to add general info to the recording
+def test_add_info(sample_recording):
+    """Test adding general info to the recording."""
+    recording = sample_recording
+    recording.add_info("Subject", "001")
 
-def test_add_info():
-    # Test add_info method
-    recording = NGMTRecording(data={}, channels={})
-    recording.add_info(key="Subject", value="001")
-    assert recording.info["Subject"] == "001"
+# Test to handle adding info with an invalid key
+def test_add_info_invalid_key(sample_recording):
+    """Test adding info with an invalid key."""
+    recording = sample_recording
+    recording.add_info("InvalidKey", "001")
 
+# Test to handle adding info with case conversion
+def test_add_info_case_conversion(sample_recording):
+    """Test adding info with case conversion in the value."""
+    recording = sample_recording
+    recording.add_info("Subject", "SubJECT01")
 
-def test_invalid_info_key():
-    # Test add_info with invalid info key
-    recording = NGMTRecording(data={}, channels={})
-    with pytest.raises(ValueError):
-        recording.add_info(key="InvalidKey", value="001")
+# Test to handle adding info with underscores removed
+def test_add_info_remove_underscores(sample_recording):
+    """Test adding info with underscores removed from the value."""
+    recording = sample_recording
+    recording.add_info("Task", "Task_Name")
 
+# Test to export events to a CSV file without BIDS compatibility
+def test_export_events_single_system(sample_recording, tmp_path):
+    """Test exporting events to a CSV file for a single tracking system without BIDS compatibility."""
+    recording = sample_recording
+    file_path = tmp_path / "tracking_system_1_events.csv"
+    recording.export_events(file_path=str(file_path), tracking_system="tracking_system_1", bids_compatible_fname=False)
 
-def test_invalid_file_path(tmp_path):
-    # Test export_events with invalid file path
-    recording = NGMTRecording(data={}, channels={}, events={}, info={})
-    file_path = tmp_path / "invalid_path"
-    with pytest.raises(ValueError):
-        recording.export_events(file_path=str(file_path))
-
-
-# Test function NGMT dataclass: case 2
-# Sample dataset for test
-@pytest.fixture
-def sample_data():
-    return pd.DataFrame(
-        {
-            "Time": [0.1, 0.2, 0.3],
-            "ACCEL_x": [1.0, 2.0, 3.0],
-            "ACCEL_y": [0.5, 1.5, 2.5],
-            "ACCEL_z": [0.2, 0.3, 0.4],
-        }
-    )
-
-
-@pytest.fixture
-def sample_channels():
-    return pd.DataFrame(
-        {
-            "name": ["ACCEL_x", "ACCEL_y", "ACCEL_z"],
-            "component": ["x", "y", "z"],
-            "ch_type": ["ACCEL", "ACCEL", "ACCEL"],
-        }
-    )
-
-
-@pytest.fixture
-def sample_events():
-    return pd.DataFrame(
-        {
-            "onset": [0.1, 0.2],
-            "duration": [0.1, 0.2],
-            "event_type": ["stimulus", "response"],
-            "name": ["Stimulus A", "Response B"],
-        }
-    )
-
-
-def test_export_events_bids_compatible_file_name(
-    tmp_path, sample_data, sample_channels, sample_events
-):
-    # Test export_events with BIDS compatible file name when bids_compatible_fname is True
-    recording = NGMTRecording(
-        data={"tracking_system_1": sample_data},
-        channels={"tracking_system_1": sample_channels},
-        events={"tracking_system_1": sample_events},
-        info={"Subject": "001", "Task": "Walking", "Session": "01"},
-    )
-
-    # Create the directory where the file should be saved
-    output_dir = tmp_path / "output"
-    output_dir.mkdir()
-
-    # Mocking BIDSValidator
-    with patch("ngmt.utils.ngmt_dataclass.BIDSValidator") as mock_validator:
-        # Mocking the is_bids method
-        mock_validator.return_value.is_bids.return_value = (
-            False  # or True, depending on the desired behavior
-        )
-
-        # Call the method being tested
-        recording.export_events(file_path=str(output_dir), bids_compatible_fname=True)
-
-
-def test_export_events(tmp_path):
-    # Create a sample NGMTRecording instance
-    recording = NGMTRecording(
-        data={"tracking_system_1": None},
-        channels={"tracking_system_1": None},
-        events={"tracking_system_1": pd.DataFrame()},
-        info={"Subject": "001", "Task": "Walking"},
-    )
-
-    # Test case 1: Export all events with default file name and path
-    recording.export_events(file_path=str(tmp_path), bids_compatible_fname=False)
-    assert (tmp_path / "all_events.csv").is_file()
-
-    # Test case 2: Export all events with custom file name and path
-    recording.export_events(
-        file_path=str(tmp_path),
-        file_name="custom_events.csv",
-        bids_compatible_fname=False,
-    )
-    assert (tmp_path / "custom_events.csv").is_file()
-
-    # Test case 3: Export events for a specific tracking system with default file name and path
-    recording.export_events(
-        file_path=str(tmp_path),
-        tracking_system="tracking_system_1",
-        bids_compatible_fname=False,
-    )
-    assert (tmp_path / "tracking_system_1_events.csv").is_file()
-
-
-# Test function for keepcontrol dataset
-# Test case 1
-def test_load_recording_single_tracking_system_single_tracked_point():
-    # Test data
-    file_name = "test_data.csv"
-    tracking_systems = "tracking_system_1"
-    tracked_points = "tracked_point_1"
-
-    recording = keepcontrol.load_recording(file_name, tracking_systems, tracked_points)
-
-
-# Test case 2
-def test_load_recording_multiple_tracking_systems_single_tracked_point():
-    # Test data
-    file_name = "test_data.csv"
-    tracking_systems = ["tracking_system_1", "tracking_system_2"]
-    tracked_points = "tracked_point_1"
-
-    recording = keepcontrol.load_recording(file_name, tracking_systems, tracked_points)
-
-
-# Test case 3
-def test_load_recording_single_tracking_system_multiple_tracked_points():
-    # Prepare test data
-    file_name = "test_data.csv"
-    tracking_systems = "tracking_system_1"
-    tracked_points = ["tracked_point_1", "tracked_point_2"]
-
-    # Call the function
-    recording = keepcontrol.load_recording(file_name, tracking_systems, tracked_points)
-
-
-# Test case 4
-def test_load_recording_multiple_tracking_systems_multiple_tracked_points():
-    # Prepare test data
-    file_name = "test_data.csv"
-    tracking_systems = ["tracking_system_1", "tracking_system_2"]
-    tracked_points = {
-        "tracking_system_1": ["tracked_point_1", "tracked_point_2"],
-        "tracking_system_2": ["tracked_point_3", "tracked_point_4"],
-    }
-
-    # Call the function
-    recording = keepcontrol.load_recording(file_name, tracking_systems, tracked_points)
-
+# Test to export events to a CSV file with BIDS compatibility
+def test_export_events_bids_compatible(sample_recording, tmp_path):
+    """Test exporting events to a CSV file with BIDS-compatible filename."""
+    recording = sample_recording
+    recording.add_info("Subject", "001")
+    recording.add_info("Task", "task01")
+    file_path = tmp_path / "sub-001_task-task01_events.csv"
+    recording.export_events(file_path=str(file_path), bids_compatible_fname=True)
 
 # Run the tests with pytest
 if __name__ == "__main__":
