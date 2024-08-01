@@ -1065,6 +1065,7 @@ def classify_physical_activity(
         [time_column_name, "enmo", "sedentary", "light", "moderate", "vigorous"]
     ]
 
+
 # Function to plot results of the physical activity monitoring algorithm
 def pam_plot_results(hourly_average_data, thresholds_mg):
     """
