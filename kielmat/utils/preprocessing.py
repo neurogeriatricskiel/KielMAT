@@ -340,7 +340,6 @@ def calculate_envelope_activity(
         duration (int): Minimum duration of activity to be detected (default is 20).
 
     Returns:
-        tuple (ndarray, ndarray): A tuple containing:
         alarm (ndarray): Vector indicating active parts of the signal.
         env (ndarray): Smoothed envelope of the signal.
     """
@@ -430,39 +429,6 @@ def calculate_envelope_activity(
             THR_SIG  # Store the updated threshold value in the threshold buffer.
         )
 
-    # if plot_results == 1:
-    #     plt.figure()
-    #     ax = plt.subplot(2, 1, 1)
-    #     plt.plot(input_signal)
-    #     plt.plot(np.where(alarm != 0, np.max(input_signal), 0), "r", linewidth=2.5)
-    #     plt.plot(THR_buf, "--g", linewidth=2.5)
-    #     plt.title("Raw Signal and detected Onsets of activity")
-    #     plt.legend(
-    #         ["Raw Signal", "Detected Activity in Signal", "Adaptive Threshold"],
-    #         loc="upper left",
-    #     )
-    #     plt.grid(True)
-    #     plt.axis("tight")
-
-    #     ax2 = plt.subplot(2, 1, 2)
-    #     plt.plot(env)
-    #     plt.plot(THR_buf, "--g", linewidth=2.5)
-    #     plt.plot(thres_buf, "--r", linewidth=2)
-    #     plt.plot(noise_buf, "--k", linewidth=2)
-    #     plt.title("Smoothed Envelope of the signal (Hilbert Transform)")
-    #     plt.legend(
-    #         [
-    #             "Smoothed Envelope of the signal (Hilbert Transform)",
-    #             "Adaptive Threshold",
-    #             "Activity level",
-    #             "Noise Level",
-    #         ]
-    #     )
-    #     plt.grid(True)
-    #     plt.axis("tight")
-    #     plt.tight_layout()
-    #     plt.show()
-
     return alarm, env
 
 
@@ -513,14 +479,13 @@ def find_local_min_max(signal, threshold=None):
     This function takes an input signal and identifies the indices of local minima and maxima.
     Optionally, a threshold can be provided to filter out minima and maxima that do not exceed the threshold.
 
-    Args:
+    Parameters:
         signal (numpy.ndarray): The input signal.
         threshold (float or None, optional): Threshold for filtering out minima and maxima below and above this value, respectively.
 
     Returns:
-        tuple(numpy.ndarray, numpy.ndarray): A tuple containing two arrays:
-            - minima_indices: Indices of local minima in the signal.
-            - maxima_indices: Indices of local maxima in the signal.
+        minima_indices (numpy.ndarray): Indices of local minima in the signal.
+        maxima_indices (numpy.ndarray): Indices of local maxima in the signal.
     """
     # Error handling for invalid input data
     if not isinstance(signal, np.ndarray):
@@ -1021,7 +986,7 @@ def classify_physical_activity(
         epoch_duration (int): Duration of each epoch in seconds.
 
     Returns:
-        DataFrame: Processed data including time, averaged ENMO values base on epoch length, activity levels represented with 0 or 1.
+        processed_data(DataFrame): Processed data including time, averaged ENMO values base on epoch length, activity levels represented with 0 or 1.
     """
     # Check if input_data is a DataFrame
     if not isinstance(input_data, pd.DataFrame):
@@ -1128,7 +1093,7 @@ def moving_var(data, window):
         Data (int) : Data to take the moving variance on window
         Window size (int) : Window size for the moving variance.
 
-    Returns
+    Returns:
         m_var (numpy.ndarray) : Moving variance
     """
 
@@ -1182,13 +1147,12 @@ def process_postural_transitions_stationary_periods(
         local_peaks (ndarray): Array of indices indicating local peaks.
 
     Returns:
-        tuple: A tuple containing:
-            time_pt (list): List of peak times.
-            pt_type (list): List of postural transition types.
-            pt_angle (list): List of postural transition angles.
-            duration (list): List of postural transition durations.
-            flexion_max_vel (list): List of maximum flexion velocities.
-            extension_max_vel (list): List of maximum extension velocities.
+        time_pt (list): List of peak times.
+        pt_type (list): List of postural transition types.
+        pt_angle (list): List of postural transition angles.
+        duration (list): List of postural transition durations.
+        flexion_max_vel (list): List of maximum flexion velocities.
+        extension_max_vel (list): List of maximum extension velocities.
     """
     # Check if input arrays are empty
     if any(arr.size == 0 for arr in [time, accel, gyro, stationary, tilt_angle_deg]):
