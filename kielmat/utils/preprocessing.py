@@ -1250,6 +1250,7 @@ def moving_var(data, window):
 
     return m_var
 
+
 # Function to detect postural transitions based on stationary periods
 def process_postural_transitions_stationary_periods(
     time,

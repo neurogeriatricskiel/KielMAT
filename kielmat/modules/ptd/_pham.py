@@ -6,6 +6,7 @@ from kielmat.utils import preprocessing
 from kielmat.utils import viz_utils
 from typing import Optional, Self
 
+
 class PhamPosturalTransitionDetection:
     """
     This algorithm aims to detect postural transitions (e.g., sit to stand or stand to sit movements)
@@ -215,7 +216,9 @@ class PhamPosturalTransitionDetection:
         elif accel_unit in ["g", "G"]:
             pass  # No conversion needed
         else:
-            raise ValueError("Invalid unit for acceleration data. Must be 'm/s^2' or 'g'")
+            raise ValueError(
+                "Invalid unit for acceleration data. Must be 'm/s^2' or 'g'"
+            )
 
         # Check unit of gyro data if it is in deg/s or rad/s
         if gyro_unit in ["rad/s", "radians per second"]:

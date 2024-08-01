@@ -6,6 +6,7 @@ from kielmat.utils import preprocessing
 from kielmat.utils import viz_utils
 from typing import Optional, Self
 
+
 class PhamTurnDetection:
     """
     This algorithm aims to detect turns using accelerometer and gyroscope data collected from a lower back
@@ -207,7 +208,9 @@ class PhamTurnDetection:
         elif accel_unit in ["g", "G"]:
             pass  # No conversion needed
         else:
-            raise ValueError("Invalid unit for acceleration data. Must be 'm/s^2' or 'g'")
+            raise ValueError(
+                "Invalid unit for acceleration data. Must be 'm/s^2' or 'g'"
+            )
 
         # Convert variations of gyro unit to "deg/s"
         if gyro_unit in ["degrees per second", "°/s"]:
