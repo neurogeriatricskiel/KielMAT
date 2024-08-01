@@ -1065,6 +1065,7 @@ def classify_physical_activity(
         [time_column_name, "enmo", "sedentary", "light", "moderate", "vigorous"]
     ]
 
+
 # Function to estimate tilt angle
 def tilt_angle_estimation(data, sampling_frequency_hz):
     """
