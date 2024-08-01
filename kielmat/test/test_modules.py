@@ -77,6 +77,7 @@ def test_invalid_input_data_type():
     with pytest.raises(ValueError):
         gsd.detect(data=invalid_data, sampling_freq_Hz=sampling_frequency)
 
+
 def test_invalid_sampling_freq_type():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
@@ -412,6 +413,7 @@ def test_pam_detect():
         physical_activities_, pd.DataFrame
     ), "Physical activity information should be stored in a DataFrame."
 
+
 def test_invalid_sampling_freq_pam():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -431,6 +433,7 @@ def test_invalid_sampling_freq_pam():
             epoch_duration_sec=5,
         )
 
+
 def test_invalid_thresholds_type():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -445,6 +448,7 @@ def test_invalid_thresholds_type():
             thresholds_mg=invalid_thresholds,
             epoch_duration_sec=5,
         )
+
 
 def test_invalid_epoch_duration():
     # Initialize the class
@@ -464,6 +468,7 @@ def test_invalid_epoch_duration():
             },
             epoch_duration_sec=invalid_epoch_duration,
         )
+
 
 def test_invalid_plot_results_type_pam():
     # Initialize the class
@@ -485,6 +490,7 @@ def test_invalid_plot_results_type_pam():
             plot=invalid_plot_results,
         )
 
+
 def test_invalid_sampling_freq_type_error_handling():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -504,6 +510,7 @@ def test_invalid_sampling_freq_type_error_handling():
             epoch_duration_sec=5,
             plot=True,
         )
+
 
 def test_invalid_thresholds_type_error_handling():
     # Initialize the class

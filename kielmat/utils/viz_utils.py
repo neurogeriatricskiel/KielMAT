@@ -2,6 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 # Function to plot results of the gait sequence detection algorithm
 def plot_gait(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_):
     """
@@ -41,6 +42,7 @@ def plot_gait(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
     plt.show()
+
 
 # Function to plot results of the physical activity monitoring algorithm
 def plot_pam(hourly_average_data, thresholds_mg):
@@ -95,8 +97,11 @@ def plot_pam(hourly_average_data, thresholds_mg):
     plt.tight_layout()
     plt.show()
 
+
 # Function to plot results of the postural transition detection algorithm
-def plot_postural_transitions(accel, gyro, accel_unit, gyro_unit, postural_transitions_, sampling_freq_Hz):
+def plot_postural_transitions(
+    accel, gyro, accel_unit, gyro_unit, postural_transitions_, sampling_freq_Hz
+):
     """
     Plot results of the gait sequence detection algorithm.
 
@@ -113,7 +118,6 @@ def plot_postural_transitions(accel, gyro, accel_unit, gyro_unit, postural_trans
     """
     # Figure
     fig = plt.figure(figsize=(12, 6))
-
 
     # Subplot 1: ACCEL data
     ax1 = plt.subplot(211)
@@ -133,7 +137,7 @@ def plot_postural_transitions(accel, gyro, accel_unit, gyro_unit, postural_trans
         ["ACCEL x", "ACCEL y", "ACCEL z", "Event oset", "Event duration"],
         loc="upper left",
         fontsize=14,
-        framealpha=0.5
+        framealpha=0.5,
     )
     accel_min = np.min(accel)
     accel_max = np.max(accel)
@@ -160,7 +164,7 @@ def plot_postural_transitions(accel, gyro, accel_unit, gyro_unit, postural_trans
         ["GYRO x", "GYRO y", "GYRO z", "Event oset", "Event duration"],
         loc="upper left",
         fontsize=14,
-        framealpha=0.5
+        framealpha=0.5,
     )
     gyro_min = np.min(gyro)
     gyro_max = np.max(gyro)
@@ -170,6 +174,7 @@ def plot_postural_transitions(accel, gyro, accel_unit, gyro_unit, postural_trans
     plt.yticks(fontsize=14)
     fig.tight_layout()
     plt.show()
+
 
 # Function to plot results of the turn detection algorithm
 def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq_Hz):
@@ -208,7 +213,7 @@ def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq
         ["ACCEL x", "ACCEL y", "ACCEL z", "Turn onset", "Turn duration"],
         loc="upper left",
         fontsize=14,
-        framealpha=0.5
+        framealpha=0.5,
     )
     accel_min = np.min(accel)
     accel_max = np.max(accel)
@@ -235,7 +240,7 @@ def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq
         ["GYRO x", "GYRO y", "GYRO z", "Turn onset", "Turn duration"],
         loc="upper left",
         fontsize=14,
-        framealpha=0.5
+        framealpha=0.5,
     )
     gyro_min = np.min(gyro)
     gyro_max = np.max(gyro)
