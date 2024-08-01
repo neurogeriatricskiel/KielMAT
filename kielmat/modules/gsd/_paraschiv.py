@@ -1,7 +1,5 @@
-from datetime import datetime
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import scipy.signal
 from typing import Optional
 from kielmat.utils import preprocessing

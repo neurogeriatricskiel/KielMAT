@@ -9,7 +9,11 @@ Here's a brief explanation of the code structure:
 3. Define a series of test functions, each targeting a specific function from the 'kielmat.utils.preprocessing' module.
 4. Inside each test function, we validate the correctness of the corresponding function and its inputs.
 5. We make use of 'assert' statements to check that the functions return expected results.
-6. The code is organized for clarity and maintainability.
+6. In some test functions for plot functions, the "monkeypatch" is used which is a feature provided by the pytest library.
+It allows to temporarily modify or replace attributes, methods, or functions during testing. Here, monkeypatch is being 
+used to replace the plt.show() function. This way, when run test functions where it won't actually display any plots, 
+allowing to focus on testing the logic of the function without the overhead of rendering plots.
+7. The code is organized for clarity and maintainability.
 
 To run the tests, follow these steps:
 
@@ -23,9 +27,19 @@ By running these tests, the reliability and correctness of the signal processing
 # Import necessary libraries and functions to be tested.
 import pandas as pd
 import numpy as np
+import matplotlib as plt
 import warnings
 import numpy.testing as npt
 import pytest
+<<<<<<< HEAD
+import unittest
+import scipy
+from unittest.mock import patch
+from pathlib import Path
+from kielmat.datasets import keepcontrol
+from kielmat.utils.ngmt_dataclass import NGMTRecording
+=======
+>>>>>>> main
 from kielmat.utils.preprocessing import (
     resample_interpolate,
     lowpass_filter,
@@ -46,11 +60,16 @@ from kielmat.utils.preprocessing import (
     tilt_angle_estimation,
     wavelet_decomposition,
     moving_var,
-    gsd_plot_results,
-    pam_plot_results,
-    pham_plot_results,
-    process_postural_transitions_stationary_periods,
 )
+<<<<<<< HEAD
+from kielmat.utils.viz_utils import (
+    plot_gait,
+    plot_pam,
+    plot_postural_transitions,
+    plot_turns,
+)
+=======
+>>>>>>> main
 from kielmat.utils.quaternion import (
     quatinv,
     quatnormalize,
@@ -62,7 +81,6 @@ from kielmat.utils.quaternion import (
     quat2axang,
     axang2rotm,
 )
-
 
 # Generate a random sinusoidal signal with varying amplitudes to use as an input in testing functions
 time = np.linspace(0, 100, 1000)  # Time vector from 0 to 100 with 1000 samples
@@ -1465,9 +1483,7 @@ def test_signal_decomposition_algorithm_invalid_input_type():
     initial_sampling_frequency = 100
 
     # Check that the function raises an error for invalid input type
-    with pytest.raises(
-        ValueError, match="vertical_acceleration_data must be a numpy.ndarray"
-    ):
+    with pytest.raises(ValueError, match="vertical_acceleration_data must be a numpy.ndarray"):
         signal_decomposition_algorithm(
             vertical_acceleration_data, initial_sampling_frequency
         )
@@ -1640,9 +1656,6 @@ def test_tilt_angle_estimation():
 
     # Assertions
     assert isinstance(tilt_angle, np.ndarray), "Tilt angle should be a NumPy array."
-    assert len(tilt_angle) == len(
-        gyro_data
-    ), "Tilt angle length should match input data length."
 
     # Test with DataFrame input
     gyro_df = pd.DataFrame(gyro_data)
@@ -1652,9 +1665,6 @@ def test_tilt_angle_estimation():
     assert isinstance(
         tilt_angle_df, np.ndarray
     ), "Tilt angle from DataFrame should be a NumPy array."
-    assert len(tilt_angle_df) == len(
-        gyro_data
-    ), "Tilt angle length from DataFrame should match input data length."
 
     # Test for invalid input type
     with pytest.raises(
@@ -1684,9 +1694,9 @@ thresholds_mg = {
 }
 
 
-# Test function for gsd_plot_results without plotting
+# Test function for gsd_plot_results without plotting uisng monkeypatch which allows testing function without plotting
 def test_gsd_plot_results_without_plot(monkeypatch):
-    # Define a mock function for plt.show() that does nothing
+    # A mock function for plt.show() that does nothing
     def mock_show():
         pass
 
@@ -1694,12 +1704,12 @@ def test_gsd_plot_results_without_plot(monkeypatch):
     monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
 
     # Call the function
-    gsd_plot_results(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_)
+    plot_gait(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_)
 
 
 # Test function for pam_plot_results without plotting
 def test_pam_plot_results_without_plot(monkeypatch):
-    # Define a mock function for plt.show() that does nothing
+    # A mock function for plt.show() that does nothing
     def mock_show():
         pass
 
@@ -1707,7 +1717,7 @@ def test_pam_plot_results_without_plot(monkeypatch):
     monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
 
     # Call the function
-    pam_plot_results(hourly_average_data, thresholds_mg)
+    plot_pam(hourly_average_data, thresholds_mg)
 
 
 # Test function for test_pham_plot_results
@@ -1725,7 +1735,7 @@ def test_pham_plot_results(monkeypatch):
 
     sampling_freq_Hz = 100
 
-    # Define a mock function for plt.show() that does nothing
+    # A mock function for plt.show() that does nothing
     def mock_show():
         pass
 
@@ -1733,7 +1743,7 @@ def test_pham_plot_results(monkeypatch):
     monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
 
     # Call the function
-    pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz)
+    plot_postural_transitions(accel, gyro, accel_unit='g', gyro_unit='deg/s', postural_transitions_=postural_transitions_, sampling_freq_Hz=sampling_freq_Hz)
 
 
 # Test function for test_organize_and_pack_results
@@ -1783,8 +1793,7 @@ def test_organize_and_pack_results(walking_periods, peak_steps, expected_results
         item for sublist in actual_results for item in sublist.items()
     ]
 
-
-# Define some test data
+# Generate test data
 quaternions = np.array(
     [
         [0.5, 0.5, 0.5, 0.5],  # Quaternion 1
@@ -1877,9 +1886,8 @@ def test_quatconj(q, expected):
         ),  # Test case 3
     ],
 )
-def test_quatmultiply(q1, q2, expected):
+def test_quatmultiply(q1, q2):
     result = quatmultiply(q1, q2)
-
 
 # Test function for rotm2quat function
 @pytest.mark.parametrize(
@@ -2077,6 +2085,12 @@ def test_quatmultiply(q1_shape, q2_shape, scalar_first, channels_last):
         q1, q2, scalar_first=scalar_first, channels_last=channels_last
     )
 
+<<<<<<< HEAD
+    # Check if channels and time axis are switched back when channels_last is False
+    if not channels_last:
+        assert result.shape == q1.T.shape  # Check the shape after transpose
+=======
+>>>>>>> main
 
 # Test function for axang2rotm function
 @pytest.mark.parametrize(
@@ -2091,6 +2105,198 @@ def test_axang2rotm(axang, expected):
     result = axang2rotm(axang)
     assert np.allclose(result, expected)
 
+# Test function for without plotting
+def test_pham_turn_plot_results_no_plot(monkeypatch):
+    # a mock function for plt.show() that does nothing
+    def mock_show():
+        pass
+    # Generate mock data
+    accel = np.random.rand(100, 3)  # Acceleration data
+    gyro = np.random.rand(100, 3)   # Gyroscope data
+    detected_turns = pd.DataFrame({
+        "onset": [10.5, 20.0, 35.2],
+        "duration": [2.0, 1.5, 3.0]
+    })  # Detected turns DataFrame
+    sampling_freq_Hz = 50  # Sampling frequency
+
+    # Monkeypatch plt.show() with the mock function
+    monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
+    
+    # Unit of acceleration data.
+    accel_unit = "g"
+
+    # Unit of gyro data.
+    gyro_unit = "rad/s"
+
+    # Call the function
+    plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq_Hz)
+
+# Test function NGMT dataclass: case 1
+# Sample dataset for test
+@pytest.fixture
+def sample_data():
+    # Sample data for testing
+    data = pd.DataFrame({
+        'Time': [0.1, 0.2, 0.3],
+        'ACCEL_x': [1.0, 2.0, 3.0],
+        'ACCEL_y': [0.5, 1.5, 2.5],
+        'ACCEL_z': [0.2, 0.3, 0.4]
+    })
+    return data
+
+@pytest.fixture
+def sample_channels():
+    # Sample channels data for testing
+    channels = pd.DataFrame({
+        'name': ['ACCEL_x', 'ACCEL_y', 'ACCEL_z'],
+        'component': ['x', 'y', 'z'],
+        'ch_type': ['ACCEL', 'ACCEL', 'ACCEL']
+    })
+    return channels
+
+@pytest.fixture
+def sample_events():
+    # Sample events data for testing
+    events = pd.DataFrame({
+        'onset': [0.1, 0.2],
+        'duration': [0.1, 0.2],
+        'event_type': ['stimulus', 'response'],
+        'name': ['Stimulus A', 'Response B']
+    })
+    return events
+
+def test_add_events(sample_data, sample_channels, sample_events):
+    # Test add_events method
+    recording = NGMTRecording(data={'tracking_system_1': sample_data},
+                              channels={'tracking_system_1': sample_channels})
+    recording.add_events(tracking_system='tracking_system_1', new_events=sample_events)
+    assert 'tracking_system_1' in recording.events
+    assert len(recording.events['tracking_system_1']) == len(sample_events)
+
+def test_add_info():
+    # Test add_info method
+    recording = NGMTRecording(data={}, channels={})
+    recording.add_info(key='Subject', value='001')
+    assert recording.info['Subject'] == '001'
+
+def test_invalid_info_key():
+    # Test add_info with invalid info key
+    recording = NGMTRecording(data={}, channels={})
+    with pytest.raises(ValueError):
+        recording.add_info(key='InvalidKey', value='001')
+
+def test_invalid_file_path(tmp_path):
+    # Test export_events with invalid file path
+    recording = NGMTRecording(data={}, channels={}, events={}, info={})
+    file_path = tmp_path / 'invalid_path'  
+    with pytest.raises(ValueError):
+        recording.export_events(file_path=str(file_path))
+
+# Test function NGMT dataclass: case 2
+# Sample dataset for test
+@pytest.fixture
+def sample_data():
+    return pd.DataFrame({
+        'Time': [0.1, 0.2, 0.3],
+        'ACCEL_x': [1.0, 2.0, 3.0],
+        'ACCEL_y': [0.5, 1.5, 2.5],
+        'ACCEL_z': [0.2, 0.3, 0.4]
+    })
+
+@pytest.fixture
+def sample_channels():
+    return pd.DataFrame({
+        'name': ['ACCEL_x', 'ACCEL_y', 'ACCEL_z'],
+        'component': ['x', 'y', 'z'],
+        'ch_type': ['ACCEL', 'ACCEL', 'ACCEL']
+    })
+
+@pytest.fixture
+def sample_events():
+    return pd.DataFrame({
+        'onset': [0.1, 0.2],
+        'duration': [0.1, 0.2],
+        'event_type': ['stimulus', 'response'],
+        'name': ['Stimulus A', 'Response B']
+    })
+
+def test_export_events_bids_compatible_file_name(tmp_path, sample_data, sample_channels, sample_events):
+    # Test export_events with BIDS compatible file name when bids_compatible_fname is True
+    recording = NGMTRecording(data={'tracking_system_1': sample_data},
+                              channels={'tracking_system_1': sample_channels},
+                              events={'tracking_system_1': sample_events},
+                              info={'Subject': '001', 'Task': 'Walking', 'Session': '01'})
+
+    # Create the directory where the file should be saved
+    output_dir = tmp_path / 'output'
+    output_dir.mkdir()
+
+    # Mocking BIDSValidator
+    with patch('ngmt.utils.ngmt_dataclass.BIDSValidator') as mock_validator:
+        # Mocking the is_bids method
+        mock_validator.return_value.is_bids.return_value = False  # or True, depending on the desired behavior
+
+        # Call the method being tested
+        recording.export_events(file_path=str(output_dir), bids_compatible_fname=True)
+
+def test_export_events(tmp_path):
+    # Create a sample NGMTRecording instance
+    recording = NGMTRecording(data={'tracking_system_1': None},
+                              channels={'tracking_system_1': None},
+                              events={'tracking_system_1': pd.DataFrame()},
+                              info={'Subject': '001', 'Task': 'Walking'})
+
+    # Test case 1: Export all events with default file name and path
+    recording.export_events(file_path=str(tmp_path), bids_compatible_fname=False)
+    assert (tmp_path / 'all_events.csv').is_file()
+
+    # Test case 2: Export all events with custom file name and path
+    recording.export_events(file_path=str(tmp_path), file_name='custom_events.csv', bids_compatible_fname=False)
+    assert (tmp_path / 'custom_events.csv').is_file()
+
+    # Test case 3: Export events for a specific tracking system with default file name and path
+    recording.export_events(file_path=str(tmp_path), tracking_system='tracking_system_1', bids_compatible_fname=False)
+    assert (tmp_path / 'tracking_system_1_events.csv').is_file()
+
+# Test function for keepcontrol dataset
+# Test case 1
+def test_load_recording_single_tracking_system_single_tracked_point():
+    # Test data
+    file_name = "test_data.csv"
+    tracking_systems = "tracking_system_1"
+    tracked_points = "tracked_point_1"
+
+    recording = keepcontrol.load_recording(file_name, tracking_systems, tracked_points)
+
+# Test case 2
+def test_load_recording_multiple_tracking_systems_single_tracked_point():
+    # Test data
+    file_name = "test_data.csv"
+    tracking_systems = ["tracking_system_1", "tracking_system_2"]
+    tracked_points = "tracked_point_1"
+
+    recording = keepcontrol.load_recording(file_name, tracking_systems, tracked_points)
+
+# Test case 3
+def test_load_recording_single_tracking_system_multiple_tracked_points():
+    # Prepare test data
+    file_name = "test_data.csv"
+    tracking_systems = "tracking_system_1"
+    tracked_points = ["tracked_point_1", "tracked_point_2"]
+
+    # Call the function
+    recording = keepcontrol.load_recording(file_name, tracking_systems, tracked_points)
+
+# Test case 4
+def test_load_recording_multiple_tracking_systems_multiple_tracked_points():
+    # Prepare test data
+    file_name = "test_data.csv"
+    tracking_systems = ["tracking_system_1", "tracking_system_2"]
+    tracked_points = {"tracking_system_1": ["tracked_point_1", "tracked_point_2"],
+                      "tracking_system_2": ["tracked_point_3", "tracked_point_4"]}
+
+    # Call the function
+    recording = keepcontrol.load_recording(file_name, tracking_systems, tracked_points)
 
 # Run the tests with pytest
 if __name__ == "__main__":

@@ -1182,10 +1182,8 @@ def tilt_angle_estimation(data, sampling_frequency_hz):
     if not isinstance(data, np.ndarray):
         raise TypeError("Input data must be a numpy array or pandas DataFrame")
 
-    gyro_y = data[:, 1]
-
     # Integrate gyro data over time to estimate tilt
-    tilt_angle = -np.cumsum(gyro_y) / sampling_frequency_hz
+    tilt_angle = np.cumsum(data) / sampling_frequency_hz
 
     return tilt_angle
 
@@ -1204,7 +1202,7 @@ def wavelet_decomposition(data, level, wavetype):
         denoised_signal (ndarray): Denoised signal.
     """
     # Perform wavelet decomposition
-    coeffs = pywt.wavedec(data, wavetype, mode="smooth", level=level)
+    coeffs = pywt.wavedec(data, wavetype, mode="constant", level=level)
 
     # Zero out wavelet coefficients beyond specified order
     for i in range(1, len(coeffs)):
@@ -1212,7 +1210,7 @@ def wavelet_decomposition(data, level, wavetype):
             coeffs[i][:] = 0
 
     # Reconstruct signal from coefficients
-    denoised_signal = pywt.waverec(coeffs, wavetype, mode="smooth")
+    denoised_signal = pywt.waverec(coeffs, wavetype, mode="constant")
 
     return denoised_signal
 
@@ -1252,75 +1250,6 @@ def moving_var(data, window):
 
     return m_var
 
-
-# Function to plot results of the gait sequence detection algorithm
-def pham_plot_results(accel, gyro, postural_transitions_, sampling_freq_Hz):
-    """
-    Plot results of the gait sequence detection algorithm.
-
-    Args:
-        accel (ndarray): Array of acceleration data.
-        gyro (ndarray): Array of gyroscope data.
-        postural_transitions_ (DataFrame): DataFrame containing postural transition information.
-        sampling_freq_Hz (float): Sampling frequency in Hertz.
-
-    Returns:
-        Plot postural transitions
-    """
-    # Figure
-    fig = plt.figure(figsize=(21, 10))
-
-    # Subplot 1: Acceleration data
-    ax1 = plt.subplot(211)
-    for i in range(3):
-        ax1.plot(
-            np.arange(len(accel)) / sampling_freq_Hz,
-            accel[:, i],
-        )
-    for i in range(len(postural_transitions_)):
-        onset = postural_transitions_["onset"][i]
-        duration = postural_transitions_["duration"][i]
-        ax1.axvline(x=onset, color="r")
-        ax1.axvspan(onset, (onset + duration), color="grey")
-    ax1.set_title("Detected Postural Transitions", fontsize=20)
-    ax1.set_ylabel(f"Acceleration (g)", fontsize=14)
-    ax1.set_xlabel(f"Time (sec)", fontsize=14)
-    ax1.legend(
-        ["Acc 1", "Acc 2", "Acc 3", "Event oset", "Event duration"],
-        loc="upper right",
-        fontsize=14,
-    )
-    ax1.set_ylim(-2, 2.5)
-    plt.xticks(fontsize=14)
-    plt.yticks(fontsize=14)
-
-    # Subplot 2: Gyro data
-    ax2 = plt.subplot(212)
-    for i in range(3):
-        ax2.plot(
-            np.arange(len(gyro)) / sampling_freq_Hz,
-            gyro[:, i],
-        )
-    for i in range(len(postural_transitions_)):
-        onset = postural_transitions_["onset"][i]
-        duration = postural_transitions_["duration"][i]
-        ax2.axvline(x=onset, color="r")
-        ax2.axvspan(onset, (onset + duration), color="grey")
-    ax1.set_title("Detected Postural Transitions", fontsize=20)
-    ax2.set_ylabel(f"Gyro (deg/s)", fontsize=14)
-    ax2.set_xlabel(f"Time (sec)", fontsize=14)
-    ax2.legend(
-        ["Gyr 1", "Gyr 2", "Gyr 3", "Event oset", "Event duration"],
-        loc="upper right",
-        fontsize=14,
-    )
-    ax2.set_ylim(-200, 200)
-    plt.xticks(fontsize=14)
-    plt.yticks(fontsize=14)
-    fig.tight_layout()
-    plt.show()
-
-
 # Function to detect postural transitions based on stationary periods
 def process_postural_transitions_stationary_periods(
     time,
@@ -1356,6 +1285,10 @@ def process_postural_transitions_stationary_periods(
             flexion_max_vel (list): List of maximum flexion velocities.
             extension_max_vel (list): List of maximum extension velocities.
     """
+    # Check if input arrays are empty
+    if any(arr.size == 0 for arr in [time, accel, gyro, stationary, tilt_angle_deg]):
+        raise ValueError("Input arrays cannot be empty")
+
     # If there is enough stationary data, perform sensor fusion using accelerometer and gyro data
     # Initialize quaternion array for orientation estimation
     quat = np.zeros((len(time), 4))

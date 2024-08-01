@@ -1,8 +1,7 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from kielmat.config import cfg_colors
 from kielmat.utils import preprocessing
+from kielmat.utils import viz_utils
 
 
 class PhysicalActivityMonitoring:
@@ -254,6 +253,6 @@ class PhysicalActivityMonitoring:
         # Plot if set to true
         if plot:
 
-            preprocessing.pam_plot_results(hourly_average_data, thresholds_mg)
+            viz_utils.plot_pam(hourly_average_data, thresholds_mg)
 
         return self
