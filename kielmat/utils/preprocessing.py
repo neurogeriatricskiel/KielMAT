@@ -1065,50 +1065,6 @@ def classify_physical_activity(
         [time_column_name, "enmo", "sedentary", "light", "moderate", "vigorous"]
     ]
 
-
-# Function to plot results of the gait sequence detection algorithm
-def gsd_plot_results(
-    target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
-):
-    """
-    Plot the detected gait sequences.
-
-    Args:
-        target_sampling_freq_Hz (float) : Target sampling frequency.
-        detected_activity_signal (np.array): Pre-processed acceleration signal.
-        gait_sequences_ (pd.DataFrame): Detected gait sequences.
-
-    Returns:
-        plot
-    """
-    plt.figure(figsize=(22, 14))
-    plt.plot(
-        np.arange(len(detected_activity_signal)) / (60 * target_sampling_freq_Hz),
-        detected_activity_signal,
-        label="Pre-processed acceleration signal",
-        color=cfg_colors["prep"][0],
-    )
-    plt.title("Detected gait sequences", fontsize=20)
-    plt.xlabel("Time (minutes)", fontsize=20)
-    plt.ylabel("Acceleration (g)", fontsize=20)
-
-    # Fill the area between start and end times
-    for index, sequence in gait_sequences_.iterrows():
-        onset = sequence["onset"] / 60  # Convert to minutes
-        end_time = (sequence["onset"] + sequence["duration"]) / 60  # Convert to minutes
-        plt.axvline(onset, color=cfg_colors["raw"][1])
-        plt.axvspan(onset, end_time, facecolor="grey", alpha=0.8)
-    plt.legend(
-        ["Pre-processed acceleration signal", "Gait onset", "Gait duration"],
-        fontsize=20,
-        loc="best",
-    )
-    plt.grid(visible=None, which="both", axis="both")
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
-    plt.show()
-
-
 # Function to plot results of the physical activity monitoring algorithm
 def pam_plot_results(hourly_average_data, thresholds_mg):
     """

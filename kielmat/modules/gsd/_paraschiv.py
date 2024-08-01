@@ -3,7 +3,7 @@ import pandas as pd
 import scipy.signal
 from typing import Optional
 from kielmat.utils import preprocessing
-from kielmat.config import cfg_colors
+from kielmat.utils import viz_utils
 
 
 class ParaschivIonescuGaitSequenceDetection:
@@ -397,7 +397,7 @@ class ParaschivIonescuGaitSequenceDetection:
         # Plot results if set to true
         if plot_results:
 
-            preprocessing.gsd_plot_results(
+            viz_utils.plot_gait(
                 target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
             )
 
