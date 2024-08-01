@@ -4,7 +4,7 @@ import pandas as pd
 import scipy
 from kielmat.utils import preprocessing
 from kielmat.utils import viz_utils
-from typing import Optional, Self
+from typing import Optional, Union, Tuple, List
 
 
 class PhamTurnDetection:
@@ -125,7 +125,7 @@ class PhamTurnDetection:
         tracking_system: Optional[str] = None,
         tracked_point: Optional[str] = None,
         plot_results: bool = False,
-    ) -> Self:
+    ) -> 'PhamTurnDetection':
         """
         Detects truns based on the input accelerometer and gyro data.
 
@@ -494,7 +494,7 @@ class PhamTurnDetection:
         # Return an instance of the class
         return self
 
-    def spatio_temporal_parameters(self: Self) -> None:
+    def spatio_temporal_parameters(self) -> None:
         """
         Extracts spatio-temporal parameters of the detected turns.
 
