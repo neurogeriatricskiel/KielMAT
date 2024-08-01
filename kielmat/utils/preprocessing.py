@@ -10,17 +10,18 @@ import scipy.integrate
 import scipy.ndimage
 import pywt
 from kielmat.utils import quaternion
+from kielmat.config import cfg_colors
 
 
 # use the importlib.resources package to access the FIR_2_3Hz_40.mat file
 with pkg_resources.path(
-    "ngmt.utils", "FIR_2_3Hz_40.mat"
+    "kielmat.utils", "FIR_2_3Hz_40.mat"
 ) as mat_filter_coefficients_file:
     pass
 
 
 def resample_interpolate(
-    input_signal, initial_sampling_frequency=100, target_sampling_frequency=40
+    input_signal, initial_sampling_frequency: float, target_sampling_frequency: float
 ):
     """
     Resample and interpolate a signal to a new sampling frequency.
@@ -1002,6 +1003,7 @@ def signal_decomposition_algorithm(
 # Function to classify activity levels based on accelerometer data
 def classify_physical_activity(
     input_data,
+    time_column_name="timestamp",
     sedentary_threshold=45,
     light_threshold=100,
     moderate_threshold=400,
@@ -1012,6 +1014,7 @@ def classify_physical_activity(
 
     Args:
         input_data (DataFrame): Input data with time index and accelerometer data (N, 3) for x, y, and z axes.
+        time_column_name (str): Name of the index column.
         sedentary_threshold (float): Threshold for sedentary activity.
         light_threshold (float): Threshold for light activity.
         moderate_threshold (float): Threshold for moderate activity.
@@ -1059,8 +1062,104 @@ def classify_physical_activity(
 
     # Return a DataFrame with the time, averaged ENMO, and classes of sedentary, light, moderate and vigorous shown with 1 or 0.
     return processed_data[
-        ["timestamp", "enmo", "sedentary", "light", "moderate", "vigorous"]
+        [time_column_name, "enmo", "sedentary", "light", "moderate", "vigorous"]
     ]
+
+
+# Function to plot results of the gait sequence detection algorithm
+def gsd_plot_results(
+    target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
+):
+    """
+    Plot the detected gait sequences.
+
+    Args:
+        target_sampling_freq_Hz (float) : Target sampling frequency.
+        detected_activity_signal (np.array): Pre-processed acceleration signal.
+        gait_sequences_ (pd.DataFrame): Detected gait sequences.
+
+    Returns:
+        plot
+    """
+    plt.figure(figsize=(22, 14))
+    plt.plot(
+        np.arange(len(detected_activity_signal)) / (60 * target_sampling_freq_Hz),
+        detected_activity_signal,
+        label="Pre-processed acceleration signal",
+        color=cfg_colors["prep"][0],
+    )
+    plt.title("Detected gait sequences", fontsize=20)
+    plt.xlabel("Time (minutes)", fontsize=20)
+    plt.ylabel("Acceleration (g)", fontsize=20)
+
+    # Fill the area between start and end times
+    for index, sequence in gait_sequences_.iterrows():
+        onset = sequence["onset"] / 60  # Convert to minutes
+        end_time = (sequence["onset"] + sequence["duration"]) / 60  # Convert to minutes
+        plt.axvline(onset, color=cfg_colors["raw"][1])
+        plt.axvspan(onset, end_time, facecolor="grey", alpha=0.8)
+    plt.legend(
+        ["Pre-processed acceleration signal", "Gait onset", "Gait duration"],
+        fontsize=20,
+        loc="best",
+    )
+    plt.grid(visible=None, which="both", axis="both")
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+    plt.show()
+
+
+# Function to plot results of the physical activity monitoring algorithm
+def pam_plot_results(hourly_average_data, thresholds_mg):
+    """
+    Plots the hourly averaged ENMO for each day along with activity level thresholds.
+
+    Args:
+        hourly_average_data (pd.DataFrame): DataFrame containing hourly averaged ENMO values.
+        thresholds_mg (dict): Dictionary containing threshold values for physical activity detection.
+    """
+    # Plotting
+    fig, ax = plt.subplots(figsize=(14, 8))
+
+    # Choose the 'turbo' colormap for coloring each day
+    colormap = plt.cm.turbo
+
+    # Plot thresholds
+    ax.axhline(
+        y=thresholds_mg.get("sedentary_threshold", 45),
+        color="y",
+        linestyle="--",
+        label="Sedentary threshold",
+    )
+    ax.axhline(
+        y=thresholds_mg.get("light_threshold", 100),
+        color="g",
+        linestyle="--",
+        label="Light physical activity threshold",
+    )
+    ax.axhline(
+        y=thresholds_mg.get("moderate_threshold", 400),
+        color="r",
+        linestyle="--",
+        label="Moderate physical activity threshold",
+    )
+
+    # Plot each day data with a different color
+    for i, date in enumerate(hourly_average_data.index):
+        color = colormap(i)
+        ax.plot(hourly_average_data.loc[date], label=str(date), color=color)
+
+    # Customize plot appearance
+    plt.xticks(range(24), [str(i).zfill(2) for i in range(24)])
+    plt.xlabel("Time (h)", fontsize=16)
+    plt.ylabel("ENMO (mg)", fontsize=16)
+    plt.title("Hourly averaged ENMO for each day along with activity level thresholds")
+    plt.legend(loc="upper left", fontsize=16)
+    plt.grid(visible=None, which="both", axis="both")
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+    plt.tight_layout()
+    plt.show()
 
 
 # Function to estimate tilt angle

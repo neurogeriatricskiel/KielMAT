@@ -39,21 +39,11 @@ class PhysicalActivityMonitoring:
         detect(data, sampling_freq_Hz, thresholds_mg, epoch_duration_sec, plot):
             Detects gait sequences on the accelerometer signal.
 
-        Args:
-            data (pd.DataFrame): Input data with time index and accelerometer data (N, 3) for x, y, and z axes.
-            sampling_freq_Hz (float): Sampling frequency of the accelerometer data (in Hertz).
-            thresholds_mg (dict): Dictionary containing threshold values for physical activity detection.
-            epoch_duration_sec (int): Duration of each epoch in seconds.
-            plot (bool): If True, generates a plot showing the average Euclidean Norm Minus One (ENMO). Default is True.
-
-        Returns:
-            PhysicalActivityMonitoring: An instance of the class with the physical activity levels information stored
-            in the 'physical_activities_' attribute.
-
     Examples:
         >>> pam = PhysicalActivityMonitoring()
         >>> pam.detect(
                 data=acceleration_data,
+                acceleration_unit:"m/s^2",
                 sampling_freq_Hz=100,
                 thresholds_mg={
                     "sedentary_threshold": 45,
@@ -64,8 +54,8 @@ class PhysicalActivityMonitoring:
                 plot=True)
         >>> print(pam.physical_activities_)
                         sedentary_mean_mg  sedentary_time_min  light_mean_mg  light_time_min  moderate_mean_mg  moderate_time_min  vigorous_mean_mg  vigorous_time_min
-        3/19/2018               23.48               733.08          60.78              72             146.2              21.58             730.34                0.58
-        3/20/2018               27.16               753.83          57.06           102.25            137.26               7.92             737.9                 0.42
+        3/19/2018       23.48              733.08              60.78          72              146.2             21.58              730.34            0.58
+        3/20/2018       27.16              753.83              57.06          102.25          137.26            7.92               737.9             0.42
 
     References:
         [1] Doherty, Aiden, et al. (2017). Large scale population assessment of physical activity using wrist-worn accelerometers...
@@ -82,13 +72,14 @@ class PhysicalActivityMonitoring:
     def detect(
         self,
         data: pd.DataFrame,
+        acceleration_unit: str,
         sampling_freq_Hz: float,
-        thresholds_mg: dict = {
+        thresholds_mg: dict[str, float] = {
             "sedentary_threshold": 45,
             "light_threshold": 100,
             "moderate_threshold": 400,
         },
-        epoch_duration_sec: int = 5,
+        epoch_duration_sec: float = 5,
         plot: bool = True,
     ) -> pd.DataFrame:
         """
@@ -96,6 +87,7 @@ class PhysicalActivityMonitoring:
 
         Args:
             data (pd.DataFrame): Input data with time index and accelerometer data (N, 3) for x, y, and z axes.
+            acceleration_unit (str): Unit of input acceleration data.
             sampling_freq_Hz (float): Sampling frequency of the accelerometer data (in Hertz).
             thresholds_mg (dict): Dictionary containing threshold values for physical activity detection.
             epoch_duration_sec (int): Duration of each epoch in seconds.
@@ -106,6 +98,23 @@ class PhysicalActivityMonitoring:
                           moderate_mean_mg, moderate_time_min, vigorous_mean_mg, vigorous_time_min
         """
         # Error handling for invalid input data
+
+        # Check if data is a DataFrame
+        if not isinstance(data, pd.DataFrame):
+            raise ValueError("Input data must be a DataFrame.")
+
+        # check if index column is datetime
+        if not isinstance(data.index, pd.DatetimeIndex):
+            raise ValueError("Index column must be a datetime index.")
+
+        # check if index column in named timestamp
+        if data.index.name != "timestamp":
+            raise ValueError("Index column must be named timestamp.")
+
+        # Check if data has at least 3 columns
+        if data.shape[1] < 3:
+            raise ValueError("Input data must have at least 3 columns.")
+
         if not isinstance(sampling_freq_Hz, (int, float)) or sampling_freq_Hz <= 0:
             raise ValueError("Sampling frequency must be a positive float.")
 
@@ -118,13 +127,13 @@ class PhysicalActivityMonitoring:
         if not isinstance(plot, bool):
             raise ValueError("Plot results must be a boolean (True or False).")
 
-        # Select accelerometer data columns and convert units from m/s^2 to g
-        data[["LARM_ACCEL_x", "LARM_ACCEL_y", "LARM_ACCEL_z"]] /= 9.81
+        # Check unit of acceleration data if it is in g or m/s^2
+        if acceleration_unit == "m/s^2":
+            # Convert acceleration data from m/s^2 to g (if not already is in g)
+            data /= 9.81
 
         # Calculate Euclidean Norm (EN)
-        data["en"] = np.linalg.norm(
-            data[["LARM_ACCEL_x", "LARM_ACCEL_y", "LARM_ACCEL_z"]], axis=1
-        )
+        data["en"] = np.linalg.norm(data, axis=1)
 
         # Apply 4th order low-pass Butterworth filter with the cutoff frequency of 20Hz
         data["en"] = preprocessing.lowpass_filter(
@@ -152,15 +161,16 @@ class PhysicalActivityMonitoring:
         # Classify activities based on thresholds using activity_classification
         classified_processed_data = preprocessing.classify_physical_activity(
             processed_data,
-            sedentary_threshold=thresholds_mg.get("sedentary_threshold", 45),
-            light_threshold=thresholds_mg.get("light_threshold", 100),
-            moderate_threshold=thresholds_mg.get("moderate_threshold", 400),
+            time_column_name=data.index.name,
+            sedentary_threshold=thresholds_mg.get("sedentary_threshold"),
+            light_threshold=thresholds_mg.get("light_threshold"),
+            moderate_threshold=thresholds_mg.get("moderate_threshold"),
             epoch_duration=epoch_duration_sec,
         )
 
         # Extract date from the datetime index
         classified_processed_data["date"] = classified_processed_data[
-            "timestamp"
+            data.index.name
         ].dt.date
 
         # Calculate time spent in each activity level for each epoch
@@ -183,29 +193,53 @@ class PhysicalActivityMonitoring:
             .agg(
                 sedentary_mean_enmo=(
                     "enmo",
-                    lambda x: np.mean(x[classified_processed_data["sedentary"] == 1]),
+                    lambda x: np.mean(
+                        np.where(
+                            classified_processed_data.loc[x.index, "sedentary"] == 1,
+                            x,
+                            np.nan,
+                        )
+                    ),
                 ),
                 sedentary_time_min=("sedentary_time_min", "sum"),
                 light_mean_enmo=(
                     "enmo",
-                    lambda x: np.mean(x[classified_processed_data["light"] == 1]),
+                    lambda x: np.mean(
+                        np.where(
+                            classified_processed_data.loc[x.index, "light"] == 1,
+                            x,
+                            np.nan,
+                        )
+                    ),
                 ),
                 light_time_min=("light_time_min", "sum"),
                 moderate_mean_enmo=(
                     "enmo",
-                    lambda x: np.mean(x[classified_processed_data["moderate"] == 1]),
+                    lambda x: np.mean(
+                        np.where(
+                            classified_processed_data.loc[x.index, "moderate"] == 1,
+                            x,
+                            np.nan,
+                        )
+                    ),
                 ),
                 moderate_time_min=("moderate_time_min", "sum"),
                 vigorous_mean_enmo=(
                     "enmo",
-                    lambda x: np.mean(x[classified_processed_data["vigorous"] == 1]),
+                    lambda x: np.mean(
+                        np.where(
+                            classified_processed_data.loc[x.index, "vigorous"] == 1,
+                            x,
+                            np.nan,
+                        )
+                    ),
                 ),
                 vigorous_time_min=("vigorous_time_min", "sum"),
             )
             .reset_index()
         )
 
-        # Return gait_sequences_ as an output
+        # Return physical activities as an output
         self.physical_activities_ = physical_activities_
 
         # Group by date and hour to calculate the average ENMO for each hour

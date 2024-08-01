@@ -1,12 +1,12 @@
 # Introduction and explanation regarding the test suite
 """
-This code is a test suite for various signal processing and analysis functions which exist in the NGMT toolbox. 
+This code is a test suite for various signal processing and analysis functions which exist in the KielMAT toolbox. 
 It employs pytest, a Python testing framework, to verify the correctness of these functions. 
 Here's a brief explanation of the code structure:
 
 1. Import necessary libraries, pytest and the functions to be tested.
 2. Generate a random input signal for testing purposes.
-3. Define a series of test functions, each targeting a specific function from the 'ngmt.utils.preprocessing' module.
+3. Define a series of test functions, each targeting a specific function from the 'kielmat.utils.preprocessing' module.
 4. Inside each test function, we validate the correctness of the corresponding function and its inputs.
 5. We make use of 'assert' statements to check that the functions return expected results.
 6. In some test functions for plot functions, the "monkeypatch" is used which is a feature provided by the pytest library.
@@ -21,7 +21,7 @@ To run the tests, follow these steps:
 2. Run this script, and pytest will execute all the test functions.
 3. Any failures in tests will be reported as failed with red color, and also the number of passed tests will be represented with green color.
 
-By running these tests, the reliability and correctness of the signal processing functions in the 'ngmt.utils.preprocessing' module will be ensured.
+By running these tests, the reliability and correctness of the signal processing functions in the 'kielmat.utils.preprocessing' module will be ensured.
 """
 
 # Import necessary libraries and functions to be tested.
@@ -31,12 +31,15 @@ import matplotlib as plt
 import warnings
 import numpy.testing as npt
 import pytest
+<<<<<<< HEAD
 import unittest
 import scipy
 from unittest.mock import patch
 from pathlib import Path
 from kielmat.datasets import keepcontrol
 from kielmat.utils.ngmt_dataclass import NGMTRecording
+=======
+>>>>>>> main
 from kielmat.utils.preprocessing import (
     resample_interpolate,
     lowpass_filter,
@@ -58,12 +61,15 @@ from kielmat.utils.preprocessing import (
     wavelet_decomposition,
     moving_var,
 )
+<<<<<<< HEAD
 from kielmat.utils.viz_utils import (
     plot_gait,
     plot_pam,
     plot_postural_transitions,
     plot_turns,
 )
+=======
+>>>>>>> main
 from kielmat.utils.quaternion import (
     quatinv,
     quatnormalize,
@@ -152,7 +158,7 @@ def test_resample_interpolate():
 # Test function for the 'lowpass_filter_savgol' function
 def test_lowpass_filter_savgol():
     """
-    Test for lowpass_filter_savgol function in the 'ngmt.utils.preprocessing' module.
+    Test for lowpass_filter_savgol function in the 'kielmat.utils.preprocessing' module.
     """
     # Test with inputs
     test_signal = random_input_signal
@@ -250,7 +256,7 @@ def test_lowpass_filter():
 # Test function for the 'lowpass_filter_fir' function
 def test_lowpass_filter_fir():
     """
-    Test for lowpass_filter_fir function in the 'ngmt.utils.preprocessing' module.
+    Test for lowpass_filter_fir function in the 'kielmat.utils.preprocessing' module.
     """
     # Test with inputs
     test_signal = random_input_signal
@@ -291,7 +297,7 @@ def test_lowpass_filter_fir():
 # Additional test cases for Savitzky-Golay filter
 def test_lowpass_filter_savgol_specific():
     """
-    Test specific parameters for Savitzky-Golay filter in the 'ngmt.utils.preprocessing' module.
+    Test specific parameters for Savitzky-Golay filter in the 'kielmat.utils.preprocessing' module.
     """
     # Test with specific parameters
     test_signal = np.ones(100)
@@ -315,7 +321,7 @@ def test_lowpass_filter_savgol_specific():
 # Additional test cases for Butterworth filter
 def test_lowpass_filter_butter_specific():
     """
-    Test specific parameters for Butterworth filter in the 'ngmt.utils.preprocessing' module.
+    Test specific parameters for Butterworth filter in the 'kielmat.utils.preprocessing' module.
     """
     # Test with specific parameters
     test_signal = np.ones(100)
@@ -340,7 +346,7 @@ def test_lowpass_filter_butter_specific():
 
 # Test function for the 'highpass_filter_iir' function
 def test_highpass_filter_iir():
-    """Test for highpass_filter_iir function in the 'ngmt.utils.preprocessing' module."""
+    """Test for highpass_filter_iir function in the 'kielmat.utils.preprocessing' module."""
     # Test with inputs
     test_signal = np.random.rand(100)
     sampling_frequency = 40
@@ -402,7 +408,7 @@ def test_iir_highpass_filter_invalid_input():
 
 # Test function for the '_iir_highpass_filter' function: case 2
 def test_iir_highpass_filter():
-    """Test for _iir_highpass_filter function in the 'ngmt.utils.preprocessing' module."""
+    """Test for _iir_highpass_filter function in the 'kielmat.utils.preprocessing' module."""
     # Test with inputs
     test_signal = np.random.rand(100)
     sampling_frequency = 40
@@ -481,7 +487,7 @@ def test_highpass_filter():
 # Test function for the 'apply_continuous_wavelet_transform' function: case 1
 def test_apply_continuous_wavelet_transform():
     """
-    Test for apply_continuous_wavelet_transform function in the 'ngmt.utils.preprocessing' module.
+    Test for apply_continuous_wavelet_transform function in the 'kielmat.utils.preprocessing' module.
     """
     # Test with inputs
     test_signal = random_input_signal
@@ -667,7 +673,7 @@ def test_apply_continuous_wavelet_transform_zero_sampling_frequency():
 # Test function for the 'apply_successive_gaussian_filters' function: case 1
 def test_apply_successive_gaussian_filters():
     """
-    Test for apply_successive_gaussian_filters function in the 'ngmt.utils.preprocessing' module.
+    Test for apply_successive_gaussian_filters function in the 'kielmat.utils.preprocessing' module.
     """
     # Test with inputs
     test_signal = random_input_signal
@@ -787,7 +793,7 @@ def test_apply_successive_gaussian_filters_large_input():
 # Test function for the 'calculate_envelope_activity' function: case 1
 def test_calculate_envelope_activity():
     """
-    Test for calculate_envelope_activity function in the 'ngmt.utils.preprocessing' module.
+    Test for calculate_envelope_activity function in the 'kielmat.utils.preprocessing' module.
     """
     # Test with inputs
     test_signal = random_input_signal
@@ -844,7 +850,7 @@ def test_calculate_envelope_activity_invalid_duration():
 # Test function for the 'find_consecutive_groups' function: case 1
 def test_find_consecutive_groups():
     """
-    Test for find_consecutive_groups function in the 'ngmt.utils.preprocessing' module.
+    Test for find_consecutive_groups function in the 'kielmat.utils.preprocessing' module.
     """
     # Test with inputs
     test_signal = np.array([0, 1, 1, 0, 2, 2, 2, 0, 0, 3, 3])
@@ -975,7 +981,7 @@ def test_find_consecutive_groups_large_input():
 # Test function for the 'find_local_min_max' function: case 1
 def test_find_local_min_max():
     """
-    Test for find_local_min_max function in the 'ngmt.utils.preprocessing' module.
+    Test for find_local_min_max function in the 'kielmat.utils.preprocessing' module.
     """
     # Test with inputs
     test_signal = random_input_signal
@@ -1085,7 +1091,7 @@ def test_identify_pulse_trains_single_element():
 # Test function for the 'identify_pulse_trains' function: case 4
 def test_identify_pulse_trains():
     """
-    Test for convert_pulse_train_to_array function in the 'ngmt.utils.preprocessing' module.
+    Test for convert_pulse_train_to_array function in the 'kielmat.utils.preprocessing' module.
     """
     # Test with inputs
     test_signal = random_input_signal
@@ -1130,7 +1136,7 @@ def test_identify_pulse_trains_empty_signal():
 # Test function for the 'convert_pulse_train_to_array' function: case 1
 def test_convert_pulse_train_to_array():
     """
-    Test for convert_pulse_train_to_array function in the 'ngmt.utils.preprocessing' module.
+    Test for convert_pulse_train_to_array function in the 'kielmat.utils.preprocessing' module.
     """
     # Test with a list of pulse train dictionaries
     pulse_train_list = [
@@ -1292,7 +1298,7 @@ def test_convert_pulse_train_to_array_invalid_key_names():
 # Test function for the 'find_interval_intersection' function: case 1
 def test_find_interval_intersection():
     """
-    Test for organize_and_pack_results function in the 'ngmt.utils.preprocessing' module.
+    Test for organize_and_pack_results function in the 'kielmat.utils.preprocessing' module.
     """
     # Test case 1: Basic case with one intersection
     set_a = np.array([[1, 5], [7, 10]])
@@ -1516,6 +1522,7 @@ def test_at_least_one_dimension():
 def test_classify_physical_activity_invalid_input_data():
     # Test with invalid input data type
     input_data = "not_a_dataframe"
+    time_column_name = "timestamp"
     sedentary_threshold = 0.2
     light_threshold = 0.5
     moderate_threshold = 0.8
@@ -1524,6 +1531,7 @@ def test_classify_physical_activity_invalid_input_data():
     with pytest.raises(ValueError, match="Input_data must be a pandas DataFrame."):
         classify_physical_activity(
             input_data,
+            time_column_name,
             sedentary_threshold,
             light_threshold,
             moderate_threshold,
@@ -1535,6 +1543,7 @@ def test_classify_physical_activity_invalid_input_data():
 def test_classify_physical_activity_invalid_threshold_type():
     # Test with invalid threshold type
     input_data = pd.DataFrame({"x": [1, 2, 3], "y": [4, 5, 6], "z": [7, 8, 9]})
+    time_column_name = "timestamp"
     sedentary_threshold = "invalid_type"
     light_threshold = 0.5
     moderate_threshold = 0.8
@@ -1543,6 +1552,7 @@ def test_classify_physical_activity_invalid_threshold_type():
     with pytest.raises(ValueError, match="Threshold values must be numeric."):
         classify_physical_activity(
             input_data,
+            time_column_name,
             sedentary_threshold,
             light_threshold,
             moderate_threshold,
@@ -1554,7 +1564,7 @@ def test_classify_physical_activity_invalid_threshold_type():
 def test_classify_physical_activity_invalid_threshold_values():
     invalid_data = pd.DataFrame(
         {
-            "timestamps": pd.date_range(start="2024-01-01", periods=100, freq="S"),
+            "timestamp": pd.date_range(start="2024-01-01", periods=100, freq="S"),
             "enmo": np.random.rand(100) * 500,
         }
     )
@@ -1568,7 +1578,7 @@ def test_classify_physical_activity_invalid_threshold_values():
 def test_classify_physical_activity_negative_epoch_duration():
     invalid_data = pd.DataFrame(
         {
-            "timestamps": pd.date_range(start="2024-01-01", periods=100, freq="S"),
+            "timestamp": pd.date_range(start="2024-01-01", periods=100, freq="S"),
             "enmo": np.random.rand(100) * 500,
         }
     )
@@ -1581,7 +1591,7 @@ def test_classify_physical_activity_negative_epoch_duration():
 # Test function for wavelet_decomposition function
 def test_wavelet_decomposition():
     """
-    Test for wavelet_decomposition function in the 'ngmt.utils.preprocessing' module.
+    Test for wavelet_decomposition function in the 'kielmat.utils.preprocessing' module.
     """
     # Generate a random input signal
     input_signal = np.random.randn(1000)
@@ -1605,7 +1615,7 @@ def test_wavelet_decomposition():
 # Test function for moving_var function
 def test_moving_var():
     """
-    Test for moving_var function in the 'ngmt.utils.preprocessing' module.
+    Test for moving_var function in the 'kielmat.utils.preprocessing' module.
     """
     # Generate a random input signal
     input_signal = np.random.randn(1000)
@@ -2070,20 +2080,17 @@ def test_quatmultiply(q1_shape, q2_shape, scalar_first, channels_last):
     q1 = np.random.rand(*q1_shape)
     q2 = None if q2_shape is None else np.random.rand(*q2_shape)
 
-    # Adjust dimensions to ensure the last dimension is 4
-    if q1.shape[-1] != 4:
-        q1 = np.random.rand(*q1_shape[:-1], 4)
-    if q2 is not None and q2.shape[-1] != 4:
-        q2 = np.random.rand(*q2_shape[:-1], 4)
-
     # Call the quatmultiply function
     result = quatmultiply(
         q1, q2, scalar_first=scalar_first, channels_last=channels_last
     )
 
+<<<<<<< HEAD
     # Check if channels and time axis are switched back when channels_last is False
     if not channels_last:
         assert result.shape == q1.T.shape  # Check the shape after transpose
+=======
+>>>>>>> main
 
 # Test function for axang2rotm function
 @pytest.mark.parametrize(

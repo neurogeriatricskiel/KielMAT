@@ -1,5 +1,6 @@
 # Introduction and explanation regarding the test suite
 """
+<<<<<<< HEAD
 This code is a test suite for various modules which exist in the NGMT toolbox. 
 It employs pytest, a Python testing framework, to verify the correctness of these modules. 
 Here's a brief explanation of the code structure:
@@ -9,6 +10,18 @@ Here's a brief explanation of the code structure:
 3. Inside each test module, we validate the correctness of the modules.
 4. We make use of 'assert' statements to check that the functions return expected results.
 5. The code is organized for clarity and maintainability.
+=======
+This code is a test suite for various signal processing and analysis functions which exist in the KielMAT toolbox. 
+It employs pytest, a Python testing framework, to verify the correctness of these functions. 
+Here's a brief explanation of the code structure:
+
+1. Import necessary libraries, pytest and the functions to be tested.
+2. Generate a random input signal for testing purposes.
+3. Define a series of test functions, each targeting a specific function from the specific module.
+4. Inside each test module, we validate the correctness of the corresponding function and its inputs.
+5. We make use of 'assert' statements to check that the functions return expected results.
+6. The code is organized for clarity and maintainability.
+>>>>>>> main
 
 To run the tests, follow these steps:
 
@@ -23,6 +36,7 @@ By running these tests, the reliability and correctness of the modules will be e
 import pytest
 import numpy as np
 import pandas as pd
+<<<<<<< HEAD
 import os
 from datetime import datetime
 from unittest.mock import patch
@@ -37,21 +51,46 @@ from kielmat.modules.td import PhamTurnDetection
 # Test funtions for gait sequence detection algorithm
 num_samples = 50000  # Number of samples
 accel_data = {
+=======
+from kielmat.modules.gsd import ParaschivIonescuGaitSequenceDetection
+from kielmat.modules.icd import ParaschivIonescuInitialContactDetection
+from kielmat.modules.pam import PhysicalActivityMonitoring
+from kielmat.modules.ssd import PhamSittoStandStandtoSitDetection
+
+## Module test
+# Test for gait sequence detection algorithm
+num_samples = 50000  # Number of samples
+acceleration_data = {
+>>>>>>> main
     "LowerBack_ACCEL_x": np.random.uniform(-2, 2, num_samples),
     "LowerBack_ACCEL_y": np.random.uniform(-2, 2, num_samples),
     "LowerBack_ACCEL_z": np.random.uniform(-2, 2, num_samples),
 }
+<<<<<<< HEAD
 accel_data = pd.DataFrame(accel_data)
 sampling_frequency = 100  # Sampling frequency
 
+=======
+acceleration_data = pd.DataFrame(acceleration_data)
+sampling_frequency = 100  # Sampling frequency
+
+
+>>>>>>> main
 def test_gsd_detect():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
 
     # Call the detect method
+<<<<<<< HEAD
     gsd.detect(data=accel_data, sampling_freq_Hz=sampling_frequency)
     gait_sequences_ = gsd.gait_sequences_
 
+=======
+    gsd.detect(data=acceleration_data, sampling_freq_Hz=sampling_frequency)
+    gait_sequences_ = gsd.gait_sequences_
+
+
+>>>>>>> main
 def test_invalid_sampling_freq():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
@@ -59,7 +98,20 @@ def test_invalid_sampling_freq():
     # Test with invalid sampling frequency
     invalid_sampling_freq = "invalid"
     with pytest.raises(ValueError):
+<<<<<<< HEAD
         gsd.detect(data=accel_data, sampling_freq_Hz=invalid_sampling_freq)
+=======
+        gsd.detect(data=acceleration_data, sampling_freq_Hz=invalid_sampling_freq)
+
+
+def test_gait_sequence_detection():
+    # Initialize the class
+    gsd = ParaschivIonescuGaitSequenceDetection()
+
+    # Call the detect method
+    gsd.detect(data=acceleration_data, sampling_freq_Hz=sampling_frequency)
+
+>>>>>>> main
 
 def test_invalid_input_data_type():
     # Initialize the class
@@ -70,6 +122,10 @@ def test_invalid_input_data_type():
     with pytest.raises(ValueError):
         gsd.detect(data=invalid_data, sampling_freq_Hz=sampling_frequency)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 def test_invalid_sampling_freq_type():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
@@ -77,7 +133,12 @@ def test_invalid_sampling_freq_type():
     # Test with invalid sampling frequency type
     invalid_sampling_freq = "invalid"
     with pytest.raises(ValueError):
+<<<<<<< HEAD
         gsd.detect(data=accel_data, sampling_freq_Hz=invalid_sampling_freq)
+=======
+        gsd.detect(data=acceleration_data, sampling_freq_Hz=invalid_sampling_freq)
+
+>>>>>>> main
 
 def test_plot_results_type():
     # Initialize the class
@@ -87,11 +148,16 @@ def test_plot_results_type():
     invalid_plot_results = "invalid"
     with pytest.raises(ValueError):
         gsd.detect(
+<<<<<<< HEAD
             data=accel_data,
+=======
+            data=acceleration_data,
+>>>>>>> main
             sampling_freq_Hz=sampling_frequency,
             plot_results=invalid_plot_results,
         )
 
+<<<<<<< HEAD
 def test_invalid_dt_data_type():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
@@ -138,27 +204,166 @@ def test_valid_dt_data():
     )
 
 # Test funtions for initial contact detection algorithm
+=======
+
+# Test for ValueError: "dt_data must be a pandas Series with datetime values"
+def test_invalid_dt_data_type():
+    gsd = ParaschivIonescuGaitSequenceDetection()
+    acceleration_data = pd.DataFrame(
+        {
+            "LowerBack_ACCEL_x": np.random.uniform(-2, 2, 1000),
+            "LowerBack_ACCEL_y": np.random.uniform(-2, 2, 1000),
+            "LowerBack_ACCEL_z": np.random.uniform(-2, 2, 1000),
+        }
+    )
+    with pytest.raises(ValueError):
+        gsd.detect(data=acceleration_data, sampling_freq_Hz=100, dt_data="not_a_series")
+
+
+# Test for ValueError: "dt_data must be a series with the same length as data"
+def test_invalid_dt_data_length():
+    gsd = ParaschivIonescuGaitSequenceDetection()
+    acceleration_data = pd.DataFrame(
+        {
+            "LowerBack_ACCEL_x": np.random.uniform(-2, 2, 1000),
+            "LowerBack_ACCEL_y": np.random.uniform(-2, 2, 1000),
+            "LowerBack_ACCEL_z": np.random.uniform(-2, 2, 1000),
+        }
+    )
+    dt_data = pd.Series(
+        pd.date_range(start="2022-01-01", periods=500)
+    )  # Different length than data
+    with pytest.raises(ValueError):
+        gsd.detect(data=acceleration_data, sampling_freq_Hz=100, dt_data=dt_data)
+
+
+def test_threshold_selected_signal():
+    # Initialize the class
+    gsd = ParaschivIonescuGaitSequenceDetection()
+
+    # Create empty data
+    acceleration_data = pd.DataFrame(
+        {
+            "LowerBack_ACCEL_x": [],
+            "LowerBack_ACCEL_y": [],
+            "LowerBack_ACCEL_z": [],
+        }
+    )
+    dt_data = pd.Series([])
+
+    # Call detect with empty data
+    with pytest.raises(ValueError):
+        gsd.detect(
+            data=acceleration_data,
+            sampling_freq_Hz=100,
+            dt_data=dt_data,
+            plot_results=True,
+        )
+
+
+def test_no_gait_sequences_detected():
+    # Initialize the class
+    gsd = ParaschivIonescuGaitSequenceDetection()
+
+    # Create empty data
+    acceleration_data = pd.DataFrame(
+        {
+            "LowerBack_ACCEL_x": [],
+            "LowerBack_ACCEL_y": [],
+            "LowerBack_ACCEL_z": [],
+        }
+    )
+
+    # Call detect with empty data
+    with pytest.raises(ValueError):
+        gsd.detect(data=acceleration_data, sampling_freq_Hz=100)
+
+
+def test_invalid_indices_warning():
+    # Initialize the class
+    gsd = ParaschivIonescuGaitSequenceDetection()
+
+    # Create random acceleration data and datetime series with more indices than data length
+    acceleration_data = pd.DataFrame(
+        {
+            "LowerBack_ACCEL_x": np.random.uniform(-2, 2, 1000),
+            "LowerBack_ACCEL_y": np.random.uniform(-2, 2, 1000),
+            "LowerBack_ACCEL_z": np.random.uniform(-2, 2, 1000),
+        }
+    )
+    dt_data = pd.Series(
+        pd.date_range(start="2022-01-01", periods=1000)
+    )  # Same length as data
+
+
+def test_no_plotting_datetime_values():
+    # Initialize the class
+    gsd = ParaschivIonescuGaitSequenceDetection()
+
+    # Create empty data
+    acceleration_data = pd.DataFrame(
+        {
+            "LowerBack_ACCEL_x": [],
+            "LowerBack_ACCEL_y": [],
+            "LowerBack_ACCEL_z": [],
+        }
+    )
+
+    # Create an empty pandas Series (no datetime values)
+    dt_data = pd.Series([])
+
+    # Call detect with empty data and datetime series without datetime values
+    with pytest.raises(
+        ValueError, match="dt_data must be a pandas Series with datetime values"
+    ):
+        gsd.detect(
+            data=acceleration_data,
+            sampling_freq_Hz=100,
+            dt_data=dt_data,
+            plot_results=True,
+        )
+
+
+# Tests for initial contact detection algorithm
+>>>>>>> main
 def test_detect_empty_data():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
     icd = ParaschivIonescuInitialContactDetection()
 
     # Call detect with an empty DataFrame instead of None
+<<<<<<< HEAD
     icd.detect(data=pd.DataFrame(), gait_sequences=pd.DataFrame(), sampling_freq_Hz=100)
 
 
 # Test_detect_no_gait_sequences function
+=======
+    icd.detect(
+        data=pd.DataFrame(),
+        gait_sequences=pd.DataFrame(),
+        sampling_freq_Hz=100,
+        v_acc_col_name="LowerBack",
+    )
+
+
+# Define test_detect_no_gait_sequences function
+>>>>>>> main
 def test_detect_no_gait_sequences():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
     icd = ParaschivIonescuInitialContactDetection()
 
     # Create a DataFrame with only one column for each axis
+<<<<<<< HEAD
     accel_data_single_axis = {
+=======
+    acceleration_data_single_axis = {
+>>>>>>> main
         "LowerBack_ACCEL_x": np.random.uniform(-2, 2, num_samples),
         "LowerBack_ACCEL_y": np.random.uniform(-2, 2, num_samples),
         "LowerBack_ACCEL_z": np.random.uniform(-2, 2, num_samples),
     }
+<<<<<<< HEAD
     accel_data_single_axis = pd.DataFrame(accel_data_single_axis)
 
     # Call detect without gait sequences
@@ -168,17 +373,35 @@ def test_detect_no_gait_sequences():
         sampling_freq_Hz=100,
     )
 
+=======
+    acceleration_data_single_axis = pd.DataFrame(acceleration_data_single_axis)
+
+    # Call detect without gait sequences
+    icd.detect(
+        data=acceleration_data_single_axis,
+        gait_sequences=pd.DataFrame(),
+        sampling_freq_Hz=100,
+        v_acc_col_name="LowerBack_ACCEL_y",
+    )
+
+
+>>>>>>> main
 def test_detect_no_plot():
     # Initialize the class
     gsd = ParaschivIonescuGaitSequenceDetection()
     icd = ParaschivIonescuInitialContactDetection()
 
     # Create a DataFrame with only one column for each axis
+<<<<<<< HEAD
     accel_data_single_axis = {
+=======
+    acceleration_data_single_axis = {
+>>>>>>> main
         "LowerBack_ACCEL_x": np.random.uniform(-2, 2, num_samples),
         "LowerBack_ACCEL_y": np.random.uniform(-2, 2, num_samples),
         "LowerBack_ACCEL_z": np.random.uniform(-2, 2, num_samples),
     }
+<<<<<<< HEAD
     accel_data_single_axis = pd.DataFrame(accel_data_single_axis)
 
     # Call detect without gait sequences
@@ -186,6 +409,16 @@ def test_detect_no_plot():
         data=accel_data_single_axis,
         gait_sequences=pd.DataFrame(),
         sampling_freq_Hz=100,
+=======
+    acceleration_data_single_axis = pd.DataFrame(acceleration_data_single_axis)
+
+    # Call detect without gait sequences
+    icd.detect(
+        data=acceleration_data_single_axis,
+        gait_sequences=pd.DataFrame(),
+        sampling_freq_Hz=100,
+        v_acc_col_name="LowerBack_ACCEL_y",
+>>>>>>> main
     )
 
     # Check if initial_contacts_ is None
@@ -193,12 +426,22 @@ def test_detect_no_plot():
         icd.initial_contacts_ is None
     ), "Initial contacts should be None if no gait sequences are provided"
 
+<<<<<<< HEAD
 @pytest.fixture
 def sample_accel_data():
     # Create sample accelerometer data
     np.random.seed(0)
     timestamps = pd.date_range(start="2024-01-01", periods=1000, freq="1s")
     accel_data = pd.DataFrame(
+=======
+
+@pytest.fixture
+def sample_accelerometer_data():
+    # Create sample accelerometer data
+    np.random.seed(0)
+    timestamps = pd.date_range(start="2024-01-01", periods=1000, freq="1s")
+    accelerometer_data = pd.DataFrame(
+>>>>>>> main
         {
             "LowerBack_ACCEL_x": np.random.randn(1000),
             "LowerBack_ACCEL_y": np.random.randn(1000),
@@ -206,7 +449,12 @@ def sample_accel_data():
         },
         index=timestamps,
     )
+<<<<<<< HEAD
     return accel_data
+=======
+    return accelerometer_data
+
+>>>>>>> main
 
 @pytest.fixture
 def sample_gait_sequences():
@@ -216,6 +464,7 @@ def sample_gait_sequences():
     )
     return gait_sequences
 
+<<<<<<< HEAD
 def test_detect_method(sample_accel_data, sample_gait_sequences):
     # Initialize ParaschivIonescuInitialContactDetection instance
     icd_instance = ParaschivIonescuInitialContactDetection()
@@ -247,17 +496,96 @@ def test_detect_method(sample_accel_data, sample_gait_sequences):
 # Test data
 num_samples = 50000  # Number of samples
 accel_data = {
+=======
+
+def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
+    # Initialize ParaschivIonescuInitialContactDetection instance
+    icd = ParaschivIonescuInitialContactDetection()
+
+    # Call detect method
+    icd.detect(
+        data=sample_accelerometer_data,
+        gait_sequences=sample_gait_sequences,
+        sampling_freq_Hz=100,
+        v_acc_col_name="LowerBack_ACCEL_y",
+    )
+
+    # Check if initial_contacts_ attribute is a DataFrame
+    assert isinstance(icd.initial_contacts_, pd.DataFrame)
+
+    # Check the columns in the initial_contacts_ DataFrame
+    expected_columns = ["onset", "event_type", "tracking_systems"]
+    assert all(col in icd.initial_contacts_.columns for col in expected_columns)
+
+    # Check the data type of the 'onset' column
+    assert pd.api.types.is_float_dtype(icd.initial_contacts_["onset"])
+
+    # Check if onset values are within the expected range
+    assert all(0 <= onset <= 6 for onset in icd.initial_contacts_["onset"])
+
+
+def test_detect_method_invalid_dt_data_type(
+    sample_accelerometer_data, sample_gait_sequences
+):
+    # Initialize ParaschivIonescuInitialContactDetection instance
+    icd = ParaschivIonescuInitialContactDetection()
+
+    # Call detect method with invalid dt_data type
+    with pytest.raises(ValueError) as excinfo:
+        icd.detect(
+            data=sample_accelerometer_data,
+            gait_sequences=sample_gait_sequences,
+            sampling_freq_Hz=100,
+            v_acc_col_name="LowerBack_ACCEL_y",
+            dt_data="not a series",
+        )
+    assert str(excinfo.value) == "dt_data must be a pandas Series with datetime values"
+
+
+def test_detect_method_invalid_dt_data_length(
+    sample_accelerometer_data, sample_gait_sequences
+):
+    # Initialize ParaschivIonescuInitialContactDetection instance
+    icd = ParaschivIonescuInitialContactDetection()
+
+    # Call detect method with dt_data not having the same length as data
+    with pytest.raises(ValueError) as excinfo:
+        icd.detect(
+            data=sample_accelerometer_data,
+            gait_sequences=sample_gait_sequences,
+            sampling_freq_Hz=100,
+            v_acc_col_name="LowerBack_ACCEL_y",
+            dt_data=pd.Series([1, 2, 3, 4]),
+        )
+    assert str(excinfo.value) == "dt_data must be a pandas Series with datetime values"
+
+
+# Tests for phyisical activity monitoring algorithm
+# Test data
+num_samples = 50000  # Number of samples
+acceleration_data = {
+>>>>>>> main
     "LARM_ACCEL_x": np.random.uniform(-2, 2, num_samples),
     "LARM_ACCEL_y": np.random.uniform(-2, 2, num_samples),
     "LARM_ACCEL_z": np.random.uniform(-2, 2, num_samples),
 }
+<<<<<<< HEAD
 accel_data = pd.DataFrame(accel_data)
+=======
+acceleration_data = pd.DataFrame(acceleration_data)
+>>>>>>> main
 sampling_frequency = 100  # Sampling frequency
 time_index = pd.date_range(
     start="2024-02-07", periods=num_samples, freq=f"{1/sampling_frequency}S"
 )
+<<<<<<< HEAD
 accel_data["timestamp"] = time_index
 accel_data.set_index("timestamp", inplace=True)
+=======
+acceleration_data["timestamp"] = time_index
+acceleration_data.set_index("timestamp", inplace=True)
+
+>>>>>>> main
 
 def test_pam_detect():
     # Initialize the class
@@ -265,7 +593,12 @@ def test_pam_detect():
 
     # Call the detect method
     pam.detect(
+<<<<<<< HEAD
         data=accel_data,
+=======
+        data=acceleration_data,
+        acceleration_unit="m/s^2",
+>>>>>>> main
         sampling_freq_Hz=sampling_frequency,
         thresholds_mg={
             "sedentary_threshold": 45,
@@ -282,6 +615,10 @@ def test_pam_detect():
         physical_activities_, pd.DataFrame
     ), "Physical activity information should be stored in a DataFrame."
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 def test_invalid_sampling_freq_pam():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -290,7 +627,12 @@ def test_invalid_sampling_freq_pam():
     invalid_sampling_freq = "invalid"
     with pytest.raises(ValueError):
         pam.detect(
+<<<<<<< HEAD
             data=accel_data,
+=======
+            data=acceleration_data,
+            acceleration_unit="m/s^2",
+>>>>>>> main
             sampling_freq_Hz=invalid_sampling_freq,
             thresholds_mg={
                 "sedentary_threshold": 45,
@@ -300,6 +642,10 @@ def test_invalid_sampling_freq_pam():
             epoch_duration_sec=5,
         )
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 def test_invalid_thresholds_type():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -308,12 +654,21 @@ def test_invalid_thresholds_type():
     invalid_thresholds = "invalid"
     with pytest.raises(ValueError):
         pam.detect(
+<<<<<<< HEAD
             data=accel_data,
+=======
+            data=acceleration_data,
+            acceleration_unit="m/s^2",
+>>>>>>> main
             sampling_freq_Hz=sampling_frequency,
             thresholds_mg=invalid_thresholds,
             epoch_duration_sec=5,
         )
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 def test_invalid_epoch_duration():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -322,7 +677,12 @@ def test_invalid_epoch_duration():
     invalid_epoch_duration = -1
     with pytest.raises(ValueError):
         pam.detect(
+<<<<<<< HEAD
             data=accel_data,
+=======
+            data=acceleration_data,
+            acceleration_unit="m/s^2",
+>>>>>>> main
             sampling_freq_Hz=sampling_frequency,
             thresholds_mg={
                 "sedentary_threshold": 45,
@@ -332,6 +692,10 @@ def test_invalid_epoch_duration():
             epoch_duration_sec=invalid_epoch_duration,
         )
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 def test_invalid_plot_results_type_pam():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -340,7 +704,12 @@ def test_invalid_plot_results_type_pam():
     invalid_plot_results = "invalid"
     with pytest.raises(ValueError):
         pam.detect(
+<<<<<<< HEAD
             data=accel_data,
+=======
+            data=acceleration_data,
+            acceleration_unit="m/s^2",
+>>>>>>> main
             sampling_freq_Hz=sampling_frequency,
             thresholds_mg={
                 "sedentary_threshold": 45,
@@ -351,6 +720,10 @@ def test_invalid_plot_results_type_pam():
             plot=invalid_plot_results,
         )
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 def test_invalid_sampling_freq_type_error_handling():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -359,7 +732,12 @@ def test_invalid_sampling_freq_type_error_handling():
     invalid_sampling_freq = "invalid"
     with pytest.raises(ValueError):
         pam.detect(
+<<<<<<< HEAD
             data=accel_data,
+=======
+            data=acceleration_data,
+            acceleration_unit="m/s^2",
+>>>>>>> main
             sampling_freq_Hz=invalid_sampling_freq,
             thresholds_mg={
                 "sedentary_threshold": 45,
@@ -370,6 +748,10 @@ def test_invalid_sampling_freq_type_error_handling():
             plot=True,
         )
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 def test_invalid_thresholds_type_error_handling():
     # Initialize the class
     pam = PhysicalActivityMonitoring()
@@ -378,15 +760,26 @@ def test_invalid_thresholds_type_error_handling():
     invalid_thresholds = "invalid"
     with pytest.raises(ValueError):
         pam.detect(
+<<<<<<< HEAD
             data=accel_data,
+=======
+            data=acceleration_data,
+            acceleration_unit="m/s^2",
+>>>>>>> main
             sampling_freq_Hz=sampling_frequency,
             thresholds_mg=invalid_thresholds,
             epoch_duration_sec=5,
             plot=True,
         )
 
+<<<<<<< HEAD
 def test_empty_input_data():
     # empty_data with required columns
+=======
+
+def test_empty_input_data():
+    # Define empty_data with required columns
+>>>>>>> main
     empty_data = pd.DataFrame(
         {
             "LARM_ACCEL_x": [],
@@ -400,7 +793,16 @@ def test_empty_input_data():
 
     # Call the detect method with empty_data
     with pytest.raises(ValueError):
+<<<<<<< HEAD
         pam.detect(data=empty_data, sampling_freq_Hz=sampling_frequency)
+=======
+        pam.detect(
+            data=empty_data,
+            acceleration_unit="m/s^2",
+            sampling_freq_Hz=sampling_frequency,
+        )
+
+>>>>>>> main
 
 def test_pam_detect_full_coverage():
     # Initialize the class
@@ -408,7 +810,12 @@ def test_pam_detect_full_coverage():
 
     # Call the detect method with plot_results=False to avoid plotting
     pam.detect(
+<<<<<<< HEAD
         data=accel_data,
+=======
+        data=acceleration_data,
+        acceleration_unit="m/s^2",
+>>>>>>> main
         sampling_freq_Hz=sampling_frequency,
         thresholds_mg={
             "sedentary_threshold": 45,
@@ -442,31 +849,54 @@ def test_pam_detect_full_coverage():
     ), "DataFrame should have the expected columns."
 
 
+<<<<<<< HEAD
+=======
+# Test function for test_PhysicalActivityMonitoring
+>>>>>>> main
 def test_PhysicalActivityMonitoring():
     """
     Test for PhysicalActivityMonitoring class.
     """
     # Generate some sample accelerometer data
     num_samples = 50000  # Number of samples
+<<<<<<< HEAD
     accel_data = {
+=======
+    acceleration_data = {
+>>>>>>> main
         "LARM_ACCEL_x": np.random.uniform(-2, 2, num_samples),
         "LARM_ACCEL_y": np.random.uniform(-2, 2, num_samples),
         "LARM_ACCEL_z": np.random.uniform(-2, 2, num_samples),
     }
+<<<<<<< HEAD
     accel_data = pd.DataFrame(accel_data)
+=======
+    acceleration_data = pd.DataFrame(acceleration_data)
+    acceleration_unit = "m/s^2"
+>>>>>>> main
     sampling_frequency = 100  # Sampling frequency
     time_index = pd.date_range(
         start="2024-02-07", periods=num_samples, freq=f"{1/sampling_frequency}S"
     )
+<<<<<<< HEAD
     accel_data["timestamp"] = time_index
     accel_data.set_index("timestamp", inplace=True)
+=======
+    acceleration_data["timestamp"] = time_index
+    acceleration_data.set_index("timestamp", inplace=True)
+>>>>>>> main
 
     # Initialize PhysicalActivityMonitoring instance
     pam = PhysicalActivityMonitoring()
 
     # Test detect method
     pam.detect(
+<<<<<<< HEAD
         data=accel_data,
+=======
+        data=acceleration_data,
+        acceleration_unit="m/s^2",
+>>>>>>> main
         sampling_freq_Hz=100,
         thresholds_mg={
             "sedentary_threshold": 45,
@@ -482,6 +912,7 @@ def test_PhysicalActivityMonitoring():
         pam.physical_activities_, pd.DataFrame
     ), "physical_activities_ should be a DataFrame."
 
+<<<<<<< HEAD
 # Test functions for Turn detection algorithm
 def test_pham_turn_detection_algorithm():
     # Initialize PhamTurnDetection object
@@ -734,3 +1165,111 @@ def test_invalid_sampling_freq_pham_pt():
 # Run the tests with pytest
 if __name__ == "__main__":
     pytest.main()
+=======
+
+def test_invalid_input_data_type():
+    # Initialize the class
+    pam = PhysicalActivityMonitoring()
+
+    # Test with invalid input data type
+    invalid_data = "invalid"
+    with pytest.raises(ValueError):
+        pam.detect(
+            data=invalid_data,
+            acceleration_unit="m/s^2",
+            sampling_freq_Hz=sampling_frequency,
+            thresholds_mg={
+                "sedentary_threshold": 45,
+                "light_threshold": 100,
+                "moderate_threshold": 400,
+            },
+            epoch_duration_sec=5,
+            plot=False,
+        )
+
+
+def test_invalid_index_name():
+    # Initialize the class
+    pam = PhysicalActivityMonitoring()
+
+    # Test with invalid index name
+    data_with_wrong_index_name = acceleration_data.copy()
+    data_with_wrong_index_name.index.name = "wrong_name"
+    with pytest.raises(ValueError):
+        pam.detect(
+            data=data_with_wrong_index_name,
+            acceleration_unit="m/s^2",
+            sampling_freq_Hz=sampling_frequency,
+            thresholds_mg={
+                "sedentary_threshold": 45,
+                "light_threshold": 100,
+                "moderate_threshold": 400,
+            },
+            epoch_duration_sec=5,
+            plot=False,
+        )
+
+
+def test_insufficient_columns():
+    # Initialize the class
+    pam = PhysicalActivityMonitoring()
+
+    # Test with insufficient columns
+    data_with_insufficient_columns = acceleration_data[["LARM_ACCEL_x", "LARM_ACCEL_y"]]
+    with pytest.raises(ValueError):
+        pam.detect(
+            data=data_with_insufficient_columns,
+            acceleration_unit="m/s^2",
+            sampling_freq_Hz=sampling_frequency,
+            thresholds_mg={
+                "sedentary_threshold": 45,
+                "light_threshold": 100,
+                "moderate_threshold": 400,
+            },
+            epoch_duration_sec=5,
+            plot=False,
+        )
+
+
+# Tests for sit to stand and stand to sit detection algorithm
+@pytest.fixture
+def sample_data():
+    # Generate sample data
+    num_samples = 50000  # Number of samples
+    sample_data = pd.DataFrame(
+        {
+            "Acc_X": np.random.uniform(-2, 2, num_samples),
+            "Acc_Y": np.random.uniform(-2, 2, num_samples),
+            "Acc_Z": np.random.uniform(-2, 2, num_samples),
+            "Gyro_X": np.random.uniform(-150, 150, num_samples),
+            "Gyro_Y": np.random.uniform(-150, 150, num_samples),
+            "Gyro_Z": np.random.uniform(-150, 150, num_samples),
+        }
+    )
+    return sample_data
+
+
+def test_detection_output_shape(sample_data):
+    # Test if the output DataFrame shape is correct
+    detection = PhamSittoStandStandtoSitDetection()
+    result = detection.detect(sample_data, sampling_freq_Hz=100)
+
+
+def test_plot_results_pham():
+    # Initialize the class
+    gsd = PhamSittoStandStandtoSitDetection()
+
+    # Test with invalid plot_results type
+    invalid_plot_results = "invalid"
+    with pytest.raises(ValueError):
+        gsd.detect(
+            data=sample_data,
+            sampling_freq_Hz=200,
+            plot_results=invalid_plot_results,
+        )
+
+
+# Run the tests with pytest
+if __name__ == "__main__":
+    pytest.main()
+>>>>>>> main

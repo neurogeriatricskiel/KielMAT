@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "ngmt"
-version = "0.0.3"
-description = "The NeuroGeriatricMotionToolbox (NGMT) is a Python-based toolbox for processing motion data."
+name = "kielmat"
+version = "0.0.5"
+description = "The KielMotionAnalysisToolbox (KielMAT) is a Python-based toolbox for processing motion data."
 license = "MIT"
 readme = "README.md"
-homepage = "https://neurogeriatricskiel.github.io/NGMT/"
-repository = "https://github.com/neurogeriatricskiel/NGMT"
-documentation = "https://neurogeriatricskiel.github.io/NGMT"
+homepage = "https://neurogeriatricskiel.github.io/KielMAT/"
+repository = "https://github.com/neurogeriatricskiel/KielMAT"
+documentation = "https://neurogeriatricskiel.github.io/KielMAT"
 authors = [
     "Masoud Abedinifar <Masoud.Abedinifar@uksh.de>",
     "Julius Welzel <j.welzel@neurologie.uni-kiel.de>",
@@ -20,7 +20,7 @@ maintainers = [
     "Robbin Romijnders <r.romijnders@neurologie.uni-kiel.de>"
 ]
 packages = [
-    { include = "ngmt" },
+    { include = "kielmat" },
 ]
 include = ["CHANGELOG.md"]
 
@@ -42,6 +42,9 @@ seaborn = "^0.13.1"
 json-repair = "^0.8.0"
 pyarrow = "^15.0.0"
 bids-validator = "^1.14.4"
+actipy = "^3.0.5"
+pooch = "^1.8.2"
+openneuro-py = "^2024.2.0"
 
 [tool.poetry.extras]
 docs = ["mkdocs", "mkdocs-material", "pymdownx.superfences"]
@@ -49,6 +52,7 @@ docs = ["mkdocs", "mkdocs-material", "pymdownx.superfences"]
 [tool.poetry.group.dev.dependencies]
 pytest-cov = "^4.1.0"
 pytest = "^7.4.3"
+black = "^24.4.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

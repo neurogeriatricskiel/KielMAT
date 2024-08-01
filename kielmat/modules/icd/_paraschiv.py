@@ -1,4 +1,5 @@
 # Import libraries
+from typing import Optional
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -19,26 +20,12 @@ class ParaschivIonescuInitialContactDetection:
     signal is numerically integrated and differentiated using a Gaussian continuous wavelet transformation. The
     initial contact (IC) events are identified as the positive maximal peaks between successive zero-crossings.
 
-    Finally, initial contacts information is provided as a DataFrame with columns `onset`, `event_type`,
-    `tracking_systems`, and `tracked_points`.
-
-    Attributes:
-        target_sampling_freq_Hz (float): Target sampling frequency for resampling the data. Default is 40.
-        event_type (str): Type of the detected event. Default is 'initial contact'.
-        tracking_systems (str): Tracking systems used. Default is 'SU'.
-        tracked_points (str): Tracked points on the body. Default is 'LowerBack'.
+    Finally, initial contacts information is provided as a DataFrame with columns `onset`, `event_type`, and
+    `tracking_systems`.
 
     Methods:
         detect(data, gait_sequences, sampling_freq_Hz):
             Detects initial contacts on the accelerometer signal.
-
-            Args:
-                data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
-                gait_sequences (pd.DataFrame): Gait sequences detected using ParaschivIonescuGaitSequenceDetectionDataframe algorithm.
-                sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
-
-            Returns:
-                self (pd.DataFrame): DataFrame containing initial contact information in BIDS format.
 
     Examples:
         Find initial contacts based on the detected gait sequence
@@ -46,9 +33,9 @@ class ParaschivIonescuInitialContactDetection:
         >>> icd = ParaschivIonescuInitialContactDetection()
         >>> icd = icd.detect(data=acceleration_data, sampling_freq_Hz=100)
         >>> print(icd.initial_contacts_)
-                onset   event_type       tracking_systems   tracked_points
-            0   5       initial contact  SU                 LowerBack
-            1   5.6     initial contact  SU                 LowerBack
+                onset   event_type       duration   tracking_systems
+            0   5       initial contact  0          SU
+            1   5.6     initial contact  0          SU
 
     References:
         [1] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer...
@@ -58,56 +45,62 @@ class ParaschivIonescuInitialContactDetection:
 
     def __init__(
         self,
-        target_sampling_freq_Hz: float = 40.0,
-        event_type: str = "initial contact",
-        tracking_systems: str = "SU",
-        tracked_points: str = "LowerBack",
     ):
         """
         Initializes the ParaschivIonescuInitialContactDetection instance.
-
-        Args:
-            target_sampling_freq_Hz (float, optional): Target sampling frequency for resampling the data. Default is 40.
-            event_type (str, optional): Type of the detected event. Default is 'gait sequence'.
-            tracking_systems (str, optional): Tracking systems used. Default is 'SU'.
-            tracked_points (str, optional): Tracked points on the body. Default is 'LowerBack'.
         """
-        self.target_sampling_freq_Hz = target_sampling_freq_Hz
-        self.event_type = event_type
-        self.tracking_systems = tracking_systems
-        self.tracked_points = tracked_points
         self.initial_contacts_ = None
 
     def detect(
         self,
         data: pd.DataFrame,
-        gait_sequences: pd.DataFrame,
-        sampling_freq_Hz: float = 100,
+        sampling_freq_Hz: float,
+        v_acc_col_name: str,
+        gait_sequences: Optional[pd.DataFrame] = None,
+        dt_data: Optional[pd.Series] = None,
+        tracking_system: Optional[str] = None,
     ) -> pd.DataFrame:
         """
         Detects initial contacts based on the input accelerometer data.
 
         Args:
             data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
-            gait_sequences (pd.DataFrame): Gait sequence calculated using ParaschivIonescuGaitSequenceDetectionDataframe algorithm.
             sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
+            v_acc_col_name (str): The column name that corresponds to the vertical acceleration.
+            gait_sequences (pd.DataFrame, optional): A dataframe of detected gait sequences. If not provided, the entire acceleration time series will be used for detecting initial contacts.
+            dt_data (pd.Series, optional): Original datetime in the input data. If original datetime is provided, the output onset will be based on that.
+            tracking_system (str, optional): Tracking system the data is from to be used for events df. Default is None.
 
-            Returns:
-                ParaschivIonescuInitialContactDetection: Returns an instance of the class.
-                    The initial contacts information is stored in the 'initial_contacts_' attribute,
-                    which is a pandas DataFrame in BIDS format with the following columns:
-                        - onset: Initial contacts.
-                        - event_type: Type of the event (default is 'gait sequence').
-                        - tracking_systems: Tracking systems used (default is 'SU').
-                        - tracked_points: Tracked points on the body (default is 'LowerBack').
+        Returns:
+            ParaschivIonescuInitialContactDetection: Returns an instance of the class.
+                The initial contacts information is stored in the 'initial_contacts_' attribute,
+                which is a pandas DataFrame in BIDS format with the following columns:
+                    - onset: Initial contacts.
+                    - event_type: Type of the event (default is 'Inital contact').
+                    - tracking_system: Tracking systems used the events are derived from.
         """
         # Check if data is empty
         if data.empty:
             self.initial_contacts_ = pd.DataFrame()
-            return  # Return without performing further processing
+            return self  # Return without performing further processing
 
-        # Extract vertical accelerometer data
-        acc_vertical = data["LowerBack_ACCEL_x"]
+        # check if dt_data is a pandas Series with datetime values
+        if dt_data is not None and (
+            not isinstance(dt_data, pd.Series)
+            or not pd.api.types.is_datetime64_any_dtype(dt_data)
+        ):
+            raise ValueError("dt_data must be a pandas Series with datetime values")
+
+        # check if tracking_system is a string
+        if tracking_system is not None and not isinstance(tracking_system, str):
+            raise ValueError("tracking_system must be a string")
+
+        # check if dt_data is provided and if it is a series with the same length as data
+        if dt_data is not None and len(dt_data) != len(data):
+            raise ValueError("dt_data must be a series with the same length as data")
+
+        # Extract vertical accelerometer data using the specified index
+        acc_vertical = data[v_acc_col_name]
 
         # Initialize an empty list to store the processed output
         processed_output = []
@@ -116,13 +109,17 @@ class ParaschivIonescuInitialContactDetection:
         all_onsets = []
 
         # Process each gait sequence
+        if gait_sequences is None:
+            gait_sequences = pd.DataFrame(
+                {"onset": [0], "duration": [len(data) / sampling_freq_Hz]}
+            )
         for _, gait_seq in gait_sequences.iterrows():
             # Calculate start and stop indices for the current gait sequence
-            start_index = int(sampling_freq_Hz * gait_seq["onset"] - 1)
+            start_index = int(sampling_freq_Hz * gait_seq["onset"])
             stop_index = int(
-                sampling_freq_Hz * (gait_seq["onset"] + gait_seq["duration"]) - 1
+                sampling_freq_Hz * (gait_seq["onset"] + gait_seq["duration"])
             )
-            accv_gait_seq = acc_vertical[start_index : stop_index + 2].to_numpy()
+            accv_gait_seq = acc_vertical[start_index:stop_index].to_numpy()
 
             try:
                 # Perform Signal Decomposition Algorithm for Initial Contacts (ICs)
@@ -159,10 +156,28 @@ class ParaschivIonescuInitialContactDetection:
         self.initial_contacts_ = pd.DataFrame(
             {
                 "onset": all_onsets,
-                "event_type": self.event_type,
-                "tracking_systems": self.tracking_systems,
-                "tracked_points": self.tracked_points,
+                "event_type": "initial contact",
+                "duration": 0,
+                "tracking_systems": tracking_system,
             }
         )
+
+        # If original datetime is available, update the 'onset' column
+        if dt_data is not None:
+            valid_indices = [
+                index
+                for index in self.initial_contacts_["onset"]
+                if index < len(dt_data)
+            ]
+            invalid_indices = len(self.initial_contacts_["onset"]) - len(valid_indices)
+
+            if invalid_indices > 0:
+                print(f"Warning: {invalid_indices} invalid index/indices found.")
+
+            # Only use valid indices to access dt_data
+            valid_dt_data = dt_data.iloc[valid_indices]
+
+            # Update the 'onset' column
+            self.initial_contacts_["onset"] = valid_dt_data.reset_index(drop=True)
 
         return self

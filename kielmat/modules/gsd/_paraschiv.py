@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
 import scipy.signal
+from typing import Optional
 from kielmat.utils import preprocessing
-from kielmat.utils import viz_utils
+from kielmat.config import cfg_colors
 
 
 class ParaschivIonescuGaitSequenceDetection:
@@ -31,40 +32,19 @@ class ParaschivIonescuGaitSequenceDetection:
     message indicating that no gait sequences are detected is displayed.
 
     Finally, the gait sequence information is stored in the 'gait_sequences_' attribute in BIDS compatible format with columns `onset`,
-    `duration`, `event_type`, `tracking_systems`, and `tracked_points` as Pandas DataFrame.
-
-    Attributes:
-        target_sampling_freq_Hz (float): Target sampling frequency for resampling the data. Defaults to 40 Hz.
-        event_type (str): Type of the detected event. Defaults to 'gait sequence'.
-        tracking_systems (str): Tracking systems used. Defaults to 'SU'.
-        tracked_points (str): Tracked points on the body. Defaults to 'LowerBack'.
+    `duration`, `event_type`, `tracking_system` as Pandas DataFrame.
 
     Methods:
         detect(data, sampling_freq_Hz, plot_results=False):
             Detects gait sequences in the provided accelerometer data.
 
-            Args:
-                data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
-                sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
-                plot_results (bool, optional): If True, generates a plot of the pre-processed data and the detected gait sequences. Defaults to False.
-                dt_data (str, optional): Name of the original datetime in the input data. If original datetime is provided, the output onset will be based on that.
-
-        Returns:
-            ParaschivIonescuGaitSequenceDetection:
-                which is a pandas DataFrame in BIDS format with the following columns:
-            onset: Start time of the gait sequence.
-            duration: Duration of the gait sequence.
-            event_type: Type of the event (default is 'gait sequence').
-            tracking_systems: Tracking systems used (default is 'SU').
-            tracked_points: Tracked points on the body (default is 'LowerBack').
-
     Examples:
         >>> gsd = ParaschivIonescuGaitSequenceDetection()
         >>> gsd.detect(data=acceleration_data, sampling_freq_Hz=100, plot_results=True)
         >>> print(gsd.gait_sequences_)
-                onset   duration    event_type      tracking_systems    tracked_points
-            0   4.500   5.25        gait sequence   SU                  LowerBack
-            1   90.225  10.30       gait sequence   SU                  LowerBack
+                onset   duration    event_type      tracking_systems
+            0   4.500   5.25        gait sequence   SU
+            1   90.225  10.30       gait sequence   SU
 
     References:
         [1] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer...
@@ -74,24 +54,10 @@ class ParaschivIonescuGaitSequenceDetection:
 
     def __init__(
         self,
-        target_sampling_freq_Hz: float = 40.0,
-        event_type: str = "gait sequence",
-        tracking_systems: str = "SU",
-        tracked_points: str = "LowerBack",
     ):
         """
         Initializes the ParaschivIonescuGaitSequenceDetection instance.
-
-        Args:
-            target_sampling_freq_Hz (float, optional): Target sampling frequency for resampling the data. Default is 40.
-            event_type (str, optional): Type of the detected event. Default is 'gait sequence'.
-            tracking_systems (str, optional): Tracking systems used. Default is 'SU'.
-            tracked_points (str, optional): Tracked points on the body. Default is 'LowerBack'.
         """
-        self.target_sampling_freq_Hz = target_sampling_freq_Hz
-        self.event_type = event_type
-        self.tracking_systems = tracking_systems
-        self.tracked_points = tracked_points
         self.gait_sequences_ = None
 
     def detect(
@@ -99,7 +65,8 @@ class ParaschivIonescuGaitSequenceDetection:
         data: pd.DataFrame,
         sampling_freq_Hz: float,
         plot_results: bool = False,
-        dt_data: pd.Series = None,
+        dt_data: Optional[pd.Series] = None,
+        tracking_system: Optional[str] = None,
     ) -> pd.DataFrame:
         """
         Detects gait sequences based on the input accelerometer data.
@@ -108,18 +75,17 @@ class ParaschivIonescuGaitSequenceDetection:
             data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
             sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
             plot_results (bool, optional): If True, generates a plot showing the pre-processed acceleration data
-            and the detected gait sequences. Default is False.
+                and the detected gait sequences. Default is False.
             dt_data (pd.Series, optional): Original datetime in the input data. If original datetime is provided, the output onset will be based on that.
+            tracking_system (str, optional): Tracking system the data is from to be used for events df. Default is None.
 
         Returns:
-            ParaschivIonescuGaitSequenceDetection: Returns an instance of the class.
-                The gait sequence information is stored in the 'gait_sequences_' attribute,
+            pd.DataFrame: The gait sequence information stored in the 'gait_sequences_' attribute,
                 which is a pandas DataFrame in BIDS format with the following columns:
                     - onset: Start time of the gait sequence.
                     - duration: Duration of the gait sequence.
                     - event_type: Type of the event (default is 'gait sequence').
-                    - tracking_systems: Tracking systems used (default is 'SU').
-                    - tracked_points: Tracked points on the body (default is 'LowerBack').
+                    - tracking_system: Tracking systems used the events are derived from.
         """
         # Error handling for invalid input data
         if not isinstance(data, pd.DataFrame) or data.shape[1] != 3:
@@ -132,6 +98,10 @@ class ParaschivIonescuGaitSequenceDetection:
 
         if not isinstance(plot_results, bool):
             raise ValueError("Plot results must be a boolean (True or False).")
+
+        # check if tracking_system is a string
+        if tracking_system is not None and not isinstance(tracking_system, str):
+            raise ValueError("tracking_system must be a string")
 
         # check if dt_data is a pandas Series with datetime values
         if dt_data is not None and (
@@ -149,8 +119,9 @@ class ParaschivIonescuGaitSequenceDetection:
 
         # Resample acceleration_norm to target sampling frequency
         initial_sampling_frequency = sampling_freq_Hz
+        target_sampling_freq_Hz = 40
         resampled_acceleration = preprocessing.resample_interpolate(
-            acceleration_norm, initial_sampling_frequency, self.target_sampling_freq_Hz
+            acceleration_norm, initial_sampling_frequency, target_sampling_freq_Hz
         )
 
         # Applying low-pass Savitzky-Golay filter to smoothen the resampled data
@@ -164,7 +135,7 @@ class ParaschivIonescuGaitSequenceDetection:
         # Remove 40Hz drift from the filtered data
         drift_removed_acceleration = preprocessing.highpass_filter(
             signal=smoothed_acceleration,
-            sampling_frequency=self.target_sampling_freq_Hz,
+            sampling_frequency=target_sampling_freq_Hz,
             method="iir",
         )
 
@@ -179,7 +150,7 @@ class ParaschivIonescuGaitSequenceDetection:
             scales=10,
             desired_scale=10,
             wavelet="gaus2",
-            sampling_frequency=self.target_sampling_freq_Hz,
+            sampling_frequency=target_sampling_freq_Hz,
         )
 
         # Applying Savitzky-Golay filter to further smoothen the wavelet transformed data
@@ -194,7 +165,7 @@ class ParaschivIonescuGaitSequenceDetection:
                 scales=10,
                 desired_scale=10,
                 wavelet="gaus2",
-                sampling_frequency=self.target_sampling_freq_Hz,
+                sampling_frequency=target_sampling_freq_Hz,
             )
         )
         further_smoothed_wavelet_result = further_smoothed_wavelet_result.T
@@ -210,9 +181,9 @@ class ParaschivIonescuGaitSequenceDetection:
         # Compute the envelope of the processed acceleration data
         envelope, _ = preprocessing.calculate_envelope_activity(
             detected_activity_signal,
-            int(round(self.target_sampling_freq_Hz)),
+            int(round(target_sampling_freq_Hz)),
             1,
-            int(round(self.target_sampling_freq_Hz)),
+            int(round(target_sampling_freq_Hz)),
         )
 
         # Initialize a list for walking bouts
@@ -224,7 +195,7 @@ class ParaschivIonescuGaitSequenceDetection:
             for j in range(len(index_ranges)):
                 if (
                     index_ranges[j, 1] - index_ranges[j, 0]
-                    <= 3 * self.target_sampling_freq_Hz
+                    <= 3 * target_sampling_freq_Hz
                 ):
                     envelope[index_ranges[j, 0] : index_ranges[j, 1] + 1] = 0
                 else:
@@ -255,14 +226,16 @@ class ParaschivIonescuGaitSequenceDetection:
             ]
 
             # Calculate the data adaptive threshold using the 5th percentile of the combined peaks
-            threshold = np.percentile(combined_peaks, 5)
+            try:
+                threshold = np.percentile(combined_peaks, 5)
+
+            except IndexError:
+                # If combined_peaks is empty, set threshold to default value
+                threshold = 0.15
+                selected_signal = smoothed_wavelet_result
 
             # Set selected_signal to detected_activity_signal
             selected_signal = detected_activity_signal
-
-        else:
-            threshold = 0.15
-            selected_signal = smoothed_wavelet_result
 
         # Detect mid-swing peaks
         min_peaks, max_peaks = preprocessing.find_local_min_max(
@@ -308,18 +281,24 @@ class ParaschivIonescuGaitSequenceDetection:
         # Calculate the length of walking bouts
         walking_bouts_length = len(walking_bouts)
 
-        # Initialize an empty list
+        # Initialize an empty list for filtered walking bouts
         filtered_walking_bouts = []
 
-        # Initialize a counter variable "counter"
+        # Initialize a counter variable to count walking bouts
         counter = 0
 
+        # Iterate through walking bouts to filter those with steps less than 5
         for j in range(walking_bouts_length):
             if walking_bouts[j]["steps"] >= 5:
                 counter += 1
                 filtered_walking_bouts.append(
                     {"start": walking_bouts[j]["start"], "end": walking_bouts[j]["end"]}
                 )
+
+        # If no walking bouts are detected, print a message
+        if counter == 0:
+            print("No gait sequences detected due to insufficient steps in the data.")
+            return self
 
         # Initialize an array of zeros with the length of detected_activity_signal
         walking_labels = np.zeros(len(detected_activity_signal))
@@ -340,12 +319,13 @@ class ParaschivIonescuGaitSequenceDetection:
         # Merge walking bouts if break less than 3 seconds
         if ind_noWk.size > 0:
             for j in range(len(ind_noWk)):
-                if ind_noWk[j, 1] - ind_noWk[j, 0] <= self.target_sampling_freq_Hz * 3:
+                if ind_noWk[j, 1] - ind_noWk[j, 0] <= target_sampling_freq_Hz * 3:
                     walking_labels[ind_noWk[j, 0] : ind_noWk[j, 1] + 1] = 1
 
         # Merge walking bouts if break less than 3 seconds
         ind_Wk = []
         walkLabel_1_indices = np.where(walking_labels == 1)[0]
+        GSD_Output = []
 
         if walkLabel_1_indices.size > 0:
             ind_Wk = preprocessing.find_consecutive_groups(walking_labels == 1)
@@ -356,13 +336,12 @@ class ParaschivIonescuGaitSequenceDetection:
                     walk.append({"start": (ind_Wk[j, 0]), "end": ind_Wk[j, 1]})
 
             n = len(walk)
-            GSD_Output = []
 
             for j in range(n):
                 GSD_Output.append(
                     {
-                        "Start": walk[j]["start"] / self.target_sampling_freq_Hz,
-                        "End": walk[j]["end"] / self.target_sampling_freq_Hz,
+                        "Start": walk[j]["start"] / target_sampling_freq_Hz,
+                        "End": walk[j]["end"] / target_sampling_freq_Hz,
                         "fs": sampling_freq_Hz,
                     }
                 )
@@ -374,9 +353,8 @@ class ParaschivIonescuGaitSequenceDetection:
         gait_sequences_ = pd.DataFrame(GSD_Output)
         gait_sequences_["onset"] = gait_sequences_["Start"]
         gait_sequences_["duration"] = gait_sequences_["End"] - gait_sequences_["Start"]
-        gait_sequences_["event_type"] = self.event_type
-        gait_sequences_["tracking_systems"] = self.tracking_systems
-        gait_sequences_["tracked_points"] = self.tracked_points
+        gait_sequences_["event_type"] = "gait sequence"
+        gait_sequences_["tracking_system"] = tracking_system
 
         # Check if the indices in ind_Wk are within the range of dt_data's index
         if ind_Wk.size > 0 and dt_data is not None:
@@ -395,16 +373,15 @@ class ParaschivIonescuGaitSequenceDetection:
             gait_sequences_["duration"] = (
                 gait_sequences_["End"] - gait_sequences_["Start"]
             )
-            gait_sequences_["event_type"] = self.event_type
-            gait_sequences_["tracking_systems"] = self.tracking_systems
-            gait_sequences_["tracked_points"] = self.tracked_points
+            gait_sequences_["event_type"] = "gait sequence"
+            gait_sequences_["tracking_system"] = tracking_system
 
             # If original datetime is available, update the 'onset' column
             gait_sequences_["onset"] = valid_dt_data.reset_index(drop=True)
 
         # Create a DataFrame from the gait sequence data
         gait_sequences_ = gait_sequences_[
-            ["onset", "duration", "event_type", "tracking_systems", "tracked_points"]
+            ["onset", "duration", "event_type", "tracking_system"]
         ]
 
         # Return gait_sequences_ as an output
@@ -420,8 +397,8 @@ class ParaschivIonescuGaitSequenceDetection:
         # Plot results if set to true
         if plot_results:
 
-            viz_utils.plot_gait(
-                self.target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
+            preprocessing.gsd_plot_results(
+                target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
             )
 
         return self
