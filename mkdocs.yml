@@ -52,6 +52,8 @@ nav:
     - Gait Sequence Detection: modules/gsd.md
     - Initial Contact Detection: modules/icd.md
     - Physical Activity Monitoring: modules/pam.md
+    - Postural Transition Detection: modules/ptd.md
+    - Turn Detection: modules/td.md
   - Dataclass: dataclass.md
   - Datasets:
     - datasets/index.md

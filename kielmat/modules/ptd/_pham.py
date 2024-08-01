@@ -42,31 +42,8 @@ class PhamPosturalTransitionDetection:
         detect(data, gyro_mediolateral, accel_unit, gyro_unit, sampling_freq_Hz, dt_data, tracking_system, tracked_point, plot_results):
             Detects  sit to stand and stand to sit using accelerometer and gyro signals.
 
-            Args:
-                data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
-                gyro_mediolateral (str): It corresponds to the gyroscope component representing movements or rotations in the mediolateral direction. This could correspond to rotation around the y-axis in your coordinate system.
-                accel_unit (str): Unit of acceleration data.
-                gyro_unit (str): Unit of gyro data.
-                sampling_freq_Hz (float, int): Sampling frequency of the signals.
-                dt_data (pd.Series, optional): Original datetime in the input data. If original datetime is provided, the output onset will be based on that.
-                tracking_system (str, optional): Tracking systems.
-                tracked_point (str, optional): Tracked points on the body.
-                plot_results (bool, optional): If True, generates a plot. Default is False.
-
-            Returns:
-                PhamPosturalTransitionDetection: an instance of the class with the detected postural transitions
-                stored in the 'postural_transitions_' attribute.
-
         spatio_temporal_parameters():
             Extracts spatio-temporal parameters of the detected turns.
-
-            Returns:
-                pd.DataFrame: The spatio-temporal parameter information is stored in the 'spatio_temporal_parameters'
-                attribute with the following columns:
-                    - type_of_postural_transition: Type of postural transition which is either "sit to stand" or "stand to sit".
-                    - angel_of_postural_transition: Angle of the postural transition in degrees.
-                    - maximum_flexion_velocity: Maximum flexion velocity in deg/s.
-                    - maximum_extension_velocity: Maximum extension velocity deg/s.
 
     Examples:
         >>> pham = PhamPosturalTransitionDetection()

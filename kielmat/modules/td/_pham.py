@@ -41,30 +41,12 @@ class PhamTurnDetection:
         detect(data, gyro_vertical, accel_unit, gyro_unit, sampling_freq_Hz, dt_data, tracking_system, tracked_point, plot_results):
             Detects turns using accelerometer and gyro signals.
 
-            Args:
-                data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
-                gyro_vertical (str): The column name that corresponds to the vertical component gyro.
-                accel_unit (str): Unit of acceleration data.
-                gyro_unit (str): Unit of gyro data.
-                sampling_freq_Hz (float, int): Sampling frequency of the signals in Hz.
-                dt_data (pd.Series, optional): Original datetime in the input data. If original datetime is provided, the output onset will be based on that.
-                tracking_system (str, optional): Tracking systems.
-                tracked_point (str, optional): Tracked points on the body.
-                plot_results (bool, optional): If True, generates a plot. Default is False.
-
             Returns:
                 PhamTurnDetection: an instance of the class with the detected turns
                 stored in the 'turns_' attribute.
 
         spatio_temporal_parameters():
             Extracts spatio-temporal parameters of the detected turns.
-
-            Returns:
-                pd.DataFrame: The spatio-temporal parameter information is stored in the 'spatio_temporal_parameters'
-                attribute with the following columns:
-                    - direction_of_turn: Direction of turn which is either "left" or "right".
-                    - angle_of_turn: Angle of the turn in degrees.
-                    - peak_angular_velocity: Peak angular velocity during turn in deg/s.
 
     Examples:
         >>> pham = PhamTurnDetection()
