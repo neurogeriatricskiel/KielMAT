@@ -31,15 +31,6 @@ import matplotlib as plt
 import warnings
 import numpy.testing as npt
 import pytest
-<<<<<<< HEAD
-import unittest
-import scipy
-from unittest.mock import patch
-from pathlib import Path
-from kielmat.datasets import keepcontrol
-from kielmat.utils.ngmt_dataclass import NGMTRecording
-=======
->>>>>>> main
 from kielmat.utils.preprocessing import (
     resample_interpolate,
     lowpass_filter,
@@ -61,15 +52,6 @@ from kielmat.utils.preprocessing import (
     wavelet_decomposition,
     moving_var,
 )
-<<<<<<< HEAD
-from kielmat.utils.viz_utils import (
-    plot_gait,
-    plot_pam,
-    plot_postural_transitions,
-    plot_turns,
-)
-=======
->>>>>>> main
 from kielmat.utils.quaternion import (
     quatinv,
     quatnormalize,
@@ -2085,12 +2067,6 @@ def test_quatmultiply(q1_shape, q2_shape, scalar_first, channels_last):
         q1, q2, scalar_first=scalar_first, channels_last=channels_last
     )
 
-<<<<<<< HEAD
-    # Check if channels and time axis are switched back when channels_last is False
-    if not channels_last:
-        assert result.shape == q1.T.shape  # Check the shape after transpose
-=======
->>>>>>> main
 
 # Test function for axang2rotm function
 @pytest.mark.parametrize(
