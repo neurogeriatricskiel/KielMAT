@@ -1692,7 +1692,9 @@ def test_gsd_plot_results_without_plot(monkeypatch):
     monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
 
     # Call the function
-    viz_utils.plot_gait(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_)
+    viz_utils.plot_gait(
+        target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
+    )
 
 
 # Test function for pam_plot_results without plotting
@@ -2121,51 +2123,68 @@ def test_pham_turn_plot_results_no_plot(monkeypatch):
     gyro_unit = "rad/s"
 
     # Call the function
-    viz_utils.plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq_Hz)
+    viz_utils.plot_turns(
+        accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq_Hz
+    )
+
 
 # Fixture to provide sample data for testing
 @pytest.fixture
 def sample_data():
     """Fixture to provide a sample DataFrame with accelerometer data."""
-    return pd.DataFrame({
-        "Time": [0.1, 0.2, 0.3], 
-        "ACCEL_x": [1.0, 2.0, 3.0], 
-        "ACCEL_y": [0.5, 1.5, 2.5],  
-        "ACCEL_z": [0.2, 0.3, 0.4]   
-    })
+    return pd.DataFrame(
+        {
+            "Time": [0.1, 0.2, 0.3],
+            "ACCEL_x": [1.0, 2.0, 3.0],
+            "ACCEL_y": [0.5, 1.5, 2.5],
+            "ACCEL_z": [0.2, 0.3, 0.4],
+        }
+    )
+
 
 # Fixture to provide sample channel information for testing
 @pytest.fixture
 def sample_channels():
     """Fixture to provide a sample DataFrame with channel information."""
-    return pd.DataFrame({
-        "name": ["ACCEL_x", "ACCEL_y", "ACCEL_z"],  # Channel names
-        "component": ["x", "y", "z"],  # Component of the measurement
-        "type": ["ACCEL", "ACCEL", "ACCEL"],  # Type of measurement
-        "tracked_point": ["n/a", "n/a", "n/a"],  # Point being tracked
-        "units": ["m/s^2", "m/s^2", "m/s^2"],  # Units of measurement
-        "sampling_frequency": [100, 100, 100]  # Sampling frequency
-    })
+    return pd.DataFrame(
+        {
+            "name": ["ACCEL_x", "ACCEL_y", "ACCEL_z"],  # Channel names
+            "component": ["x", "y", "z"],  # Component of the measurement
+            "type": ["ACCEL", "ACCEL", "ACCEL"],  # Type of measurement
+            "tracked_point": ["n/a", "n/a", "n/a"],  # Point being tracked
+            "units": ["m/s^2", "m/s^2", "m/s^2"],  # Units of measurement
+            "sampling_frequency": [100, 100, 100],  # Sampling frequency
+        }
+    )
+
 
 # Fixture to provide sample event data for testing
 @pytest.fixture
 def sample_events():
     """Fixture to provide a sample DataFrame with event information."""
-    return pd.DataFrame({
-        "onset": [0.1, 0.2],  # Onset times of events
-        "duration": [0.1, 0.2],  # Durations of events
-        "event_type": ["stimulus", "response"],  # Type of events
-        "name": ["Stimulus A", "Response B"]  # Names of events
-    })
+    return pd.DataFrame(
+        {
+            "onset": [0.1, 0.2],  # Onset times of events
+            "duration": [0.1, 0.2],  # Durations of events
+            "event_type": ["stimulus", "response"],  # Type of events
+            "name": ["Stimulus A", "Response B"],  # Names of events
+        }
+    )
+
 
 # Fixture to create a sample KielMATRecording object for testing
 @pytest.fixture
 def sample_recording(sample_data, sample_channels):
     """Fixture to create a sample KielMATRecording object with sample data and channels."""
     return KielMATRecording(
-        data={"tracking_system_1": sample_data},  # Sample data under one tracking system
-        channels={"tracking_system_1": sample_channels}  # Sample channel info under one tracking system
+        data={
+            "tracking_system_1": sample_data
+        },  # Sample data under one tracking system
+        channels={
+            "tracking_system_1": sample_channels
+        },  # Sample channel info under one tracking system
     )
+
 
 # Test to validate channel information in the recording
 def test_validate_channels_valid(sample_recording):
@@ -2176,13 +2195,19 @@ def test_validate_channels_valid(sample_recording):
     except ValueError:
         pytest.fail("Validation failed for valid channels")
 
+
 # Test to add events to the recording
 def test_add_events(sample_recording, sample_events):
     """Test adding events to the recording and verify their presence."""
     recording = sample_recording
     recording.add_events(tracking_system="tracking_system_1", new_events=sample_events)
-    assert "tracking_system_1" in recording.events  # Check if the tracking system has events
-    assert len(recording.events["tracking_system_1"]) == len(sample_events)  # Check if the number of events matches
+    assert (
+        "tracking_system_1" in recording.events
+    )  # Check if the tracking system has events
+    assert len(recording.events["tracking_system_1"]) == len(
+        sample_events
+    )  # Check if the number of events matches
+
 
 # Test to add general info to the recording
 def test_add_info(sample_recording):
@@ -2190,11 +2215,13 @@ def test_add_info(sample_recording):
     recording = sample_recording
     recording.add_info("Subject", "001")
 
+
 # Test to handle adding info with an invalid key
 def test_add_info_invalid_key(sample_recording):
     """Test adding info with an invalid key."""
     recording = sample_recording
     recording.add_info("InvalidKey", "001")
+
 
 # Test to handle adding info with case conversion
 def test_add_info_case_conversion(sample_recording):
@@ -2202,18 +2229,25 @@ def test_add_info_case_conversion(sample_recording):
     recording = sample_recording
     recording.add_info("Subject", "SubJECT01")
 
+
 # Test to handle adding info with underscores removed
 def test_add_info_remove_underscores(sample_recording):
     """Test adding info with underscores removed from the value."""
     recording = sample_recording
     recording.add_info("Task", "Task_Name")
 
+
 # Test to export events to a CSV file without BIDS compatibility
 def test_export_events_single_system(sample_recording, tmp_path):
     """Test exporting events to a CSV file for a single tracking system without BIDS compatibility."""
     recording = sample_recording
     file_path = tmp_path / "tracking_system_1_events.csv"
-    recording.export_events(file_path=str(file_path), tracking_system="tracking_system_1", bids_compatible_fname=False)
+    recording.export_events(
+        file_path=str(file_path),
+        tracking_system="tracking_system_1",
+        bids_compatible_fname=False,
+    )
+
 
 # Test to export events to a CSV file with BIDS compatibility
 def test_export_events_bids_compatible(sample_recording, tmp_path):
@@ -2223,6 +2257,7 @@ def test_export_events_bids_compatible(sample_recording, tmp_path):
     recording.add_info("Task", "task01")
     file_path = tmp_path / "sub-001_task-task01_events.csv"
     recording.export_events(file_path=str(file_path), bids_compatible_fname=True)
+
 
 # Run the tests with pytest
 if __name__ == "__main__":
