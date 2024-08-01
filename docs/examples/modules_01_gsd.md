@@ -57,9 +57,6 @@ The participant was assessed for 2.5 hours in the real-world while doing differe
 
 
 ```python
-# The 'file_path' variable holds the absolute path to the data file
-file_path = Path(os.getcwd()).parent.joinpath("examples","data","exMobiliseFreeLiving.mat")
-
 # In this example, we use "SU" as tracking_system and "LowerBack" as tracked points.
 tracking_sys = "SU"
 tracked_points = {tracking_sys: ["LowerBack"]}
