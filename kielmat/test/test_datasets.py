@@ -10,7 +10,7 @@ def ensure_mobilised_dataset():
     zip_file_path = dataset_path / "Mobilise-D_dataset.zip"
     
     if not zip_file_path.exists():
-        mobilised.fetch_dataset(dataset_path=dataset_path)  # Ensure dataset is fetched
+        mobilised.fetch_dataset(dataset_path=dataset_path)  
     
     if not zip_file_path.exists():
         raise FileNotFoundError(f"The file {zip_file_path} was not downloaded.")
@@ -28,7 +28,7 @@ def ensure_keepcontrol_dataset():
     zip_file_path = dataset_path / "KeepControl_dataset.zip"
     
     if not zip_file_path.exists():
-        keepcontrol.fetch_dataset(dataset_path=dataset_path)  # Ensure dataset is fetched
+        keepcontrol.fetch_dataset(dataset_path=dataset_path)  
     
     if not zip_file_path.exists():
         raise FileNotFoundError(f"The file {zip_file_path} was not downloaded.")
