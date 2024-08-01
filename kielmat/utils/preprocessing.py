@@ -1065,59 +1065,6 @@ def classify_physical_activity(
         [time_column_name, "enmo", "sedentary", "light", "moderate", "vigorous"]
     ]
 
-# Function to plot results of the physical activity monitoring algorithm
-def pam_plot_results(hourly_average_data, thresholds_mg):
-    """
-    Plots the hourly averaged ENMO for each day along with activity level thresholds.
-
-    Args:
-        hourly_average_data (pd.DataFrame): DataFrame containing hourly averaged ENMO values.
-        thresholds_mg (dict): Dictionary containing threshold values for physical activity detection.
-    """
-    # Plotting
-    fig, ax = plt.subplots(figsize=(14, 8))
-
-    # Choose the 'turbo' colormap for coloring each day
-    colormap = plt.cm.turbo
-
-    # Plot thresholds
-    ax.axhline(
-        y=thresholds_mg.get("sedentary_threshold", 45),
-        color="y",
-        linestyle="--",
-        label="Sedentary threshold",
-    )
-    ax.axhline(
-        y=thresholds_mg.get("light_threshold", 100),
-        color="g",
-        linestyle="--",
-        label="Light physical activity threshold",
-    )
-    ax.axhline(
-        y=thresholds_mg.get("moderate_threshold", 400),
-        color="r",
-        linestyle="--",
-        label="Moderate physical activity threshold",
-    )
-
-    # Plot each day data with a different color
-    for i, date in enumerate(hourly_average_data.index):
-        color = colormap(i)
-        ax.plot(hourly_average_data.loc[date], label=str(date), color=color)
-
-    # Customize plot appearance
-    plt.xticks(range(24), [str(i).zfill(2) for i in range(24)])
-    plt.xlabel("Time (h)", fontsize=16)
-    plt.ylabel("ENMO (mg)", fontsize=16)
-    plt.title("Hourly averaged ENMO for each day along with activity level thresholds")
-    plt.legend(loc="upper left", fontsize=16)
-    plt.grid(visible=None, which="both", axis="both")
-    plt.xticks(fontsize=16)
-    plt.yticks(fontsize=16)
-    plt.tight_layout()
-    plt.show()
-
-
 # Function to estimate tilt angle
 def tilt_angle_estimation(data, sampling_frequency_hz):
     """
