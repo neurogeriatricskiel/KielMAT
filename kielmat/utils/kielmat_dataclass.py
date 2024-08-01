@@ -167,14 +167,14 @@ class KielMATRecording:
 
     def add_info(self, key: str, value: Any) -> None:
         """Add information to the info dictionary. Valid keys are : 'session', 'task', 'run', 'subject_id', 'age', 'sex', 'group', 'handedness', 'sampling_frequency', 'task_description', 'instructions', 'manufacturer', 'manufacturer_model_name', 'software_versions', 'missing_values', 'tracking_system_name'.
-    
+
         Args:
             key (str): The key for the information.
             value (Any): The value of the information.
-    
+
         Raises:
             ValueError: If the provided 'key' is not one of the valid info keys.
-    
+
         Examples:
             >>> recording.add_info("subject_id", "01")
             >>> recording.add_info("task", "treadmill")
