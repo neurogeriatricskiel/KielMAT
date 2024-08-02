@@ -256,7 +256,6 @@ def test_fairpark_load_recording_missing_dataset(mock_exists, mock_read_csv, tra
         tracked_points=tracked_points
     )
 
-    assert mock_exists.called_once()
     assert isinstance(recording, KielMATRecording)
 
 # Run the tests with pytest
