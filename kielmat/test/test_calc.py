@@ -28,7 +28,8 @@ By running these tests, the reliability and correctness of the signal processing
 import pandas as pd
 import numpy as np
 import matplotlib as plt
-plt.use('Agg') 
+
+plt.use("Agg")
 import warnings
 import numpy.testing as npt
 import pytest
