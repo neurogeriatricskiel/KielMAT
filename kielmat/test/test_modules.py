@@ -385,7 +385,7 @@ acceleration_data = {
 acceleration_data = pd.DataFrame(acceleration_data)
 sampling_frequency = 100  # Sampling frequency
 time_index = pd.date_range(
-    start="2024-02-07", periods=num_samples, freq=f"{1/sampling_frequency}S"
+    start="2024-02-07", periods=num_samples, freq=f"{1/sampling_frequency}s"
 )
 acceleration_data["timestamp"] = time_index
 acceleration_data.set_index("timestamp", inplace=True)
@@ -883,7 +883,7 @@ def test_dt_data_invalid_type():
     sample_data = pd.read_csv(test_data_file_path, index_col=0)
 
     # dt_data is not a pandas Series
-    dt_data = np.array(pd.date_range(start="1/1/2022", periods=1000, freq="S"))
+    dt_data = np.array(pd.date_range(start="1/1/2022", periods=1000, freq="s"))
 
     # Should raise ValueError
     with pytest.raises(

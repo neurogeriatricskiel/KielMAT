@@ -28,6 +28,7 @@ By running these tests, the reliability and correctness of the signal processing
 import pandas as pd
 import numpy as np
 import matplotlib as plt
+plt.use('Agg') 
 import warnings
 import numpy.testing as npt
 import pytest
@@ -1552,7 +1553,7 @@ def test_classify_physical_activity_invalid_threshold_type():
 def test_classify_physical_activity_invalid_threshold_values():
     invalid_data = pd.DataFrame(
         {
-            "timestamp": pd.date_range(start="2024-01-01", periods=100, freq="S"),
+            "timestamp": pd.date_range(start="2024-01-01", periods=100, freq="s"),
             "enmo": np.random.rand(100) * 500,
         }
     )
@@ -1566,7 +1567,7 @@ def test_classify_physical_activity_invalid_threshold_values():
 def test_classify_physical_activity_negative_epoch_duration():
     invalid_data = pd.DataFrame(
         {
-            "timestamp": pd.date_range(start="2024-01-01", periods=100, freq="S"),
+            "timestamp": pd.date_range(start="2024-01-01", periods=100, freq="s"),
             "enmo": np.random.rand(100) * 500,
         }
     )
