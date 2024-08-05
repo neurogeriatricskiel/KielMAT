@@ -2,13 +2,13 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Mon 17 June 2024
+**Last update:** Mon 5 August 2024
 
 ## Learning Objectives
 By the end of this tutorial:
 
-- You can load data from [`keepcontrol`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/datasets/keepcontrol.py) which is one of available datasets.
-- Apply the [`Pham Turn Detection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/td/_pham.py) algorithm.
+- You can load data from [`keepcontrol`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/datasets/keepcontrol.py) which is one of available datasets.
+- Apply the [`Pham Turn Detection`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/modules/td/_pham.py) algorithm.
 - Visualize the results of the algorithm.
 - Extract spatio-temporal parameters of the detected turns.
 - Interpret the detected turns for further analysis.
@@ -17,19 +17,15 @@ By the end of this tutorial:
 
 This example can be referenced by citing the package.
 
-The example illustrates how to use PhamTurnDetection algorithm to detect turns using acceleration and gyro data recorded with a lower back IMU sensor. The turn detection algorithm is implemented using [`ngmt.modules.td._pham`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/td/_pham.py). This algorithm is based on the research of Pham et al [`1`].
+The example illustrates how to use PhamTurnDetection algorithm to detect turns using acceleration and gyro data recorded with a lower back IMU sensor. The turn detection algorithm is implemented using [`kielmat.modules.td._pham`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/modules/td/_pham.py). This algorithm is based on the research of Pham et al [`1`].
 
-This algorithm aims to detect turns using accelerometer and gyroscope data collected from a lower back
-inertial measurement unit (IMU) sensor. The core of the algorithm lies in the detect method, where turns are identified using accelerometer and gyroscope data. The method first processes the gyro data, converting it to rad/s and computing the variance to identify periods of low variance, which may indicate bias. It then calculates the gyro bias and subtracts it from the original gyro signal to remove any biases. Next, the yaw angle is computed by integrating the gyro data, and zero-crossings indices are found to detect turns. Then, turns are identified based on significant changes in the yaw angle.
+This algorithm aims to detect turns using accelerometer and gyroscope data collected from a lower back inertial measurement unit (IMU) sensor. The core of the algorithm lies in the detect method, where turns are identified using accelerometer and gyroscope data. The method first processes the gyro data, converting it to rad/s and computing the variance to identify periods of low variance, which may indicate bias. It then calculates the gyro bias and subtracts it from the original gyro signal to remove any biases. Next, the yaw angle is computed by integrating the gyro data, and zero-crossings indices are found to detect turns. Then, turns are identified based on significant changes in the yaw angle.
 
-The algorithm also accounts for hesitations, which are brief pauses or fluctuations in the signal that may
-occur within a turn. Hesitations are marked based on specific conditions related to the magnitude and
-continuity of the yaw angle changes.
+The algorithm also accounts for hesitations, which are brief pauses or fluctuations in the signal that may occur within a turn. Hesitations are marked based on specific conditions related to the magnitude and continuity of the yaw angle changes.
 
-Then, the detected turns are characterized by their onset and duration. Turns with angles equal to or greater than 90 degrees and durations between 0.5 and 10 seconds are selected for further analysis. Finally, the detected turns along with their characteristics (onset, duration, etc.) are stored in a pandas DataFrame (turns_ attribute).
+Then, the detected turns are characterized by their onset and duration. Turns with angles equal to or greater than 90 degrees and durations between 0.5 and 10 seconds are selected for further analysis. Finally, the detected turns along with their characteristics (onset, duration, etc.) are stored in a pandas DataFrame (`turns_` attribute).
 
-In addition, spatial-temporal parameters are calculated using detected turns and their characteristics by
-the spatio_temporal_parameters method. As a return, the turn id along with its spatial-temporal parameters including direction (left or right), angle of turn and peak angular velocity are stored in a pandas DataFrame (parameters_ attribute).
+In addition, spatial-temporal parameters are calculated using detected turns and their characteristics by the `spatio_temporal_parameters` method. As a return, the turn id along with its spatial-temporal parameters including direction (left or right), angle of turn and peak angular velocity are stored in a pandas DataFrame (`parameters_` attribute).
 
 Optionally, if `plot_results` is set to True, the algorithm generates a plot visualizing the accelerometer and gyroscope data alongside the detected turns. This visualization aids in the qualitative assessment of the algorithm's performance and provides insights into the dynamics of the detected turns.
 
@@ -37,14 +33,16 @@ Optionally, if `plot_results` is set to True, the algorithm generates a plot vis
 [`1`] Pham et al. (2017). Algorithm for Turning Detection and Analysis Validated under Home-Like Conditions in Patients with Parkinson's Disease and Older Adults using a 6 Degree-of-Freedom Inertial Measurement Unit at the Lower Back. Frontiers in Neurology, 8, 135. https://doi.org/10.3389/fneur.2017.00135
 
 ## Import Libraries
-The necessary libraries such as numpy, matplotlib.pyplot, dataset and PhamTurnDetection turn detection algortihm are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the `ngmt` library and its dependencies if you haven't already.
+The necessary libraries such as numpy, matplotlib.pyplot, dataset and PhamTurnDetection turn detection algortihm are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the `kielmat` library and its dependencies if you haven't already.
 
 ```python
 import numpy as np
 import pandas as pd
+import os
 import matplotlib.pyplot as plt
-from ngmt.datasets import keepcontrol
-from ngmt.modules.td import PhamTurnDetection
+from kielmat.datasets import keepcontrol
+from kielmat.modules.td import PhamTurnDetection
+from pathlib import Path
 ```
 
 ## Data Preparation
@@ -53,10 +51,11 @@ To implement Pham Turn Detection algorithm, we load example data.
 
 
 ```python
-# The 'file_path' variable holds the absolute path to the data file
-file_path = (
-    r"\Data\sub-pp002_task-walkTurn_tracksys-imu_motion.tsv"
-)
+# Dataset path
+dataset_path = Path(os.getcwd()) / "_keepcontrol"
+
+# Fetch the dataset
+keepcontrol.fetch_dataset(dataset_path)
 
 # In this example, we use "imu" as tracking_system and "pelvis" as tracked points.
 tracking_sys = "imu"
@@ -64,7 +63,11 @@ tracked_points = {tracking_sys: ["pelvis"]}
 
 # The 'keepcontrol.load_recording' function is used to load the data from the specified file_path
 recording = keepcontrol.load_recording(
-    file_name=file_path, tracking_systems=[tracking_sys], tracked_points=tracked_points
+    dataset_path=dataset_path,
+    id="pp002",
+    task="tug",
+    tracking_systems=[tracking_sys], 
+    tracked_points=tracked_points
 )
 
 # Load lower back acceleration data
@@ -191,7 +194,7 @@ plt.show()
     
 
 ## Applying Pham Turn Detection Algorithm
-Now, we are running Pham turn detection algorithm from pham module [`NGMT.ngmt.modules.td._pham.PhamTurnDetection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/td/_pham.py) to detect turns.
+Now, we are running Pham turn detection algorithm from pham module [`PhamTurnDetection`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/modules/td/_pham.py) to detect turns.
 
 The following code first prepares the input data by combining acceleration and gyro data into a single DataFrame called `input_data`.
 

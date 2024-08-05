@@ -2,13 +2,13 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Mon 17 June 2024
+**Last update:** Mon 5 August 2024
 
 ## Learning objectives
 By the end of this tutorial:
 
-- You can load data from [`keepcontrol`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/datasets/keepcontrol.py) which is one of available datasets.
-- Apply the [`Postural Transition Detection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/ptd/_pham.py) algorithm.
+- You can load data from [`keepcontrol`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/datasets/keepcontrol.py) which is one of available datasets.
+- Apply the [`Postural Transition Detection`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/modules/ptd/_pham.py) algorithm.
 - Visualize the results of the algorithm.
 - Extract spatio-temporal parameters of the detected postural transitions.
 - Interpret the detected postural transitions for further analysis.
@@ -17,7 +17,7 @@ By the end of this tutorial:
 
 This example can be referenced by citing the package.
 
-The example illustrates how to use Pham Postural Transition Detection algorithm to detect postural transitions (e.g., sit to stand and stand to sit movements) using body acceleration and gyro data recorded with a lower back IMU sensor. The Pham Postural Transition detection algorithm is implemented using [`ngmt.modules.ptd._pham`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/ptd/_pham.py). This algorithm is based on the research of Pham et al [1].
+The example illustrates how to use Pham Postural Transition Detection algorithm to detect postural transitions (e.g., sit to stand and stand to sit movements) using body acceleration and gyro data recorded with a lower back IMU sensor. The Pham Postural Transition detection algorithm is implemented using [`kielmat.modules.ptd._pham`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/modules/ptd/_pham.py). This algorithm is based on the research of Pham et al [1].
 
 This algorithm aims to detect postural transitions (e.g., sit to stand or stand to sit movements) using accelerometer and gyroscope data collected from a lower back inertial measurement unit (IMU) sensor.
 
@@ -35,15 +35,17 @@ If requested (`plot_results` set to True), it generates plots of the acceleromet
 [1] Pham et al. (2018). Validation of a Lower Back "Wearable"-Based Sit-to-Stand and  Stand-to-Sit Algorithm for Patients With Parkinson's Disease and Older Adults in a Home-Like  Environment. Frontiers in Neurology, 9, 652. https://doi.org/10.3389/fneur.2018.00652
 
 ## Import libraries
-The necessary libraries such as numpy, matplotlib.pyplot, dataset and Pham Postural Transition Detection algorithm are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the `ngmt` library and its dependencies if you haven't already.
+The necessary libraries such as numpy, matplotlib.pyplot, dataset and Pham Postural Transition Detection algorithm are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the `kielmat` library and its dependencies if you haven't already.
 
 
 ```python
 import numpy as np
 import pandas as pd
+import os
 import matplotlib.pyplot as plt
-from ngmt.datasets import keepcontrol
-from ngmt.modules.ptd import PhamPosturalTransitionDetection
+from kielmat.datasets import keepcontrol
+from kielmat.modules.ptd import PhamPosturalTransitionDetection
+from pathlib import Path
 ```
 
 ## Data Preparation
@@ -52,10 +54,11 @@ To implement Pham Postural Transition Detection algorithm, we load example data.
 
 
 ```python
-# The 'file_path' variable holds the absolute path to the data file
-file_path = (
-    r"\data\sub-pp002_task-tug_tracksys-imu_motion.tsv"
-)
+# Dataset path
+dataset_path = Path(os.getcwd()) / "_keepcontrol"
+
+# Fetch the dataset
+keepcontrol.fetch_dataset(dataset_path)
 
 # In this example, we use "imu" as tracking_system and "pelvis" as tracked points.
 tracking_sys = "imu"
@@ -63,7 +66,11 @@ tracked_points = {tracking_sys: ["pelvis"]}
 
 # The 'keepcontrol.load_recording' function is used to load the data from the specified file_path
 recording = keepcontrol.load_recording(
-    file_name=file_path, tracking_systems=[tracking_sys], tracked_points=tracked_points
+    dataset_path=dataset_path,
+    id="pp002",
+    task="tug",
+    tracking_systems=[tracking_sys], 
+    tracked_points=tracked_points
 )
 
 # Load lower back acceleration data
@@ -188,7 +195,7 @@ plt.show()
     
 
 ## Applying Pham Postural Transition Detection Algorithm
-Now, we are running Pham sit to stand and stand to sit detection algorithm from pham module [`NGMT.ngmt.modules.ptd._pham.PhamPosturalTransitionDetection`](https://github.com/neurogeriatricskiel/NGMT/tree/main/ngmt/modules/ptd/_pham.py) to detect postural transitions.
+Now, we are running Pham sit to stand and stand to sit detection algorithm from pham module [`PhamPosturalTransitionDetection`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/modules/ptd/_pham.py) to detect postural transitions.
 
 The following code first prepares the input data by combining acceleration and gyro data into a single DataFrame called `input_data`.
 
