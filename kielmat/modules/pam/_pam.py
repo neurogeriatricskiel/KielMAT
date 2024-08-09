@@ -108,9 +108,15 @@ class PhysicalActivityMonitoring:
             raise ValueError("Input data must have at least 3 columns.")
 
         # Create a time index if data does not have a timestamp column
-        if data.index.name != "timestamp" or not isinstance(data.index, pd.DatetimeIndex):
+        if data.index.name != "timestamp" or not isinstance(
+            data.index, pd.DatetimeIndex
+        ):
             # Create a timestamp index with the correct frequency if not already present
-            data.index = pd.date_range(start="2023-01-01 00:00:00", periods=len(data), freq=f"{1/sampling_freq_Hz}s")
+            data.index = pd.date_range(
+                start="2023-01-01 00:00:00",
+                periods=len(data),
+                freq=f"{1/sampling_freq_Hz}s",
+            )
             data.index.name = "timestamp"
 
         # check if index column in named timestamp
@@ -158,9 +164,7 @@ class PhysicalActivityMonitoring:
         data["enmo"] = data["truncated_enmo"] * 1000
 
         # Create a final DataFrame with time index and processed ENMO values
-        processed_data = pd.DataFrame(
-            data={"enmo": data["enmo"]}, index=data.index
-        )
+        processed_data = pd.DataFrame(data={"enmo": data["enmo"]}, index=data.index)
 
         # Classify activities based on thresholds using activity_classification
         classified_processed_data = preprocessing.classify_physical_activity(
