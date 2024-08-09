@@ -103,17 +103,19 @@ class PhysicalActivityMonitoring:
         if not isinstance(data, pd.DataFrame):
             raise ValueError("Input data must be a DataFrame.")
 
-        # check if index column is datetime
-        if not isinstance(data.index, pd.DatetimeIndex):
-            raise ValueError("Index column must be a datetime index.")
+        # Check if data has at least 3 columns
+        if data.shape[1] < 3:
+            raise ValueError("Input data must have at least 3 columns.")
+
+        # Create a time index if data does not have a timestamp column
+        if data.index.name != "timestamp" or not isinstance(data.index, pd.DatetimeIndex):
+            # Create a timestamp index with the correct frequency if not already present
+            data.index = pd.date_range(start="2023-01-01 00:00:00", periods=len(data), freq=f"{1/sampling_freq_Hz}s")
+            data.index.name = "timestamp"
 
         # check if index column in named timestamp
         if data.index.name != "timestamp":
             raise ValueError("Index column must be named timestamp.")
-
-        # Check if data has at least 3 columns
-        if data.shape[1] < 3:
-            raise ValueError("Input data must have at least 3 columns.")
 
         if not isinstance(sampling_freq_Hz, (int, float)) or sampling_freq_Hz <= 0:
             raise ValueError("Sampling frequency must be a positive float.")
@@ -130,10 +132,12 @@ class PhysicalActivityMonitoring:
         # Check unit of acceleration data if it is in g or m/s^2
         if acceleration_unit == "m/s^2":
             # Convert acceleration data from m/s^2 to g (if not already is in g)
+            data = data.copy()
             data /= 9.81
 
         # Calculate Euclidean Norm (EN)
-        data["en"] = np.linalg.norm(data, axis=1)
+        data = data.copy()
+        data["en"] = np.linalg.norm(data.values, axis=1)
 
         # Apply 4th order low-pass Butterworth filter with the cutoff frequency of 20Hz
         data["en"] = preprocessing.lowpass_filter(
@@ -155,7 +159,7 @@ class PhysicalActivityMonitoring:
 
         # Create a final DataFrame with time index and processed ENMO values
         processed_data = pd.DataFrame(
-            data=data["enmo"], index=data.index, columns=["enmo"]
+            data={"enmo": data["enmo"]}, index=data.index
         )
 
         # Classify activities based on thresholds using activity_classification

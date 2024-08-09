@@ -1004,7 +1004,7 @@ def classify_physical_activity(
         raise ValueError("Epoch_duration must be a positive integer.")
 
     # Group data by time in epochs and calculate the mean
-    processed_data = input_data.groupby(pd.Grouper(freq=f"{epoch_duration}S")).mean()
+    processed_data = input_data.groupby(pd.Grouper(freq=f"{epoch_duration}s")).mean()
 
     # Classify activity levels based on threshold values
     processed_data["sedentary"] = (processed_data["enmo"] < sedentary_threshold).astype(
