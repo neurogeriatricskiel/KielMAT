@@ -1,10 +1,11 @@
-# Tutorial: the basics of KielMAT
+# Tutorial: load datasets
 
 **Author:** Robbin Romijnders  
 **Last update:** Tue 16 Jan 2024
 
 ## Learning objectives
 By the end of this tutorial:
+
 - you can load data from a recording that belongs to one of the available datasets,
 - you know which attributes are available for an instance of the `KielMATRecording`
 - you can do some basic selecting and slicing of data

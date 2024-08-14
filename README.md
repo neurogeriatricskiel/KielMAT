@@ -114,7 +114,7 @@ classDiagram
 
 !!! note
 
-    In the examples you find a [tutorial (the basics of KielMAT)](https://neurogeriatricskiel.github.io/KielMAT/examples/basic_00_intro_kielmat/) that explains the basics of the dataclass and how to work with them.
+    In the examples you find a [tutorial (Load data into KielMAT)](https://neurogeriatricskiel.github.io/KielMAT/examples/basic_00_load_Data.md/) that explains the basics of the dataclass and how to work with them.
 
 
 ## Contributing

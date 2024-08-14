@@ -42,8 +42,8 @@ nav:
   - Home: index.md
   - Examples: 
     - examples/index.md
-    - Tutorial basics: examples/basic_00_intro_kielmat.md
-    - Load data into KielMAT: examples/basic_01_load_Data.md
+    - Load data into KielMAT: examples/basic_00_load_Data.md
+    - Load datasets: examples/basic_01_intro_kielmat.md
     - Events in dataclass: examples/basic_02_events.md
     - Gait Sequence Detection: examples/modules_01_gsd.md
     - Initial Contact Detection: examples/modules_02_icd.md
