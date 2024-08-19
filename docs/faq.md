@@ -19,4 +19,5 @@ The `SSLCertVerificationError` occurs when Python’s SSL module encounters an i
   ```bash
   pip install --upgrade certifi
   ```
-- **Download the datasets manually**: you can also manually download the datasets for the respective websites, and see if that works. For that purpose, navigate in your webbrowser to [Zenodo, i.e. Mobilise-D](https://zenodo.org/records/7547125) or [OpenNeuro, i.e. Keep Control](https://openneuro.org/datasets/ds005258/versions/1.0.5), and  then download the datasets to a local folder.
+
+- **Download the datasets manually**: you can also manually download the datasets for the respective websites, and see if that works. For that purpose, navigate in your webbrowser to [Zenodo for the Mobilise-D dataset](https://zenodo.org/records/7547125) or [OpenNeuro for the Keep Control dataset](https://openneuro.org/datasets/ds005258/versions/1.0.5), and  then download the datasets to a local folder. If you are not allowed to download the datasets from the respective websites, then it may help to contact your local IT department.
