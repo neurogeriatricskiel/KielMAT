@@ -11,7 +11,7 @@ By the end of this tutorial, you will be able to:
 - Apply the Physical Activity Monitoring algorithm to classify activity intensity levels.  
 - Interpret the results of activity classification.  
 
-# Pam Physical Activity Monitoring
+# Physical Activity Monitoring
 
 This example serves as a reference on how to use the physical activity monitoring algorithm. This example can be cited by referencing the package.
 
