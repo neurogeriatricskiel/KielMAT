@@ -12,4 +12,4 @@ This is a collection of examples to explain various parts of the KielMAT toolbox
 
 ### [Example 1: Gait Sequence Detection](modules_01_gsd.md)
 ### [Example 2: Initial Contact Detection](modules_02_icd.md)
-
+### [Example 3: Physical Activity Monitoring](modules_03_pam.md)
