@@ -5,23 +5,26 @@ import scipy.signal
 from kielmat.utils import preprocessing
 from kielmat.utils import viz_utils
 from typing import Optional, Union, Tuple, List
+from vqf import VQF, BasicVQF, PyVQF
 
 
 class PhamPosturalTransitionDetection:
     """
     This algorithm aims to detect postural transitions (e.g., sit to stand or stand to sit movements)
     using accelerometer and gyroscope data collected from a lower back inertial measurement unit (IMU)
-    sensor.
+    sensor based on [1].
 
     The algorithm is designed to be robust in detecting postural transitions using inertial sensor data
     and provides detailed information about these transitions. It starts by loading the accelerometer and
     gyro data, which includes three columns corresponding to the acceleration and gyro signals across
     the x, y, and z axes, along with the sampling frequency of the data. It first checks the validity of
-    the input data. Then, it calculates the sampling period, selects accelerometer and gyro data. Tilt angle
-    estimation is performed using gyro data in lateral or anteroposterior direction which represent movements
-    or rotations in the mediolateral direction. The tilt angle is decomposed using wavelet transformation to
-    identify stationary periods. Stationary periods are detected using accelerometer variance and gyro variance.
-    Then, peaks in the wavelet-transformed tilt signal are detected as potential postural transition events.
+    the input data. Then, it calculates the sampling period, selects accelerometer and gyro data. Then, it uses 
+    a Versatile Quaternion-based Filter (VQF) to estimate the orientation of the IMU [2]. This helps in correcting 
+    the orientation of accelerometer and gyroscope data. Tilt angle estimation is performed using gyro data in 
+    lateral or anteroposterior direction which represent movements or rotations in the mediolateral direction. 
+    The tilt angle is decomposed using wavelet transformation to identify stationary periods. Stationary periods 
+    are detected using accelerometer variance and gyro variance. Then, peaks in the wavelet-transformed 
+    tilt signal are detected as potential postural transition events.
 
     If there's enough stationary data, further processing is done to estimate the orientation using
     quaternions and to identify the beginning and end of postural transitions using gyro data. Otherwise,
@@ -49,7 +52,6 @@ class PhamPosturalTransitionDetection:
         >>> pham = PhamPosturalTransitionDetection()
         >>> pham.detect(
                 data=input_data,
-                gyro_mediolateral="pelvis_GYRO_y",
                 accel_unit="g",
                 gyro_unit="deg/s",
                 sampling_freq_Hz=200.0,
@@ -70,6 +72,7 @@ class PhamPosturalTransitionDetection:
 
     References:
         [1] Pham et al. (2018). Validation of a Lower Back "Wearable"-Based Sit-to-Stand and Stand-to-Sit Algorithm... https://doi.org/10.3389/fneur.2018.00652
+        [2] D. Laidig and T. Seel. “VQF: Highly Accurate IMU Orientation Estimation with Bias Estimation ... https://doi.org/10.1016/j.inffus.2022.10.014
     """
 
     def __init__(
@@ -96,7 +99,6 @@ class PhamPosturalTransitionDetection:
     def detect(
         self,
         data: pd.DataFrame,
-        gyro_mediolateral: str,
         accel_unit: str,
         gyro_unit: str,
         sampling_freq_Hz: float,
@@ -110,7 +112,6 @@ class PhamPosturalTransitionDetection:
 
         Args:
             data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
-            gyro_mediolateral (str): It corresponds to the gyroscope component representing movements or rotations in the mediolateral direction. This could correspond to rotation around the y-axis in your coordinate system.
             accel_unit (str): Unit of acceleration data.
             gyro_unit (str): Unit of gyro data.
             sampling_freq_Hz (float): Sampling frequency of the input data.
@@ -177,40 +178,85 @@ class PhamPosturalTransitionDetection:
 
         # Select gyro data and convert it to numpy array format
         gyro = data[gyro_columns].copy().to_numpy()
-        self.gyro = gyro
-
-        # Extract mediolateral gyro data using the specified index
-        self.gyro_mediolateral = data[gyro_mediolateral].to_numpy()
 
         # Convert variations of acceleration unit to "m/s^2"
         if accel_unit in ["meters/s^2", "meter/s^2"]:
             accel_unit = "m/s^2"
 
-        # Check unit of acceleration data if it is in "m/s^2" or "g"
-        if accel_unit == "m/s^2":
-            # Convert acceleration data from "m/s^2" to "g"
-            accel /= 9.81
-        elif accel_unit in ["g", "G"]:
+        # Check unit of acceleration data if it is in "m/s^2" or "g" for orientation estimation
+        if accel_unit in ["g", "G"]:
+            # Convert acceleration data from "g" to "m/s^2"
+            accel *= 9.81
+        elif accel_unit in ["m/s^2"]:
             pass  # No conversion needed
         else:
             raise ValueError(
                 "Invalid unit for acceleration data. Must be 'm/s^2' or 'g'"
             )
 
-        # Check unit of gyro data if it is in deg/s or rad/s
+        # Convert variations of gyro unit to "rad/s"
         if gyro_unit in ["rad/s", "radians per second"]:
-            # Convert gyro data from rad/s to deg/s (if not already is in deg/s)
-            self.gyro = np.rad2deg(self.gyro)
-            self.gyro_mediolateral = np.rad2deg(self.gyro_mediolateral)
+            gyro_unit = "rad/s"
+        
+        # Check unit of gyro data if it is in deg/s or rad/s
+        if gyro_unit in ["deg/s", "°/s"]:
+            # Convert gyro data from deg/s to rad/s (if not already is in rad/s)
+            gyro = np.deg2rad(gyro)
 
         # Check different variations of gyro unit
-        elif gyro_unit in ["degrees per second", "°/s"]:
-            gyro_unit = "deg/s"
+        elif gyro_unit == "rad/s":
+            pass  # No conversion needed
 
-        elif gyro_unit == "deg/s":
-            pass  # Gyro data is already in deg/s
         else:
             raise ValueError("Invalid unit for gyro data. Must be 'deg/s' or 'rad/s'")
+
+        # Ensure that acceleration and gyroscope arrays are C-contiguous for efficient processing
+        accel = np.ascontiguousarray(accel)
+        self.gyro = np.ascontiguousarray(gyro)
+
+        # Initialize the Versatile Quaternion-based Filter (VQF) with the calculated sampling period
+        vqf = VQF(sampling_period)
+        
+        # Perform orientation estimation using VQF
+        # This step estimates the orientation of the IMU and returns quaternion-based orientation estimates
+        out_orientation_est = vqf.updateBatch(self.gyro, accel)
+
+        # Initialize arrays to store the updated acceleration and gyroscope data
+        accel_updated = np.zeros_like(accel)
+        gyro_updated = np.zeros_like(self.gyro)
+
+        # Apply quaternion-based orientation correction to the accelerometer data
+        # This step corrects the accelerometer data based on the estimated orientation
+        for t in range(accel_updated.shape[0]):
+            accel_updated[t, :] = vqf.quatRotate(out_orientation_est['quat6D'][t, :], accel[t, :])
+
+        # Apply quaternion-based orientation correction to the gyroscope data
+        # This step corrects the gyroscope data based on the estimated orientation
+        for t in range(gyro_updated.shape[0]):
+            gyro_updated[t, :] = vqf.quatRotate(out_orientation_est['quat6D'][t, :], self.gyro[t, :])
+
+        # Convert updated acceleration data back from "m/s^2" to "g" units
+        # This step reverses the initial conversion applied to the acceleration data
+        accel = accel_updated / 9.81
+
+        # Convert back gyro data from rad/s to deg/s after orientation estimation
+        self.gyro = np.rad2deg(gyro_updated)
+
+        # Compute the range of gyro signals for x and y components
+        range_x = np.ptp(self.gyro[:, 0])  # gyro x-axis
+        range_y = np.ptp(self.gyro[:, 1])  # gyro y-axis
+
+        # Compute the variance of gyro signals for x and y components
+        var_x = np.var(self.gyro[:, 0])  # gyro x-axis
+        var_y = np.var(self.gyro[:, 1])  # gyro y-axis
+
+        # Determine which component of gyro corresponds to the mediolateral direction
+        if range_x > range_y or var_x > var_y:
+            # X component has a larger range/variance, likely mediolateral
+            self.gyro_mediolateral = self.gyro[:, 0]  # Gyro x-axis is mediolateral
+        else:
+            # Y component has a larger range/variance, likely mediolateral
+            self.gyro_mediolateral = self.gyro[:, 1]  # Gyro y-axis is mediolateral
 
         # Calculate timestamps to use in next calculation
         time = np.arange(1, len(accel[:, 0]) + 1) * sampling_period
@@ -240,17 +286,9 @@ class PhamPosturalTransitionDetection:
         tilt_dwt = tilt_dwt_3 - tilt_dwt_10
 
         # Find peaks in denoised tilt signal
-        # Peaks of the tilt_dwt signal with magnitude and prominence >0.2 were defined as postural transition events
-        # Separate positive and negative peak detection
-        positive_peaks, _ = scipy.signal.find_peaks(
-            tilt_dwt, height=-0.2, prominence=0.2
-        )
-        negative_peaks, _ = scipy.signal.find_peaks(
+        self.local_peaks, _ = scipy.signal.find_peaks(
             tilt_dwt, height=0.2, prominence=0.2
         )
-
-        # Merge, sort, and eliminate redundant peaks
-        self.local_peaks = np.unique(np.concatenate((positive_peaks, negative_peaks)))
 
         # Calculate the norm of acceleration
         accel_norm = np.sqrt(accel[:, 0] ** 2 + accel[:, 1] ** 2 + accel[:, 2] ** 2)
@@ -267,9 +305,6 @@ class PhamPosturalTransitionDetection:
 
         # Calculate stationary_2 from acceleration variance
         stationary_2 = (accel_var <= self.thr_gyro_var).astype(int)
-
-        # Convert unit of the gyro data from deg/s to rad/s
-        self.gyro = np.deg2rad(self.gyro)
 
         # Calculate stationary of gyro variance
         gyro_norm = np.sqrt(

@@ -2,7 +2,7 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Mon 5 August 2024
+**Last update:** Thu 19 September 2024
 
 ## Learning objectives
 By the end of this tutorial:
@@ -202,7 +202,6 @@ The following code first prepares the input data by combining acceleration and g
 Then, in order to apply pham postural transition algorithm, an instance of the PhamPosturalTransitionDetection class is created using the constructor, `PhamPosturalTransitionDetection()`. The `pham` variable holds this instance, allowing us to access its methods. The inputs of the algorithm are as follows:
 
 - **Data:** `data (pd.DataFrame)` includes accelerometer and gyro data (N, 6) for x, y, and z axes. in pandas Dataframe format.
-- **Mediolateral gyro:** `gyro_mediolateral (str)` corresponds to the gyroscope component representing movements or rotations in the mediolateral direction. This could correspond to rotation around the y-axis in your coordinate system.
 - **Unit of acceleration data:** `accel_unit (str)` is the unit of the acceleation data.
 - **Unit of gyro data:** `gyro_unit (str)` is unit of the gyro data.
 - **Sampling frequency:** `sampling_freq_Hz` is the sampling frequency of the data, defined in Hz.
@@ -224,7 +223,6 @@ pham = PhamPosturalTransitionDetection()
 # Call the postural transition detection using pham.detect
 pham = pham.detect(
     data=input_data,
-    gyro_mediolateral="pelvis_GYRO_y",
     accel_unit=accel_unit,
     gyro_unit=gyro_unit,
     sampling_freq_Hz=sampling_frequency,
