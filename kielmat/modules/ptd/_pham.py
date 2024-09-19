@@ -18,12 +18,12 @@ class PhamPosturalTransitionDetection:
     and provides detailed information about these transitions. It starts by loading the accelerometer and
     gyro data, which includes three columns corresponding to the acceleration and gyro signals across
     the x, y, and z axes, along with the sampling frequency of the data. It first checks the validity of
-    the input data. Then, it calculates the sampling period, selects accelerometer and gyro data. Then, it uses 
-    a Versatile Quaternion-based Filter (VQF) to estimate the orientation of the IMU [2]. This helps in correcting 
-    the orientation of accelerometer and gyroscope data. Tilt angle estimation is performed using gyro data in 
-    lateral or anteroposterior direction which represent movements or rotations in the mediolateral direction. 
-    The tilt angle is decomposed using wavelet transformation to identify stationary periods. Stationary periods 
-    are detected using accelerometer variance and gyro variance. Then, peaks in the wavelet-transformed 
+    the input data. Then, it calculates the sampling period, selects accelerometer and gyro data. Then, it uses
+    a Versatile Quaternion-based Filter (VQF) to estimate the orientation of the IMU [2]. This helps in correcting
+    the orientation of accelerometer and gyroscope data. Tilt angle estimation is performed using gyro data in
+    lateral or anteroposterior direction which represent movements or rotations in the mediolateral direction.
+    The tilt angle is decomposed using wavelet transformation to identify stationary periods. Stationary periods
+    are detected using accelerometer variance and gyro variance. Then, peaks in the wavelet-transformed
     tilt signal are detected as potential postural transition events.
 
     If there's enough stationary data, further processing is done to estimate the orientation using
@@ -197,7 +197,7 @@ class PhamPosturalTransitionDetection:
         # Convert variations of gyro unit to "rad/s"
         if gyro_unit in ["rad/s", "radians per second"]:
             gyro_unit = "rad/s"
-        
+
         # Check unit of gyro data if it is in deg/s or rad/s
         if gyro_unit in ["deg/s", "°/s"]:
             # Convert gyro data from deg/s to rad/s (if not already is in rad/s)
@@ -216,7 +216,7 @@ class PhamPosturalTransitionDetection:
 
         # Initialize the Versatile Quaternion-based Filter (VQF) with the calculated sampling period
         vqf = VQF(sampling_period)
-        
+
         # Perform orientation estimation using VQF
         # This step estimates the orientation of the IMU and returns quaternion-based orientation estimates
         out_orientation_est = vqf.updateBatch(self.gyro, accel)
@@ -228,12 +228,16 @@ class PhamPosturalTransitionDetection:
         # Apply quaternion-based orientation correction to the accelerometer data
         # This step corrects the accelerometer data based on the estimated orientation
         for t in range(accel_updated.shape[0]):
-            accel_updated[t, :] = vqf.quatRotate(out_orientation_est['quat6D'][t, :], accel[t, :])
+            accel_updated[t, :] = vqf.quatRotate(
+                out_orientation_est["quat6D"][t, :], accel[t, :]
+            )
 
         # Apply quaternion-based orientation correction to the gyroscope data
         # This step corrects the gyroscope data based on the estimated orientation
         for t in range(gyro_updated.shape[0]):
-            gyro_updated[t, :] = vqf.quatRotate(out_orientation_est['quat6D'][t, :], self.gyro[t, :])
+            gyro_updated[t, :] = vqf.quatRotate(
+                out_orientation_est["quat6D"][t, :], self.gyro[t, :]
+            )
 
         # Convert updated acceleration data back from "m/s^2" to "g" units
         # This step reverses the initial conversion applied to the acceleration data
