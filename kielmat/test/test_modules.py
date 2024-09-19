@@ -919,7 +919,6 @@ def test_pham_postural_transition_algorithm():
         input_data,
         accel_unit="g",
         gyro_unit="deg/s",
-        gyro_mediolateral="pelvis_GYRO_y",
         sampling_freq_Hz=sampling_freq,
         plot_results=False,
     )
@@ -938,7 +937,6 @@ def test_pham_postural_transition_algorithm():
             data=input_data,
             accel_unit="g",
             gyro_unit="deg/s",
-            gyro_mediolateral="pelvis_GYRO_y",
             sampling_freq_Hz=200,
             dt_data=dt_data,
         )
@@ -954,7 +952,6 @@ def test_pham_postural_transition_algorithm():
             data=input_data,
             accel_unit="g",
             gyro_unit="deg/s",
-            gyro_mediolateral="pelvis_GYRO_y",
             sampling_freq_Hz=200,
             dt_data=dt_data,
         )
@@ -970,7 +967,6 @@ def test_pham_postural_transition_algorithm():
             data=input_data,
             accel_unit="g",
             gyro_unit="deg/s",
-            gyro_mediolateral="pelvis_GYRO_y",
             sampling_freq_Hz=200,
             dt_data=dt_data,
         )
@@ -987,7 +983,6 @@ def test_pham_postural_transition_algorithm():
             data=input_data,
             accel_unit="g",
             gyro_unit="deg/s",
-            gyro_mediolateral="pelvis_GYRO_y",
             sampling_freq_Hz=200,
             dt_data=dt_data,
         )
@@ -1009,7 +1004,6 @@ def test_data_structure_invalid_pham_pt():
             data=sample_data,
             accel_unit="g",
             gyro_unit="deg/s",
-            gyro_mediolateral="pelvis_GYRO_y",
             sampling_freq_Hz=100,
         )
 
@@ -1031,7 +1025,6 @@ def test_invalid_gyro_unit_pham_pt():
             data=sample_data,
             accel_unit="g",
             gyro_unit="invalid_unit",
-            gyro_mediolateral="pelvis_GYRO_y",
             sampling_freq_Hz=200,
         )
 
@@ -1051,7 +1044,6 @@ def test_invalid_sampling_freq_pham_pt():
             data=sample_data,
             accel_unit="g",
             gyro_unit="deg/s",
-            gyro_mediolateral="pelvis_GYRO_y",
             sampling_freq_Hz=0,
         )
 
