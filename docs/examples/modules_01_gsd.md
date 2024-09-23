@@ -2,10 +2,11 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Thu 14 Mar 2024
+**Last update:** Mon 23 Sep 2024
 
 ## Learning objectives
 By the end of this tutorial:
+
 - You can load data from a recording that belongs to one of the available datasets,
 - Apply the Paraschiv-Ionescu gait sequence detection algorithm to accelerometer data.  
 - Visualize the results of gait sequence detection.  
@@ -15,7 +16,7 @@ By the end of this tutorial:
 
 This example can be referenced by citing the package.
 
-The example illustrates how the Paraschiv-Ionescu gait sequence detection algorithm is used to detect gait sequences using body acceleration recorded with a triaxial accelerometer worn or fixed on the lower back. The gait sequence detection algorithm is implemented using [`kielmat.modules.gsd._paraschiv`](https://github.com/neurogeriatricskiel/KielMAT/tree/main/kielmat/modules/gsd/_paraschiv.py). This algorithm is based on the research of Paraschiv-Ionescu et al ['1'-'2'].
+The example illustrates how the Paraschiv-Ionescu gait sequence detection algorithm is used to detect gait sequences using body acceleration recorded with a triaxial accelerometer worn or fixed on the lower back. The gait sequence detection algorithm is implemented using [`kielmat.modules.gsd._paraschiv`](https://github.com/neurogeriatricskiel/KielMAT/tree/main/kielmat/modules/gsd/_paraschiv.py). This algorithm is based on the research of Paraschiv-Ionescu et al [`1`-`2`].
 
 The algorithm detects gait sequences based on identified steps. It starts by loading the accelerometer data, which includes three columns corresponding to the acceleration signals across the x, y, and z axes, along with the sampling frequency of the data. To simplify the analysis, the norm of acceleration across the x, y, and z axes is computed. Next, the signal is resampled at a 40 Hz sampling frequency using interpolation. Smoothing is then applied through a Savitzky-Golay filter and a Finite Impulse Response (FIR) low-pass filter to remove noise and drifts from the signal. The continuous wavelet transform is applied to capture gait-related features, followed by additional smoothing using successive Gaussian-weighted filters. The processed data is then analyzed to detect gait sequences.
 
@@ -24,9 +25,9 @@ The algorithm continues by identifying the envelope of the processed acceleratio
 Next, the algorithm takes the last steps to detect walking bouts in the signal. For this purpose, walking bouts with five or more steps are detected, and their start and end times are added to the list. Walking labels are generated as an array of zeros, and the intervals corresponding to the walking bouts are labeled as 1. Groups of consecutive zeros in the walking labels are identified, and if breaks between walking bouts are less than three seconds, they are merged. The output is then constructed as a DataFrame containing gait sequence information in BIDS format. If gait sequences are found, the output is printed; otherwise, a message indicating that no gait sequences are detected is displayed.
 
 #### References
-['1'] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer: validity for children with cerebral palsy in daily life-like conditions. Journal of NeuroEngineering and Rehabilitation, 16(1), 24. https://doi.org/10.1186/s12984-019-0494-z
+[`1`] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer: validity for children with cerebral palsy in daily life-like conditions. Journal of NeuroEngineering and Rehabilitation, 16(1), 24. https://doi.org/10.1186/s12984-019-0494-z
 
-['2'] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using a single trunk IMU: methodological challenges for impaired gait patterns. Annual International Conference of the IEEE Engineering in Medicine and Biology Society. IEEE Engineering in Medicine and Biology Society. https://doi.org/10.1109/EMBC44109.2020.9176281
+[`2`] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using a single trunk IMU: methodological challenges for impaired gait patterns. Annual International Conference of the IEEE Engineering in Medicine and Biology Society. IEEE Engineering in Medicine and Biology Society. https://doi.org/10.1109/EMBC44109.2020.9176281
 
 
 ## Import libraries
@@ -57,15 +58,24 @@ The participant was assessed for 2.5 hours in the real-world while doing differe
 
 
 ```python
+# Set the dataset path
+dataset_path = Path(os.getcwd()) / "_mobilised"
+
+# Fetch and load the dataset
+mobilised.fetch_dataset(dataset_path=dataset_path)
+
 # In this example, we use "SU" as tracking_system and "LowerBack" as tracked points.
 tracking_sys = "SU"
 tracked_points = {tracking_sys: ["LowerBack"]}
 
 # The 'mobilised.load_recording' function is used to load the data from the specified file_path
-recording = mobilised.load_recording()
+recording = mobilised.load_recording(
+    cohort="PFF",  # Choose the cohort
+    file_name="data.mat", 
+    dataset_path=dataset_path)
 
 # Load lower back acceleration data
-acceleration_data = recording.data[tracking_sys][
+accel_data = recording.data[tracking_sys][
     ["LowerBack_ACCEL_x", "LowerBack_ACCEL_y", "LowerBack_ACCEL_z"]
 ]
 
@@ -123,11 +133,11 @@ plt.show()
 
 
     
-![png](modules_01_gsd_files/modules_01_gsd_7_0.png)
+![](modules_01_gsd_files/modules_01_gsd_7_0.png)
     
 
 
-Let's zoom in on specific time periods in the data, particularly the first 10 seconds, where clear blinks are evident.
+Let's zoom in on specific time periods in the data, particularly the first 45 seconds, where clear blinks are evident.
 
 
 ```python
@@ -175,7 +185,7 @@ plt.show()
 
 
     
-![png](modules_01_gsd_files/modules_01_gsd_9_0.png)
+![](modules_01_gsd_files/modules_01_gsd_9_0.png)
     
 
 
@@ -215,11 +225,12 @@ print(recording.events)
 
 
     
-![png](modules_01_gsd_files/modules_01_gsd_11_1.png)
+![](modules_01_gsd_files/modules_01_gsd_11_1.png)
     
 
 
-    {'SU':        onset  duration     event_type tracking_system
+    {'SU':        
+        onset  duration     event_type  tracking_system
     0     22.650    17.075  gait sequence            None
     1     49.150     7.475  gait sequence            None
     2     97.025   120.400  gait sequence            None
@@ -316,6 +327,6 @@ plt.show()
 
 
     
-![png](modules_01_gsd_files/modules_01_gsd_13_1.png)
+![](modules_01_gsd_files/modules_01_gsd_13_1.png)
     
 

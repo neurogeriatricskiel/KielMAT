@@ -2,7 +2,7 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Wed 27 Mar 2024
+**Last update:** Mon 23 Sep 2024
 
 ## Learning objectives
 By the end of this tutorial, you will be able to: 
@@ -41,38 +41,44 @@ from kielmat.modules.icd import ParaschivIonescuInitialContactDetection
 from kielmat.config import cfg_colors
 ```
 
-    c:\Users\User\Desktop\kiel\NGMT\.venv\lib\site-packages\tqdm\auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-      from .autonotebook import tqdm as notebook_tqdm
-    
-
 ## Data Preparation
 
 To implement the Paraschiv-Ionescu initial contact algorithm, we load example data from a KeepControl, which is publicly available on [OpenNeuro](https://openneuro.org/datasets/ds005258). 
 
 The participant was walking at a slow speed for a distance of 20m.
 
-#### Refertences
+```python
+# Dataset path
+dataset_path = Path(os.getcwd()) / "_keepcontrol"
 
-.. [`3`] Mazzà, Claudia, et al. "Technical validation of real-world monitoring of gait: a multicentric observational study." BMJ open 11.12 (2021): e050785. http://dx.doi.org/10.1136/bmjopen-2021-050785
-
+# Fetch the dataset
+keepcontrol.fetch_dataset(dataset_path)
+```    
 
 
 ```python
-recording = keepcontrol.load_recording(tracking_systems="imu", tracked_points="pelvis")
-```
+# In this example, we use "imu" as tracking_system and "pelvis" as tracked points.
+tracking_sys = "imu"
+tracked_points = {tracking_sys: ["pelvis"]}
 
-    Warning: The value of the key 'Subject' should be lower case. Converted to lower case.
-    Warning: The value of the key 'Task' should be lower case. Converted to lower case.
-    
+# The 'keepcontrol.load_recording' function is used to load the data from the specified file_path
+recording = keepcontrol.load_recording(
+    dataset_path=dataset_path,
+    id="pp002",
+    task="walkSlow",
+    tracking_systems=[tracking_sys], 
+    tracked_points=tracked_points
+)
 
+# Load lower back acceleration data
+accel_data = recording.data[tracking_sys][
+    ["pelvis_ACCEL_x", "pelvis_ACCEL_y", "pelvis_ACCEL_z"]
+]
 
-```python
-# find the channel with acceleration data
-chns_oi = [ch for ch in recording.channels["imu"]["name"] if "accel" in ch]
-acceleration_data = recording.data["imu"][chns_oi]
-
-# set the sampling frequency
-sampling_frequency = float(recording.channels["imu"]["sampling_frequency"].unique()[0])
+# Get the corresponding sampling frequency directly from the recording
+sampling_frequency = recording.channels[tracking_sys][
+    recording.channels[tracking_sys]["name"] == "pelvis_ACCEL_x"
+]["sampling_frequency"].values[0]
 ```
 
 ## Visualisation of the Data
@@ -80,9 +86,8 @@ The raw acceleration data including components of x, y and z axis is represented
 
 
 ```python
-# Calculate the time values in minutes
-# The 'time_in_minute' array represents time values in minutes, computed based on the length of 'acceleration_data' and 'sampling_frequency'.
-time_in_minute = np.arange(len(acceleration_data)) / (60 * sampling_frequency)
+# Calculate the time values
+time = np.arange(len(accel_data)) / (sampling_frequency)
 
 # Create a figure with a specified size
 plt.figure(figsize=(22, 14))
@@ -93,20 +98,20 @@ colors = cfg_colors["raw"]
 # A loop is used to plot data for each accelerometer axis, applying different colors from the color map.
 for i in range(3):
     plt.plot(
-        time_in_minute,
-        acceleration_data.iloc[:,i],
+        time,
+        accel_data.iloc[:,i],
         color=colors[i],
         label=f"Acc {'xyz'[i]}",
     )
 
 # Add labels and legends
-plt.xlabel("Time [minute]", fontsize=20)
+plt.xlabel("Time [sec]", fontsize=20)
 plt.ylabel("Acceleration [g]", fontsize=20)
 plt.legend(fontsize=18)
 
 # Add a title with a specified font size
 plt.title(
-    "Accelerometer data from lower-back IMU sensor for CHF cohort",
+    "Accelerometer data from lower-back IMU sensor",
     fontsize=30,
 )
 
@@ -124,58 +129,6 @@ plt.show()
 
     
 ![png](modules_02_icd_files/modules_02_icd_8_0.png)
-    
-
-
-Let's zoom in on specific time periods in the data, particularly the first 10 seconds, where clear blinks are evident.
-
-
-```python
-# Calculate the time values based on the length of the data
-num_samples = len(acceleration_data)
-time_seconds = np.arange(num_samples) / sampling_frequency
-
-# Create a figure with the specified size
-plt.figure(figsize=(22, 14))
-
-# Plot acceleration data for each axis with time on the x-axis
-for i in range(3):
-    plt.plot(
-        time_seconds,
-        acceleration_data.iloc[:,i],
-        color=colors[i],
-        label=f"Acc {'xyz'[i]}",
-    )
-
-# Add labels and legends
-plt.xlabel("Time [seconds]", fontsize=20)
-plt.ylabel("Acceleration [g]", fontsize=20)
-plt.legend(fontsize=18)
-
-# Add a title
-plt.title(
-    "Accelerometer data from lower-back IMU sensor for CHF cohort",
-    fontsize=30,
-)
-
-# Customize font sizes
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-
-# Set x-axis and y-axis limits for a specific duration (in seconds) and acceleration range
-plt.xlim(0, 10)
-plt.ylim(-1, 1.5)
-
-# Display a grid for reference
-plt.grid(visible=None, which="both", axis="both")
-
-# Show the plot
-plt.show()
-```
-
-
-    
-![png](modules_02_icd_files/modules_02_icd_10_0.png)
     
 
 
@@ -197,7 +150,7 @@ gsd = ParaschivIonescuGaitSequenceDetection()
 
 # Call the gait sequence detection using gsd.detect to detect gait sequences
 gsd = gsd.detect(
-    data=acceleration_data, sampling_freq_Hz=sampling_frequency, plot_results=False
+    data=acceleration_data, sampling_freq_Hz=200, plot_results=False
 )
 
 # Gait sequences are stored in gait_sequences_ attribute of gsd
@@ -208,10 +161,10 @@ icd = ParaschivIonescuInitialContactDetection()
 
 # Call the initial contact detection using icd.detect
 icd = icd.detect(
-    data=acceleration_data,
+    data=accel_data,
     gait_sequences=gait_sequences,
-    sampling_freq_Hz=sampling_frequency,
-    v_acc_col_name="pelvis_accel_x"
+    sampling_freq_Hz=200,
+    v_acc_col_name="pelvis_ACCEL_x"
 )
 
 # Print initial contacts information
@@ -219,27 +172,26 @@ print(icd.initial_contacts_)
 ```
 
     1 gait sequence(s) detected.
-        onset       event_type  duration tracking_systems
-    0   0.625  initial contact         0             None
-    1   1.200  initial contact         0             None
-    2   1.675  initial contact         0             None
-    3   2.450  initial contact         0             None
-    4   3.150  initial contact         0             None
-    5   3.850  initial contact         0             None
-    6   4.500  initial contact         0             None
-    7   5.175  initial contact         0             None
-    8   5.850  initial contact         0             None
-    9   6.550  initial contact         0             None
-    10  7.200  initial contact         0             None
-    11  7.850  initial contact         0             None
-    12  8.500  initial contact         0             None
-    13  9.175  initial contact         0             None
-    14  9.850  initial contact         0             None
+            onset   event_type        duration   tracking_systems
+    0       3.425   initial contact   0          None
+    1       4.000   initial contact   0          None
+    2       4.650   initial contact   0          None
+    3       5.350   initial contact   0          None
+    4       6.050   initial contact   0          None
+    5       6.825   initial contact   0          None
+    6       7.500   initial contact   0          None
+    7       8.250   initial contact   0          None
+    8       8.950   initial contact   0          None
+    9       9.700   initial contact   0          None
+    10      10.425  initial contact   0          None
+    11      11.150  initial contact   0          None
+    12      11.900  initial contact   0          None
     
 
 ## Visualization of the Detected Initial Contacts
 
 In the following, the raw data of the lower back sensor is plotted with the detected events. The events are plotted as vertical lines. The events are:
+
 - **Gait onset**: Start of the gait sequence
 - **Gait duration**: Duration of the gait sequence
 - **Initial contacts**: Initial contacts
@@ -269,8 +221,8 @@ fig, ax = plt.subplots(figsize=(22, 14))
 # Plot raw acceleration data
 for i in range(3):
     ax.plot(
-        time_seconds,
-        acceleration_data.iloc[:,i],
+        time,
+        accel_data.iloc[:,i],
         color=colors[i],
         label=f"Acc {'xyz'[i]}",
     )
@@ -294,7 +246,7 @@ start_limit = first_gait_sequence["onset"] - 1
 end_limit = first_gait_sequence["onset"] + first_gait_sequence["duration"] + 1
 ax.set_xlim(start_limit, end_limit)
 ax.set_ylim(-1, 1.5)
-ax.set_xlabel("Time (seconds)", fontsize=20)
+ax.set_xlabel("Time (sec)", fontsize=20)
 ax.set_ylabel("Acceleration (g)", fontsize=20)
 plt.xticks(fontsize=20)
 plt.yticks(fontsize=20)
@@ -306,28 +258,28 @@ ax.legend(
 plt.show()
 ```
 
-    First Gait Sequence: onset                        0.0
-    duration                    11.0
+    First Gait Sequence: 
+    onset                      3.125
+    duration                   9.775
     event_type         gait sequence
     tracking_system             None
     Name: 0, dtype: object
-    
-    Initial Contacts within the First Gait Sequence:     onset       event_type  duration tracking_systems
-    0   0.625  initial contact         0             None
-    1   1.200  initial contact         0             None
-    2   1.675  initial contact         0             None
-    3   2.450  initial contact         0             None
-    4   3.150  initial contact         0             None
-    5   3.850  initial contact         0             None
-    6   4.500  initial contact         0             None
-    7   5.175  initial contact         0             None
-    8   5.850  initial contact         0             None
-    9   6.550  initial contact         0             None
-    10  7.200  initial contact         0             None
-    11  7.850  initial contact         0             None
-    12  8.500  initial contact         0             None
-    13  9.175  initial contact         0             None
-    14  9.850  initial contact         0             None
+
+    Initial Contacts within the First Gait Sequence:      
+         onset  event_type          duration    tracking_systems
+    0    3.425  initial contact     0           None
+    1    4.000  initial contact     0           None
+    2    4.650  initial contact     0           None
+    3    5.350  initial contact     0           None
+    4    6.050  initial contact     0           None
+    5    6.825  initial contact     0           None
+    6    7.500  initial contact     0           None
+    7    8.250  initial contact     0           None
+    8    8.950  initial contact     0           None
+    9    9.700  initial contact     0           None
+    10  10.425  initial contact     0           None
+    11  11.150  initial contact     0           None
+    12  11.900  initial contact     0           None
     
 
 
