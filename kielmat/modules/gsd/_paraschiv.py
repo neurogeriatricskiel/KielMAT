@@ -35,12 +35,12 @@ class ParaschivIonescuGaitSequenceDetection:
     `duration`, `event_type`, `tracking_system` as Pandas DataFrame.
 
     Methods:
-        detect(data, sampling_freq_Hz, plot_results=False):
+        detect(accel_data, sampling_freq_Hz, plot_results=False):
             Detects gait sequences in the provided accelerometer data.
 
     Examples:
         >>> gsd = ParaschivIonescuGaitSequenceDetection()
-        >>> gsd.detect(data=acceleration_data, sampling_freq_Hz=100, plot_results=True)
+        >>> gsd.detect(accel_data=acceleration_data, sampling_freq_Hz=100, plot_results=True)
         >>> print(gsd.gait_sequences_)
                 onset   duration    event_type      tracking_systems
             0   4.500   5.25        gait sequence   SU

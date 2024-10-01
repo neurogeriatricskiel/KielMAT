@@ -230,7 +230,7 @@ def test_detect_empty_data():
 
     # Call detect with an empty DataFrame instead of None
     icd.detect(
-        data=pd.DataFrame(),
+        accel_data=pd.DataFrame(),
         gait_sequences=pd.DataFrame(),
         sampling_freq_Hz=100,
         v_acc_col_name="LowerBack",
@@ -253,7 +253,7 @@ def test_detect_no_gait_sequences():
 
     # Call detect without gait sequences
     icd.detect(
-        data=acceleration_data_single_axis,
+        accel_data=acceleration_data_single_axis,
         gait_sequences=pd.DataFrame(),
         sampling_freq_Hz=100,
         v_acc_col_name="LowerBack_ACCEL_y",
@@ -275,7 +275,7 @@ def test_detect_no_plot():
 
     # Call detect without gait sequences
     icd.detect(
-        data=acceleration_data_single_axis,
+        accel_data=acceleration_data_single_axis,
         gait_sequences=pd.DataFrame(),
         sampling_freq_Hz=100,
         v_acc_col_name="LowerBack_ACCEL_y",
@@ -318,7 +318,7 @@ def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
 
     # Call detect method
     icd.detect(
-        data=sample_accelerometer_data,
+        accel_data=sample_accelerometer_data,
         gait_sequences=sample_gait_sequences,
         sampling_freq_Hz=100,
         v_acc_col_name="LowerBack_ACCEL_y",
@@ -347,7 +347,7 @@ def test_detect_method_invalid_dt_data_type(
     # Call detect method with invalid dt_data type
     with pytest.raises(ValueError) as excinfo:
         icd.detect(
-            data=sample_accelerometer_data,
+            accel_data=sample_accelerometer_data,
             gait_sequences=sample_gait_sequences,
             sampling_freq_Hz=100,
             v_acc_col_name="LowerBack_ACCEL_y",
@@ -365,7 +365,7 @@ def test_detect_method_invalid_dt_data_length(
     # Call detect method with dt_data not having the same length as data
     with pytest.raises(ValueError) as excinfo:
         icd.detect(
-            data=sample_accelerometer_data,
+            accel_data=sample_accelerometer_data,
             gait_sequences=sample_gait_sequences,
             sampling_freq_Hz=100,
             v_acc_col_name="LowerBack_ACCEL_y",

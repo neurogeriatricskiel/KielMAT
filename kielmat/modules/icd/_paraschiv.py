@@ -24,14 +24,14 @@ class ParaschivIonescuInitialContactDetection:
     `tracking_systems`.
 
     Methods:
-        detect(data, gait_sequences, sampling_freq_Hz):
+        detect(accel_data, gait_sequences, sampling_freq_Hz):
             Detects initial contacts on the accelerometer signal.
 
     Examples:
         Find initial contacts based on the detected gait sequence
 
         >>> icd = ParaschivIonescuInitialContactDetection()
-        >>> icd = icd.detect(data=acceleration_data, sampling_freq_Hz=100)
+        >>> icd = icd.detect(accel_data=acceleration_data, sampling_freq_Hz=100)
         >>> print(icd.initial_contacts_)
                 onset   event_type       duration   tracking_systems
             0   5       initial contact  0          SU
@@ -53,7 +53,7 @@ class ParaschivIonescuInitialContactDetection:
 
     def detect(
         self,
-        data: pd.DataFrame,
+        accel_data: pd.DataFrame,
         sampling_freq_Hz: float,
         v_acc_col_name: str,
         gait_sequences: Optional[pd.DataFrame] = None,
@@ -64,7 +64,7 @@ class ParaschivIonescuInitialContactDetection:
         Detects initial contacts based on the input accelerometer data.
 
         Args:
-            data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
+            accel_data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
             sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
             v_acc_col_name (str): The column name that corresponds to the vertical acceleration.
             gait_sequences (pd.DataFrame, optional): A dataframe of detected gait sequences. If not provided, the entire acceleration time series will be used for detecting initial contacts.
@@ -80,7 +80,7 @@ class ParaschivIonescuInitialContactDetection:
                     - tracking_system: Tracking systems used the events are derived from.
         """
         # Check if data is empty
-        if data.empty:
+        if accel_data.empty:
             self.initial_contacts_ = pd.DataFrame()
             return self  # Return without performing further processing
 
@@ -96,11 +96,14 @@ class ParaschivIonescuInitialContactDetection:
             raise ValueError("tracking_system must be a string")
 
         # check if dt_data is provided and if it is a series with the same length as data
-        if dt_data is not None and len(dt_data) != len(data):
+        if dt_data is not None and len(dt_data) != len(accel_data):
             raise ValueError("dt_data must be a series with the same length as data")
 
+        # Convert acceleration data from "m/s^2" to "g"
+        accel_data /= 9.81
+
         # Extract vertical accelerometer data using the specified index
-        acc_vertical = data[v_acc_col_name]
+        acc_vertical = accel_data[v_acc_col_name]
 
         # Initialize an empty list to store the processed output
         processed_output = []
@@ -111,7 +114,7 @@ class ParaschivIonescuInitialContactDetection:
         # Process each gait sequence
         if gait_sequences is None:
             gait_sequences = pd.DataFrame(
-                {"onset": [0], "duration": [len(data) / sampling_freq_Hz]}
+                {"onset": [0], "duration": [len(accel_data) / sampling_freq_Hz]}
             )
         for _, gait_seq in gait_sequences.iterrows():
             # Calculate start and stop indices for the current gait sequence

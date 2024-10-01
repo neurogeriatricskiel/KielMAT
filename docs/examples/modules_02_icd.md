@@ -2,7 +2,7 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Mon 23 Sep 2024
+**Last update:** Tue 01 Oct 2024
 
 ## Learning objectives
 By the end of this tutorial, you will be able to: 
@@ -34,7 +34,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from pathlib import Path
-
 from kielmat.datasets import keepcontrol
 from kielmat.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from kielmat.modules.icd import ParaschivIonescuInitialContactDetection
@@ -80,6 +79,31 @@ sampling_frequency = recording.channels[tracking_sys][
     recording.channels[tracking_sys]["name"] == "pelvis_ACCEL_x"
 ]["sampling_frequency"].values[0]
 ```
+#### Data Units and Conversion to SI Units
+
+All input data provided to the modules in this toolbox should adhere to SI units to maintain consistency and accuracy across analyses. This ensures compatibility with the underlying algorithms, which are designed to work with standard metric measurements.
+
+If any data is provided in non-SI units (e.g., acceleration in g instead of m/s²), it is needed that the data to be converted into the appropriate SI units before using it as input to the toolbox. Failure to convert non-SI units may lead to incorrect results or misinterpretation of the output.
+
+For instance:
+
+- **Acceleration:** Convert from g to m/s².
+
+```python
+# Get the corresponding unit of the acceleration data
+accel_unit = recording.channels[tracking_sys][
+    recording.channels[tracking_sys]["name"].str.contains("ACCEL", case=False)
+]["units"].iloc[0]
+
+# Check unit of acceleration data
+if accel_unit in ["m/s^2"]:
+    pass  # No conversion needed
+elif accel_unit in ["g", "G"]:
+    # Convert acceleration data from "g" to "m/s^2"
+    accel_data *= 9.81
+    # Update unit of acceleration
+    accel_unit = ["m/s^2"]
+```
 
 ## Visualisation of the Data
 The raw acceleration data including components of x, y and z axis is represented.
@@ -101,12 +125,12 @@ for i in range(3):
         time,
         accel_data.iloc[:,i],
         color=colors[i],
-        label=f"Acc {'xyz'[i]}",
+        label=f"ACCEL {'xyz'[i]}",
     )
 
 # Add labels and legends
-plt.xlabel("Time [sec]", fontsize=20)
-plt.ylabel("Acceleration [g]", fontsize=20)
+plt.xlabel("Time (s)", fontsize=20)
+plt.ylabel("Acceleration (m/s$^{2}$)", fontsize=20)
 plt.legend(fontsize=18)
 
 # Add a title with a specified font size
@@ -137,7 +161,7 @@ Now, we are running Paraschiv-Ionescu initial contact detection algorithm from i
 
 Then, in order to apply Paraschiv-Ionescu initial contact detection algorithm, an instance of the ParaschivIonescuInitialContactDetection class is created using the constructor, `ParaschivIonescuInitialContactDetection()`. The `icd` variable holds the instance, allowing us to access its methods. The inputs of Paraschiv-Ionescu initial contact detection algorithm are as follows:
 
-- **Input Data:** `data` consist of accelerometer data (N, 3) for the x, y, and z axes in pandas Dataframe format.
+- **Input Data:** `accel_data` consist of accelerometer data (N, 3) for the x, y, and z axes in pandas Dataframe format. The data should be in SI unit as m/s².
 - **Gait Sequences:** `gait_sequences`, consist of gait sequences detected by Paraschiv gait sequence detection ([`KielMAT.kielmat.modules.gsd._paraschiv.ParaschivIonescuGaitSequenceDetection`](https://github.com/neurogeriatricskiel/KielMAT/tree/main/kielmat/modules/gsd/_paraschiv.py)).
 - **Sampling Frequency:** `sampling_freq_Hz` is the sampling frequency of the data, defined in Hz, with a default value of 100 Hz.
 
@@ -150,7 +174,7 @@ gsd = ParaschivIonescuGaitSequenceDetection()
 
 # Call the gait sequence detection using gsd.detect to detect gait sequences
 gsd = gsd.detect(
-    data=acceleration_data, sampling_freq_Hz=200, plot_results=False
+    accel_data=acceleration_data, sampling_freq_Hz=200, plot_results=False
 )
 
 # Gait sequences are stored in gait_sequences_ attribute of gsd
@@ -161,7 +185,7 @@ icd = ParaschivIonescuInitialContactDetection()
 
 # Call the initial contact detection using icd.detect
 icd = icd.detect(
-    data=accel_data,
+    accel_data=accel_data,
     gait_sequences=gait_sequences,
     sampling_freq_Hz=200,
     v_acc_col_name="pelvis_ACCEL_x"
@@ -224,7 +248,7 @@ for i in range(3):
         time,
         accel_data.iloc[:,i],
         color=colors[i],
-        label=f"Acc {'xyz'[i]}",
+        label=f"ACCEL {'xyz'[i]}",
     )
 
 # Plot the first element of gait sequences
@@ -245,13 +269,12 @@ for ic_time in ic_within_gait["onset"]:
 start_limit = first_gait_sequence["onset"] - 1
 end_limit = first_gait_sequence["onset"] + first_gait_sequence["duration"] + 1
 ax.set_xlim(start_limit, end_limit)
-ax.set_ylim(-1, 1.5)
-ax.set_xlabel("Time (sec)", fontsize=20)
-ax.set_ylabel("Acceleration (g)", fontsize=20)
+ax.set_xlabel("Time (s)", fontsize=20)
+ax.set_ylabel("Acceleration (m/s$^{2}$)", fontsize=20)
 plt.xticks(fontsize=20)
 plt.yticks(fontsize=20)
 ax.legend(
-    ["Acc x", "Acc y", "Acc z", "Gait onset", "Gait duration", "Initial contacts"],
+    ["ACCEL x", "ACCEL y", "ACCEL z", "Gait onset", "Gait duration", "Initial contacts"],
     fontsize=20,
     loc="upper right",
 )
