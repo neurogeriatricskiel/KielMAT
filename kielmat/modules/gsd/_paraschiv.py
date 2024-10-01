@@ -400,8 +400,8 @@ class ParaschivIonescuGaitSequenceDetection:
         # Plot results if set to true
         if plot_results:
             # Convert detected_activity_signal from g back to m/s^2 for consistency
-            detected_activity_signal *=9.81
-            
+            detected_activity_signal *= 9.81
+
             viz_utils.plot_gait(
                 target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
             )

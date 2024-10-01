@@ -115,7 +115,9 @@ def test_invalid_dt_data_type():
         }
     )
     with pytest.raises(ValueError):
-        gsd.detect(accel_data=acceleration_data, sampling_freq_Hz=100, dt_data="not_a_series")
+        gsd.detect(
+            accel_data=acceleration_data, sampling_freq_Hz=100, dt_data="not_a_series"
+        )
 
 
 # Test for ValueError: "dt_data must be a series with the same length as data"
