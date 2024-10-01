@@ -131,15 +131,17 @@ class PhamPosturalTransitionDetection:
             # Ensure dt_data is a pandas Series
             if not isinstance(dt_data, pd.Series):
                 raise ValueError("dt_data must be a pandas Series with datetime values")
-            
+
             # Ensure dt_data has datetime values
             if not pd.api.types.is_datetime64_any_dtype(dt_data):
                 raise ValueError("dt_data must be a pandas Series with datetime values")
-            
+
             # Ensure dt_data has the same length as accel_data and gyro_data
             if len(dt_data) != len(accel_data):
-                raise ValueError("dt_data must be a pandas Series with the same length as accel_data and gyro_data")
-        
+                raise ValueError(
+                    "dt_data must be a pandas Series with the same length as accel_data and gyro_data"
+                )
+
         # Check if data is a DataFrame
         if not isinstance(accel_data, pd.DataFrame):
             raise ValueError("Input data must be a pandas DataFrame")

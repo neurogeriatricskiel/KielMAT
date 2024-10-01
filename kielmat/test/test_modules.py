@@ -960,7 +960,8 @@ def test_pham_postural_transition_algorithm():
 
     # Should raise ValueError because dt_data length does not match input_data length
     with pytest.raises(
-        ValueError, match="dt_data must be a pandas Series with the same length as accel_data and gyro_data"
+        ValueError,
+        match="dt_data must be a pandas Series with the same length as accel_data and gyro_data",
     ):
         pham.detect(
             accel_data=input_data.iloc[:, 0:3],
@@ -993,11 +994,11 @@ def test_data_structure_invalid_pham_pt():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
     sample_data = pd.read_csv(test_data_file_path, index_col=0)
-    
+
     # Extract accelerometer and gyroscope data correctly
     accel_data = sample_data.iloc[:, 0:3]
     gyro_data = sample_data.iloc[:, 3:6]
-    
+
     # Convert DataFrames to numpy arrays
     accel_data = accel_data.to_numpy()
     gyro_data = gyro_data.to_numpy()
