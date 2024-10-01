@@ -42,7 +42,7 @@ class PhamPosturalTransitionDetection:
     along with the detected postural transitions.
 
     Methods:
-        detect(data, gyro_mediolateral, accel_unit, gyro_unit, sampling_freq_Hz, dt_data, tracking_system, tracked_point, plot_results):
+        detect(accel_data, gyro_data, sampling_freq_Hz, dt_data, tracking_system, tracked_point, plot_results):
             Detects  sit to stand and stand to sit using accelerometer and gyro signals.
 
         spatio_temporal_parameters():
@@ -51,9 +51,8 @@ class PhamPosturalTransitionDetection:
     Examples:
         >>> pham = PhamPosturalTransitionDetection()
         >>> pham.detect(
-                data=input_data,
-                accel_unit="g",
-                gyro_unit="deg/s",
+                accel_data=accel_data,
+                gyro_data=gyro_data,
                 sampling_freq_Hz=200.0,
                 tracking_system="imu",
                 tracked_point="LowerBack",
@@ -98,9 +97,8 @@ class PhamPosturalTransitionDetection:
 
     def detect(
         self,
-        data: pd.DataFrame,
-        accel_unit: str,
-        gyro_unit: str,
+        accel_data: pd.DataFrame,
+        gyro_data: pd.DataFrame,
         sampling_freq_Hz: float,
         dt_data: Optional[pd.Series] = None,
         tracking_system: Optional[str] = None,
@@ -111,9 +109,8 @@ class PhamPosturalTransitionDetection:
         Detects postural transitions based on the input accelerometer and gyro data.
 
         Args:
-            data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
-            accel_unit (str): Unit of acceleration data.
-            gyro_unit (str): Unit of gyro data.
+            accel_data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
+            gyro_data (pd.DataFrame): Input gyro data (N, 3) for x, y, and z axes.
             sampling_freq_Hz (float): Sampling frequency of the input data.
             dt_data (pd.Series, optional): Original datetime in the input data. If original datetime is provided, the output onset will be based on that.
             tracking_system (str, optional): Tracking systems.
@@ -130,24 +127,35 @@ class PhamPosturalTransitionDetection:
                 - tracked_points: Name of the tracked points on the body.
         """
         # check if dt_data is a pandas Series with datetime values
-        if dt_data is not None and (
-            not isinstance(dt_data, pd.Series)
-            or not pd.api.types.is_datetime64_any_dtype(dt_data)
-        ):
-            raise ValueError("dt_data must be a pandas Series with datetime values")
-
-        # check if dt_data is provided and if it is a series with the same length as data
-        if dt_data is not None and len(dt_data) != len(data):
-            raise ValueError("dt_data must be a series with the same length as data")
-
+        if dt_data is not None:
+            # Ensure dt_data is a pandas Series
+            if not isinstance(dt_data, pd.Series):
+                raise ValueError("dt_data must be a pandas Series with datetime values")
+            
+            # Ensure dt_data has datetime values
+            if not pd.api.types.is_datetime64_any_dtype(dt_data):
+                raise ValueError("dt_data must be a pandas Series with datetime values")
+            
+            # Ensure dt_data has the same length as accel_data and gyro_data
+            if len(dt_data) != len(accel_data):
+                raise ValueError("dt_data must be a pandas Series with the same length as accel_data and gyro_data")
+        
         # Check if data is a DataFrame
-        if not isinstance(data, pd.DataFrame):
+        if not isinstance(accel_data, pd.DataFrame):
+            raise ValueError("Input data must be a pandas DataFrame")
+
+        if not isinstance(gyro_data, pd.DataFrame):
             raise ValueError("Input data must be a pandas DataFrame")
 
         # Error handling for invalid input data
-        if not isinstance(data, pd.DataFrame) or data.shape[1] != 6:
+        if not isinstance(accel_data, pd.DataFrame) or accel_data.shape[1] != 3:
             raise ValueError(
-                "Input accelerometer and gyro data must be a DataFrame with 6 columns for x, y, and z axes."
+                "Input accelerometer data must be a DataFrame with 3 columns for x, y, and z axes."
+            )
+
+        if not isinstance(gyro_data, pd.DataFrame) or gyro_data.shape[1] != 3:
+            raise ValueError(
+                "Input gyro data must be a DataFrame with 3 columns for x, y, and z axes."
             )
 
         # Check if sampling frequency is positive
@@ -161,82 +169,35 @@ class PhamPosturalTransitionDetection:
         # Calculate sampling period
         sampling_period = 1 / sampling_freq_Hz
 
-        # Identify the columns in the DataFrame that correspond to accelerometer data
-        accel_columns = [col for col in data.columns if "ACCEL" in col]
-
-        # Identify the columns in the DataFrame that correspond to gyroscope data
-        gyro_columns = [col for col in data.columns if "GYRO" in col]
-
-        # Ensure that there are exactly 3 columns each for accelerometer and gyroscope data
-        if len(accel_columns) != 3 or len(gyro_columns) != 3:
-            raise ValueError(
-                "Data must contain 3 accelerometer and 3 gyroscope columns."
-            )
-
-        # Select acceleration data and convert it to numpy array format
-        accel = data[accel_columns].copy().to_numpy()
-
-        # Select gyro data and convert it to numpy array format
-        gyro = data[gyro_columns].copy().to_numpy()
-
-        # Convert variations of acceleration unit to "m/s^2"
-        if accel_unit in ["meters/s^2", "meter/s^2"]:
-            accel_unit = "m/s^2"
-
-        # Check unit of acceleration data if it is in "m/s^2" or "g" for orientation estimation
-        if accel_unit in ["g", "G"]:
-            # Convert acceleration data from "g" to "m/s^2"
-            accel *= 9.81
-        elif accel_unit in ["m/s^2"]:
-            pass  # No conversion needed
-        else:
-            raise ValueError(
-                "Invalid unit for acceleration data. Must be 'm/s^2' or 'g'"
-            )
-
-        # Convert variations of gyro unit to "rad/s"
-        if gyro_unit in ["rad/s", "radians per second"]:
-            gyro_unit = "rad/s"
-
-        # Check unit of gyro data if it is in deg/s or rad/s
-        if gyro_unit in ["deg/s", "°/s"]:
-            # Convert gyro data from deg/s to rad/s (if not already is in rad/s)
-            gyro = np.deg2rad(gyro)
-
-        # Check different variations of gyro unit
-        elif gyro_unit == "rad/s":
-            pass  # No conversion needed
-
-        else:
-            raise ValueError("Invalid unit for gyro data. Must be 'deg/s' or 'rad/s'")
+        gyro_data = np.deg2rad(gyro_data)
 
         # Ensure that acceleration and gyroscope arrays are C-contiguous for efficient processing
-        accel = np.ascontiguousarray(accel)
-        self.gyro = np.ascontiguousarray(gyro)
+        accel_data = np.ascontiguousarray(accel_data)
+        self.gyro_data = np.ascontiguousarray(gyro_data)
 
         # Initialize the Versatile Quaternion-based Filter (VQF) with the calculated sampling period
         vqf = VQF(sampling_period)
 
         # Perform orientation estimation using VQF
         # This step estimates the orientation of the IMU and returns quaternion-based orientation estimates
-        out_orientation_est = vqf.updateBatch(self.gyro, accel)
+        out_orientation_est = vqf.updateBatch(self.gyro_data, accel_data)
 
         # Initialize arrays to store the updated acceleration and gyroscope data
-        accel_updated = np.zeros_like(accel)
-        gyro_updated = np.zeros_like(self.gyro)
+        accel_updated = np.zeros_like(accel_data)
+        gyro_updated = np.zeros_like(self.gyro_data)
 
         # Apply quaternion-based orientation correction to the accelerometer data
         # This step corrects the accelerometer data based on the estimated orientation
         for t in range(accel_updated.shape[0]):
             accel_updated[t, :] = vqf.quatRotate(
-                out_orientation_est["quat6D"][t, :], accel[t, :]
+                out_orientation_est["quat6D"][t, :], accel_data[t, :]
             )
 
         # Apply quaternion-based orientation correction to the gyroscope data
         # This step corrects the gyroscope data based on the estimated orientation
         for t in range(gyro_updated.shape[0]):
             gyro_updated[t, :] = vqf.quatRotate(
-                out_orientation_est["quat6D"][t, :], self.gyro[t, :]
+                out_orientation_est["quat6D"][t, :], self.gyro_data[t, :]
             )
 
         # Convert updated acceleration data back from "m/s^2" to "g" units
@@ -490,8 +451,6 @@ class PhamPosturalTransitionDetection:
             viz_utils.plot_postural_transitions(
                 accel,
                 self.gyro,
-                accel_unit,
-                gyro_unit,
                 postural_transitions_,
                 sampling_freq_Hz,
             )

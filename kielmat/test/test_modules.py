@@ -918,9 +918,8 @@ def test_pham_postural_transition_algorithm():
 
     # Perform detection with valid input data
     pham.detect(
-        input_data,
-        accel_unit="g",
-        gyro_unit="deg/s",
+        accel_data=input_data.iloc[:, 0:3],
+        gyro_data=input_data.iloc[:, 3:6],
         sampling_freq_Hz=sampling_freq,
         plot_results=False,
     )
@@ -928,7 +927,7 @@ def test_pham_postural_transition_algorithm():
     # Perform spatio-temporal parameter extraction
     pham.spatio_temporal_parameters()
 
-    # dt_data is a pandas Series but not with datetime dtype
+    # Test 1: dt_data is a pandas Series but not with datetime dtype
     dt_data = pd.Series(np.arange(1000))
 
     # Should raise ValueError because dt_data is not datetime
@@ -936,14 +935,13 @@ def test_pham_postural_transition_algorithm():
         ValueError, match="dt_data must be a pandas Series with datetime values"
     ):
         pham.detect(
-            data=input_data,
-            accel_unit="g",
-            gyro_unit="deg/s",
+            accel_data=input_data.iloc[:, 0:3],
+            gyro_data=input_data.iloc[:, 3:6],
             sampling_freq_Hz=200,
             dt_data=dt_data,
         )
 
-    # dt_data is a NumPy array instead of a pandas Series
+    # Test 2: dt_data is a NumPy array instead of a pandas Series
     dt_data = np.array(pd.date_range(start="1/1/2022", periods=1000, freq="S"))
 
     # Should raise ValueError because dt_data is not a pandas Series
@@ -951,29 +949,27 @@ def test_pham_postural_transition_algorithm():
         ValueError, match="dt_data must be a pandas Series with datetime values"
     ):
         pham.detect(
-            data=input_data,
-            accel_unit="g",
-            gyro_unit="deg/s",
+            accel_data=input_data.iloc[:, 0:3],
+            gyro_data=input_data.iloc[:, 3:6],
             sampling_freq_Hz=200,
             dt_data=dt_data,
         )
 
-    # dt_data is a pandas Series of datetime values but of incorrect length
+    # Test 3: dt_data is a pandas Series of datetime values but of incorrect length
     dt_data = pd.Series(pd.date_range("20210101", periods=500))
 
     # Should raise ValueError because dt_data length does not match input_data length
     with pytest.raises(
-        ValueError, match="dt_data must be a series with the same length as data"
+        ValueError, match="dt_data must be a pandas Series with the same length as accel_data and gyro_data"
     ):
         pham.detect(
-            data=input_data,
-            accel_unit="g",
-            gyro_unit="deg/s",
+            accel_data=input_data.iloc[:, 0:3],
+            gyro_data=input_data.iloc[:, 3:6],
             sampling_freq_Hz=200,
             dt_data=dt_data,
         )
 
-    # dt_data is a pandas Series but converted to a NumPy array
+    # Test 4: dt_data is a pandas Series but converted to a NumPy array
     dt_data = pd.Series(pd.date_range(start="1/1/2022", periods=1000, freq="S"))
     dt_data = dt_data.to_numpy()
 
@@ -982,9 +978,8 @@ def test_pham_postural_transition_algorithm():
         ValueError, match="dt_data must be a pandas Series with datetime values"
     ):
         pham.detect(
-            data=input_data,
-            accel_unit="g",
-            gyro_unit="deg/s",
+            accel_data=input_data.iloc[:, 0:3],
+            gyro_data=input_data.iloc[:, 3:6],
             sampling_freq_Hz=200,
             dt_data=dt_data,
         )
@@ -998,36 +993,21 @@ def test_data_structure_invalid_pham_pt():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
     sample_data = pd.read_csv(test_data_file_path, index_col=0)
-    sample_data = sample_data.to_numpy()
+    
+    # Extract accelerometer and gyroscope data correctly
+    accel_data = sample_data.iloc[:, 0:3]
+    gyro_data = sample_data.iloc[:, 3:6]
+    
+    # Convert DataFrames to numpy arrays
+    accel_data = accel_data.to_numpy()
+    gyro_data = gyro_data.to_numpy()
 
     # Test invalid data shape
     with pytest.raises(ValueError, match="Input data must be a pandas DataFrame"):
         pham.detect(
-            data=sample_data,
-            accel_unit="g",
-            gyro_unit="deg/s",
+            accel_data=accel_data,
+            gyro_data=gyro_data,
             sampling_freq_Hz=100,
-        )
-
-
-def test_invalid_gyro_unit_pham_pt():
-    # Initialize PhamPosturalTransitionDetection object
-    pham = PhamPosturalTransitionDetection()
-
-    # Sample accelerometer and gyroscope data
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    test_data_file_path = os.path.join(current_dir, "test_data_pham_algorithms.csv")
-    sample_data = pd.read_csv(test_data_file_path, index_col=0)
-
-    # Test with invalid gyro unit
-    with pytest.raises(
-        ValueError, match="Invalid unit for gyro data. Must be 'deg/s' or 'rad/s'"
-    ):
-        pham.detect(
-            data=sample_data,
-            accel_unit="g",
-            gyro_unit="invalid_unit",
-            sampling_freq_Hz=200,
         )
 
 
@@ -1043,9 +1023,8 @@ def test_invalid_sampling_freq_pham_pt():
     # Test with non-positive sampling frequency
     with pytest.raises(ValueError, match="Sampling frequency must be positive"):
         pham.detect(
-            data=sample_data,
-            accel_unit="g",
-            gyro_unit="deg/s",
+            accel_data=sample_data.iloc[:, 0:3],
+            gyro_data=sample_data.iloc[:, 3:6],
             sampling_freq_Hz=0,
         )
 

@@ -100,7 +100,7 @@ def plot_pam(hourly_average_data, thresholds_mg):
 
 # Function to plot results of the postural transition detection algorithm
 def plot_postural_transitions(
-    accel, gyro, accel_unit, gyro_unit, postural_transitions_, sampling_freq_Hz
+    accel, gyro, postural_transitions_, sampling_freq_Hz
 ):
     """
     Plot results of the gait sequence detection algorithm.
@@ -108,8 +108,6 @@ def plot_postural_transitions(
     Args:
         accel (ndarray): Array of acceleration data.
         gyro (ndarray): Array of gyroscope data.
-        accel_unit (str): Unit of acceleration data.
-        gyro_unit (str): Unit of gyro data.
         postural_transitions_ (DataFrame): DataFrame containing postural transition information.
         sampling_freq_Hz (float): Sampling frequency in Hertz.
 
@@ -131,8 +129,8 @@ def plot_postural_transitions(
         duration = postural_transitions_["duration"][i]
         ax1.axvline(x=onset, color="r")
         ax1.axvspan(onset, (onset + duration), color="grey")
-    ax1.set_ylabel(f"Acceleration ({accel_unit})", fontsize=14)
-    ax1.set_xlabel(f"Time (sec)", fontsize=14)
+    ax1.set_ylabel(f"Acceleration (m/s$^{2}$)", fontsize=14)
+    ax1.set_xlabel(f"Time (s)", fontsize=14)
     ax1.legend(
         ["ACCEL x", "ACCEL y", "ACCEL z", "Event oset", "Event duration"],
         loc="upper left",
@@ -158,8 +156,8 @@ def plot_postural_transitions(
         duration = postural_transitions_["duration"][i]
         ax2.axvline(x=onset, color="r")
         ax2.axvspan(onset, (onset + duration), color="grey")
-    ax2.set_ylabel(f"Gyro ({gyro_unit})", fontsize=14)
-    ax2.set_xlabel(f"Time (sec)", fontsize=14)
+    ax2.set_ylabel(f"Gyro (deg/s)", fontsize=14)
+    ax2.set_xlabel(f"Time (s)", fontsize=14)
     ax2.legend(
         ["GYRO x", "GYRO y", "GYRO z", "Event oset", "Event duration"],
         loc="upper left",

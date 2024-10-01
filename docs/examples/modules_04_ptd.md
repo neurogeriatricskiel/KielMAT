@@ -2,7 +2,7 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Thu 19 September 2024
+**Last update:** Tue 01 October 2024
 
 ## Learning objectives
 By the end of this tutorial:
@@ -142,6 +142,36 @@ print(f"sampling frequency: {sampling_frequency} Hz")
 ```
 sampling frequency: 200 Hz
 
+#### Data Units and Conversion to SI Units
+
+All input data provided to the modules in this toolbox should adhere to SI units to maintain consistency and accuracy across analyses. This ensures compatibility with the underlying algorithms, which are designed to work with standard metric measurements.
+
+If any data is provided in non-SI units (e.g., acceleration in g instead of m/s²), it is needed that the data to be converted into the appropriate SI units before using it as input to the toolbox. Failure to convert non-SI units may lead to incorrect results or misinterpretation of the output.
+
+For instance:
+
+- **Acceleration:** Convert from g to m/s².
+
+```python
+# Check unit of acceleration data
+if accel_unit in ["m/s^2"]:
+    pass  # No conversion needed
+elif accel_unit in ["g", "G"]:
+    # Convert acceleration data from "g" to "m/s^2"
+    accel_data *= 9.81
+    # Update unit of acceleration
+    accel_unit = ["m/s^2"]
+
+# Check unit of gyro data
+if gyro_unit in ["deg/s", "°/s"]:
+    pass  # No conversion needed
+elif gyro_unit == "rad/s":
+    # Convert gyro data from "rad/s" to "deg/s"
+    gyro_data = np.rad2deg(gyro_data)
+    # Update unit of gyro
+    gyro_unit = ["deg/s"]
+```
+
 ## Visualisation of the Data
 The raw acceleration and gyro data including components of x, y and z axis are plotted.
 
@@ -160,7 +190,7 @@ for i in range(3):
         accel_data[f"pelvis_ACCEL_{chr(120 + i)}"],
         label=f"ACCEL {'xyz'[i]}",
     )
-ax1.set_ylabel(f"Acceleration ({accel_unit})", fontsize=font_size)
+ax1.set_ylabel(f"Acceleration (m/s$^{2}$)", fontsize=font_size)
 ax1.set_xlabel(f"Time (s)", fontsize=font_size)
 ax1.legend(loc="upper left", fontsize=font_size)
 accel_min = np.min(accel_data)
@@ -178,7 +208,7 @@ for i in range(3):
         gyro_data[f"pelvis_GYRO_{chr(120 + i)}"],
         label=f"GYRO {'xyz'[i]}",
     )
-ax2.set_ylabel(f"Gyro ({gyro_unit})", fontsize=font_size)
+ax2.set_ylabel(f"Gyro (deg/s)", fontsize=font_size)
 ax2.set_xlabel(f"Time (s)", fontsize=font_size)
 ax2.legend(loc="upper left", fontsize=font_size)
 gyro_min = np.min(gyro_data)
@@ -201,9 +231,8 @@ The following code first prepares the input data by combining acceleration and g
 
 Then, in order to apply pham postural transition algorithm, an instance of the PhamPosturalTransitionDetection class is created using the constructor, `PhamPosturalTransitionDetection()`. The `pham` variable holds this instance, allowing us to access its methods. The inputs of the algorithm are as follows:
 
-- **Data:** `data (pd.DataFrame)` includes accelerometer and gyro data (N, 6) for x, y, and z axes. in pandas Dataframe format.
-- **Unit of acceleration data:** `accel_unit (str)` is the unit of the acceleation data.
-- **Unit of gyro data:** `gyro_unit (str)` is unit of the gyro data.
+- **Acceleration data:** `accel_data (pd.DataFrame)` includes accelerometer data (N, 3) for x, y, and z axes. in pandas Dataframe format.
+- **Gyro data:** `gyro_data (pd.DataFrame)` includes gyro data (N, 3) for x, y, and z axes. in pandas Dataframe format.
 - **Sampling frequency:** `sampling_freq_Hz` is the sampling frequency of the data, defined in Hz.
 - **Datetime:** `dt_data (pd.Series, optional)` is the original datetime in the input data which is optional.
 - **Tracking system:** `tracking_system (str, optional)` is the name of tracking system which is optional.
@@ -211,20 +240,13 @@ Then, in order to apply pham postural transition algorithm, an instance of the P
 - **Plot Results:** `plot_results (bool, optional)`, if set to True, generates a plot showing the detected turns on the data. The default is False. The onset is represented with the vertical red line and the grey area represents the duration of the turns detected by the algorithm.
 
 ```python
-# Put acceleration and gyro data in the input data as pandas Dataframe which will be used as input of the algorithm
-input_data = [accel_data, gyro_data]
-
-# Concatenate acceleration_data and gyro_data along axis=1 (columns)
-input_data = pd.concat([accel_data, gyro_data], axis=1)
-
 # Create an instance of the PhamPosturalTransitionDetection class
 pham = PhamPosturalTransitionDetection()
 
 # Call the postural transition detection using pham.detect
 pham = pham.detect(
-    data=input_data,
-    accel_unit=accel_unit,
-    gyro_unit=gyro_unit,
+    accel_data=accel_data,
+    gyro_data=gyro_data,
     sampling_freq_Hz=sampling_frequency,
     tracking_system="imu",
     tracked_point="pelvis",

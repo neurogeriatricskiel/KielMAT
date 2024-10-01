@@ -1738,8 +1738,6 @@ def test_pham_plot_results(monkeypatch):
     viz_utils.plot_postural_transitions(
         accel,
         gyro,
-        accel_unit="g",
-        gyro_unit="deg/s",
         postural_transitions_=postural_transitions_,
         sampling_freq_Hz=sampling_freq_Hz,
     )
