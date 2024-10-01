@@ -2,7 +2,7 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Mon 23 Sep 2024
+**Last update:** Tue 01 Oct 2024
 
 ## Learning objectives
 By the end of this tutorial:
@@ -39,7 +39,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from pathlib import Path
-
 from kielmat.datasets import mobilised
 from kielmat.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from kielmat.config import cfg_colors
@@ -47,7 +46,7 @@ from kielmat.config import cfg_colors
 
 ## Data Preparation
 
-To implement the Paraschiv-Ionescu gait sequence detection algorithm, we load example data from a congestive heart failure (CHF) cohort, which is publicly available on the Zenodo repository [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7547125.svg)](https://doi.org/10.5281/zenodo.7547125). 
+To implement the Paraschiv-Ionescu gait sequence detection algorithm, we load example data from a publicly available on the Zenodo repository [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7547125.svg)](https://doi.org/10.5281/zenodo.7547125). 
 
 The participant was assessed for 2.5 hours in the real-world while doing different daily life activities and also was asked to perform specific tasks such as outdoor walking, walking up and down a slope and stairs and moving from one room to another [`3`].
 
@@ -85,6 +84,33 @@ sampling_frequency = recording.channels[tracking_sys][
 ]["sampling_frequency"].values[0]
 ```
 
+#### Data Units and Conversion to SI Units
+
+All input data provided to the modules in this toolbox should adhere to SI units to maintain consistency and accuracy across analyses. This ensures compatibility with the underlying algorithms, which are designed to work with standard metric measurements.
+
+If any data is provided in non-SI units (e.g., acceleration in g instead of m/s²), it is needed that the data to be converted into the appropriate SI units before using it as input to the toolbox. Failure to convert non-SI units may lead to incorrect results or misinterpretation of the output.
+
+For instance:
+
+- **Acceleration:** Convert from g to m/s².
+
+```python
+# Get the corresponding unit of the acceleration data
+accel_unit = recording.channels[tracking_sys][
+    recording.channels[tracking_sys]["name"] == "LowerBack_ACCEL_x"
+]["units"].values[0]
+
+# Check unit of acceleration data
+if accel_unit in ["m/s^2"]:
+    pass  # No conversion needed
+elif accel_unit in ["g", "G"]:
+    # Convert acceleration data from "g" to "m/s^2"
+    accel_data *= 9.81
+    # Update unit of acceleration
+    accel_unit = ["m/s^2"]
+```
+
+
 ## Visualisation of the Data
 The raw acceleration data including components of x, y and z axis is represented.
 
@@ -106,17 +132,17 @@ for i in range(3):
         time_in_minute,
         acceleration_data[f"LowerBack_ACCEL_{chr(120 + i)}"],
         color=colors[i],
-        label=f"Acc {'xyz'[i]}",
+        label=f"ACCEL {'xyz'[i]}",
     )
 
 # Add labels and legends
-plt.xlabel("Time [minute]", fontsize=20)
-plt.ylabel("Acceleration [g]", fontsize=20)
+plt.xlabel("Time (minute)", fontsize=20)
+plt.ylabel(f"Acceleration (m/s$^{2}$)", fontsize=20)
 plt.legend(fontsize=18)
 
 # Add a title with a specified font size
 plt.title(
-    "Accelerometer data from lower-back IMU sensor for CHF cohort",
+    "Accelerometer data from lower-back IMU sensor",
     fontsize=30,
 )
 
@@ -154,17 +180,17 @@ for i in range(3):
         time_seconds,
         acceleration_data[f"LowerBack_ACCEL_{chr(120 + i)}"],
         color=colors[i],
-        label=f"Acc {'xyz'[i]}",
+        label=f"ACCEL {'xyz'[i]}",
     )
 
 # Add labels and legends
-plt.xlabel("Time [seconds]", fontsize=20)
-plt.ylabel("Acceleration [g]", fontsize=20)
+plt.xlabel("Time (s)", fontsize=20)
+plt.ylabel("Acceleration (m/s$^{2}$)", fontsize=20)
 plt.legend(fontsize=18)
 
 # Add a title
 plt.title(
-    "Accelerometer data from lower-back IMU sensor for CHF cohort",
+    "Accelerometer data from lower-back IMU sensor",
     fontsize=30,
 )
 
@@ -174,7 +200,6 @@ plt.yticks(fontsize=20)
 
 # Set x-axis and y-axis limits for a specific duration (in seconds) and acceleration range
 plt.xlim(0, 10)
-plt.ylim(-1, 1.5)
 
 # Display a grid for reference
 plt.grid(visible=None, which="both", axis="both")
@@ -194,7 +219,7 @@ Now, we are running Paraschiv-Ionescu gait sequence detection algorithm from gsd
 
 In order to apply gait sequence detection algorithm, an instance of the ParaschivIonescuGaitSequenceDetection class is created using the constructor, `ParaschivIonescuGaitSequenceDetection()`. The `gsd` variable holds the instance, allowing us to access its methods. The inputs of the algorithm are as follows:
 
-- **Input Data:** `data` consist of accelerometer data (N, 3) for the x, y, and z axes in pandas Dataframe format.
+- **Input Data:** `accel_data` consist of accelerometer data (N, 3) for the x, y, and z axes in pandas Dataframe format. The data should be in SI unit as m/s².
 - **Sampling Frequency:** `sampling_freq_Hz` is the sampling frequency of the data, defined in Hz, with a default value of 100 Hz.
 - **Plot Results:** `plot_results`, if set to True, generates a plot showing the detected gait sequences on the data. The default is False. The onset is represented with the vertical green line and the grey area represents the duration of gait sequence detected by the algorithm.
 
@@ -206,7 +231,7 @@ gsd = ParaschivIonescuGaitSequenceDetection()
 
 # Call the gait sequence detection using gsd.detect
 gsd = gsd.detect(
-    data=acceleration_data, sampling_freq_Hz=sampling_frequency, plot_results=True, dt_data=None
+    accel_data=acceleration_data, sampling_freq_Hz=sampling_frequency, plot_results=True, dt_data=None
 )
 
 # Gait sequences are stored in gait_sequences_ attribute of gsd
@@ -291,7 +316,7 @@ for i in range(3):
         time_seconds,
         acceleration_data[f"LowerBack_ACCEL_{chr(120 + i)}"],
         color=colors[i],
-        label=f"Acc {'xyz'[i]}",
+        label=f"ACCEL {'xyz'[i]}",
     )
 
 # Plot the first element of gait sequences
@@ -309,8 +334,8 @@ start_limit = first_gait_sequence["onset"] - 2
 end_limit = first_gait_sequence["onset"] + first_gait_sequence["duration"] + 2
 ax.set_xlim(start_limit, end_limit)
 ax.set_ylim(-1, 1.5)
-ax.set_xlabel("Time (seconds)", fontsize=20)
-ax.set_ylabel("Acceleration (g)", fontsize=20)
+ax.set_xlabel("Time (s)", fontsize=20)
+ax.set_ylabel("Acceleration (m/s$^{2}$)", fontsize=20)
 ax.legend(loc="upper right", fontsize=20)
 plt.xticks(fontsize=20)
 plt.yticks(fontsize=20)

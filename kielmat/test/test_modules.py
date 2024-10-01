@@ -48,7 +48,7 @@ def test_gsd_detect():
     gsd = ParaschivIonescuGaitSequenceDetection()
 
     # Call the detect method
-    gsd.detect(data=acceleration_data, sampling_freq_Hz=sampling_frequency)
+    gsd.detect(accel_data=acceleration_data, sampling_freq_Hz=sampling_frequency)
     gait_sequences_ = gsd.gait_sequences_
 
 
@@ -59,7 +59,7 @@ def test_invalid_sampling_freq():
     # Test with invalid sampling frequency
     invalid_sampling_freq = "invalid"
     with pytest.raises(ValueError):
-        gsd.detect(data=acceleration_data, sampling_freq_Hz=invalid_sampling_freq)
+        gsd.detect(accel_data=acceleration_data, sampling_freq_Hz=invalid_sampling_freq)
 
 
 def test_gait_sequence_detection():
@@ -67,7 +67,7 @@ def test_gait_sequence_detection():
     gsd = ParaschivIonescuGaitSequenceDetection()
 
     # Call the detect method
-    gsd.detect(data=acceleration_data, sampling_freq_Hz=sampling_frequency)
+    gsd.detect(accel_data=acceleration_data, sampling_freq_Hz=sampling_frequency)
 
 
 def test_invalid_input_data_type():
@@ -87,7 +87,7 @@ def test_invalid_sampling_freq_type():
     # Test with invalid sampling frequency type
     invalid_sampling_freq = "invalid"
     with pytest.raises(ValueError):
-        gsd.detect(data=acceleration_data, sampling_freq_Hz=invalid_sampling_freq)
+        gsd.detect(accel_data=acceleration_data, sampling_freq_Hz=invalid_sampling_freq)
 
 
 def test_plot_results_type():
@@ -98,7 +98,7 @@ def test_plot_results_type():
     invalid_plot_results = "invalid"
     with pytest.raises(ValueError):
         gsd.detect(
-            data=acceleration_data,
+            accel_data=acceleration_data,
             sampling_freq_Hz=sampling_frequency,
             plot_results=invalid_plot_results,
         )
@@ -115,7 +115,7 @@ def test_invalid_dt_data_type():
         }
     )
     with pytest.raises(ValueError):
-        gsd.detect(data=acceleration_data, sampling_freq_Hz=100, dt_data="not_a_series")
+        gsd.detect(accel_data=acceleration_data, sampling_freq_Hz=100, dt_data="not_a_series")
 
 
 # Test for ValueError: "dt_data must be a series with the same length as data"
@@ -132,7 +132,7 @@ def test_invalid_dt_data_length():
         pd.date_range(start="2022-01-01", periods=500)
     )  # Different length than data
     with pytest.raises(ValueError):
-        gsd.detect(data=acceleration_data, sampling_freq_Hz=100, dt_data=dt_data)
+        gsd.detect(accel_data=acceleration_data, sampling_freq_Hz=100, dt_data=dt_data)
 
 
 def test_threshold_selected_signal():
@@ -152,7 +152,7 @@ def test_threshold_selected_signal():
     # Call detect with empty data
     with pytest.raises(ValueError):
         gsd.detect(
-            data=acceleration_data,
+            accel_data=acceleration_data,
             sampling_freq_Hz=100,
             dt_data=dt_data,
             plot_results=True,
@@ -174,7 +174,7 @@ def test_no_gait_sequences_detected():
 
     # Call detect with empty data
     with pytest.raises(ValueError):
-        gsd.detect(data=acceleration_data, sampling_freq_Hz=100)
+        gsd.detect(accel_data=acceleration_data, sampling_freq_Hz=100)
 
 
 def test_invalid_indices_warning():
@@ -215,7 +215,7 @@ def test_no_plotting_datetime_values():
         ValueError, match="dt_data must be a pandas Series with datetime values"
     ):
         gsd.detect(
-            data=acceleration_data,
+            accel_data=acceleration_data,
             sampling_freq_Hz=100,
             dt_data=dt_data,
             plot_results=True,

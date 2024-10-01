@@ -25,7 +25,7 @@ def plot_gait(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
     )
     plt.title("Detected gait sequences", fontsize=18)
     plt.xlabel("Time (minutes)", fontsize=14)
-    plt.ylabel("Acceleration (g)", fontsize=14)
+    plt.ylabel("Acceleration (m/s$^{2}$)", fontsize=14)
 
     # Fill the area between start and end times
     for index, sequence in gait_sequences_.iterrows():

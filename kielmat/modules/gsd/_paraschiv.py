@@ -62,7 +62,7 @@ class ParaschivIonescuGaitSequenceDetection:
 
     def detect(
         self,
-        data: pd.DataFrame,
+        accel_data: pd.DataFrame,
         sampling_freq_Hz: float,
         plot_results: bool = False,
         dt_data: Optional[pd.Series] = None,
@@ -72,7 +72,7 @@ class ParaschivIonescuGaitSequenceDetection:
         Detects gait sequences based on the input accelerometer data.
 
         Args:
-            data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
+            accel_data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
             sampling_freq_Hz (float): Sampling frequency of the accelerometer data.
             plot_results (bool, optional): If True, generates a plot showing the pre-processed acceleration data
                 and the detected gait sequences. Default is False.
@@ -88,7 +88,7 @@ class ParaschivIonescuGaitSequenceDetection:
                     - tracking_system: Tracking systems used the events are derived from.
         """
         # Error handling for invalid input data
-        if not isinstance(data, pd.DataFrame) or data.shape[1] != 3:
+        if not isinstance(accel_data, pd.DataFrame) or accel_data.shape[1] != 3:
             raise ValueError(
                 "Input accelerometer data must be a DataFrame with 3 columns for x, y, and z axes."
             )
@@ -111,11 +111,14 @@ class ParaschivIonescuGaitSequenceDetection:
             raise ValueError("dt_data must be a pandas Series with datetime values")
 
         # check if dt_data is provided and if it is a series with the same length as data
-        if dt_data is not None and len(dt_data) != len(data):
+        if dt_data is not None and len(dt_data) != len(accel_data):
             raise ValueError("dt_data must be a series with the same length as data")
 
+        # Convert acceleration data from "m/s^2" to "g"
+        accel_data /= 9.81
+
         # Calculate the norm of acceleration
-        acceleration_norm = np.linalg.norm(data, axis=1)
+        acceleration_norm = np.linalg.norm(accel_data, axis=1)
 
         # Resample acceleration_norm to target sampling frequency
         initial_sampling_frequency = sampling_freq_Hz
@@ -396,7 +399,9 @@ class ParaschivIonescuGaitSequenceDetection:
 
         # Plot results if set to true
         if plot_results:
-
+            # Convert detected_activity_signal from g back to m/s^2 for consistency
+            detected_activity_signal *=9.81
+            
             viz_utils.plot_gait(
                 target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
             )
