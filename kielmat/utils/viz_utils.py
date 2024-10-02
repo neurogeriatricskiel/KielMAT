@@ -99,9 +99,7 @@ def plot_pam(hourly_average_data, thresholds_mg):
 
 
 # Function to plot results of the postural transition detection algorithm
-def plot_postural_transitions(
-    accel, gyro, postural_transitions_, sampling_freq_Hz
-):
+def plot_postural_transitions(accel, gyro, postural_transitions_, sampling_freq_Hz):
     """
     Plot results of the gait sequence detection algorithm.
 
