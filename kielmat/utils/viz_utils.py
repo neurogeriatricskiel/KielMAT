@@ -114,6 +114,9 @@ def plot_postural_transitions(
     Returns:
         Plot postural transitions
     """
+    # Convert acceleration data from "g" to "m/s^2"
+    accel *= 9.81
+    
     # Figure
     fig = plt.figure(figsize=(12, 6))
 
@@ -175,21 +178,25 @@ def plot_postural_transitions(
 
 
 # Function to plot results of the turn detection algorithm
-def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq_Hz):
+def plot_turns(accel, gyro, detected_turns, sampling_freq_Hz):
     """
     Plot results of the turn detection algorithm.
 
     Args:
         accel (ndarray): Array of acceleration data.
         gyro (ndarray): Array of gyroscope data.
-        accel_unit (str): Unit of acceleration data.
-        gyro_unit (str): Unit of gyro data.
         detected_turns (DataFrame): DataFrame containing detected turns information.
         sampling_freq_Hz (float): Sampling frequency in Hz.
 
     Returns:
         Plot detected turns on the data
     """
+    # Convert acceleration data from "g" to "m/s^2"
+    accel *= 9.81
+    
+    # Convert gyro data from "rad/s" to "deg/s"
+    gyro = np.rad2deg(gyro)
+
     # Figure
     fig = plt.figure(figsize=(12, 6))
 
@@ -205,7 +212,7 @@ def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq
         duration = detected_turns["duration"][i]
         ax1.axvline(x=onset, color="r")
         ax1.axvspan(onset, (onset + duration), color="grey")
-    ax1.set_ylabel(f"Acceleration ({accel_unit})", fontsize=14)
+    ax1.set_ylabel(f"Acceleration (m/s$^{2}$)", fontsize=14)
     ax1.set_xlabel("Time (s)", fontsize=14)
     ax1.legend(
         ["ACCEL x", "ACCEL y", "ACCEL z", "Turn onset", "Turn duration"],
@@ -232,7 +239,7 @@ def plot_turns(accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq
         duration = detected_turns["duration"][i]
         ax2.axvline(x=onset, color="r")
         ax2.axvspan(onset, (onset + duration), color="grey")
-    ax2.set_ylabel("Gyro (rad/s)", fontsize=14)
+    ax2.set_ylabel("Gyro (deg/s)", fontsize=14)
     ax2.set_xlabel("Time (s)", fontsize=14)
     ax2.legend(
         ["GYRO x", "GYRO y", "GYRO z", "Turn onset", "Turn duration"],

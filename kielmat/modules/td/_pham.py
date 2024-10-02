@@ -38,7 +38,7 @@ class PhamTurnDetection:
     the algorithm's performance and provides insights into the dynamics of the detected turns.
 
     Methods:
-        detect(data, gyro_vertical, accel_unit, gyro_unit, sampling_freq_Hz, dt_data, tracking_system, tracked_point, plot_results):
+        detect(accel_data, gyro_data, gyro_vertical, sampling_freq_Hz, dt_data, tracking_system, tracked_point, plot_results):
             Detects turns using accelerometer and gyro signals.
 
             Returns:
@@ -51,10 +51,9 @@ class PhamTurnDetection:
     Examples:
         >>> pham = PhamTurnDetection()
         >>> pham.detect(
-                data=input_data,
+                accel_data=accel_data,
+                gyro_data=gyro_data,
                 gyro_vertical="pelvis_GYRO_x",
-                accel_unit="g",
-                gyro_unit="rad/s",
                 sampling_freq_Hz=200.0,
                 tracking_system="imu",
                 tracked_point="LowerBack",
@@ -98,10 +97,9 @@ class PhamTurnDetection:
 
     def detect(
         self,
-        data: pd.DataFrame,
+        accel_data: pd.DataFrame,
+        gyro_data: pd.DataFrame,
         gyro_vertical: str,
-        accel_unit: str,
-        gyro_unit: str,
         sampling_freq_Hz: float,
         dt_data: Optional[pd.Series] = None,
         tracking_system: Optional[str] = None,
@@ -112,10 +110,9 @@ class PhamTurnDetection:
         Detects truns based on the input accelerometer and gyro data.
 
         Args:
-            data (pd.DataFrame): Input accelerometer and gyro data (N, 6) for x, y, and z axes.
+            accel_data (pd.DataFrame): Input accelerometer data (N, 3) for x, y, and z axes.
+            gyro_data (pd.DataFrame): Input gyro data (N, 3) for x, y, and z axes.
             gyro_vertical (str): The column name that corresponds to the vertical component gyro.
-            accel_unit (str): Unit of acceleration data.
-            gyro_unit (str): Unit of gyro data.
             sampling_freq_Hz (float): Sampling frequency of the input data in Hz.
             dt_data (pd.Series, optional): Original datetime in the input data. If original datetime is provided, the output onset will be based on that.
             tracking_system (str, optional): Tracking systems.
@@ -132,24 +129,35 @@ class PhamTurnDetection:
                 - tracked_points: Name of the tracked points on the body.
         """
         # check if dt_data is a pandas Series with datetime values
-        if dt_data is not None and (
-            not isinstance(dt_data, pd.Series)
-            or not pd.api.types.is_datetime64_any_dtype(dt_data)
-        ):
-            raise ValueError("dt_data must be a pandas Series with datetime values")
-
-        # check if dt_data is provided and if it is a series with the same length as data
-        if dt_data is not None and len(dt_data) != len(data):
-            raise ValueError("dt_data must be a series with the same length as data")
-
+        if dt_data is not None:
+            # Ensure dt_data is a pandas Series
+            if not isinstance(dt_data, pd.Series):
+                raise ValueError("dt_data must be a pandas Series with datetime values")
+            
+            # Ensure dt_data has datetime values
+            if not pd.api.types.is_datetime64_any_dtype(dt_data):
+                raise ValueError("dt_data must be a pandas Series with datetime values")
+            
+            # Ensure dt_data has the same length as input data
+            if len(dt_data) != len(accel_data):
+                raise ValueError("dt_data must be a series with the same length as data")
+    
         # Check if data is a DataFrame
-        if not isinstance(data, pd.DataFrame):
-            raise ValueError("Input data must be a pandas DataFrame")
+        if not isinstance(accel_data, pd.DataFrame):
+            raise ValueError("Acceleration data must be a pandas DataFrame")
 
-        # Check if data has the correct shape
-        if data.shape[1] != 6:
+        if not isinstance(gyro_data, pd.DataFrame):
+            raise ValueError("Gyro data must be a pandas DataFrame")
+
+        # Error handling for invalid input data
+        if not isinstance(accel_data, pd.DataFrame) or accel_data.shape[1] != 3:
             raise ValueError(
-                "Input data must have 6 columns (3 for accelerometer and 3 for gyro)"
+                "Accelerometer data must be a DataFrame with 3 columns for x, y, and z axes."
+            )
+
+        if not isinstance(gyro_data, pd.DataFrame) or gyro_data.shape[1] != 3:
+            raise ValueError(
+                "Gyro data must be a DataFrame with 3 columns for x, y, and z axes."
             )
 
         # Check if sampling frequency is positive
@@ -160,52 +168,18 @@ class PhamTurnDetection:
         if not isinstance(plot_results, bool):
             raise ValueError("plot_results must be a boolean value")
 
-        # Identify the columns in the DataFrame that correspond to accelerometer data
-        accel_columns = [col for col in data.columns if "ACCEL" in col]
-
-        # Identify the columns in the DataFrame that correspond to gyroscope data
-        gyro_columns = [col for col in data.columns if "GYRO" in col]
-
-        # Ensure that there are exactly 3 columns each for accelerometer and gyroscope data
-        if len(accel_columns) != 3 or len(gyro_columns) != 3:
-            raise ValueError(
-                "Data must contain 3 accelerometer and 3 gyroscope columns."
-            )
-
         # Select acceleration data and convert it to numpy array format
-        accel = data[accel_columns].copy().to_numpy()
+        accel = accel_data.to_numpy()
 
         # Select gyro data and convert it to numpy array format
-        gyro = data[gyro_columns].copy().to_numpy()
+        gyro = gyro_data.to_numpy()
         self.gyro = gyro
 
-        # Convert variations of acceleration unit to "m/s^2"
-        if accel_unit in ["meters/s^2", "meter/s^2"]:
-            accel_unit = "m/s^2"
-
-        # Check unit of acceleration data if it is in "m/s^2" or "g"
-        if accel_unit == "m/s^2":
-            # Convert acceleration data from "m/s^2" to "g"
-            accel /= 9.81
-        elif accel_unit in ["g", "G"]:
-            pass  # No conversion needed
-        else:
-            raise ValueError(
-                "Invalid unit for acceleration data. Must be 'm/s^2' or 'g'"
-            )
-
-        # Convert variations of gyro unit to "deg/s"
-        if gyro_unit in ["degrees per second", "°/s"]:
-            gyro_unit = "deg/s"
-
-        # Check unit of gyro data if it is in deg/s or rad/s
-        if gyro_unit == "deg/s":
-            # Convert gyro data from deg/s to rad/s (if not already is in rad/s)
-            gyro = np.deg2rad(gyro)
-        elif gyro_unit in ["rad/s", "radians per second"]:
-            pass  # Gyro data is already in rad/s
-        else:
-            raise ValueError("Invalid unit for gyro data. Must be 'deg/s' or 'rad/s'")
+        # Convert acceleration data from "m/s^2" to "g"
+        accel /= 9.81
+        
+        # Convert gyro data from deg/s to rad/s
+        gyro = np.deg2rad(gyro)
 
         # Compute the variance of the moving window of gyro signal
         gyro_vars = []
@@ -230,7 +204,7 @@ class PhamTurnDetection:
 
         # Get the index of the vertical component of gyro from data
         gyro_vertical_index = [
-            i for i, col in enumerate(gyro_columns) if gyro_vertical in col
+            i for i, col in enumerate(gyro_data) if gyro_vertical in col
         ][0]
 
         # Integrate x component of the gyro signal to get yaw angle (also convert gyro unit to deg/s)
@@ -470,7 +444,7 @@ class PhamTurnDetection:
         # If Plot_results set to true
         if plot_results:
             viz_utils.plot_turns(
-                accel, gyro, accel_unit, gyro_unit, self.turns_, sampling_freq_Hz
+                accel, gyro, self.turns_, sampling_freq_Hz
             )
 
         # Return an instance of the class

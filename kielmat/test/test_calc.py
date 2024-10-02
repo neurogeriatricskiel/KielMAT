@@ -2116,15 +2116,9 @@ def test_pham_turn_plot_results_no_plot(monkeypatch):
     # Monkeypatch plt.show() with the mock function
     monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
 
-    # Unit of acceleration data.
-    accel_unit = "g"
-
-    # Unit of gyro data.
-    gyro_unit = "rad/s"
-
     # Call the function
     viz_utils.plot_turns(
-        accel, gyro, accel_unit, gyro_unit, detected_turns, sampling_freq_Hz
+        accel, gyro, detected_turns, sampling_freq_Hz
     )
 
 
