@@ -2117,9 +2117,7 @@ def test_pham_turn_plot_results_no_plot(monkeypatch):
     monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
 
     # Call the function
-    viz_utils.plot_turns(
-        accel, gyro, detected_turns, sampling_freq_Hz
-    )
+    viz_utils.plot_turns(accel, gyro, detected_turns, sampling_freq_Hz)
 
 
 # Fixture to provide sample data for testing

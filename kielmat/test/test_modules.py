@@ -736,6 +736,7 @@ def test_invalid_plot_results_pham_td():
             plot_results=invalid_plot_results,
         )
 
+
 def test_invalid_sampling_freq_pham():
     # Initialize PhamTurnDetection object
     pham = PhamTurnDetection()

@@ -114,7 +114,7 @@ def plot_postural_transitions(accel, gyro, postural_transitions_, sampling_freq_
     """
     # Convert acceleration data from "g" to "m/s^2"
     accel *= 9.81
-    
+
     # Figure
     fig = plt.figure(figsize=(12, 6))
 
@@ -191,7 +191,7 @@ def plot_turns(accel, gyro, detected_turns, sampling_freq_Hz):
     """
     # Convert acceleration data from "g" to "m/s^2"
     accel *= 9.81
-    
+
     # Convert gyro data from "rad/s" to "deg/s"
     gyro = np.rad2deg(gyro)
 

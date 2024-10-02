@@ -133,15 +133,17 @@ class PhamTurnDetection:
             # Ensure dt_data is a pandas Series
             if not isinstance(dt_data, pd.Series):
                 raise ValueError("dt_data must be a pandas Series with datetime values")
-            
+
             # Ensure dt_data has datetime values
             if not pd.api.types.is_datetime64_any_dtype(dt_data):
                 raise ValueError("dt_data must be a pandas Series with datetime values")
-            
+
             # Ensure dt_data has the same length as input data
             if len(dt_data) != len(accel_data):
-                raise ValueError("dt_data must be a series with the same length as data")
-    
+                raise ValueError(
+                    "dt_data must be a series with the same length as data"
+                )
+
         # Check if data is a DataFrame
         if not isinstance(accel_data, pd.DataFrame):
             raise ValueError("Acceleration data must be a pandas DataFrame")
@@ -177,7 +179,7 @@ class PhamTurnDetection:
 
         # Convert acceleration data from "m/s^2" to "g"
         accel /= 9.81
-        
+
         # Convert gyro data from deg/s to rad/s
         gyro = np.deg2rad(gyro)
 
@@ -443,9 +445,7 @@ class PhamTurnDetection:
 
         # If Plot_results set to true
         if plot_results:
-            viz_utils.plot_turns(
-                accel, gyro, self.turns_, sampling_freq_Hz
-            )
+            viz_utils.plot_turns(accel, gyro, self.turns_, sampling_freq_Hz)
 
         # Return an instance of the class
         return self
