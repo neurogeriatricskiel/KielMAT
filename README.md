@@ -236,10 +236,8 @@ print(recording.channels)
 }
 ```
 
-!!! note
-
-    In the examples you find a [tutorial (Load data into KielMAT)](https://neurogeriatricskiel.github.io/KielMAT/examples/basic_00_load_Data_into_KielMAT/) that explains the basics of the dataclass and how to work with them.
-
+> [!NOTE]
+> In the examples you find a [tutorial (Load data into KielMAT)](https://neurogeriatricskiel.github.io/KielMAT/examples/basic_00_load_Data_into_KielMAT/) that explains the basics of the dataclass and how to work with them.
 
 ## Contributing
 We welcome contributions to KielMAT! Please refer to our [contributing guide](https://neurogeriatricskiel.github.io/KielMAT/contributing) for more details.
