@@ -242,6 +242,8 @@ print(recording.channels)
 ## Contributing
 We welcome contributions to KielMAT! Please refer to our [contributing guide](https://neurogeriatricskiel.github.io/KielMAT/contributing) for more details.
 
+## Paper
+The paper has been recently published in JOSS. You can find the paper [here](https://doi.org/10.21105/joss.06842).
 
 ## Authors
 
