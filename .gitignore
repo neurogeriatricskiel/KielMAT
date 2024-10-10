@@ -24,3 +24,5 @@ changelog.yml
 # example data
 kielmat/datasets/_*
 ngmt/datasets/_*
+
+*.lock

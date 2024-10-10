@@ -33,7 +33,7 @@ pytest = "^7.4.3"
 pywavelets = "^1.4.1"
 ipykernel = "^6.26.0"
 matplotlib = "^3.8.1"
-tpcp = "^0.27.0"
+tpcp = "^0.32.0"
 qmt = "^0.2.4"
 vqf = "^2.0.0"
 h5py = "^3.10.0"
@@ -45,6 +45,8 @@ bids-validator = "^1.14.4"
 actipy = "^3.0.5"
 pooch = "^1.8.2"
 openneuro-py = "^2024.2.0"
+gaitmap = "^2.5.1"
+gaitmap-mad = "^2.5.1"
 
 [tool.poetry.extras]
 docs = ["mkdocs", "mkdocs-material", "pymdownx.superfences"]
