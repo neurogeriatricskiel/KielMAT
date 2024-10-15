@@ -224,6 +224,25 @@ The gait onset is represented with the vertical green line and the grey area rep
 
 
 ```python
+# Load lower back acceleration data
+acceleration_data = recording.data[tracking_sys][
+    ["pelvis_ACCEL_x", "pelvis_ACCEL_y", "pelvis_ACCEL_z"]
+]
+
+# Get the corresponding unit of the acceleration data
+accel_unit = recording.channels[tracking_sys][
+    recording.channels[tracking_sys]["name"].str.contains("ACCEL", case=False)
+]["units"].iloc[0]
+
+# Check unit of acceleration data
+if accel_unit in ["m/s^2"]:
+    pass  # No conversion needed
+elif accel_unit in ["g", "G"]:
+    # Convert acceleration data from "g" to "m/s^2"
+    acceleration_data *= 9.81
+    # Update unit of acceleration
+    accel_unit = ["m/s^2"]
+
 # Access the first detected gait sequence
 first_gait_sequence = gsd.gait_sequences_[gsd.gait_sequences_["event_type"] == "gait sequence"].iloc[0]
 
