@@ -807,7 +807,7 @@ def max_peaks_between_zc(input_signal):
 
     # Find the locations of zero crossings in the input vector.
     zero_crossings_locations = (
-        np.where(np.abs(np.diff(np.sign(input_signal))) == 2)[0] + 1
+        np.where(np.abs(np.diff(np.sign(input_signal))) == 2)[0]
     )
 
     # Calculate the number of peaks.
@@ -830,10 +830,10 @@ def max_peaks_between_zc(input_signal):
         ]
     )
     ipks = zero_crossings_locations[:number_of_peaks] + ipk
-    ipks = ipks + 1
+    ipks = ipks
 
     # Retrieve the signed max/min values at the peak locations.
-    pks = input_signal[ipks - 1]
+    pks = input_signal[ipks]
 
     return pks, ipks
 
@@ -916,7 +916,7 @@ def signal_decomposition_algorithm(
     smoothed_wavelet_result = apply_continuous_wavelet_transform(
         det_ver_acc_sig_LPInt,
         scales=9,
-        desired_scale=9,
+        desired_scale=8,
         wavelet="gaus2",
         sampling_frequency=target_sampling_frequency,
     )
@@ -941,7 +941,7 @@ def signal_decomposition_algorithm(
     accVLPIntCwt2 = apply_continuous_wavelet_transform(
         smoothed_wavelet_result,
         scales=9,
-        desired_scale=9,
+        desired_scale=7,
         wavelet="gaus2",
         sampling_frequency=target_sampling_frequency,
     )

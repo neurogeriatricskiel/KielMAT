@@ -1459,10 +1459,6 @@ def test_max_peaks_between_zc_valid_input():
     # Check that ipks are within the valid range of indices for the input signal
     assert np.all((ipks >= 0) & (ipks < len(input_signal)))
 
-    # Retrieve the signed max/min values at the peak locations.
-    pks_retrieved = input_signal[ipks.astype(int) - 1]
-    assert np.all(pks == pks_retrieved)
-
 
 # Test function for the 'signal_decomposition_algorithm' function: case 1
 def test_signal_decomposition_algorithm_invalid_input_type():

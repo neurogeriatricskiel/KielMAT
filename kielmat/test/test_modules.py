@@ -284,10 +284,7 @@ def test_detect_no_plot():
     )
 
     # Check if initial_contacts_ is None
-    assert (
-        icd.initial_contacts_ is None
-    ), "Initial contacts should be None if no gait sequences are provided"
-
+    assert icd.initial_contacts_.empty, "Initial contacts should be empty if no gait sequences are provided"
 
 @pytest.fixture
 def sample_accelerometer_data():
