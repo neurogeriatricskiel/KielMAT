@@ -14,11 +14,14 @@ Welcome to the KielMotionAnalysisToolbox (KielMAT). We are a Python based toolbo
 The toolbox is aimed at motion researchers who want to use Python-based open-source software to process their data. We have implemented validated algorithms in modules to process motion data, as shown in the table below:
 
 ## Overview of modules
-| Module                         | Description                                    | Data                               |
-|--------------------------------|------------------------------------------------|----------------------------------------|
-| Gait sequence detection (GSD)  | Detects gaits                      | 3D accelerations from the lower back   |
-| Initial contact detection (ICD)| Detects initial contact during gait     | 3D accelerations from the lower back   |
-| More to follow...              | Additional modules to be added                |                                        |
+| Module                         | Description                                    | Input Data                               | Validation Dataset        | Event Type                  | Output Parameters                |
+|--------------------------------|------------------------------------------------|------------------------------------------|----------------------------|-----------------------------|----------------------------------|
+| [Gait Sequence Detection](https://neurogeriatricskiel.github.io/KielMAT/modules/gsd/)  | Detects gait sequences                            | 3D accelerations from lower back IMU | [Mobilise-D](https://neurogeriatricskiel.github.io/KielMAT/datasets/mobilised/) and [KeepControl](https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/)             | `gait sequence`                 | -     |
+| [Initial Contact Detection](https://neurogeriatricskiel.github.io/KielMAT/modules/icd/)| Detects initial and final contacts within each gait cycle   | 3D accelerations from lower back IMU | [Mobilise-D](https://neurogeriatricskiel.github.io/KielMAT/datasets/mobilised/) and [KeepControl](https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/)                  | `initial contact` and `final contact`             | Temporal parameters (e.g., step time, stride time)                |
+| [Physical Activity Monitoring](https://neurogeriatricskiel.github.io/KielMAT/modules/pam/)   | Monitors physical activity levels              | 3D accelerations from wrist IMU        | [Fair Park Ⅱ](https://www.fairpark2.eu/)                 | -            | Mean and duration of activity level       |
+| [Postural Transition Detection](https://neurogeriatricskiel.github.io/KielMAT/modules/ptd/)   |  Detects sit-to-stand and stand-to-sit transitions         | 3D acceleration and gyroscope data from lower back IMU              | [KeepControl](https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/) and [SENSE-PARK](https://pmc.ncbi.nlm.nih.gov/articles/PMC4460963/)                 | `sit-to-stand` and `stand-to-sit`         | Spatio-temporal parameters (e.g., postural transition angle)       |
+| [Turn Detection](https://neurogeriatricskiel.github.io/KielMAT/modules/td/)                | Detects turn movements                      | 3D acceleration and gyroscope data from lower back IMU               | [KeepControl](https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/) and [SENSE-PARK](https://pmc.ncbi.nlm.nih.gov/articles/PMC4460963/)                 | `turn`                 | Spatio-temporal parameters (e.g., turn angle)             |
+
 
 The idea is that various motion data can be loaded into our dedicated dataclass which rely on principles from the [Motion-BIDS](https://bids-specification.readthedocs.io/en/latest/modality-specific-files/motion.html) standard.
 
