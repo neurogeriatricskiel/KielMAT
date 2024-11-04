@@ -1,0 +1,10 @@
+# .pre-commit-config.yaml
+
+repos:
+  # Code formatting with Black for Python
+  - repo: https://github.com/psf/black
+    rev: 24.4.2  # Matches the version specified in pyproject.toml
+    hooks:
+      - id: black
+        language_version: python3.10  # Matches the minimum Python version specified
+        args: ["--line-length", "88"]  # Customize if necessary for project standards
