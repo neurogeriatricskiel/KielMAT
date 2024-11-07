@@ -17,120 +17,122 @@ The toolbox is aimed at motion researchers who want to use Python-based open-sou
 
 The table below provides an overview of key modules, their functionalities, input data, validation datasets, and outputs.
 
-<div style="width: 100%; text-align: left; margin-top: 20px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+<div style="width: 100%; text-align: left; margin-top: 20px; background-color: transparent; padding: 0; border: none;">
 
-<table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; background-color: transparent; border: none;">
 
-<thead style="background-color: #f2f2f2;">
-<tr>
-<th style="padding: 10px; border-bottom: 1px solid #ddd;">Module</th>
-<th style="padding: 10px; border-bottom: 1px solid #ddd;">Description</th>
-<th style="padding: 10px; border-bottom: 1px solid #ddd;">Input Data</th>
-<th style="padding: 10px; border-bottom: 1px solid #ddd;">Validation Dataset</th>
-<th style="padding: 10px; border-bottom: 1px solid #ddd;">Event Type</th>
-<th style="padding: 10px; border-bottom: 1px solid #ddd;">Output Parameters</th>
-</tr>
-</thead>
+        <thead style="background-color: #f2f2f2;">
+        <tr>
+            <th style="padding: 10px; border-bottom: 1px solid #ddd;">Module</th>
+            <th style="padding: 10px; border-bottom: 1px solid #ddd;">Description</th>
+            <th style="padding: 10px; border-bottom: 1px solid #ddd;">Input Data</th>
+            <th style="padding: 10px; border-bottom: 1px solid #ddd;">Validation Dataset</th>
+            <th style="padding: 10px; border-bottom: 1px solid #ddd;">Event Type</th>
+            <th style="padding: 10px; border-bottom: 1px solid #ddd;">Output Parameters</th>
+        </tr>
+        </thead>
 
-<tbody>
-<tr>
-<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/gsd/">Gait Sequence Detection</a></td>
-<td style="padding: 8px;">Detects gait sequences</td>
-<td style="padding: 8px;">3D accelerations from lower back IMU</td>
-<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/mobilised/">Mobilise-D</a> and <a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/">KeepControl</a></td>
-<td style="padding: 8px;">gait sequence</td>
-<td style="padding: 8px;">-</td>
-</tr>
+        <tbody>
+        <tr>
+            <td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/gsd/">Gait Sequence Detection</a></td>
+            <td style="padding: 8px;">Detects gait sequences</td>
+            <td style="padding: 8px;">3D accelerations from lower back IMU</td>
+            <td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/mobilised/">Mobilise-D</a> and <a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/">KeepControl</a></td>
+            <td style="padding: 8px;">gait sequence</td>
+            <td style="padding: 8px;">-</td>
+        </tr>
 
-<tr>
-<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/icd/">Initial Contact Detection</a></td>
-<td style="padding: 8px;">Detects initial and final contacts within each gait cycle</td>
-<td style="padding: 8px;">3D accelerations from lower back IMU</td>
-<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/mobilised/">Mobilise-D</a> and <a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/">KeepControl</a></td>
-<td style="padding: 8px;">initial contact, final contact</td>
-<td style="padding: 8px;">Temporal parameters (e.g., step time, stride time)</td>
-</tr>
+        <tr>
+            <td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/icd/">Initial Contact Detection</a></td>
+            <td style="padding: 8px;">Detects initial and final contacts within each gait cycle</td>
+            <td style="padding: 8px;">3D accelerations from lower back IMU</td>
+            <td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/mobilised/">Mobilise-D</a> and <a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/">KeepControl</a></td>
+            <td style="padding: 8px;">initial contact, final contact</td>
+            <td style="padding: 8px;">Temporal parameters (e.g., step time, stride time)</td>
+        </tr>
 
-<tr>
-<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/pam/">Physical Activity Monitoring</a></td>
-<td style="padding: 8px;">Monitors physical activity levels</td>
-<td style="padding: 8px;">3D accelerations from wrist IMU</td>
-<td style="padding: 8px;"><a href="https://www.fairpark2.eu/">Fair Park Ⅱ</a></td>
-<td style="padding: 8px;">-</td>
-<td style="padding: 8px;">Mean and duration of activity level</td>
-</tr>
+        <tr>
+            <td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/pam/">Physical Activity Monitoring</a></td>
+            <td style="padding: 8px;">Monitors physical activity levels</td>
+            <td style="padding: 8px;">3D accelerations from wrist IMU</td>
+            <td style="padding: 8px;"><a href="https://www.fairpark2.eu/">Fair Park Ⅱ</a></td>
+            <td style="padding: 8px;">-</td>
+            <td style="padding: 8px;">Mean and duration of activity level</td>
+        </tr>
 
-<tr>
-<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/ptd/">Postural Transition Detection</a></td>
-<td style="padding: 8px;">Detects sit-to-stand and stand-to-sit transitions</td>
-<td style="padding: 8px;">3D acceleration and gyroscope data from lower back IMU</td>
-<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/">KeepControl</a> and <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4460963/">SENSE-PARK</a></td>
-<td style="padding: 8px;">sit-to-stand, stand-to-sit</td>
-<td style="padding: 8px;">Spatio-temporal parameters (e.g., postural transition angle)</td>
-</tr>
+        <tr>
+            <td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/ptd/">Postural Transition Detection</a></td>
+            <td style="padding: 8px;">Detects sit-to-stand and stand-to-sit transitions</td>
+            <td style="padding: 8px;">3D acceleration and gyroscope data from lower back IMU</td>
+            <td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/">KeepControl</a> and <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4460963/">SENSE-PARK</a></td>
+            <td style="padding: 8px;">sit-to-stand, stand-to-sit</td>
+            <td style="padding: 8px;">Spatio-temporal parameters (e.g., postural transition angle)</td>
+        </tr>
 
-<tr>
-<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/td/">Turn Detection</a></td>
-<td style="padding: 8px;">Detects turn movements</td>
-<td style="padding: 8px;">3D acceleration and gyroscope data from lower back IMU</td>
-<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/">KeepControl</a> and <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4460963/">SENSE-PARK</a></td>
-<td style="padding: 8px;">turn</td>
-<td style="padding: 8px;">Spatio-temporal parameters (e.g., turn angle)</td>
-</tr>
+        <tr>
+            <td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/td/">Turn Detection</a></td>
+            <td style="padding: 8px;">Detects turn movements</td>
+            <td style="padding: 8px;">3D acceleration and gyroscope data from lower back IMU</td>
+            <td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/">KeepControl</a> and <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4460963/">SENSE-PARK</a></td>
+            <td style="padding: 8px;">turn</td>
+            <td style="padding: 8px;">Spatio-temporal parameters (e.g., turn angle)</td>
+        </tr>
 
-</tbody>
-</table>
+        </tbody>
+    </table>
 </div>
+
 
 ## Units
 
 The table below provides an overview of commonly used value types and their corresponding units. Before starting work with modules in the toolbox, ensure that all data is in standard SI units as specified. This ensures compatibility with the algorithms, which are designed to expect inputs in these units.
 
-<div style="width: 50%; text-align: left; margin-top: 20px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+<div style="width: 50%; text-align: left; margin-top: 20px; overflow: hidden; padding: 0; background-color: transparent;">
 
-<table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; border: none; background-color: transparent;">
 
-<thead style="background-color: #f2f2f2;">
-<tr>
-<th style="padding: 10px; border-bottom: 1px solid #ddd;">Value</th>
-<th style="padding: 10px; border-bottom: 1px solid #ddd;">Unit</th>
-</tr>
-</thead>
+        <thead style="background-color: #f2f2f2;">
+        <tr>
+            <th style="padding: 10px; border-bottom: 1px solid #ddd;">Value</th>
+            <th style="padding: 10px; border-bottom: 1px solid #ddd;">Unit</th>
+        </tr>
+        </thead>
 
-<tbody>
-<tr>
-<td style="padding: 8px;">Acceleration</td>
-<td style="padding: 8px;">m/s²</td>
-</tr>
+        <tbody>
+        <tr>
+            <td style="padding: 8px;">Acceleration</td>
+            <td style="padding: 8px;">m/s²</td>
+        </tr>
 
-<tr>
-<td style="padding: 8px;">Angular Velocity</td>
-<td style="padding: 8px;">deg/s</td>
-</tr>
+        <tr>
+            <td style="padding: 8px;">Angular Velocity</td>
+            <td style="padding: 8px;">deg/s</td>
+        </tr>
 
-<tr>
-<td style="padding: 8px;">Velocity</td>
-<td style="padding: 8px;">m/s</td>
-</tr>
+        <tr>
+            <td style="padding: 8px;">Velocity</td>
+            <td style="padding: 8px;">m/s</td>
+        </tr>
 
-<tr>
-<td style="padding: 8px;">Distance</td>
-<td style="padding: 8px;">m</td>
-</tr>
+        <tr>
+            <td style="padding: 8px;">Distance</td>
+            <td style="padding: 8px;">m</td>
+        </tr>
 
-<tr>
-<td style="padding: 8px;">Time</td>
-<td style="padding: 8px;">s</td>
-</tr>
+        <tr>
+            <td style="padding: 8px;">Time</td>
+            <td style="padding: 8px;">s</td>
+        </tr>
 
-<tr>
-<td style="padding: 8px;">Sampling Rate</td>
-<td style="padding: 8px;">Hz</td>
-</tr>
+        <tr>
+            <td style="padding: 8px;">Sampling Rate</td>
+            <td style="padding: 8px;">Hz</td>
+        </tr>
 
-</tbody>
-</table>
+        </tbody>
+    </table>
 </div>
+
 
 
 ## Installation
