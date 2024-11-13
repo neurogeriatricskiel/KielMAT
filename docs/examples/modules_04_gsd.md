@@ -159,7 +159,7 @@ plt.show()
 
 
     
-![](modules_01_gsd_files/modules_01_gsd_7_0.png)
+![](modules_04_gsd_files/modules_04_gsd_7_0.png)
     
 
 
@@ -210,7 +210,7 @@ plt.show()
 
 
     
-![](modules_01_gsd_files/modules_01_gsd_9_0.png)
+![](modules_04_gsd_files/modules_04_gsd_9_0.png)
     
 
 
@@ -250,7 +250,7 @@ print(recording.events)
 
 
     
-![](modules_01_gsd_files/modules_01_gsd_11_1.png)
+![](modules_04_gsd_files/modules_04_gsd_11_1.png)
     
 
 
@@ -352,6 +352,6 @@ plt.show()
 
 
     
-![](modules_01_gsd_files/modules_01_gsd_13_1.png)
+![](modules_04_gsd_files/modules_04_gsd_13_1.png)
     
 
