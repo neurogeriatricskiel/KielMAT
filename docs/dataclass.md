@@ -11,6 +11,7 @@ classDiagram
       add_events(tracking_system, new_events)
       add_info(key, value)
       export_events(file_path, tracking_system=None, file_name=None, bids_compatible_fname=False)
+      validate_channels() -> str
    }
 
 ```
