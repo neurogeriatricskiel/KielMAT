@@ -3,14 +3,14 @@
 This part of the project documentation focuses on the available **utilities** that assist in various preprocessing, importing, and data handling tasks within the KielMAT toolbox. The following utilities provide functionality to import data from various formats, perform preprocessing, and estimate orientations for movement analysis.
 
 
-### [Preprocessing functions](preprocessing.md)
+### [Data Preprocessing](preprocessing.md)
 
-The **Preprocessing functions** provide a set of utilities designed to prepare motion data for analysis. These functions are essential for cleaning, filtering, and transforming raw sensor data into a suitable format for subsequent analysis.
+The **Data Preprocessing** provide a set of utilities designed to prepare motion data for analysis. These functions are essential for cleaning, filtering, and transforming raw sensor data into a suitable format for subsequent analysis.
 
 
-### [Import functions](importers.md)
+### [Data Import](importers.md)
 
-The **Import functions** within KielMAT are designed to handle data from various sources and formats. This makes it easy to load and integrate different datasets into the toolbox. Below are examples of the import functions available for different sensor data sources:
+The **Data Import** within KielMAT are designed to handle data from various sources and formats. This makes it easy to load and integrate different datasets into the toolbox. Below are examples of the import functions available for different sensor data sources:
 
 - **Axivity Data Import**  
   The `import_axivity` function imports Axivity data from specified files. It reads Axivity data files, performs lowpass filtering, and calibrates for gravity, ensuring that the data is ready for analysis. The function outputs the data along with the associated channel information in a format compatible with the KielMAT `KielMATRecording` class. This function allows easy integration of Axivity data, including accelerometer information for a specific tracked point.
