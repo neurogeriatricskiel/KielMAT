@@ -292,10 +292,8 @@ def rotm2quat(R: np.ndarray, method: int | str = "auto") -> np.ndarray:
 
     Args:
         R (np.ndarray): A rotation matrix with shape (3, 3).
-        scalar_first (bool, optional): If True, sets the first element as the scalar part.
-            If False, sets the last element as the scalar part is the last element. Default is True.
-        channels_last (bool, optional): If True, assumes the channels are the last dimension.
-            If False, assumes the channels are the first dimension. Default is True.
+        method (int | str, optional): The method to use for conversion.
+            Can be "auto" (default), "copysign", or a number (0, 1, 2, or 3).
 
     Returns:
         np.ndarray: The quaternion corresponding to the rotation matrix.

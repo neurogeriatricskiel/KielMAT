@@ -47,6 +47,9 @@ nav:
     - Events in dataclass: examples/basic_02_events.md
     - Gait Sequence Detection: examples/modules_01_gsd.md
     - Initial Contact Detection: examples/modules_02_icd.md
+    - Physical Activity Monitoring: examples/modules_03_pam.md
+    - Postural Transition Detection: examples/modules_04_ptd.md
+    - Turn Detection: examples/modules_05_td.md
   - Dataclass: dataclass.md 
   - Modules: 
     - modules/index.md

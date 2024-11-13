@@ -88,7 +88,7 @@ class PhamPosturalTransitionDetection:
             cutoff_freq_hz (float, optional): Cutoff frequency for low-pass Butterworth filer. Default is 5.0.
             thr_accel_var (float): Threshold value for identifying periods where the acceleartion variance is low. Default is 0.5.
             thr_gyro_var (float): Threshold value for identifying periods where the gyro variance is low. Default is 2e-4.
-            min_turn_angle_deg (float): Minimum angle which is considered as postural transition in degrees. Default is 15.0.
+            min_postural_transition_angle_deg (float): Minimum angle which is considered as postural transition in degrees. Default is 15.0.
         """
         self.cutoff_freq_hz = cutoff_freq_hz
         self.thr_accel_var = thr_accel_var
@@ -104,7 +104,7 @@ class PhamPosturalTransitionDetection:
         tracking_system: Optional[str] = None,
         tracked_point: Optional[str] = None,
         plot_results: bool = False,
-    ) -> "PhamPosturalTransitionDetection":
+    ) -> pd.DataFrame:
         """
         Detects postural transitions based on the input accelerometer and gyro data.
 
@@ -460,7 +460,7 @@ class PhamPosturalTransitionDetection:
         # Return an instance of the class
         return self
 
-    def spatio_temporal_parameters(self) -> None:
+    def spatio_temporal_parameters(self) -> pd.DataFrame:
         """
         Extracts spatio-temporal parameters of the detected postural transitions.
 

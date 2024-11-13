@@ -7,7 +7,7 @@ import pandas as pd
 from pathlib import Path
 
 
-def import_axivity(file_path: str, tracked_point: str):
+def import_axivity(file_path: str, tracked_point: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Imports Axivity data from the specified file path and
     return the data and channel formatted to be used in a KielMATRecording object.
@@ -52,7 +52,7 @@ def import_axivity(file_path: str, tracked_point: str):
     col_names = [f"{tracked_point}_{s}_{x}" for s in ["ACCEL"] for x in ["x", "y", "z"]]
 
     # Create the channel dictionary following the BIDS naming conventions
-    channels = {
+    channels_dict  = {
         "name": col_names,
         "component": ["x", "y", "z"] * (n_channels // 3),
         "type": ["ACCEL"] * (n_channels),
@@ -60,6 +60,9 @@ def import_axivity(file_path: str, tracked_point: str):
         "units": ["m/s^2"] * n_channels,
         "sampling_frequency": [info["ResampleRate"]] * n_channels,
     }
+
+    # Convert channels dictionary to a DataFrame
+    channels = pd.DataFrame(channels_dict)
 
     return data, channels
 
@@ -74,7 +77,7 @@ def import_mobilityLab(
 
     Args:
         file_name (str or Path): The absolute or relative path to the data file.
-        tracked_point (str or list of str]):
+        tracked_points (str or list of str]):
             Defines for which tracked points data are to be returned.
 
     Returns:
@@ -82,8 +85,8 @@ def import_mobilityLab(
 
     Examples:
         >>> file_path = "/path/to/sensor_data.h5"
-        >>> tracked_point = "Lumbar"
-        >>> recording = import_mobilityLab(file_path, tracked_point)
+        >>> tracked_points = "Lumbar"
+        >>> recording = import_mobilityLab(file_path, tracked_points)
     """
     # Convert file_name to a Path object if it is a string
     if isinstance(file_name, str):

@@ -105,7 +105,7 @@ class PhamTurnDetection:
         tracking_system: Optional[str] = None,
         tracked_point: Optional[str] = None,
         plot_results: bool = False,
-    ) -> "PhamTurnDetection":
+    ) -> pd.DataFrame:
         """
         Detects truns based on the input accelerometer and gyro data.
 
@@ -450,7 +450,7 @@ class PhamTurnDetection:
         # Return an instance of the class
         return self
 
-    def spatio_temporal_parameters(self) -> None:
+    def spatio_temporal_parameters(self) -> pd.DataFrame:
         """
         Extracts spatio-temporal parameters of the detected turns.
 

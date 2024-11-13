@@ -7,6 +7,7 @@ from kielmat.utils.kielmat_dataclass import KielMATRecording
 from kielmat.utils.kielmat_dataclass import REQUIRED_COLUMNS
 import logging
 import warnings
+from tqdm import tqdm 
 
 # Dict of valid tracked points for the Keep Control dataset for each tracking system
 VALID_TRACKED_POINTS = {
@@ -84,6 +85,7 @@ VALID_TRACKED_POINTS = {
 
 
 def fetch_dataset(
+    progressbar: bool = True,
     dataset_path: str | Path = Path(__file__).parent / "_keepcontrol",
 ) -> None:
     """Fetch the Keep Control dataset from the OpenNeuro repository.
@@ -104,6 +106,10 @@ def fetch_dataset(
             dataset="ds005258",  # this is the example Keep Control dataset on OpenNeuro, maintained by Julius Welzel
             target_dir=dataset_path,
         )
+    
+    else:
+        if progressbar:
+            print("Dataset already downloaded, skipping download.")
     return
 
 

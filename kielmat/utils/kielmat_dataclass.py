@@ -77,7 +77,7 @@ class KielMATRecording:
         # Validate channels when an instance is created
         self.validate_channels()
 
-    def validate_channels(self):
+    def validate_channels(self) -> str:
         """
         Validates the channel dataframes for each system.
 
