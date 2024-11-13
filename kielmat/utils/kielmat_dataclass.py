@@ -92,7 +92,7 @@ class KielMATRecording:
             TypeError: If the 'name' column is not of type string.
 
         Returns:
-            str: A message indicating that all channel dataframes are valid.
+            Confirmation message indicating that all channel dataframes are valid.
         """
         for system_name, df in self.channels.items():
             # Check required columns and their order
