@@ -118,8 +118,8 @@ class PhamPosturalTransitionDetection:
             plot_results (bool, optional): If True, generates a plot. Default is False.
 
         Returns:
-            The postural transition information is stored in the 'postural_transitions_' attribute,
-            which is a pandas DataFrame in BIDS format with the following columns:
+            The postural transition information is stored in the 'postural_transitions_' attribute, which is a pandas DataFrame in BIDS format with the following columns:
+            
                 - onset: Start time of the postural transition in second.
                 - duration: Duration of the postural transition in second.
                 - event_type: Type of the event which is postural transition.
@@ -465,8 +465,8 @@ class PhamPosturalTransitionDetection:
         Extracts spatio-temporal parameters of the detected postural transitions.
 
         Returns:
-            The spatio-temporal parameter information is stored in the 'spatio_temporal_parameters'
-            attribute, which is a pandas DataFrame as:
+            The spatio-temporal parameter information is stored in the 'spatio_temporal_parameters' attribute, which is a pandas DataFrame as:
+
                 - type_of_postural_transition: Type of postural transition which is either "sit to stand" or "stand to sit".
                 - angel_of_postural_transition: Angle of the postural transition in degrees.
                 - maximum_flexion_velocity: Maximum flexion velocity in deg/s.

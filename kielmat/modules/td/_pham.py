@@ -120,8 +120,8 @@ class PhamTurnDetection:
             plot_results (bool, optional): If True, generates a plot. Default is False.
 
         Returns:
-            The turns information is stored in the 'turns_' attribute,
-            which is a pandas DataFrame in BIDS format with the following information:
+            The turns information is stored in the 'turns_' attribute, which is a pandas DataFrame in BIDS format with the following information:
+            
                 - onset: Start time of the turn in second.
                 - duration: Duration of the turn in second.
                 - event_type: Type of the event (turn).
@@ -455,8 +455,8 @@ class PhamTurnDetection:
         Extracts spatio-temporal parameters of the detected turns.
 
         Returns:
-            The spatio-temporal parameter information is stored in the 'spatio_temporal_parameters'
-            attribute, which is a pandas DataFrame as:
+            The spatio-temporal parameter information is stored in the 'spatio_temporal_parameters' attribute, which is a pandas DataFrame as:
+
                 - direction_of_turn: Direction of turn which is either "left" or "right".
                 - angle_of_turn: Angle of the turn in degrees.
                 - peak_angular_velocity: Peak angular velocity during turn in deg/s.
