@@ -42,11 +42,14 @@ nav:
   - Home: index.md
   - Examples: 
     - examples/index.md
-    - Load data into KielMAT: examples/basic_00_load_Data_into_KielMAT.md
-    - Load datasets: examples/basic_01_load_dataset.md
-    - Events in dataclass: examples/basic_02_events.md
-    - Gait Sequence Detection: examples/modules_01_gsd.md
-    - Initial Contact Detection: examples/modules_02_icd.md
+    - Load data into KielMAT: examples/basic_01_load_Data_into_KielMAT.md
+    - Load datasets: examples/basic_02_load_dataset.md
+    - Events in dataclass: examples/basic_03_events.md
+    - Gait Sequence Detection: examples/modules_04_gsd.md
+    - Initial Contact Detection: examples/modules_05_icd.md
+    - Physical Activity Monitoring: examples/modules_06_pam.md
+    - Postural Transition Detection: examples/modules_07_ptd.md
+    - Turn Detection: examples/modules_08_td.md
   - Dataclass: dataclass.md 
   - Modules: 
     - modules/index.md

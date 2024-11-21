@@ -13,14 +13,125 @@ Welcome to the KielMotionAnalysisToolbox (KielMAT). We are a Python based toolbo
 
 The toolbox is aimed at motion researchers who want to use Python-based open-source software to process their data. We have implemented validated algorithms in modules to process motion data, as shown in the table below:
 
-## Overview of modules
-| Module                         | Description                                    | Data                               |
-|--------------------------------|------------------------------------------------|----------------------------------------|
-| Gait sequence detection (GSD)  | Detects gaits                      | 3D accelerations from the lower back   |
-| Initial contact detection (ICD)| Detects initial contact during gait     | 3D accelerations from the lower back   |
-| More to follow...              | Additional modules to be added                |                                        |
+## Overview of Modules
 
-The idea is that various motion data can be loaded into our dedicated dataclass which rely on principles from the [Motion-BIDS](https://bids-specification.readthedocs.io/en/latest/modality-specific-files/motion.html) standard.
+The table below provides an overview of key modules, their functionalities, input data, validation datasets, and outputs.
+
+<div style="width: 100%; text-align: left; margin-top: 20px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+
+<table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+
+<thead style="background-color: #f2f2f2;">
+<tr>
+<th style="padding: 10px; border-bottom: 1px solid #ddd;">Module</th>
+<th style="padding: 10px; border-bottom: 1px solid #ddd;">Description</th>
+<th style="padding: 10px; border-bottom: 1px solid #ddd;">Input Data</th>
+<th style="padding: 10px; border-bottom: 1px solid #ddd;">Validation Dataset</th>
+<th style="padding: 10px; border-bottom: 1px solid #ddd;">Event Type</th>
+<th style="padding: 10px; border-bottom: 1px solid #ddd;">Output Parameters</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/gsd/">Gait Sequence Detection</a></td>
+<td style="padding: 8px;">Detects gait sequences</td>
+<td style="padding: 8px;">3D accelerations from lower back IMU</td>
+<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/mobilised/">Mobilise-D</a> and <a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/">KeepControl</a></td>
+<td style="padding: 8px;">gait sequence</td>
+<td style="padding: 8px;">-</td>
+</tr>
+
+<tr>
+<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/icd/">Initial Contact Detection</a></td>
+<td style="padding: 8px;">Detects initial and final contacts within each gait cycle</td>
+<td style="padding: 8px;">3D accelerations from lower back IMU</td>
+<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/mobilised/">Mobilise-D</a> and <a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/">KeepControl</a></td>
+<td style="padding: 8px;">initial contact, final contact</td>
+<td style="padding: 8px;">Temporal parameters (e.g., step time, stride time)</td>
+</tr>
+
+<tr>
+<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/pam/">Physical Activity Monitoring</a></td>
+<td style="padding: 8px;">Monitors physical activity levels</td>
+<td style="padding: 8px;">3D accelerations from wrist IMU</td>
+<td style="padding: 8px;"><a href="https://www.fairpark2.eu/">Fair Park Ⅱ</a></td>
+<td style="padding: 8px;">-</td>
+<td style="padding: 8px;">Mean and duration of activity level</td>
+</tr>
+
+<tr>
+<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/ptd/">Postural Transition Detection</a></td>
+<td style="padding: 8px;">Detects sit-to-stand and stand-to-sit transitions</td>
+<td style="padding: 8px;">3D acceleration and gyroscope data from lower back IMU</td>
+<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/">KeepControl</a> and <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4460963/">SENSE-PARK</a></td>
+<td style="padding: 8px;">sit-to-stand, stand-to-sit</td>
+<td style="padding: 8px;">Spatio-temporal parameters (e.g., postural transition angle)</td>
+</tr>
+
+<tr>
+<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/td/">Turn Detection</a></td>
+<td style="padding: 8px;">Detects turn movements</td>
+<td style="padding: 8px;">3D acceleration and gyroscope data from lower back IMU</td>
+<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/">KeepControl</a> and <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4460963/">SENSE-PARK</a></td>
+<td style="padding: 8px;">turn</td>
+<td style="padding: 8px;">Spatio-temporal parameters (e.g., turn angle)</td>
+</tr>
+
+</tbody>
+</table>
+</div>
+
+## Units
+
+The table below provides an overview of commonly used value types and their corresponding units. Before starting work with modules in the toolbox, ensure that all data is in standard SI units as specified. This ensures compatibility with the algorithms, which are designed to expect inputs in these units.
+
+<div style="width: 50%; text-align: left; margin-top: 20px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+
+<table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+
+<thead style="background-color: #f2f2f2;">
+<tr>
+<th style="padding: 10px; border-bottom: 1px solid #ddd;">Value</th>
+<th style="padding: 10px; border-bottom: 1px solid #ddd;">Unit</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="padding: 8px;">Acceleration</td>
+<td style="padding: 8px;">m/s²</td>
+</tr>
+
+<tr>
+<td style="padding: 8px;">Angular Velocity</td>
+<td style="padding: 8px;">deg/s</td>
+</tr>
+
+<tr>
+<td style="padding: 8px;">Velocity</td>
+<td style="padding: 8px;">m/s</td>
+</tr>
+
+<tr>
+<td style="padding: 8px;">Distance</td>
+<td style="padding: 8px;">m</td>
+</tr>
+
+<tr>
+<td style="padding: 8px;">Time</td>
+<td style="padding: 8px;">s</td>
+</tr>
+
+<tr>
+<td style="padding: 8px;">Sampling Rate</td>
+<td style="padding: 8px;">Hz</td>
+</tr>
+
+</tbody>
+</table>
+</div>
+
 
 ## Installation
 The toolbox has been released on [pypi](https://pypi.org/project/kielmat/) and can be installed via pip:
@@ -30,6 +141,8 @@ pip install kielmat
 It requires Python 3.10 or higher.
 
 ## Data classes
+The idea is that various motion data can be loaded into our dedicated dataclass which rely on principles from the [Motion-BIDS](https://bids-specification.readthedocs.io/en/latest/modality-specific-files/motion.html) standard.
+
 ### Data classes: conceptual framework
 
 Motion data is recorded with many different systems and modalities, each with their own proprietary data format. KielMAT deals with this by organizing both data and metadata in a [BIDS-like format](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html). The BIDS format suggests that [motion recording data](https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html#motion-recording-data) from a single tracking system is organized in a single `*_tracksys-<label>_motion.tsv` file.

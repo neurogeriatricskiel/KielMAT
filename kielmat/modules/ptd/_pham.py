@@ -88,7 +88,7 @@ class PhamPosturalTransitionDetection:
             cutoff_freq_hz (float, optional): Cutoff frequency for low-pass Butterworth filer. Default is 5.0.
             thr_accel_var (float): Threshold value for identifying periods where the acceleartion variance is low. Default is 0.5.
             thr_gyro_var (float): Threshold value for identifying periods where the gyro variance is low. Default is 2e-4.
-            min_turn_angle_deg (float): Minimum angle which is considered as postural transition in degrees. Default is 15.0.
+            min_postural_transition_angle_deg (float): Minimum angle which is considered as postural transition in degrees. Default is 15.0.
         """
         self.cutoff_freq_hz = cutoff_freq_hz
         self.thr_accel_var = thr_accel_var
@@ -104,7 +104,7 @@ class PhamPosturalTransitionDetection:
         tracking_system: Optional[str] = None,
         tracked_point: Optional[str] = None,
         plot_results: bool = False,
-    ) -> "PhamPosturalTransitionDetection":
+    ) -> pd.DataFrame:
         """
         Detects postural transitions based on the input accelerometer and gyro data.
 
@@ -118,8 +118,8 @@ class PhamPosturalTransitionDetection:
             plot_results (bool, optional): If True, generates a plot. Default is False.
 
         Returns:
-            The postural transition information is stored in the 'postural_transitions_' attribute,
-            which is a pandas DataFrame in BIDS format with the following columns:
+            The postural transition information is stored in the 'postural_transitions_' attribute, which is a pandas DataFrame in BIDS format with the following columns:
+            
                 - onset: Start time of the postural transition in second.
                 - duration: Duration of the postural transition in second.
                 - event_type: Type of the event which is postural transition.
@@ -460,13 +460,13 @@ class PhamPosturalTransitionDetection:
         # Return an instance of the class
         return self
 
-    def spatio_temporal_parameters(self) -> None:
+    def spatio_temporal_parameters(self) -> pd.DataFrame:
         """
         Extracts spatio-temporal parameters of the detected postural transitions.
 
         Returns:
-            The spatio-temporal parameter information is stored in the 'spatio_temporal_parameters'
-            attribute, which is a pandas DataFrame as:
+            The spatio-temporal parameter information is stored in the 'spatio_temporal_parameters' attribute, which is a pandas DataFrame as:
+
                 - type_of_postural_transition: Type of postural transition which is either "sit to stand" or "stand to sit".
                 - angel_of_postural_transition: Angle of the postural transition in degrees.
                 - maximum_flexion_velocity: Maximum flexion velocity in deg/s.

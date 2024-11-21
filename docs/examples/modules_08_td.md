@@ -1,42 +1,39 @@
-# Tutorial: Postural Transition Detection
+# Tutorial: turn detection algortihm
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Tue 01 October 2024
+**Last update:** Wed 02 October 2024
 
-## Learning objectives
+## Learning Objectives
 By the end of this tutorial:
 
 - You can load data from [`keepcontrol`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/datasets/keepcontrol.py) which is one of available datasets.
-- Apply the [`Postural Transition Detection`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/modules/ptd/_pham.py) algorithm.
+- Apply the [`Pham Turn Detection`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/modules/td/_pham.py) algorithm.
 - Visualize the results of the algorithm.
-- Extract spatio-temporal parameters of the detected postural transitions.
-- Interpret the detected postural transitions for further analysis.
+- Extract spatio-temporal parameters of the detected turns.
+- Interpret the detected turns for further analysis.
 
-# Pham Postural Transition Detection
+# Pham Turn Detection
 
 This example can be referenced by citing the package.
 
-The example illustrates how to use Pham Postural Transition Detection algorithm to detect postural transitions (e.g., sit to stand and stand to sit movements) using body acceleration and gyro data recorded with a lower back IMU sensor. The Pham Postural Transition detection algorithm is implemented using [`kielmat.modules.ptd._pham`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/modules/ptd/_pham.py). This algorithm is based on the research of Pham et al [1].
+The example illustrates how to use PhamTurnDetection algorithm to detect turns using acceleration and gyro data recorded with a lower back IMU sensor. The turn detection algorithm is implemented using [`kielmat.modules.td._pham`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/modules/td/_pham.py). This algorithm is based on the research of Pham et al [`1`].
 
-This algorithm aims to detect postural transitions (e.g., sit to stand or stand to sit movements) using accelerometer and gyroscope data collected from a lower back inertial measurement unit (IMU) sensor.
+This algorithm aims to detect turns using accelerometer and gyroscope data collected from a lower back inertial measurement unit (IMU) sensor. The core of the algorithm lies in the detect method, where turns are identified using accelerometer and gyroscope data. The method first processes the gyro data, converting it to rad/s and computing the variance to identify periods of low variance, which may indicate bias. It then calculates the gyro bias and subtracts it from the original gyro signal to remove any biases. Next, the yaw angle is computed by integrating the gyro data, and zero-crossings indices are found to detect turns. Then, turns are identified based on significant changes in the yaw angle.
 
-The algorithm is designed to be robust in detecting postural transitions using inertial sensor data  and provides detailed information about these transitions. It starts by loading the accelerometer and  gyro data, which includes three columns corresponding to the acceleration and gyro signals across  the x, y, and z axes, along with the sampling frequency of the data. It first checks the validity of  the input data. Then, it calculates the sampling period, selects accelerometer and gyro data. Tilt angle estimation is performed using gyro data in lateral or anteroposterior direction which represent movements or rotations in the mediolateral direction. The tilt angle is decomposed using wavelet transformation to 
-identify stationary periods. Stationary periods are detected using accelerometer variance and gyro variance. Then, peaks in the wavelet-transformed tilt signal are detected as potential postural transition events.
+The algorithm also accounts for hesitations, which are brief pauses or fluctuations in the signal that may occur within a turn. Hesitations are marked based on specific conditions related to the magnitude and continuity of the yaw angle changes.
 
-If there's enough stationary data, further processing is done to estimate the orientation using
-quaternions and to identify the beginning and end of postural transitions using gyro data. Otherwise, if there's insufficient stationary data, direction changes in gyro data are used to infer postural transitions. Finally, the detected postural transitions along with their characteristics (onset, duration, etc.) are stored in a pandas DataFrame (postural_transitions_ attribute).
+Then, the detected turns are characterized by their onset and duration. Turns with angles equal to or greater than 90 degrees and durations between 0.5 and 10 seconds are selected for further analysis. Finally, the detected turns along with their characteristics (onset, duration, etc.) are stored in a pandas DataFrame (`turns_` attribute).
 
-In addition, spatial-temporal parameters are calculated using detected postural transitions and their characteristics by the `spatio_temporal_parameters` method. As a return, the postural transition id along with its spatial-temporal parameters including type of postural transition (sit to stand or stand to sit), angle of postural transition, maximum flexion velocity, and maximum extension velocity are stored in a pandas  DataFrame (`parameters_` attribute).
+In addition, spatial-temporal parameters are calculated using detected turns and their characteristics by the `spatio_temporal_parameters` method. As a return, the turn id along with its spatial-temporal parameters including direction (left or right), angle of turn and peak angular velocity are stored in a pandas DataFrame (`parameters_` attribute).
 
-If requested (`plot_results` set to True), it generates plots of the accelerometer and gyroscope data along with the detected postural transitions.
+Optionally, if `plot_results` is set to True, the algorithm generates a plot visualizing the accelerometer and gyroscope data alongside the detected turns. This visualization aids in the qualitative assessment of the algorithm's performance and provides insights into the dynamics of the detected turns.
 
 #### References
-[1] Pham et al. (2018). Validation of a Lower Back "Wearable"-Based Sit-to-Stand and  Stand-to-Sit Algorithm for Patients With Parkinson's Disease and Older Adults in a Home-Like  Environment. Frontiers in Neurology, 9, 652. https://doi.org/10.3389/fneur.2018.00652
+[`1`] Pham et al. (2017). Algorithm for Turning Detection and Analysis Validated under Home-Like Conditions in Patients with Parkinson's Disease and Older Adults using a 6 Degree-of-Freedom Inertial Measurement Unit at the Lower Back. Frontiers in Neurology, 8, 135. https://doi.org/10.3389/fneur.2017.00135
 
-## Import libraries
-The necessary libraries such as numpy, matplotlib.pyplot, dataset and Pham Postural Transition Detection algorithm are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the `kielmat` library and its dependencies if you haven't already.
-
+## Import Libraries
+The necessary libraries such as numpy, matplotlib.pyplot, dataset and PhamTurnDetection turn detection algortihm are imported. Make sure that you have all the required libraries and modules installed before running this code. You also may need to install the `kielmat` library and its dependencies if you haven't already.
 
 ```python
 import numpy as np
@@ -44,13 +41,13 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 from kielmat.datasets import keepcontrol
-from kielmat.modules.ptd import PhamPosturalTransitionDetection
+from kielmat.modules.td import PhamTurnDetection
 from pathlib import Path
 ```
 
 ## Data Preparation
 
-To implement Pham Postural Transition Detection algorithm, we load example data.
+To implement Pham Turn Detection algorithm, we load example data.
 
 
 ```python
@@ -79,7 +76,7 @@ accel_data = recording.data[tracking_sys][
 ]
 
 # Get the acceleration data unit from the recording
-accel_data_unit = recording.channels[tracking_sys][
+accel_unit = recording.channels[tracking_sys][
     recording.channels[tracking_sys]["name"].str.contains("ACCEL", case=False)
 ]["units"].iloc[0]
 
@@ -89,7 +86,7 @@ gyro_data = recording.data[tracking_sys][
 ]
 
 # Get the gyro data unit from the recording
-gyro_data_unit = recording.channels[tracking_sys][
+gyro_unit = recording.channels[tracking_sys][
     recording.channels[tracking_sys]["name"].str.contains("GYRO", case=False)
 ]["units"].iloc[0]
 
@@ -131,13 +128,15 @@ gyro_data (deg/s):
 
 [2908 rows x 3 columns]
 
+#### Load and print sampling frequency of the data
+
 ```python
 # Get the corresponding sampling frequency directly from the recording
 sampling_frequency = recording.channels[tracking_sys][
     recording.channels[tracking_sys]["name"] == "pelvis_ACCEL_x"
 ]["sampling_frequency"].values[0]
 
-# Print sampling frequency
+# Print sampling frequency and its type
 print(f"sampling frequency: {sampling_frequency} Hz")
 ```
 sampling frequency: 200 Hz
@@ -173,7 +172,7 @@ elif gyro_unit == "rad/s":
 ```
 
 ## Visualisation of the Data
-The raw acceleration and gyro data including components of x, y and z axis are plotted.
+The raw acceleration and gyro data including components of x, y and z axis are plotted using following code.
 
 ```python
 # Plot acceleration and gyro in subplots
@@ -192,7 +191,7 @@ for i in range(3):
     )
 ax1.set_ylabel(f"Acceleration (m/s$^{2}$)", fontsize=font_size)
 ax1.set_xlabel(f"Time (s)", fontsize=font_size)
-ax1.legend(loc="upper left", fontsize=font_size)
+ax1.legend(loc="upper right", fontsize=font_size)
 accel_min = np.min(accel_data)
 accel_max = np.max(accel_data)
 buffer = (accel_max - accel_min) * 0.1
@@ -210,7 +209,7 @@ for i in range(3):
     )
 ax2.set_ylabel(f"Gyro (deg/s)", fontsize=font_size)
 ax2.set_xlabel(f"Time (s)", fontsize=font_size)
-ax2.legend(loc="upper left", fontsize=font_size)
+ax2.legend(loc="upper right", fontsize=font_size)
 gyro_min = np.min(gyro_data)
 gyro_max = np.max(gyro_data)
 buffer = (gyro_max - gyro_min) * 0.1
@@ -221,66 +220,66 @@ fig.tight_layout()
 plt.show()
 ```
 
-![](modules_04_ptd_files/04_tutorial_postural_transition_detection_1.png)
+![](modules_08_td_files/modules_08_td_1.png)
     
 
-## Applying Pham Postural Transition Detection Algorithm
-Now, we are running Pham sit to stand and stand to sit detection algorithm from pham module [`PhamPosturalTransitionDetection`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/modules/ptd/_pham.py) to detect postural transitions.
+## Applying Pham Turn Detection Algorithm
+Now, we are running Pham turn detection algorithm from pham module [`PhamTurnDetection`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/modules/td/_pham.py) to detect turns.
 
 The following code first prepares the input data by combining acceleration and gyro data into a single DataFrame called `input_data`.
 
-Then, in order to apply pham postural transition algorithm, an instance of the PhamPosturalTransitionDetection class is created using the constructor, `PhamPosturalTransitionDetection()`. The `pham` variable holds this instance, allowing us to access its methods. The inputs of the algorithm are as follows:
+Then, in order to apply turn detection algorithm, an instance of the PhamTurnDetection class is created using the constructor, `PhamTurnDetection()`. The `pham` variable holds this instance, allowing us to access its methods. The inputs of the algorithm are as follows:
 
-- **Acceleration data:** `accel_data (pd.DataFrame)` includes accelerometer data (N, 3) for x, y, and z axes. in pandas Dataframe format.
-- **Gyro data:** `gyro_data (pd.DataFrame)` includes gyro data (N, 3) for x, y, and z axes. in pandas Dataframe format.
-- **Sampling frequency:** `sampling_freq_Hz` is the sampling frequency of the data, defined in Hz.
+- **Acceleration data:** `accel_data (pd.DataFrame)` includes accelerometer data (N, 3) for x, y, and z axes. in pandas Dataframe format. The unit of acceleration data should be in SI as m/s².
+- **Gyro data:** `gyro_data (pd.DataFrame)` includes gyro data (N, 3) for x, y, and z axes. in pandas Dataframe format. The unit of Gyro data should be in deg/s.
+- **Vertical gyro:** `gyro_vertical (str)` corresponds to the name of the vertical component of gyro.
+- **Sampling Frequency:** `sampling_freq_Hz` is the sampling frequency of the data, defined in Hz.
 - **Datetime:** `dt_data (pd.Series, optional)` is the original datetime in the input data which is optional.
 - **Tracking system:** `tracking_system (str, optional)` is the name of tracking system which is optional.
 - **Tracked Point:** `tracked_point (str, optional)` is the tracked point name on the body which is optional.
 - **Plot Results:** `plot_results (bool, optional)`, if set to True, generates a plot showing the detected turns on the data. The default is False. The onset is represented with the vertical red line and the grey area represents the duration of the turns detected by the algorithm.
 
 ```python
-# Create an instance of the PhamPosturalTransitionDetection class
-pham = PhamPosturalTransitionDetection()
+# Create an instance of the PhamTurnDetection class
+pham = PhamTurnDetection()
 
-# Call the postural transition detection using pham.detect
+# Call the turn detection using pham.detect
 pham = pham.detect(
     accel_data=accel_data,
     gyro_data=gyro_data,
+    gyro_vertical="pelvis_GYRO_x",
     sampling_freq_Hz=sampling_frequency,
     tracking_system="imu",
     tracked_point="pelvis",
     plot_results=True,
 )
 ```
-![](modules_04_ptd_files/04_tutorial_postural_transition_detection_2.png)
+![](modules_08_td_files/modules_08_td_2.png)
 
-The outputs are stored in the `postural_transitions_` attribute, which is a pandas DataFrame in BIDS format with the following columns:
+The outputs are stored in the 'turns_' attribute, which is a pandas DataFrame in BIDS format with the following columns:
 
 - **onset**: Start of the turn event in seconds.
 - **duration**: Duration of the turn event in seconds.
-- **event_type**: Type of event which is postural transition.
+- **event_type**: Type of event which is turn.
 - **tracking_systems**: Tracking system which is 'imu' for this example.
 - **tracked_points**: Tracked points on the body which is 'pelvis' for this example.
 
 ```python
 # Print events and their corresponding information
-postural_transition_events = pham.postural_transitions_
-print(f"postural_transition_events: {postural_transition_events}")
+print(f"turn id: {pham.turns_}")
 ```
 
-    postural_transition_events:     
-            onset   duration    event_type              tracking_systems    tracked_points
-    0       3.39    1.91        postural transition     imu                 pelvis
-    1       11.54   2.96        postural transition     imu                 pelvis
-## Extraction of Spatio-temporal Parameters
+    turn id:    onset   duration    event_type  tracking_systems    tracked_points
+    0           7.17    2.14        turn        imu                 pelvis
+    1          10.65    1.77        turn        imu                 pelvis 
 
-Next, the spatial-temporal parameters could be extracted using the spatio_temporal_parameters method. The outputs are stored in the `parameters_` attribute, which is a pandas DataFrame and icnlues postural transition id along with the following parameters:
+## Extraction of spatio-temporal parameters
 
-- **type_of_postural_transition**: Type of postural transition which is either "sit to stand" or "stand to sit".
-- **angel_of_postural_transition**: Angle of the postural transition in degrees.
-- **maximum_flexion_velocity**: Maximum flexion velocity in deg/s.
-- **maximum_extension_velocity**: Maximum extension velocity deg/s.
+Next, the spatial-temporal parameters could be extracted using the spatio_temporal_parameters method. The outputs are stored in the 'parameters_' attribute, which is a pandas DataFrame and icnlues trun id along with following parameters:
+
+- **direction of turn**: Direction of turn which is either left or right.
+- **angle of turn**: Angle of turns in degrees.
+- **peak angular velocity**: Peak angular velocity (deg/s).
 
 ```python
 # Call the spatio-temporal parameters object for extracting the temporal parameters
@@ -290,7 +289,7 @@ pham.spatio_temporal_parameters()
 print(pham.parameters_)
 ```
 
-                            type_of_postural_transition     angle_of_postural_transition        maximum_flexion_velocity        maximum_extension_velocity  
-    postural transition id                               
-    0                       sit to stand                    71.62                               186                             78   
-    1                       stand to sit                    28.25                               97                              113
+                direction of turn  angle of turn [deg]  peak angular velocity [deg/s]
+    turn id                                                                      
+    0           right              191.67               162.25
+    1           right              175.47               226.29

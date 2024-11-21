@@ -7,24 +7,23 @@ import pandas as pd
 from pathlib import Path
 
 
-def import_axivity(file_path: str, tracked_point: str):
+def import_axivity(file_path: str, tracked_point: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Imports Axivity data from the specified file path and
-    return the data and channel formatted to be used in a KielMATRecording object.
+    Imports and processes data from an Axivity device file.
 
     Args:
-        file_path (str or Path): The path to the Axivity data file.
-        tracked_point (str): The name of the tracked point.
+        file_path (str): Path to the Axivity data file.
+        tracked_point (str): Label for the tracked body point (e.g., 'wrist').
 
     Returns:
-        dict, dict: The loaded data and channels as dictionaries.
+        tuple[pd.DataFrame, pd.DataFrame]: A tuple containing:
+            - data (pd.DataFrame): Processed accelerometer data with time information.
+            - channels (pd.DataFrame): Channel information DataFrame with metadata such as 
+              component, type, units, and sampling frequency.
 
-    Examples:
-        >>> file_path = "/path/to/axivity_data.cwa"
-        >>> tracked_point = "lowerBack"
-        >>> data, channels = import_axivity(file_path, tracked_point)
+    Raises:
+        ValueError: If no tracked point is provided.
     """
-
     # return an error if no tracked point is provided
     if not tracked_point:
         raise ValueError("Please provide a tracked point.")
@@ -52,7 +51,7 @@ def import_axivity(file_path: str, tracked_point: str):
     col_names = [f"{tracked_point}_{s}_{x}" for s in ["ACCEL"] for x in ["x", "y", "z"]]
 
     # Create the channel dictionary following the BIDS naming conventions
-    channels = {
+    channels_dict  = {
         "name": col_names,
         "component": ["x", "y", "z"] * (n_channels // 3),
         "type": ["ACCEL"] * (n_channels),
@@ -60,6 +59,9 @@ def import_axivity(file_path: str, tracked_point: str):
         "units": ["m/s^2"] * n_channels,
         "sampling_frequency": [info["ResampleRate"]] * n_channels,
     }
+
+    # Convert channels dictionary to a DataFrame
+    channels = pd.DataFrame(channels_dict)
 
     return data, channels
 
@@ -70,20 +72,21 @@ def import_mobilityLab(
     tracked_points: str | list[str],
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Imports data from an APDM Mobility Lab system from the specified file path.
+    Imports and processes data from an APDM Mobility Lab system file.
 
     Args:
-        file_name (str or Path): The absolute or relative path to the data file.
-        tracked_point (str or list of str]):
-            Defines for which tracked points data are to be returned.
+        file_name (str | Path): Path to the Mobility Lab HDF5 file.
+        tracked_points (str | list[str]): Name or list of names for tracked body points to import.
 
     Returns:
-        dict, dict: The loaded data and channels as dictionaries.
+        tuple[pd.DataFrame, pd.DataFrame]: A tuple containing:
+            - data (pd.DataFrame): DataFrame with combined accelerometer, gyroscope, 
+              and magnetometer data for each tracked point.
+            - channels (pd.DataFrame): DataFrame containing metadata, including sensor name, 
+              component, type, units, and sampling frequency.
 
-    Examples:
-        >>> file_path = "/path/to/sensor_data.h5"
-        >>> tracked_point = "Lumbar"
-        >>> recording = import_mobilityLab(file_path, tracked_point)
+    Raises:
+        ValueError: If any specified tracked point does not exist in the file's monitor labels.
     """
     # Convert file_name to a Path object if it is a string
     if isinstance(file_name, str):

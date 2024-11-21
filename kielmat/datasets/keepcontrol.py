@@ -88,7 +88,6 @@ def fetch_dataset(
 ) -> None:
     """Fetch the Keep Control dataset from the OpenNeuro repository.
     Args:
-        progressbar (bool, optional): Whether to display a progressbar. Defaults to True.
         dataset_path (str | Path, optional): The path where the dataset is stored. Defaults to Path(__file__).parent/"_keepcontrol".
     """
     dataset_path = Path(dataset_path) if isinstance(dataset_path, str) else dataset_path
@@ -104,6 +103,7 @@ def fetch_dataset(
             dataset="ds005258",  # this is the example Keep Control dataset on OpenNeuro, maintained by Julius Welzel
             target_dir=dataset_path,
         )
+    
     return
 
 
