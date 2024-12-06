@@ -180,32 +180,34 @@ class SleepAnalysis:
             4: "Belly",
         }
 
-        # Map turn indices to event types based on the start and end postures
-        event_types = [
-            f"{posture_map.get(posture[turn_end[i]], 'Unknown')}"
-            for i in range(len(turn_start))
-            if valid_turns[i]
-        ]
+        # Detect and record posture events
+        posture_events = []
+        current_posture = posture[0]
+        start_idx = 0
+        
+        for i in range(1, len(posture)):
+            if posture[i] != current_posture or i == len(posture) - 1:
+                end_idx = i
+                if dt_data is not None:
+                    onset_time = dt_data.iloc[start_idx]
+                    duration_time = (dt_data.iloc[end_idx - 1] - dt_data.iloc[start_idx]).total_seconds()
+                else:
+                    onset_time = start_idx / sampling_frequency
+                    duration_time = (end_idx - start_idx) / sampling_frequency
+                    
+                posture_events.append({
+                    "onset": onset_time,
+                    "duration": duration_time,
+                    "event_type": posture_map.get(current_posture, "Unknown"),
+                    "tracking_system": tracking_system,
+                    "tracked_point": tracked_point,
+                })
+                
+                current_posture = posture[i]
+                start_idx = i
 
-        # Handle timestamps if `dt_data` is provided
-        if dt_data is not None:
-            turn_onset = [dt_data.iloc[start] for start in turn_start[valid_turns]]
-        else:
-            turn_onset = turn_start[valid_turns] / sampling_frequency
-
-        turn_duration = turn_duration[valid_turns]
-        turn_angle = turn_angle[valid_turns]
-
-        # Store results in DataFrame
-        self.posture_ = pd.DataFrame(
-            {
-                "onset": turn_onset,
-                "duration": turn_duration,
-                "event_type": event_types,
-                "tracking_systems": tracking_system,
-                "tracked_points": tracked_point,
-            }
-        )
+        # Create a DataFrame for detected posture events
+        self.posture_ = pd.DataFrame(posture_events)
 
         # Optional: Generate plots
         if plot_results:
