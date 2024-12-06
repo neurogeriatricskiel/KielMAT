@@ -1,6 +1,9 @@
 # Import libraries
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from typing import Optional
 
 
 # Function to plot results of the gait sequence detection algorithm
@@ -47,53 +50,39 @@ def plot_gait(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
 # Function to plot results of the physical activity monitoring algorithm
 def plot_pam(hourly_average_data, thresholds_mg):
     """
-    Plots the hourly averaged ENMO for each day along with activity level thresholds.
+    Plots the hourly averaged ENMO for each day along with the mean of all days and activity level thresholds.
 
     Args:
         hourly_average_data (pd.DataFrame): DataFrame containing hourly averaged ENMO values.
         thresholds_mg (dict): Dictionary containing threshold values for physical activity detection.
     """
+    # Create a colormap with as many colors as the number of days
+    num_days = len(hourly_average_data.index)
+    colors = plt.cm.turbo(np.linspace(0, 1, num_days))
+
+    # Calculate the mean of all days
+    mean_data = hourly_average_data.mean(axis=0)
+
     # Plotting
     fig, ax = plt.subplots(figsize=(14, 8))
 
-    # Choose the 'turbo' colormap for coloring each day
-    colormap = plt.cm.turbo
+    # Plot each day's data with a unique color
+    for i, (date, row) in enumerate(hourly_average_data.iterrows()):
+        ax.plot(row.index, row.values, label=f"Day {date}", color=colors[i])
 
-    # Plot thresholds
-    ax.axhline(
-        y=thresholds_mg.get("sedentary_threshold", 45),
-        color="y",
-        linestyle="--",
-        label="Sedentary threshold",
-    )
-    ax.axhline(
-        y=thresholds_mg.get("light_threshold", 100),
-        color="g",
-        linestyle="--",
-        label="Light physical activity threshold",
-    )
-    ax.axhline(
-        y=thresholds_mg.get("moderate_threshold", 400),
-        color="r",
-        linestyle="--",
-        label="Moderate physical activity threshold",
-    )
-
-    # Plot each day data with a different color
-    for i, date in enumerate(hourly_average_data.index):
-        color = colormap(i)
-        ax.plot(hourly_average_data.loc[date], label=str(date), color=color)
+    # Plot the mean of all days
+    ax.plot(mean_data.index, mean_data.values, label="Mean of All Days", color="black", linestyle="--", linewidth=2)
 
     # Customize plot
     ax.set_xticks(hourly_average_data.columns)
-    ax.set_xticklabels(hourly_average_data.columns)
+    ax.set_xticklabels(hourly_average_data.columns, rotation=45)
     plt.xlabel("Time (h)", fontsize=14)
     plt.ylabel("ENMO (mg)", fontsize=14)
-    plt.title("Hourly averaged ENMO for each day along with activity level thresholds")
-    plt.legend(loc="upper left", fontsize=14)
-    plt.grid(visible=None, which="both", axis="both")
-    plt.xticks(fontsize=14)
-    plt.yticks(fontsize=14)
+    plt.title("Hourly Averaged ENMO for Each Day", fontsize=16)
+    plt.legend(loc="upper left", fontsize=10, bbox_to_anchor=(1.05, 1))
+    plt.grid(visible=True, which="both", axis="both", linestyle='--', alpha=0.7)
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
     plt.tight_layout()
     plt.show()
 
@@ -252,4 +241,64 @@ def plot_turns(accel, gyro, detected_turns, sampling_freq_Hz):
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
     fig.tight_layout()
+    plt.show()
+
+# Function to plot results of the sleep analysis algorithm
+def plot_sleep_analysis(
+    vertical_accel: np.ndarray,
+    nocturnal_rest: np.ndarray,
+    posture: np.ndarray,
+    sampling_frequency: int,
+    dt_data: Optional[pd.Series] = None,
+):
+    # Determine the time axis
+    if dt_data is not None:
+        time = dt_data
+    else:
+        time = pd.Series(
+            pd.date_range(
+                start="00:00:00",
+                periods=len(vertical_accel),
+                freq=pd.DateOffset(seconds=1 / sampling_frequency)
+            )
+        )
+
+    # Color map for different postures with names
+    posture_colors = {
+        0: ('gray', 'Upright'),    # Upright
+        1: ('red', 'Back'),       # Back
+        2: ('green', 'Right side'), # Right side
+        3: ('blue', 'Left side'), # Left side
+        4: ('yellow', 'Belly')    # Belly
+    }
+
+    # Figure
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    # Subplot 1: Vertical acceleration and posture with colored regions
+    ax.plot(time, vertical_accel, label="Vertical Acceleration", color="blue")
+    ax.plot(
+        time,
+        nocturnal_rest * np.max(vertical_accel),
+        label="Detected Nocturnal Rest",
+        color="black",
+        linestyle="--",
+    )
+    
+    # For each unique posture region, plot with the corresponding color in ax1
+    for posture_val, (color, label) in posture_colors.items():
+        ax.fill_between(time, 0, vertical_accel.max(), where=(posture == posture_val), 
+                        color=color, alpha=0.3, label=f"{label}")
+        ax.fill_between(time, 0, vertical_accel.min(), where=(posture == posture_val), 
+                        color=color, alpha=0.3)
+
+    ax.set_ylabel("Vertical Acceleration (g)", fontsize=14)
+    ax.legend(loc="upper right", fontsize=12)
+    ax.set_title("Sleep Analysis", fontsize=16)
+
+    # Formatting x-axis to show every 2 hours
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=2)) 
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d, %H:%M"))  
+    plt.setp(ax.get_xticklabels(), rotation=0) 
+    plt.tight_layout()
     plt.show()

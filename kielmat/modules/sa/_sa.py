@@ -3,7 +3,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from typing import Optional
 from kielmat.utils import preprocessing, viz_utils
-from typing import Optional
 
 class SleepAnalysis:
     """
@@ -28,29 +27,24 @@ class SleepAnalysis:
     in BIDS-like format, containing details such as the onset, duration, and type of each detected event.
 
     Optionally, if `plot_results` is set to True, the algorithm generates a detailed visualization of the 
-    analysis results. This includes plots of vertical acceleration, detected nocturnal rest, posture 
-    classifications, and detected turns, offering insights into the dynamics of the analyzed data.
+    analysis results. This includes plots of vertical acceleration, detected nocturnal rest and posture 
+    classifications , offering insights into the dynamics of the analyzed data.
 
     Methods:
-        detect(accel_data, sampling_frequency, tracking_system, tracked_point, plot_results):
-            Processes accelerometer data to detect nocturnal rest, classify postures, and identify turning events.
-            
-        spatio_temporal_parameters():
-            Calculates spatial-temporal parameters for detected nocturnal movements.
-
-        metrics():
-            Provides overall metrics summarizing the results of the analysis.
+        detect(accel_data, v_accel_col_name, sampling_frequency, tracking_system, tracked_point, plot_results):
+            Processes accelerometer data to detect nocturnal rest, classify postures, and identify events.
 
     Examples:
         >>> sleep_analyzer = SleepAnalysis()
         >>> sleep_analyzer.detect(
-                accel_data=accel_data, 
+                accel_data=accel_data,
+                v_accel_col_name="SA_ACCEL_y",
                 sampling_frequency=128,
                 tracking_system="imu", 
                 tracked_point="LowerBack", 
                 plot_results=True
             )
-        >>> print(sleep_analyzer.turns_)
+        >>> print(sleep_analyzer.posture_)
 
     References:
         [1] Louter et al. (2015). Accelerometer-based quantitative analysis of axial nocturnal movements ...
@@ -75,7 +69,7 @@ class SleepAnalysis:
             smoothing_window_sec (float): Smoothing window size in seconds. Default is 10.0.
             sliding_window_sec (float): Sliding window size for posture calculation in seconds. Default is 1.0.
             overlap_ratio (float): Overlap ratio for sliding window. Default is 0.5.
-            min_lying_duration_sec (int): Minimum lying duration in seconds. Default is 300.
+            min_lying_duration_sec (int): Minimum lying duration in seconds. Default is 300 (5 minutes).
         """
         self.lying_threshold = lying_threshold
         self.turn_angle_threshold = turn_angle_threshold
@@ -86,15 +80,15 @@ class SleepAnalysis:
 
         # Attributes to store results
         self.nocturnal_rest_ = None
-        self.parameters_ = None
-        self.metrics_ = None
 
     def detect(
         self,
         accel_data: np.ndarray,
+        v_accel_col_name: str,
         sampling_frequency: int,
         tracking_system: Optional[str] = None,
         tracked_point: Optional[str] = None,
+        dt_data: Optional[pd.Series] = None,
         plot_results: bool = False,
     ) -> "SleepAnalysis":
         """
@@ -102,38 +96,30 @@ class SleepAnalysis:
 
         Args:
             accel_data (np.ndarray): Accelerometer data of shape (N, 3).
+            v_accel_col_name (str): Column name corresponding to the vertical acceleration.
             sampling_frequency (int): Sampling frequency in Hz.
             tracking_system (str, optional): Name of the tracking system.
             tracked_point (str, optional): Name of the tracked point.
+            dt_data (pd.Series, optional): Timestamps corresponding to each sample.
             plot_results (bool): If True, generates plots of results.
 
         Returns:
-            SleepAnalysis: Instance with detected nocturnal rest stored in `turns_`.
+            The detected events information is stored in the 'posture_' attribute, which is a pandas DataFrame in BIDS format 
 
         Example:
             >>> sleep_analyzer = SleepAnalysis()
-            >>> sleep_analyzer.detect(accel_data, sampling_frequency=128, plot_results=True)
+            >>> sleep_analyzer.detect(accel_data, v_accel_col_name="vertical_acceleration", sampling_frequency=100, plot_results=True)
         """
-        if accel_data.shape[1] != 3:
-            raise ValueError("Input accelerometer data must have 3 columns (x, y, z).")
-        
-        # Convert acceleration data from "m/s^2" to "g"
-        accel_data /= 9.81
-        accel_data = accel_data.to_numpy()
+        # Extract vertical acceleration and covert it to g
+        vertical_accel = accel_data[v_accel_col_name].values / 9.81
 
-        # Smooth the accelerometer data
+        # Smooth the vertical acceleration
         smoothing_window_samples = int(self.smoothing_window_sec * sampling_frequency)
         kernel = np.ones(smoothing_window_samples) / smoothing_window_samples
-        smoothed_accel = np.array([
-            np.convolve(accel_data[:, i], kernel, mode='same')
-            for i in range(accel_data.shape[1])
-        ]).T
-
-        # Extract vertical acceleration
-        vertical_accel = smoothed_accel[:, 1]
+        smoothed_vertical_accel = np.convolve(vertical_accel, kernel, mode="same")
 
         # Detect nocturnal rest as periods where lying lasts longer than minimum lying duration
-        lying_flags = (vertical_accel < self.lying_threshold).astype(int)
+        lying_flags = (smoothed_vertical_accel < self.lying_threshold).astype(int)
         min_samples = int(self.min_lying_duration_sec * sampling_frequency)
         nocturnal_rest = np.copy(lying_flags)
         start_idx = None
@@ -145,16 +131,26 @@ class SleepAnalysis:
                     nocturnal_rest[start_idx:i] = 0
                 start_idx = None
 
-        # Calculate lying angle (theta) during nocturnal rest for posture analysis
-        theta = np.degrees(np.arctan2(smoothed_accel[:, 2], smoothed_accel[:, 0]))
+        # Dynamically calculate the orientation angle using the other two axes
+        horizontal_axes = [col for col in accel_data.columns if col != v_accel_col_name]
+
+        if len(horizontal_axes) != 2:
+            raise ValueError("The accelerometer data must have exactly two horizontal axes excluding the vertical axis.")
+
+        # Smooth horizontal acceleration components and convert unit to g
+        acc_horizontal_1 = np.convolve(accel_data[horizontal_axes[0]].values / 9.81, kernel, mode="same")
+        acc_horizontal_2 = np.convolve(accel_data[horizontal_axes[1]].values / 9.81, kernel, mode="same")
+
+        # Compute orientation angle dynamically
+        theta = np.degrees(np.arctan2(acc_horizontal_2, acc_horizontal_1))
 
         sliding_window_samples = int(self.sliding_window_sec * sampling_frequency)
         step_size = int(sliding_window_samples * (1 - self.overlap_ratio))
         
         # Determine lying posture based on filtered angle values
-        posture = np.zeros(len(accel_data), dtype=int)
+        posture = np.zeros(len(accel_data), dtype=int)  # Default posture: Upright (0)
         for i in range(0, len(theta) - sliding_window_samples + 1, step_size):
-            if nocturnal_rest[i]:
+            if np.any(nocturnal_rest[i:i + sliding_window_samples]):
                 angle = np.mean(theta[i:i + sliding_window_samples])
                 if -45 <= angle <= 45:
                     posture[i:i + sliding_window_samples] = 1  # Back
@@ -162,28 +158,50 @@ class SleepAnalysis:
                     posture[i:i + sliding_window_samples] = 2  # Right side
                 elif -135 <= angle < -45:
                     posture[i:i + sliding_window_samples] = 3  # Left side
-                else:
+                elif abs(angle) >= 135:
                     posture[i:i + sliding_window_samples] = 4  # Belly
 
         # Detect turning during nocturnal rest
-        turn_indices = np.where(np.diff(posture) != 0)[0] # Indices where posture changes
-        
+        turn_indices = np.where(np.diff(posture) != 0)[0]  # Indices where posture changes
+
         # Extract turn parameters
         turn_start = turn_indices[:-1]
         turn_end = turn_indices[1:]
         turn_duration = (turn_end - turn_start) / sampling_frequency
         turn_angle = theta[turn_end] - theta[turn_start]
         valid_turns = np.abs(turn_angle) >= self.turn_angle_threshold
+
+        # Map posture indices to descriptive names
+        posture_map = {
+            0: "Upright",
+            1: "Back",
+            2: "Right",
+            3: "Left",
+            4: "Belly",
+        }
+
+        # Map turn indices to event types based on the start and end postures
+        event_types = [
+            f"{posture_map.get(posture[turn_end[i]], 'Unknown')}"
+            for i in range(len(turn_start))
+            if valid_turns[i]
+        ]
+
+        # Handle timestamps if `dt_data` is provided
+        if dt_data is not None:
+            turn_onset = [dt_data.iloc[start] for start in turn_start[valid_turns]]
+        else:
+            turn_onset = turn_start[valid_turns] / sampling_frequency
+
         turn_duration = turn_duration[valid_turns]
         turn_angle = turn_angle[valid_turns]
-        turn_times = turn_end[valid_turns]
 
         # Store results in DataFrame
-        self.turns_ = pd.DataFrame(
+        self.posture_ = pd.DataFrame(
             {
-                "onset": turn_start[valid_turns] / sampling_frequency,
+                "onset": turn_onset,
                 "duration": turn_duration,
-                "event_type": "turn",
+                "event_type": event_types,
                 "tracking_systems": tracking_system,
                 "tracked_points": tracked_point,
             }
@@ -191,78 +209,11 @@ class SleepAnalysis:
 
         # Optional: Generate plots
         if plot_results:
-            self._generate_plots(
-                vertical_accel, nocturnal_rest, posture,
-                theta, turn_times, sampling_frequency
+            viz_utils.plot_sleep_analysis(
+                smoothed_vertical_accel,
+                nocturnal_rest,
+                posture,
+                sampling_frequency,
+                dt_data,
             )
         return self
-
-    def _generate_plots(
-        self,
-        vertical_accel: np.ndarray,
-        nocturnal_rest: np.ndarray,
-        posture: np.ndarray,
-        theta: np.ndarray,
-        turn_times: np.ndarray,
-        sampling_frequency: int,
-    ):
-        """
-        Generates plots of accelerometer data, nocturnal rest detection, and postural classification.
-
-        Args:
-            vertical_accel (np.ndarray): Vertical acceleration.
-            nocturnal_rest (np.ndarray): Binary array indicating rest periods.
-            posture (np.ndarray): Postural classification array.
-            theta (np.ndarray): Orientation angles.
-            turn_times (np.ndarray): Indices of detected turns.
-            sampling_frequency (int): Sampling frequency in Hz.
-        """
-        time = np.arange(len(vertical_accel)) / sampling_frequency
-
-        # Figure
-        fig = plt.figure(figsize=(12, 10))
-
-        # Subplot 1: ACCEL data
-        ax1 = plt.subplot(211)
-
-        # Plot vertical acceleration (blue) on the left y-axis
-        line1, = ax1.plot(time, vertical_accel, label='Vertical Acceleration', color='blue')
-        ax1.set_ylabel("Vertical Acceleration (g)", fontsize=14)  # Larger font size for y-axis
-        ax1.tick_params(axis='y', labelsize=12)
-
-        # Plot nocturnal rest (detected) with dashed lines, multiplied by 5
-        line2, = ax1.plot(time, nocturnal_rest * 5 * np.max(vertical_accel), label='Detected Nocturnal Rest', color='black', linestyle='--')
-
-        # Plot posture classification (red)
-        line3, = ax1.plot(time, posture, label='Postural Classification', color='orange', linewidth=2)
-
-        # Adding the Posture Legend/Key in the plot with a similar background box as the plot legend
-        ax1.text(0.02, 0.94, "Postures:\n1: Back\n2: Right Side\n3: Left Side\n4: Belly", 
-                transform=plt.gca().transAxes, fontsize=12, verticalalignment='top', color='orange', 
-                bbox=dict(facecolor='white', alpha=0.6, boxstyle='round,pad=1'))  
-        plt.title("Sleep Analysis", fontsize=16)
-
-        # Create combined legend
-        lines = [line1, line2, line3] 
-        labels = ['Vertical Acceleration', 'Detected Nocturnal Rest', 'Postural Classification']  
-        ax1.legend(lines, labels, loc='upper right', fontsize=12)
-
-        # Subplot 2: Theta (angles) and turns
-        ax2 = plt.subplot(212)
-
-        # Plot theta (angles) and detected turns (in the second subplot)
-        line_1, = ax2.plot(time, theta, label="Orientation Angle (deg)", color='blue')
-
-        # Plot posture classification
-        line_2, = ax2.plot(time, nocturnal_rest * 180 * np.max(vertical_accel), label='Detected Nocturnal Rest', color='black', linestyle='--')
-        
-        ax2.scatter(time[turn_times], theta[turn_times], 
-                    color='red', label='Detected Turns', zorder=5)
-        ax2.set_xlabel("Time (s)", fontsize=14) 
-        ax2.set_ylabel("Orientation Angle (deg)", fontsize=14)
-        lines_ = [line_1, line_2]
-        ax2.legend(lines_, labels, loc='upper right', fontsize=12)
-
-        # Plot
-        fig.tight_layout()
-        plt.show()
