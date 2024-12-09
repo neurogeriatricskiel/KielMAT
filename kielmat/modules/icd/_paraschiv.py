@@ -25,15 +25,15 @@ class ParaschivIonescuInitialContactDetection:
     `tracking_systems`. In addition, the Final contact inofrmation also provided as a DataFrame with columns `onset`, `event_type`, and
     `tracking_systems`. 
 
-    Additionally, temporal parameters related to gait can be calculated and accessed, including step time, stride time,
-    stance time, single support time, double support time, and cadence [1,4,5].
+    Additionally, spatio-temporal parameters related to gait can be calculated and accessed, including step time, stride time,
+    stance time, single support time, double support time, cadence, etc. [1,3-6].
 
     Methods:
         detect(accel_data, gait_sequences, sampling_freq_Hz):
             Detects initial contacts on the accelerometer signal.
 
-        temporal_parameters():
-            Calculates the temporal parameters of the detected gaits using initial and final contacts information.
+        spatio_temporal_parameters():
+            Calculates the spatio-temporal parameters of the detected gaits using initial and final contacts information.
             
     Examples:
         Detect initial contacts, final contacts, and calculate temporal parameters:
@@ -50,21 +50,23 @@ class ParaschivIonescuInitialContactDetection:
             0  5.300  final contact           0         SU
             1  6.100  final contact           0         SU
         
-        >>> icd.temporal_parameters()
-        >>> print(icd.temporal_parameters_)
+        >>> icd.spatio_temporal_parameters()
+        >>> print(icd.spatio_temporal_parameters)
             gait_sequence_id      step_time      stride_time    stance_time     swing_time     cadence
             0                 0   [0.575, 0.75]  [1.325, 1.4]   [0.275, 0.35]   [1.04, 1.04]   97.39
 
     References:
-        [1] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer...
+        [1] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer ...
 
-        [2] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using single trunk IMU: methodological challenges...
+        [2] Paraschiv-Ionescu et al. (2020). Real-world speed estimation using single trunk IMU: methodological challenges ...
 
-        [3] McCamley et al. (2012) An enhanced estimate of initial contact and final contact instants of time...
+        [3] McCamley et al. (2012) An enhanced estimate of initial contact and final contact instants of time ...
+
+        [4] Hollman, John H., et al. Normative spatiotemporal gait parameters in older adults." Gait & posture ...
+
+        [5] Hass, Chris J., et al. (2012). Quantitative normative gait data in a large cohort of ambulatory ...
         
-        [4] Din et al. (2015) Validation of an accelerometer to quantify a comprehensive battery of gait characteristics...
-
-        [5] Godfrey et al. (2015) Instrumenting gait with an accelerometer: A system and algorithm examination...
+        [6] Moe-Nilssen, Rolf, and Jorunn L. Helbostad (2020). Spatiotemporal gait parameters for older adults ...
     """
 
     def __init__(
@@ -218,97 +220,94 @@ class ParaschivIonescuInitialContactDetection:
 
         return self
 
-    def temporal_parameters(self) -> None:
+    # Function to calculate spatio-temporal parameters
+    def spatio_temporal_parameters(self):
         """
-        Calculates temporal gait parameters using detected initial and final contacts for each gait sequence.
+        Extracts spatio-temporal parameters of detected gaits and stores them in a DataFrame.
 
-        The following temporal parameters are calculated for each gait sequence:
-            - gait_sequence_id: Identifier for the gait sequence (index).
-            - step_time: Time taken for each step (in seconds).
-            - stride_time: Time taken for each stride (in seconds).
-            - stance_time: Duration of stance phase (in seconds).
-            - swing_time: Duration of swing phase (in seconds).
-            - cadence: Number of steps taken per minute (in steps/minute).
+        Returns:
+            The spatio-temporal parameter information is stored in the 'spatio_temporal_parameters_'
+            attribute, which is a pandas DataFrame containing:
+                - gait_sequence_id: ID of the gait sequence.
+                - step_time: Time between consecutive initial contacts (list).
+                - stride_time: Time between two consecutive initial contacts of the same foot (list).
+                - stance_time: Time the foot is in contact with the ground (list).
+                - swing_time: Time the foot is not in contact with the ground (list).
+                - single_support_time: Time only one foot is in contact with the ground (list).
+                - double_support_time: Overlap period between consecutive stance phases (list).
+                - cadence: Number of steps per minute (float).
         """
+        if self.initial_contacts_ is None or self.final_contacts_ is None:
+            raise ValueError("Initial and final contacts must be detected first.")
 
-        if self.initial_contacts_ is None or self.initial_contacts_.empty:
-            raise ValueError("No initial contacts detected. Please run the detect method first.")
-
-        # Create a DataFrame to hold the results
         all_parameters = []
 
-        # Iterate over each gait sequence
         for seq_idx, gait_seq in self.gait_sequences.iterrows():
             start_time = gait_seq["onset"]
             stop_time = gait_seq["onset"] + gait_seq["duration"]
 
-            # Filter initial contacts for the current gait sequence
-            gait_initial_contacts = self.initial_contacts_[
-                (self.initial_contacts_['onset'] >= start_time) &
-                (self.initial_contacts_['onset'] <= stop_time) &
-                (self.initial_contacts_['event_type'] == 'initial contact')
-            ]['onset'].to_numpy()
+            # Filter initial and final contacts for this gait sequence
+            gait_ic = self.initial_contacts_[
+                (self.initial_contacts_["onset"] >= start_time) &
+                (self.initial_contacts_["onset"] <= stop_time)
+            ]["onset"].to_numpy()
 
-            # Filter final contacts for the current gait sequence
-            gait_final_contacts = self.final_contacts_[
-                (self.final_contacts_['onset'] >= start_time) &
-                (self.final_contacts_['onset'] <= stop_time) &
-                (self.final_contacts_['event_type'] == 'final contact')
-            ]['onset'].to_numpy()
+            gait_fc = self.final_contacts_[
+                (self.final_contacts_["onset"] >= start_time) &
+                (self.final_contacts_["onset"] <= stop_time)
+            ]["onset"].to_numpy()
 
-            # Ensure there are enough contacts to calculate parameters
-            if len(gait_initial_contacts) < 2 or len(gait_final_contacts) < 1:
-                print(f"Not enough initial or final contacts in gait sequence {seq_idx}. Skipping.")
+            if len(gait_ic) < 2 or len(gait_fc) < 1:
                 continue
 
-            # Calculate the step time as the difference between consecutive initial contacts
-            step_time = np.diff(gait_initial_contacts)
+            # Step Time: Time between two consecutive initial contacts
+            step_time = np.diff(gait_ic)
 
-            # Calculate stride time as the difference between every other initial contact (i.e., same foot)
-            # Ensure that we have at least 2 initial contacts to calculate stride time
-            if len(gait_initial_contacts) >= 2:
-                stride_time = np.diff(gait_initial_contacts[::2])
-            else:
-                stride_time = np.array([np.nan])
+            # Stride Time: Time between two consecutive initial contacts of the same foot
+            stride_time = np.diff(gait_ic[::2]) if len(gait_ic) >= 2 else np.array([np.nan])
 
-            # Calculate stance time as the time between each initial contact and its corresponding final contact
-            # Pair each initial contact with the closest final contact that follows it
-            stance_time = []
-            final_idx = 0
+            # Stance Time: Time from an initial contact to the corresponding final contact
+            stance_time = np.array([
+                gait_fc[i] - gait_ic[i] if i < len(gait_fc) else np.nan
+                for i in range(len(gait_ic))
+            ])
 
-            for i, ic in enumerate(gait_initial_contacts):
-                # Find the first final contact that comes after the current initial contact
-                while final_idx < len(gait_final_contacts) and gait_final_contacts[final_idx] <= ic:
-                    final_idx += 1
+            # Swing Time: Time difference between stride time and stance time
+            swing_time = np.array([
+                stride_time[i] - stance_time[i * 2]
+                if i * 2 < len(stance_time) and i < len(stride_time) else np.nan
+                for i in range(len(stride_time))
+            ])
 
-                if final_idx < len(gait_final_contacts):
-                    stance_time.append(gait_final_contacts[final_idx] - ic)
-                else:
-                    stance_time.append(np.nan)  # If no final contact is found, fill with NaN
+            # Double Support Time: Overlap period between consecutive stance phases
+            double_support_time = np.array([
+                max(0, gait_ic[i + 1] - gait_fc[i])
+                if i + 1 < len(gait_ic) and i < len(gait_fc) else np.nan
+                for i in range(len(gait_ic) - 1)
+            ])
 
-            stance_time = np.array(stance_time)
+            # Single Support Time: Stance time minus double support time
+            single_support_time = np.array([
+                stance_time[i] - double_support_time[i]
+                if i < len(double_support_time) else np.nan
+                for i in range(len(stance_time))
+            ])
 
-            # Swing time is the difference between stride time and stance time
-            # First, align the length of stride time and stance time before calculation
-            swing_time = np.full(len(stride_time), np.nan)
-            min_length = min(len(stride_time), len(stance_time))
+            # Cadence: Number of steps per minute
+            total_time = gait_ic[-1] - gait_ic[0]
+            cadence = (len(gait_ic) / total_time) * 60 if total_time > 0 else np.nan
 
-            if min_length > 0:
-                swing_time[:min_length] = stride_time[:min_length] - stance_time[:min_length]
-
-            # Total time and cadence calculation
-            total_time = gait_initial_contacts[-1] - gait_initial_contacts[0]
-            cadence = (len(gait_initial_contacts) / total_time) * 60 if total_time > 0 else np.nan
-
-            # Append calculated parameters to the results list
+            # Append results
             all_parameters.append({
                 "gait_sequence_id": seq_idx,
-                "step_time": step_time,
-                "stride_time": stride_time,
-                "stance_time": stance_time,
-                "swing_time": swing_time,
-                "cadence": cadence
+                "step_time": np.round(step_time, 3).tolist(),
+                "stride_time": np.round(stride_time, 3).tolist(),
+                "stance_time": np.round(stance_time, 3).tolist(),
+                "swing_time": np.round(swing_time, 3).tolist(),
+                "single_support_time": np.round(single_support_time, 3).tolist(),
+                "double_support_time": np.round(double_support_time, 3).tolist(),
+                "cadence": round(cadence, 2),
             })
 
-        # Convert results to DataFrame for consistency
-        self.temporal_parameters_ = pd.DataFrame(all_parameters)
+        # Store results in a DataFrame
+        self.spatio_temporal_parameters_ = pd.DataFrame(all_parameters)

@@ -915,8 +915,8 @@ def signal_decomposition_algorithm(
     # Perform the continuous wavelet transform on the filtered acceleration data
     smoothed_wavelet_result = apply_continuous_wavelet_transform(
         det_ver_acc_sig_LPInt,
-        scales=9,
-        desired_scale=8,
+        scales=30,
+        desired_scale=10,
         wavelet="gaus2",
         sampling_frequency=target_sampling_frequency,
     )
@@ -940,8 +940,8 @@ def signal_decomposition_algorithm(
     # Apply continuous wavelet transform
     accVLPIntCwt2 = apply_continuous_wavelet_transform(
         smoothed_wavelet_result,
-        scales=9,
-        desired_scale=7,
+        scales=30,
+        desired_scale=8,
         wavelet="gaus2",
         sampling_frequency=target_sampling_frequency,
     )
