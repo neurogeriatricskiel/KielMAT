@@ -91,7 +91,6 @@ def plot_pam(hourly_average_data):
     plt.show()
 
 
-
 # Function to plot results of the postural transition detection algorithm
 def plot_postural_transitions(accel, gyro, postural_transitions_, sampling_freq_Hz):
     """

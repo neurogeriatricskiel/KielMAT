@@ -201,38 +201,56 @@ class PhysicalActivityMonitoring:
             .agg(
                 sedentary_mean_enmo=(
                     "enmo",
-                    lambda x: np.nanmean(
-                        x[classified_processed_data.loc[x.index, "sedentary"] == 1]
-                    )
-                    if len(x[classified_processed_data.loc[x.index, "sedentary"] == 1]) > 0
-                    else 0,
+                    lambda x: (
+                        np.nanmean(
+                            x[classified_processed_data.loc[x.index, "sedentary"] == 1]
+                        )
+                        if len(
+                            x[classified_processed_data.loc[x.index, "sedentary"] == 1]
+                        )
+                        > 0
+                        else 0
+                    ),
                 ),
                 sedentary_time_min=("sedentary_time_min", "sum"),
                 light_mean_enmo=(
                     "enmo",
-                    lambda x: np.nanmean(
-                        x[classified_processed_data.loc[x.index, "light"] == 1]
-                    )
-                    if len(x[classified_processed_data.loc[x.index, "light"] == 1]) > 0
-                    else 0,
+                    lambda x: (
+                        np.nanmean(
+                            x[classified_processed_data.loc[x.index, "light"] == 1]
+                        )
+                        if len(x[classified_processed_data.loc[x.index, "light"] == 1])
+                        > 0
+                        else 0
+                    ),
                 ),
                 light_time_min=("light_time_min", "sum"),
                 moderate_mean_enmo=(
                     "enmo",
-                    lambda x: np.nanmean(
-                        x[classified_processed_data.loc[x.index, "moderate"] == 1]
-                    )
-                    if len(x[classified_processed_data.loc[x.index, "moderate"] == 1]) > 0
-                    else 0,
+                    lambda x: (
+                        np.nanmean(
+                            x[classified_processed_data.loc[x.index, "moderate"] == 1]
+                        )
+                        if len(
+                            x[classified_processed_data.loc[x.index, "moderate"] == 1]
+                        )
+                        > 0
+                        else 0
+                    ),
                 ),
                 moderate_time_min=("moderate_time_min", "sum"),
                 vigorous_mean_enmo=(
                     "enmo",
-                    lambda x: np.nanmean(
-                        x[classified_processed_data.loc[x.index, "vigorous"] == 1]
-                    )
-                    if len(x[classified_processed_data.loc[x.index, "vigorous"] == 1]) > 0
-                    else 0,
+                    lambda x: (
+                        np.nanmean(
+                            x[classified_processed_data.loc[x.index, "vigorous"] == 1]
+                        )
+                        if len(
+                            x[classified_processed_data.loc[x.index, "vigorous"] == 1]
+                        )
+                        > 0
+                        else 0
+                    ),
                 ),
                 vigorous_time_min=("vigorous_time_min", "sum"),
             )
