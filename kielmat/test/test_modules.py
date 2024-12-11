@@ -612,7 +612,7 @@ def test_PhysicalActivityMonitoring():
     acceleration_unit = "m/s^2"
     sampling_frequency = 100  # Sampling frequency
     time_index = pd.date_range(
-        start="2024-02-07", periods=num_samples, freq=f"{1/sampling_frequency}S"
+        start="2024-02-07", periods=num_samples, freq=f"{1/sampling_frequency}s"
     )
     acceleration_data["timestamp"] = time_index
     acceleration_data.set_index("timestamp", inplace=True)
@@ -868,7 +868,7 @@ def test_pham_postural_transition_algorithm():
         )
 
     # Test 2: dt_data is a NumPy array instead of a pandas Series
-    dt_data = np.array(pd.date_range(start="1/1/2022", periods=1000, freq="S"))
+    dt_data = np.array(pd.date_range(start="1/1/2022", periods=1000, freq="s"))
 
     # Should raise ValueError because dt_data is not a pandas Series
     with pytest.raises(
@@ -897,7 +897,7 @@ def test_pham_postural_transition_algorithm():
         )
 
     # Test 4: dt_data is a pandas Series but converted to a NumPy array
-    dt_data = pd.Series(pd.date_range(start="1/1/2022", periods=1000, freq="S"))
+    dt_data = pd.Series(pd.date_range(start="1/1/2022", periods=1000, freq="s"))
     dt_data = dt_data.to_numpy()
 
     # Should raise ValueError because dt_data is not a pandas Series

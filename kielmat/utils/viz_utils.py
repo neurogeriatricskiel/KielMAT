@@ -45,13 +45,12 @@ def plot_gait(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
 
 
 # Function to plot results of the physical activity monitoring algorithm
-def plot_pam(hourly_average_data, thresholds_mg):
+def plot_pam(hourly_average_data):
     """
-    Plots the hourly averaged ENMO for each day along with activity level thresholds.
+    Plots the hourly averaged ENMO for each day along with the mean of all days.
 
     Args:
         hourly_average_data (pd.DataFrame): DataFrame containing hourly averaged ENMO values.
-        thresholds_mg (dict): Dictionary containing threshold values for physical activity detection.
     """
     # Plotting
     fig, ax = plt.subplots(figsize=(14, 8))
@@ -59,43 +58,38 @@ def plot_pam(hourly_average_data, thresholds_mg):
     # Choose the 'turbo' colormap for coloring each day
     colormap = plt.cm.turbo
 
-    # Plot thresholds
-    ax.axhline(
-        y=thresholds_mg.get("sedentary_threshold", 45),
-        color="y",
-        linestyle="--",
-        label="Sedentary threshold",
-    )
-    ax.axhline(
-        y=thresholds_mg.get("light_threshold", 100),
-        color="g",
-        linestyle="--",
-        label="Light physical activity threshold",
-    )
-    ax.axhline(
-        y=thresholds_mg.get("moderate_threshold", 400),
-        color="r",
-        linestyle="--",
-        label="Moderate physical activity threshold",
-    )
+    # Normalize the index for the colormap
+    num_days = len(hourly_average_data.index)
+    norm = plt.Normalize(vmin=0, vmax=num_days - 1)
 
-    # Plot each day data with a different color
+    # Plot each day's data with a unique color
     for i, date in enumerate(hourly_average_data.index):
-        color = colormap(i)
+        color = colormap(norm(i))  # Normalize the index
         ax.plot(hourly_average_data.loc[date], label=str(date), color=color)
+
+    # Calculate and plot the mean across all days
+    mean_enmo = hourly_average_data.mean(axis=0)
+    ax.plot(
+        mean_enmo,
+        label="Mean across all days",
+        color="black",
+        linestyle="--",
+        linewidth=2,
+    )
 
     # Customize plot
     ax.set_xticks(hourly_average_data.columns)
     ax.set_xticklabels(hourly_average_data.columns)
     plt.xlabel("Time (h)", fontsize=14)
     plt.ylabel("ENMO (mg)", fontsize=14)
-    plt.title("Hourly averaged ENMO for each day along with activity level thresholds")
+    plt.title("Hourly averaged ENMO for each day")
     plt.legend(loc="upper left", fontsize=14)
     plt.grid(visible=None, which="both", axis="both")
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
     plt.tight_layout()
     plt.show()
+
 
 
 # Function to plot results of the postural transition detection algorithm

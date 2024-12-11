@@ -211,7 +211,7 @@ class PhamTurnDetection:
 
         # Integrate x component of the gyro signal to get yaw angle (also convert gyro unit to deg/s)
         self.yaw = (
-            scipy.integrate.cumtrapz(
+            scipy.integrate.cumulative_trapezoid(
                 np.rad2deg(gyro_unbiased[:, gyro_vertical_index]), initial=0
             )
             / sampling_freq_Hz
