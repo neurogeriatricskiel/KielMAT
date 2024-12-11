@@ -143,6 +143,7 @@ class SleepAnalysis:
 
         # Compute orientation angle dynamically
         theta = np.degrees(np.arctan2(acc_horizontal_2, acc_horizontal_1))
+        self.theta = theta
 
         sliding_window_samples = int(self.sliding_window_sec * sampling_frequency)
         step_size = int(sliding_window_samples * (1 - self.overlap_ratio))
@@ -215,6 +216,7 @@ class SleepAnalysis:
                 smoothed_vertical_accel,
                 nocturnal_rest,
                 posture,
+                theta,
                 sampling_frequency,
                 dt_data,
             )
