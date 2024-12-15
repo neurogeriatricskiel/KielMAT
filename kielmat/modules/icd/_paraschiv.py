@@ -7,6 +7,7 @@ import scipy.io
 import scipy.signal
 from kielmat.utils import preprocessing
 from kielmat.config import cfg_colors
+from scipy.integrate import cumulative_trapezoid
 
 
 class ParaschivIonescuInitialContactDetection:
@@ -138,6 +139,8 @@ class ParaschivIonescuInitialContactDetection:
 
         # Extract vertical accelerometer data using the specified index
         acc_vertical = accel_data[v_acc_col_name]
+        self.acc_vertical = acc_vertical
+        self.sampling_freq_Hz = sampling_freq_Hz
 
         # Initialize lists to store detected initial and final contacts
         initial_contacts_list = []
@@ -203,10 +206,6 @@ class ParaschivIonescuInitialContactDetection:
             "duration": 0,
             "tracking_systems": tracking_system,
         })
-
-        print("Detected Initial Contacts (IC):", initial_contacts_list)
-        print("Detected Final Contacts (FC):", final_contacts_list)
-
 
         # If original datetime is available, update the 'onset' column
         if dt_data is not None:
@@ -444,50 +443,89 @@ class ParaschivIonescuInitialContactDetection:
         return self.temporophasic_parameters_
 
     # Function to calculate spatial parameters
-    def spatial_parameters(self, total_distance_m: Optional[float] = None):
+    def spatial_parameters(
+        self,
+        wearable_height: float = 1.0,  # Default height in meters
+    ):
         """
-        Calculates spatial parameters, including distinct step length and stride length for each step and stride.
+        Calculates spatial parameters of the detected gaits.
 
         Args:
-            total_distance_m (float, optional): Total walking distance covered during the gait sequence in meter.
+            wearable_height (float): Height of the wearable device from the ground, in meters. Default is 1.0.
 
         Returns:
-            A DataFrame with spatial parameters, including:
-                - step_lengths_l: Step lengths for the left foot (meters).
-                - step_lengths_r: Step lengths for the right foot (meters).
-                - stride_lengths_l: Stride lengths for the left foot (meters).
-                - stride_lengths_r: Stride lengths for the right foot (meters).
+            pd.DataFrame: A DataFrame with spatial parameters, including:
+                - step_length_l: Lengths of steps for the left foot.
+                - step_length_r: Lengths of steps for the right foot.
+                - stride_length_l: Stride lengths for the left foot.
+                - stride_length_r: Stride lengths for the right foot.
         """
-        if self.temporal_parameters_ is None:
-            raise ValueError("Temporal parameters must be calculated first.")
-
-        if total_distance_m is None:
-            raise ValueError("Total walking distance must be provided to calculate step and stride length.")
+        if self.initial_contacts_ is None or self.final_contacts_ is None:
+            raise ValueError("Initial and final contacts must be detected first.")
 
         spatial_params_list = []
 
-        for _, row in self.temporal_parameters_.iterrows():
-            # Calculate total time for the gait sequence
-            total_time = sum(row["stride_time_l"]) + sum(row["stride_time_r"])
+        for seq_idx, gait_seq in self.gait_sequences.iterrows():
+            start_time = gait_seq["onset"]
+            stop_time = gait_seq["onset"] + gait_seq["duration"]
 
-            # Calculate walking speed (v)
-            walking_speed = total_distance_m / total_time
+            # Filter initial and final contacts for this gait sequence
+            gait_ic = self.initial_contacts_[
+                (self.initial_contacts_["onset"] >= start_time) &
+                (self.initial_contacts_["onset"] <= stop_time)
+            ]["onset"].to_numpy()
 
-            # Step lengths for left and right foot
-            step_lengths_l = [walking_speed * step_time for step_time in row["step_time_l"]]
-            step_lengths_r = [walking_speed * step_time for step_time in row["step_time_r"]]
+            gait_fc = self.final_contacts_[
+                (self.final_contacts_["onset"] >= start_time) &
+                (self.final_contacts_["onset"] <= stop_time)
+            ]["onset"].to_numpy()
 
-            # Stride lengths for left and right foot
-            stride_lengths_l = [walking_speed * stride_time for stride_time in row["stride_time_l"]]
-            stride_lengths_r = [walking_speed * stride_time for stride_time in row["stride_time_r"]]
+            if len(gait_ic) < 2 or len(gait_fc) < 1:
+                continue
 
-            # Append results for this gait sequence
+            # Assign initial and final contact events to left and right feet
+            ic_l, ic_r, fc_l, fc_r = self._assign_events_to_feet(gait_ic, gait_fc)
+
+            # Calculate step lengths using vertical acceleration
+            step_length_l = []
+            step_length_r = []
+
+            for i in range(len(fc_l)):
+                # Left step length
+                if i < len(ic_l) and i < len(fc_l):
+                    acc_segment_l = self.acc_vertical[
+                        int(self.sampling_freq_Hz * ic_l[i]):int(self.sampling_freq_Hz * fc_l[i])
+                    ]
+                    vertical_displacement_l = max(cumulative_trapezoid(acc_segment_l, dx=1/self.sampling_freq_Hz, initial=0)) - \
+                                            min(cumulative_trapezoid(acc_segment_l, dx=1/self.sampling_freq_Hz, initial=0))
+                    step_length_l.append(2 * np.sqrt(2 * wearable_height * vertical_displacement_l - vertical_displacement_l**2))
+
+                # Right step length
+                if i < len(ic_r) and i < len(fc_r):
+                    acc_segment_r = self.acc_vertical[
+                        int(self.sampling_freq_Hz * ic_r[i]):int(self.sampling_freq_Hz * fc_r[i])
+                    ]
+                    vertical_displacement_r = max(cumulative_trapezoid(acc_segment_r, dx=1/self.sampling_freq_Hz, initial=0)) - \
+                                            min(cumulative_trapezoid(acc_segment_r, dx=1/self.sampling_freq_Hz, initial=0))
+                    step_length_r.append(2 * np.sqrt(2 * wearable_height * vertical_displacement_r - vertical_displacement_r**2))
+
+            # Calculate stride lengths
+            stride_length_l = [
+                step_length_l[i] + step_length_r[i]
+                for i in range(len(step_length_l) - 1)
+            ]
+            stride_length_r = [
+                step_length_r[i] + step_length_l[i + 1]
+                for i in range(len(step_length_r) - 1)
+            ]
+
+            # Append results
             spatial_params_list.append({
-                "gait_sequence_id": row["gait_sequence_id"],
-                "step_lengths_l": np.round(step_lengths_l, 3).tolist(),
-                "step_lengths_r": np.round(step_lengths_r, 3).tolist(),
-                "stride_lengths_l": np.round(stride_lengths_l, 3).tolist(),
-                "stride_lengths_r": np.round(stride_lengths_r, 3).tolist(),
+                "gait_sequence_id": seq_idx,
+                "step_length_l": np.round(step_length_l, 3).tolist(),
+                "step_length_r": np.round(step_length_r, 3).tolist(),
+                "stride_length_l": np.round(stride_length_l, 3).tolist(),
+                "stride_length_r": np.round(stride_length_r, 3).tolist(),
             })
 
         # Store results in a DataFrame
@@ -496,16 +534,14 @@ class ParaschivIonescuInitialContactDetection:
         return self.spatial_parameters_
 
     # Function to calculate spatio-temporal parameters
-    def spatio_temporal_parameters(self, total_distance_m: Optional[float] = None):
+    def spatio_temporal_parameters(self):
         """
-        Calculates spatio-temporal parameters, including gait speed and stride speed.
-
-        Args:
-            total_distance_m (float, optional): Total walking distance covered during the gait sequence in meters.
+        Calculates spatio-temporal parameters, including gait speed and stride speed, 
+        using stride lengths and stride times.
 
         Returns:
             A DataFrame with spatio-temporal parameters, including:
-                - gait_speed: Gait speed (m/s).
+                - gait_speed: Average gait speed (m/s).
                 - stride_speed_l: Stride speed for the left foot (m/s).
                 - stride_speed_r: Stride speed for the right foot (m/s).
         """
@@ -515,25 +551,26 @@ class ParaschivIonescuInitialContactDetection:
         if self.temporal_parameters_ is None:
             raise ValueError("Temporal parameters must be calculated first using `temporal_parameters` method.")
 
-        if total_distance_m is None:
-            raise ValueError("Total walking distance must be provided to calculate spatio-temporal parameters.")
-
         spatio_temporal_params_list = []
 
         for spatial_row, temporal_row in zip(self.spatial_parameters_.itertuples(), self.temporal_parameters_.itertuples()):
-            # Calculate gait speed
-            total_ambulation_time = sum(temporal_row.stride_time_l) + sum(temporal_row.stride_time_r)
-            gait_speed = total_distance_m / total_ambulation_time  # m/s
-
             # Calculate stride speeds
             stride_speed_l = [
                 stride_length / stride_time if stride_time > 0 else np.nan
-                for stride_length, stride_time in zip(spatial_row.stride_lengths_l, temporal_row.stride_time_l)
+                for stride_length, stride_time in zip(spatial_row.stride_length_l, temporal_row.stride_time_l)
             ]
             stride_speed_r = [
                 stride_length / stride_time if stride_time > 0 else np.nan
-                for stride_length, stride_time in zip(spatial_row.stride_lengths_r, temporal_row.stride_time_r)
+                for stride_length, stride_time in zip(spatial_row.stride_length_r, temporal_row.stride_time_r)
             ]
+
+            # Calculate gait speed as the average of stride speeds
+            all_stride_lengths = spatial_row.stride_length_l + spatial_row.stride_length_r
+            all_stride_times = temporal_row.stride_time_l + temporal_row.stride_time_r
+            if len(all_stride_lengths) > 0 and len(all_stride_times) > 0:
+                gait_speed = np.sum(all_stride_lengths) / np.sum(all_stride_times)
+            else:
+                gait_speed = np.nan
 
             # Append the results
             spatio_temporal_params_list.append({
