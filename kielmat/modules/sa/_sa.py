@@ -58,7 +58,9 @@ class SleepAnalysis:
         smoothing_window_sec: float = 10.0,
         sliding_window_sec: float = 1.0,
         overlap_ratio: float = 0.5,
-        min_lying_duration_sec: int = 300,
+        min_lying_duration_sec: int = 300, 
+        min_rest_start_duration_sec: int = 3600,
+        min_rest_interruption_duration_sec: int = 900,
     ):
         """
         Initializes the SleepAnalysis instance with configurable constants.
@@ -70,6 +72,8 @@ class SleepAnalysis:
             sliding_window_sec (float): Sliding window size for posture calculation in seconds. Default is 1.0.
             overlap_ratio (float): Overlap ratio for sliding window. Default is 0.5.
             min_lying_duration_sec (int): Minimum lying duration in seconds. Default is 300 (5 minutes).
+            min_rest_start_duration_sec (int): Minimum lying duration to mark start of rest in seconds. Default is 3600 (60 min).
+            min_rest_interruption_duration_sec (int): Minimum upright duration to mark rest interruption in seconds. Default is 900 (15 min).
         """
         self.lying_threshold = lying_threshold
         self.turn_angle_threshold = turn_angle_threshold
@@ -77,6 +81,8 @@ class SleepAnalysis:
         self.sliding_window_sec = sliding_window_sec
         self.overlap_ratio = overlap_ratio
         self.min_lying_duration_sec = min_lying_duration_sec
+        self.min_rest_start_duration_sec = min_rest_start_duration_sec
+        self.min_rest_interruption_duration_sec = min_rest_interruption_duration_sec
 
         # Attributes to store results
         self.nocturnal_rest_ = None
@@ -108,17 +114,15 @@ class SleepAnalysis:
 
         Example:
             >>> sleep_analyzer = SleepAnalysis()
-            >>> sleep_analyzer.detect(accel_data, v_accel_col_name="vertical_acceleration", sampling_frequency=100, plot_results=True)
+            >>> sleep_analyzer.detect(accel_data, v_accel_col_name="SA_ACCEL_y", sampling_frequency=100, plot_results=True)
         """
-        # Extract vertical acceleration and covert it to g
+        # Smooth the vertical acceleration signal
         vertical_accel = accel_data[v_accel_col_name].values / 9.81
-
-        # Smooth the vertical acceleration
         smoothing_window_samples = int(self.smoothing_window_sec * sampling_frequency)
         kernel = np.ones(smoothing_window_samples) / smoothing_window_samples
         smoothed_vertical_accel = np.convolve(vertical_accel, kernel, mode="same")
 
-        # Detect nocturnal rest as periods where lying lasts longer than minimum lying duration
+        # Detect lying periods
         lying_flags = (smoothed_vertical_accel < self.lying_threshold).astype(int)
         min_samples = int(self.min_lying_duration_sec * sampling_frequency)
         nocturnal_rest = np.copy(lying_flags)
@@ -131,83 +135,71 @@ class SleepAnalysis:
                     nocturnal_rest[start_idx:i] = 0
                 start_idx = None
 
-        # Dynamically calculate the orientation angle using the other two axes
+        # Identify nocturnal rest start (>min_rest_start_duration_sec lying bout)
+        lying_bouts = np.where(np.diff(nocturnal_rest) != 0)[0] + 1
+        start_rest = next(
+            (idx for idx in lying_bouts
+            if np.sum(nocturnal_rest[idx:idx + self.min_rest_start_duration_sec * sampling_frequency])
+            >= self.min_rest_start_duration_sec * sampling_frequency),
+            None,
+        )
+        if start_rest is not None:
+            nocturnal_rest[:start_rest] = 0  # Ignore anything before the first long lying bout
+
+        # Detect the end of nocturnal rest (first upright >min_rest_interruption_duration_sec)
+        last_rest_idx = lying_bouts[-1] if len(lying_bouts) >= 2 else len(nocturnal_rest)
+        upright_flags = 1 - nocturnal_rest
+        end_rest = next(
+            (idx for idx in range(last_rest_idx, len(upright_flags))
+            if np.sum(upright_flags[idx:idx + self.min_rest_interruption_duration_sec * sampling_frequency])
+            >= self.min_rest_interruption_duration_sec * sampling_frequency),
+            None
+        )
+        if end_rest is not None:
+            nocturnal_rest[end_rest:] = 0
+
+        # Compute orientation angle for posture classification
         horizontal_axes = [col for col in accel_data.columns if col != v_accel_col_name]
+        acc_h1 = np.convolve(accel_data[horizontal_axes[0]].values / 9.81, kernel, mode="same")
+        acc_h2 = np.convolve(accel_data[horizontal_axes[1]].values / 9.81, kernel, mode="same")
+        theta = np.degrees(np.arctan2(acc_h2, acc_h1))
 
-        if len(horizontal_axes) != 2:
-            raise ValueError("The accelerometer data must have exactly two horizontal axes excluding the vertical axis.")
-
-        # Smooth horizontal acceleration components and convert unit to g
-        acc_horizontal_1 = np.convolve(accel_data[horizontal_axes[0]].values / 9.81, kernel, mode="same")
-        acc_horizontal_2 = np.convolve(accel_data[horizontal_axes[1]].values / 9.81, kernel, mode="same")
-
-        # Compute orientation angle dynamically
-        theta = np.degrees(np.arctan2(acc_horizontal_2, acc_horizontal_1))
-        self.theta = theta
-
+        # Posture classification
         sliding_window_samples = int(self.sliding_window_sec * sampling_frequency)
         step_size = int(sliding_window_samples * (1 - self.overlap_ratio))
-        
-        # Determine lying posture based on filtered angle values
-        posture = np.zeros(len(accel_data), dtype=int)  # Default posture: Upright (0)
+        posture = np.zeros(len(theta), dtype=int)
         for i in range(0, len(theta) - sliding_window_samples + 1, step_size):
-            if np.any(nocturnal_rest[i:i + sliding_window_samples]):
+            if nocturnal_rest[i:i + sliding_window_samples].any():
                 angle = np.mean(theta[i:i + sliding_window_samples])
                 if -45 <= angle <= 45:
                     posture[i:i + sliding_window_samples] = 1  # Back
                 elif 45 < angle <= 135:
-                    posture[i:i + sliding_window_samples] = 2  # Right side
+                    posture[i:i + sliding_window_samples] = 2  # Right
                 elif -135 <= angle < -45:
-                    posture[i:i + sliding_window_samples] = 3  # Left side
-                elif abs(angle) >= 135:
+                    posture[i:i + sliding_window_samples] = 3  # Left
+                else:
                     posture[i:i + sliding_window_samples] = 4  # Belly
 
-        # Detect turning during nocturnal rest
-        turn_indices = np.where(np.diff(posture) != 0)[0]  # Indices where posture changes
-
-        # Extract turn parameters
-        turn_start = turn_indices[:-1]
-        turn_end = turn_indices[1:]
-        turn_duration = (turn_end - turn_start) / sampling_frequency
-        turn_angle = theta[turn_end] - theta[turn_start]
-        valid_turns = np.abs(turn_angle) >= self.turn_angle_threshold
-
-        # Map posture indices to descriptive names
-        posture_map = {
-            0: "Upright",
-            1: "Back",
-            2: "Right",
-            3: "Left",
-            4: "Belly",
-        }
-
-        # Detect and record posture events
+        # Record posture events (BIDS format)
         posture_events = []
         current_posture = posture[0]
         start_idx = 0
-        
         for i in range(1, len(posture)):
             if posture[i] != current_posture or i == len(posture) - 1:
                 end_idx = i
-                if dt_data is not None:
-                    onset_time = dt_data.iloc[start_idx]
-                    duration_time = (dt_data.iloc[end_idx - 1] - dt_data.iloc[start_idx]).total_seconds()
-                else:
-                    onset_time = start_idx / sampling_frequency
-                    duration_time = (end_idx - start_idx) / sampling_frequency
-                    
+                onset_time = dt_data.iloc[start_idx] if dt_data is not None else start_idx / sampling_frequency
+                duration_time = (end_idx - start_idx) / sampling_frequency
                 posture_events.append({
                     "onset": onset_time,
                     "duration": duration_time,
-                    "event_type": posture_map.get(current_posture, "Unknown"),
+                    "event_type": {0: "Upright", 1: "Back", 2: "Right", 3: "Left", 4: "Belly"}.get(current_posture, "Unknown"),
                     "tracking_system": tracking_system,
                     "tracked_point": tracked_point,
                 })
-                
                 current_posture = posture[i]
                 start_idx = i
 
-        # Create a DataFrame for detected posture events
+        # Save detected events as a DataFrame
         self.posture_ = pd.DataFrame(posture_events)
 
         # Optional: Generate plots
