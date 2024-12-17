@@ -1,10 +1,12 @@
 # Tutorial: Load data into an `KielMATRecording` object
 
 **Author:** Julius Welzel
+
 **Last update:** Fri 22 Mar 2024
 
 ## Learning objectives
 By the end of this tutorial:
+
 - you can load data and channel information into an `KielMATRecording` object
 - you can add Recording specific information to the `KielMATRecording` object
 - you are educated about the relationship between a `KielMATRecording` object and the [BIDS standard](https://bids-specification.readthedocs.io/en/stable/).
@@ -141,7 +143,7 @@ print(recording.events)
 
 
     
-![png](basic_00_load_Data_into_KielMAT_files/basic_00_load_Data_into_KielMAT_1.png)
+![png](basic_01_load_Data_into_KielMAT_files/basic_01_load_Data_into_KielMAT_1.png)
     
 
 
