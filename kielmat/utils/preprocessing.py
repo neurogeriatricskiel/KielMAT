@@ -75,7 +75,7 @@ def resample_interpolate(
     return resampled_signal
 
 
-def lowpass_filter(signal, method="savgol", order=None, **kwargs:dict):
+def lowpass_filter(signal, method="savgol", order=None, **kwargs: dict):
     """
     Apply a low-pass filter to the input signal.
 

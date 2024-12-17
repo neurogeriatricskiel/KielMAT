@@ -103,7 +103,7 @@ def fetch_dataset(
             dataset="ds005258",  # this is the example Keep Control dataset on OpenNeuro, maintained by Julius Welzel
             target_dir=dataset_path,
         )
-    
+
     return
 
 

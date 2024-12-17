@@ -119,7 +119,7 @@ class PhamPosturalTransitionDetection:
 
         Returns:
             The postural transition information is stored in the 'postural_transitions_' attribute, which is a pandas DataFrame in BIDS format with the following columns:
-            
+
                 - onset: Start time of the postural transition in second.
                 - duration: Duration of the postural transition in second.
                 - event_type: Type of the event which is postural transition.

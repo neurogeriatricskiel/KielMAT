@@ -7,7 +7,9 @@ import pandas as pd
 from pathlib import Path
 
 
-def import_axivity(file_path: str, tracked_point: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+def import_axivity(
+    file_path: str, tracked_point: str
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Imports and processes data from an Axivity device file.
 
@@ -18,7 +20,7 @@ def import_axivity(file_path: str, tracked_point: str) -> tuple[pd.DataFrame, pd
     Returns:
         tuple[pd.DataFrame, pd.DataFrame]: A tuple containing:
             - data (pd.DataFrame): Processed accelerometer data with time information.
-            - channels (pd.DataFrame): Channel information DataFrame with metadata such as 
+            - channels (pd.DataFrame): Channel information DataFrame with metadata such as
               component, type, units, and sampling frequency.
 
     Raises:
@@ -51,7 +53,7 @@ def import_axivity(file_path: str, tracked_point: str) -> tuple[pd.DataFrame, pd
     col_names = [f"{tracked_point}_{s}_{x}" for s in ["ACCEL"] for x in ["x", "y", "z"]]
 
     # Create the channel dictionary following the BIDS naming conventions
-    channels_dict  = {
+    channels_dict = {
         "name": col_names,
         "component": ["x", "y", "z"] * (n_channels // 3),
         "type": ["ACCEL"] * (n_channels),
@@ -80,9 +82,9 @@ def import_mobilityLab(
 
     Returns:
         tuple[pd.DataFrame, pd.DataFrame]: A tuple containing:
-            - data (pd.DataFrame): DataFrame with combined accelerometer, gyroscope, 
+            - data (pd.DataFrame): DataFrame with combined accelerometer, gyroscope,
               and magnetometer data for each tracked point.
-            - channels (pd.DataFrame): DataFrame containing metadata, including sensor name, 
+            - channels (pd.DataFrame): DataFrame containing metadata, including sensor name,
               component, type, units, and sampling frequency.
 
     Raises:

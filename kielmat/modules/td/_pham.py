@@ -121,7 +121,7 @@ class PhamTurnDetection:
 
         Returns:
             The turns information is stored in the 'turns_' attribute, which is a pandas DataFrame in BIDS format with the following information:
-            
+
                 - onset: Start time of the turn in second.
                 - duration: Duration of the turn in second.
                 - event_type: Type of the event (turn).
