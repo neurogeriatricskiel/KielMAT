@@ -116,100 +116,120 @@ class SleepAnalysis:
             >>> sleep_analyzer = SleepAnalysis()
             >>> sleep_analyzer.detect(accel_data, v_accel_col_name="SA_ACCEL_y", sampling_frequency=100, plot_results=True)
         """
-        # Smooth the vertical acceleration signal
+        # Smooth vertical acceleration signal
         vertical_accel = accel_data[v_accel_col_name].values / 9.81
-        smoothing_window_samples = int(self.smoothing_window_sec * sampling_frequency)
-        kernel = np.ones(smoothing_window_samples) / smoothing_window_samples
+        kernel = np.ones(int(self.smoothing_window_sec * sampling_frequency)) / (
+            self.smoothing_window_sec * sampling_frequency
+        )
         smoothed_vertical_accel = np.convolve(vertical_accel, kernel, mode="same")
 
-        # Detect lying periods
-        lying_flags = (smoothed_vertical_accel < self.lying_threshold).astype(int)
-        min_samples = int(self.min_lying_duration_sec * sampling_frequency)
-        nocturnal_rest = np.copy(lying_flags)
-        start_idx = None
-        for i in range(len(nocturnal_rest)):
-            if nocturnal_rest[i] == 1 and start_idx is None:
-                start_idx = i
-            elif nocturnal_rest[i] == 0 and start_idx is not None:
-                if (i - start_idx) < min_samples:
-                    nocturnal_rest[start_idx:i] = 0
-                start_idx = None
+        # Detect Lying and Upright Periods
+        window_samples = int(1 * sampling_frequency)
+        stride = int(window_samples * (1 - self.overlap_ratio))
+        vect_upright = np.zeros_like(smoothed_vertical_accel)
 
-        # Identify nocturnal rest start (>min_rest_start_duration_sec lying bout)
-        lying_bouts = np.where(np.diff(nocturnal_rest) != 0)[0] + 1
-        start_rest = next(
-            (idx for idx in lying_bouts
-            if np.sum(nocturnal_rest[idx:idx + self.min_rest_start_duration_sec * sampling_frequency])
-            >= self.min_rest_start_duration_sec * sampling_frequency),
-            None,
+        for i in range(0, len(smoothed_vertical_accel) - window_samples, stride):
+            mean_acc = np.mean(np.abs(smoothed_vertical_accel[i:i + window_samples]))
+            if mean_acc >= self.lying_threshold:
+                vect_upright[i:i + window_samples] = 1
+
+        vect_lying = 1 - vect_upright
+
+        # Group Lying Bout
+        lying_groups = []
+        start = None
+        for i, val in enumerate(vect_lying):
+            if val == 1 and start is None:
+                start = i
+            elif val == 0 and start is not None:
+                lying_groups.append((start, i - 1))
+                start = None
+        if start is not None:
+            lying_groups.append((start, len(vect_lying) - 1))
+
+        # Identify Nocturnal Rest Period
+        min_rest_start_samples = int(self.min_rest_start_duration_sec * sampling_frequency)
+        min_interrupt_samples = int(self.min_rest_interruption_duration_sec * sampling_frequency)
+
+        idx_beginning_of_night_rest = next(
+            (start for start, end in lying_groups if (end - start) >= min_rest_start_samples), None
         )
-        if start_rest is not None:
-            nocturnal_rest[:start_rest] = 0  # Ignore anything before the first long lying bout
-
-        # Detect the end of nocturnal rest (first upright >min_rest_interruption_duration_sec)
-        last_rest_idx = lying_bouts[-1] if len(lying_bouts) >= 2 else len(nocturnal_rest)
-        upright_flags = 1 - nocturnal_rest
-        end_rest = next(
-            (idx for idx in range(last_rest_idx, len(upright_flags))
-            if np.sum(upright_flags[idx:idx + self.min_rest_interruption_duration_sec * sampling_frequency])
-            >= self.min_rest_interruption_duration_sec * sampling_frequency),
-            None
+        idx_end_of_night_rest = next(
+            (end for start, end in reversed(lying_groups) if (end - start) >= min_interrupt_samples), None
         )
-        if end_rest is not None:
-            nocturnal_rest[end_rest:] = 0
 
-        # Compute orientation angle for posture classification
+        vect_night_rest = np.zeros_like(vect_lying)
+        if idx_beginning_of_night_rest is not None and idx_end_of_night_rest is not None:
+            vect_night_rest[idx_beginning_of_night_rest:idx_end_of_night_rest] = 1
+
+        # Classify Body Positions During Nocturnal Rest
         horizontal_axes = [col for col in accel_data.columns if col != v_accel_col_name]
         acc_h1 = np.convolve(accel_data[horizontal_axes[0]].values / 9.81, kernel, mode="same")
         acc_h2 = np.convolve(accel_data[horizontal_axes[1]].values / 9.81, kernel, mode="same")
         theta = np.degrees(np.arctan2(acc_h2, acc_h1))
 
-        # Posture classification
-        sliding_window_samples = int(self.sliding_window_sec * sampling_frequency)
-        step_size = int(sliding_window_samples * (1 - self.overlap_ratio))
-        posture = np.zeros(len(theta), dtype=int)
-        for i in range(0, len(theta) - sliding_window_samples + 1, step_size):
-            if nocturnal_rest[i:i + sliding_window_samples].any():
-                angle = np.mean(theta[i:i + sliding_window_samples])
-                if -45 <= angle <= 45:
-                    posture[i:i + sliding_window_samples] = 1  # Back
-                elif 45 < angle <= 135:
-                    posture[i:i + sliding_window_samples] = 2  # Right
-                elif -135 <= angle < -45:
-                    posture[i:i + sliding_window_samples] = 3  # Left
-                else:
-                    posture[i:i + sliding_window_samples] = 4  # Belly
+        posture = np.full(len(vect_night_rest), 0)  # Default to Non-Nocturnal (0)
 
-        # Record posture events (BIDS format)
+        for start, end in lying_groups:
+            if vect_night_rest[start:end].any():  # Regions inside nocturnal rest
+                angles = theta[start:end]
+                if np.abs(angles).mean() <= 45:
+                    posture[start:end] = 1  # Back
+                elif np.abs(angles).mean() >= 135:
+                    posture[start:end] = 2  # Belly
+                elif np.mean(angles) > 45 and np.mean(angles) < 135:
+                    posture[start:end] = 3  # Right
+                elif np.mean(angles) < -45 and np.mean(angles) > -135:
+                    posture[start:end] = 4  # Left
+                else:
+                    posture[start:end] = 5  # Upright
+
+        # Explicitly mark upright periods during nocturnal rest
+        vect_night_upright = vect_night_rest * vect_upright
+        posture[vect_night_upright == 1] = 5  # Upright
+
+        # Ensure no remaining unknowns in nocturnal rest
+        posture[(vect_night_rest == 1) & (posture == 0)] = 5  # Remaining regions default to Upright
+
+        # Create Posture Event Table
         posture_events = []
         current_posture = posture[0]
         start_idx = 0
+
         for i in range(1, len(posture)):
             if posture[i] != current_posture or i == len(posture) - 1:
                 end_idx = i
                 onset_time = dt_data.iloc[start_idx] if dt_data is not None else start_idx / sampling_frequency
-                duration_time = (end_idx - start_idx) / sampling_frequency
+                duration = (end_idx - start_idx) / sampling_frequency
                 posture_events.append({
                     "onset": onset_time,
-                    "duration": duration_time,
-                    "event_type": {0: "Upright", 1: "Back", 2: "Right", 3: "Left", 4: "Belly"}.get(current_posture, "Unknown"),
+                    "duration": duration,
+                    "event_type": {
+                        0: "Non-Nocturnal",
+                        1: "Back",
+                        2: "Belly",
+                        3: "Right",
+                        4: "Left",
+                        5: "Upright"
+                    }.get(current_posture, "Non-Nocturnal"),
                     "tracking_system": tracking_system,
-                    "tracked_point": tracked_point,
+                    "tracked_point": tracked_point
                 })
                 current_posture = posture[i]
                 start_idx = i
 
-        # Save detected events as a DataFrame
+        # Save results to DataFrame
         self.posture_ = pd.DataFrame(posture_events)
 
-        # Optional: Generate plots
+        # Optional Visualization
         if plot_results:
             viz_utils.plot_sleep_analysis(
                 smoothed_vertical_accel,
-                nocturnal_rest,
-                posture,
+                vect_night_rest,
+                self.posture_,
                 theta,
                 sampling_frequency,
                 dt_data,
             )
+
         return self

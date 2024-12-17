@@ -244,29 +244,28 @@ def plot_turns(accel, gyro, detected_turns, sampling_freq_Hz):
     plt.show()
 
 
-
 # Function to plot results of the sleep analysis algorithm
 def plot_sleep_analysis(
     vertical_accel: np.ndarray,
     nocturnal_rest: np.ndarray,
-    posture: np.ndarray,
+    posture: pd.DataFrame,
     theta: np.ndarray,
     sampling_frequency: int,
     dt_data: Optional[pd.Series] = None,
 ):
     """
     Plots sleep analysis results, including vertical acceleration, orientation angles (theta),
-    nocturnal rest, and posture classifications.
+    nocturnal rest, and classifications.
 
     Args:
-        vertical_accel (np.ndarray): Vertical acceleration values.
+        vertical_accel (np.ndarray): Smoothed vertical acceleration values.
         nocturnal_rest (np.ndarray): Binary array indicating nocturnal rest periods.
-        posture (np.ndarray): Full posture array for visualization.
+        posture (pd.DataFrame): Posture event table with onset, duration, and event_type.
         theta (np.ndarray): Orientation angle values.
         sampling_frequency (int): Sampling frequency in Hz.
         dt_data (pd.Series, optional): Time axis corresponding to samples.
     """
-    # Determine the time axis
+    # Time axis
     if dt_data is not None:
         time = dt_data
     else:
@@ -278,61 +277,73 @@ def plot_sleep_analysis(
             )
         )
 
-    # Color map for different postures with names
+    # Map posture events to full signal length
+    posture_signal = np.zeros(len(time))  # Default to 0 (Non-Nocturnal)
+    for _, row in posture.iterrows():
+        # Handle Timestamp vs numeric onset
+        if isinstance(row['onset'], pd.Timestamp):
+            start_time = row['onset']
+            end_time = start_time + pd.to_timedelta(row['duration'], unit='s')
+            start_idx = int((start_time - time.iloc[0]).total_seconds() * sampling_frequency)
+            end_idx = int((end_time - time.iloc[0]).total_seconds() * sampling_frequency)
+        else:
+            start_idx = int(row['onset'] * sampling_frequency)
+            end_idx = start_idx + int(row['duration'] * sampling_frequency)
+
+        # Ensure valid indices
+        start_idx = max(0, start_idx)
+        end_idx = min(len(posture_signal), end_idx)
+
+        # Assign posture value
+        posture_value = {
+            "Non-Nocturnal": 0,
+            "Back": 1,
+            "Belly": 2,
+            "Right": 3,
+            "Left": 4,
+            "Upright": 5
+        }.get(row['event_type'], 0)
+        posture_signal[start_idx:end_idx] = posture_value
+
+    # Color map for different postures
     posture_colors = {
-        0: ('gray', 'Upright'),    # Upright
-        1: ('red', 'Back'),       # Back
-        2: ('green', 'Right side'), # Right side
-        3: ('blue', 'Left side'), # Left side
-        4: ('yellow', 'Belly')    # Belly
+        0: ('gray', 'Non-Nocturnal'),
+        1: ('red', 'Back'),
+        2: ('green', 'Belly'),
+        3: ('blue', 'Right'),
+        4: ('yellow', 'Left'),
+        5: ('orange', 'Upright')
     }
 
-    # Create the figure with two subplots
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 6), sharex=True)
+    # Create figure
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
 
-    # Subplot 1: Vertical acceleration and posture with colored regions
+    # Subplot 1: Vertical acceleration
     ax1.plot(time, vertical_accel, label="Vertical Acceleration", color="blue")
-    ax1.plot(
-        time,
-        nocturnal_rest * np.max(vertical_accel),
-        label="Detected Nocturnal Rest",
-        color="black",
-        linestyle="--",
-    )
-    
-    # For each unique posture region, plot with the corresponding color in ax1
+    ax1.plot(time, nocturnal_rest * np.max(vertical_accel), '--', label="Nocturnal Rest", color="black", alpha=0.8)
+
     for posture_val, (color, label) in posture_colors.items():
-        ax1.fill_between(time, 0, vertical_accel.max(), where=(posture == posture_val), 
-                        color=color, alpha=0.3, label=f"{label}")
-        ax1.fill_between(time, 0, vertical_accel.min(), where=(posture == posture_val), 
-                        color=color, alpha=0.3)
+        ax1.fill_between(time, vertical_accel.min(), vertical_accel.max(),
+                         where=(posture_signal == posture_val), color=color, alpha=0.3, label=label)
 
     ax1.set_ylabel("Vertical Acceleration (g)", fontsize=14)
-    ax1.legend(loc="upper left", fontsize=12)
-    ax1.set_title("Sleep Analysis", fontsize=16)
+    ax1.legend(loc="upper left", fontsize=10)
+    ax1.set_title("Sleep Analysis: Vertical Acceleration and Posture", fontsize=16)
 
-    # Subplot 2: Theta (orientation angle) and postures
+    # Subplot 2: Orientation angle (Theta)
     ax2.plot(time, theta, label="Theta (Orientation Angle)", color="blue")
-    ax2.plot(
-        time,
-        nocturnal_rest * np.max(theta),
-        label="Detected Nocturnal Rest",
-        color="black",
-        linestyle="--",
-    )
-    
-    # For each unique posture region, plot with the corresponding color in ax1
+    ax2.plot(time, nocturnal_rest * np.max(theta), '--', label="Nocturnal Rest", color="black", alpha=0.8)
+
     for posture_val, (color, label) in posture_colors.items():
-        ax2.fill_between(time, 0, theta.max(), where=(posture == posture_val), 
-                        color=color, alpha=0.3, label=f"{label}")
-        ax2.fill_between(time, 0, theta.min(), where=(posture == posture_val), 
-                        color=color, alpha=0.3)
+        ax2.fill_between(time, theta.min(), theta.max(),
+                         where=(posture_signal == posture_val), color=color, alpha=0.3, label=label)
 
-    ax2.set_ylabel("Orientaion Angle (deg)", fontsize=14)
-    ax2.legend(loc="upper left", fontsize=12)
+    ax2.set_ylabel("Orientation Angle (deg)", fontsize=14)
+    ax2.legend(loc="upper left", fontsize=10)
+    ax2.set_title("Orientation Angle (Theta) and Postures", fontsize=16)
 
-    # Formatting x-axis to show every 2 hours
-    ax2.xaxis.set_major_locator(mdates.HourLocator(interval=2)) 
+    # Formatting x-axis
+    ax2.xaxis.set_major_locator(mdates.HourLocator(interval=2))
     ax2.xaxis.set_major_formatter(mdates.DateFormatter("%b %d, %H:%M"))
 
     plt.tight_layout()
