@@ -75,7 +75,7 @@ def resample_interpolate(
     return resampled_signal
 
 
-def lowpass_filter(signal, method="savgol", order=None, **kwargs):
+def lowpass_filter(signal, method="savgol", order=None, padlen=None, **kwargs):
     """
     Apply a low-pass filter to the input signal.
 
@@ -83,6 +83,7 @@ def lowpass_filter(signal, method="savgol", order=None, **kwargs):
         signal (numpy.ndarray): The input signal to be filtered.
         method (str): The filter method to use ("savgol", "butter", or "fir").
         order (int): The order of the filter (applicable for "butter" method).
+        padlen (int, optional): The padding length for filtfilt (applicable for FIR method).
         param (**kwargs): Additional keyword arguments specific to the Savitzky-Golay filter method or other methods.
 
     Returns:
@@ -156,7 +157,7 @@ def lowpass_filter(signal, method="savgol", order=None, **kwargs):
 
         # Apply the FIR low-pass filter using filtfilt
         filtered_signal = scipy.signal.filtfilt(
-            numerator_coefficient, denominator_coefficient, signal
+            numerator_coefficient, denominator_coefficient, signal, padlen=padlen
         )
 
         return filtered_signal
@@ -892,7 +893,7 @@ def signal_decomposition_algorithm(
 
     # Filter data using the fir low-pass filter
     detrended_vertical_acceleration_signal = lowpass_filter(
-        drift_removed_acceleration, method="fir"
+        drift_removed_acceleration, method="fir", padlen=50
     )
 
     # Remove the padding from the detrended signal

@@ -144,7 +144,7 @@ class ParaschivIonescuGaitSequenceDetection:
 
         # Filter data using the fir low-pass filter
         filtered_acceleration = preprocessing.lowpass_filter(
-            drift_removed_acceleration, method="fir"
+            drift_removed_acceleration, method="fir", padlen=50
         )
 
         # Perform the continuous wavelet transform on the filtered acceleration data
