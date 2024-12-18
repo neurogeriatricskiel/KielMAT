@@ -588,26 +588,35 @@ class ParaschivIonescuInitialContactDetection:
     # Function to assign left and right feet
     def _assign_events_to_feet(self, gait_ic, gait_fc):
         """
-        Assigns initial and final contacts to left and right feet based on sequential pairing.
+        Distinguish left and right foot contacts.
 
         Args:
-            gait_ic (np.ndarray): Array of initial contacts.
-            gait_fc (np.ndarray): Array of final contacts.
+            gait_ic (np.ndarray): Array of initial contacts (ICs).
+            gait_fc (np.ndarray): Array of final contacts (FCs).
 
         Returns:
-            Tuple: Arrays of IC and FC for left and right feet.
+            Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: Arrays of IC and FC for left and right feet.
         """
         ic_l, ic_r, fc_l, fc_r = [], [], [], []
 
-        # Pair initial and final contacts
-        for ic in gait_ic:
-            closest_fc = next((fc for fc in gait_fc if fc > ic), None)
-            if closest_fc:
-                if len(ic_l) <= len(ic_r):
-                    ic_l.append(ic)
-                    fc_l.append(closest_fc)
-                else:
-                    ic_r.append(ic)
-                    fc_r.append(closest_fc)
+        # Strict alternation of foot assignment
+        last_foot = None
+        for current_onset in gait_ic:
+            if last_foot == "left":
+                ic_r.append(current_onset)
+                last_foot = "right"
+            else:
+                ic_l.append(current_onset)
+                last_foot = "left"
+
+        # Assign final contacts based on nearest preceding initial contact
+        for fc_onset in gait_fc:
+            preceding_ic_l = [ic for ic in ic_l if ic <= fc_onset]
+            preceding_ic_r = [ic for ic in ic_r if ic <= fc_onset]
+
+            if preceding_ic_l and (not preceding_ic_r or preceding_ic_l[-1] > preceding_ic_r[-1]):
+                fc_l.append(fc_onset)
+            elif preceding_ic_r:
+                fc_r.append(fc_onset)
 
         return np.array(ic_l), np.array(ic_r), np.array(fc_l), np.array(fc_r)
