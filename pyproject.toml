@@ -45,6 +45,7 @@ bids-validator = "^1.14.4"
 actipy = "^3.0.5"
 pooch = "^1.8.2"
 openneuro-py = "^2024.2.0"
+pre-commit = "^4.0.1"
 
 [tool.poetry.extras]
 docs = ["mkdocs", "mkdocs-material", "pymdownx.superfences"]

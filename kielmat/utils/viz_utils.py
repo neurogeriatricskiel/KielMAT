@@ -48,13 +48,12 @@ def plot_gait(target_sampling_freq_Hz, detected_activity_signal, gait_sequences_
 
 
 # Function to plot results of the physical activity monitoring algorithm
-def plot_pam(hourly_average_data, thresholds_mg):
+def plot_pam(hourly_average_data):
     """
-    Plots the hourly averaged ENMO for each day along with the mean of all days and activity level thresholds.
+    Plots the hourly averaged ENMO for each day along with the mean of all days.
 
     Args:
         hourly_average_data (pd.DataFrame): DataFrame containing hourly averaged ENMO values.
-        thresholds_mg (dict): Dictionary containing threshold values for physical activity detection.
     """
     # Create a colormap with as many colors as the number of days
     num_days = len(hourly_average_data.index)
@@ -66,23 +65,42 @@ def plot_pam(hourly_average_data, thresholds_mg):
     # Plotting
     fig, ax = plt.subplots(figsize=(14, 8))
 
+    # Choose the 'turbo' colormap for coloring each day
+    colormap = plt.cm.turbo
+
     # Plot each day's data with a unique color
     for i, (date, row) in enumerate(hourly_average_data.iterrows()):
         ax.plot(row.index, row.values, label=f"Day {date}", color=colors[i])
 
-    # Plot the mean of all days
-    ax.plot(mean_data.index, mean_data.values, label="Mean of All Days", color="black", linestyle="--", linewidth=2)
+    # Normalize the index for the colormap
+    num_days = len(hourly_average_data.index)
+    norm = plt.Normalize(vmin=0, vmax=num_days - 1)
+
+    # Plot each day's data with a unique color
+    for i, date in enumerate(hourly_average_data.index):
+        color = colormap(norm(i))  # Normalize the index
+        ax.plot(hourly_average_data.loc[date], label=str(date), color=color)
+
+    # Calculate and plot the mean across all days
+    mean_enmo = hourly_average_data.mean(axis=0)
+    ax.plot(
+        mean_enmo,
+        label="Mean across all days",
+        color="black",
+        linestyle="--",
+        linewidth=2,
+    )
 
     # Customize plot
     ax.set_xticks(hourly_average_data.columns)
     ax.set_xticklabels(hourly_average_data.columns, rotation=45)
     plt.xlabel("Time (h)", fontsize=14)
     plt.ylabel("ENMO (mg)", fontsize=14)
-    plt.title("Hourly Averaged ENMO for Each Day", fontsize=16)
-    plt.legend(loc="upper left", fontsize=10, bbox_to_anchor=(1.05, 1))
-    plt.grid(visible=True, which="both", axis="both", linestyle='--', alpha=0.7)
-    plt.xticks(fontsize=12)
-    plt.yticks(fontsize=12)
+    plt.title("Hourly averaged ENMO for each day")
+    plt.legend(loc="upper left", fontsize=14)
+    plt.grid(visible=None, which="both", axis="both")
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
     plt.tight_layout()
     plt.show()
 
