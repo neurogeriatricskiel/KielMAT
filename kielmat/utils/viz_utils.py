@@ -295,6 +295,9 @@ def plot_sleep_analysis(
             )
         )
 
+    # Convert unit of data from g to m/s^2
+    vertical_accel *= 9.81
+
     # Map posture events to full signal length
     posture_signal = np.zeros(len(time))  # Default to 0 (Non-Nocturnal)
     for _, row in posture.iterrows():
@@ -346,7 +349,7 @@ def plot_sleep_analysis(
 
     ax1.set_ylabel("Vertical Acceleration (g)", fontsize=14)
     ax1.legend(loc="upper left", fontsize=10)
-    ax1.set_title("Sleep Analysis: Vertical Acceleration and Posture", fontsize=16)
+    ax1.set_title("Vertical Acceleration and Postures", fontsize=16)
 
     # Subplot 2: Orientation angle (Theta)
     ax2.plot(time, theta, label="Theta (Orientation Angle)", color="blue")
@@ -358,7 +361,7 @@ def plot_sleep_analysis(
 
     ax2.set_ylabel("Orientation Angle (deg)", fontsize=14)
     ax2.legend(loc="upper left", fontsize=10)
-    ax2.set_title("Orientation Angle (Theta) and Postures", fontsize=16)
+    ax2.set_title("Orientation Angle and Postures", fontsize=16)
 
     # Formatting x-axis
     ax2.xaxis.set_major_locator(mdates.HourLocator(interval=2))

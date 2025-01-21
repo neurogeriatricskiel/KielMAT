@@ -59,7 +59,7 @@ class SleepAnalysis:
     def __init__(
         self,
         lying_threshold: float = 0.4,
-        turn_angle_threshold: float = 15.0,
+        turn_angle_threshold: float = 10.0,
         smoothing_window_sec: float = 10.0,
         sliding_window_sec: float = 1.0,
         overlap_ratio: float = 0.5,
@@ -104,7 +104,7 @@ class SleepAnalysis:
 
         Args:
             accel_data (np.ndarray): Accelerometer data of shape (N, 3).
-            v_accel_col_name (str): Column name corresponding to the vertical acceleration.
+            v_accel_col_name (str): Column name of the vertical acceleration which is aligned with the gravitational force.
             sampling_frequency_Hz (int): Sampling frequency in Hz.
             tracking_system (str, optional): Name of the tracking system.
             tracked_point (str, optional): Name of the tracked point.
