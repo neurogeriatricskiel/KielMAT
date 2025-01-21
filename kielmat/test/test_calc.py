@@ -69,6 +69,8 @@ from kielmat.utils.quaternion import (
     quat2axang,
     axang2rotm,
 )
+from unittest.mock import patch
+from kielmat.utils.viz_utils import plot_sleep_analysis
 
 # Generate a random sinusoidal signal with varying amplitudes to use as an input in testing functions
 time = np.linspace(0, 100, 1000)  # Time vector from 0 to 100 with 1000 samples
@@ -2249,6 +2251,71 @@ def test_export_events_bids_compatible(sample_recording, tmp_path):
     recording.add_info("Task", "task01")
     file_path = tmp_path / "sub-001_task-task01_events.csv"
     recording.export_events(file_path=str(file_path), bids_compatible_fname=True)
+
+
+# Test plot_sleep_analysis without plotting uisng monkeypatch which allows testing function without plotting
+@pytest.fixture
+def generate_mock_data():
+    """
+    Fixture to generate mock data for sleep analysis plotting.
+    """
+    num_samples = 1000
+    sampling_frequency = 100  # 100 Hz
+    time = pd.Series(pd.date_range("2024-01-01", periods=num_samples, freq="10ms"))
+    vertical_accel = np.random.uniform(-1, 1, num_samples)
+    nocturnal_rest = np.zeros(num_samples)
+    nocturnal_rest[200:800] = 1  # Mock rest period
+    theta = np.random.uniform(-180, 180, num_samples)
+
+    posture_data = pd.DataFrame({
+        "onset": [2.0, 5.0, 8.0],
+        "duration": [1.0, 2.0, 1.5],
+        "event_type": ["Back", "Right", "Belly"]
+    })
+
+    return vertical_accel, nocturnal_rest, posture_data, theta, sampling_frequency, time
+
+
+# Test the plot_sleep_analysis function without rendering plots
+def test_plot_sleep_analysis(generate_mock_data):
+    """
+    Test the plot_sleep_analysis function without rendering plots.
+    """
+    # Unpack mock data
+    vertical_accel, nocturnal_rest, posture_data, theta, sampling_frequency, time = generate_mock_data
+
+    # Mock plt.show to avoid rendering
+    with patch("matplotlib.pyplot.show") as mock_show:
+        plot_sleep_analysis(
+            vertical_accel=vertical_accel,
+            nocturnal_rest=nocturnal_rest,
+            posture=posture_data,
+            theta=theta,
+            sampling_frequency=sampling_frequency,
+            dt_data=time
+        )
+        # Assert that plt.show() was called
+        mock_show.assert_called_once()
+
+# Test the plot_sleep_analysis function without rendering plots or providing dt_data
+def test_plot_sleep_analysis_without_dt_data(generate_mock_data):
+    """
+    Test the plot_sleep_analysis function without rendering plots or providing dt_data.
+    """
+    # Unpack mock data
+    vertical_accel, nocturnal_rest, posture_data, theta, sampling_frequency, _ = generate_mock_data
+
+    # Mock plt.show to avoid rendering
+    with patch("matplotlib.pyplot.show") as mock_show:
+        plot_sleep_analysis(
+            vertical_accel=vertical_accel,
+            nocturnal_rest=nocturnal_rest,
+            posture=posture_data,
+            theta=theta,
+            sampling_frequency=sampling_frequency
+        )
+        # Assert that plt.show() was called
+        mock_show.assert_called_once()
 
 
 # Run the tests with pytest

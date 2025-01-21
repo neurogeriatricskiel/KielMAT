@@ -25,11 +25,13 @@ import pytest
 import numpy as np
 import pandas as pd
 import os
+from unittest.mock import patch
 from kielmat.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from kielmat.modules.icd import ParaschivIonescuInitialContactDetection
 from kielmat.modules.pam import PhysicalActivityMonitoring
 from kielmat.modules.ptd import PhamPosturalTransitionDetection
 from kielmat.modules.td import PhamTurnDetection
+from kielmat.modules.sa import SleepAnalysis  
 
 ## Module test
 # Test for gait sequence detection algorithm
@@ -954,6 +956,236 @@ def test_invalid_sampling_freq_pham_pt():
             gyro_data=sample_data.iloc[:, 3:6],
             sampling_freq_Hz=0,
         )
+
+# Unit tests for Sleep Analysis Algorithm
+# Parameters for the Sleep Analysis
+test_parameters = {
+    "sampling_frequency_Hz": 128,  # Sampling frequency of the accelerometer data in Hz
+    "v_accel_col_name": "LowerBack_ACCEL_y",  # Column name for vertical acceleration (aligned with gravity)
+    "tracking_system": "imu",  # Name of the tracking system (e.g., IMU sensor)
+    "tracked_point": "LowerBack",  # Name of the tracked body point
+}
+
+
+# Fixture to load Parquet test data
+@pytest.fixture
+def load_parquet_data():
+    """
+    Load real-world Parquet data for testing.
+
+    This fixture loads the accelerometer data and channel information from Parquet files
+    located in the project's data directory. It also extracts the timestamps for the data.
+
+    Returns:
+        tuple: Accelerometer data (DataFrame), channel information (DataFrame), and timestamps (Series).
+    """
+    test_file_dir = os.path.dirname(os.path.abspath(__file__))  # Directory of this test file
+    root_dir = os.path.abspath(os.path.join(test_file_dir, "../../"))  # Root project directory
+    data_dir = os.path.join(root_dir, "examples", "data")  # Path to the data directory
+
+    # File paths for accelerometer and channel data
+    accel_file_path = os.path.join(data_dir, "acceleration_data_sleep_analysis.parquet")
+    channels_file_path = os.path.join(data_dir, "channels_info_sleep_analysis.parquet")
+
+    # Load the Parquet files
+    accel_df = pd.read_parquet(accel_file_path)  # Accelerometer data
+    channels_df = pd.read_parquet(channels_file_path)  # Channel information
+    dt_data = pd.to_datetime(accel_df["timestamp"])  # Convert timestamps to datetime format
+    accel_df = accel_df.drop(columns=["timestamp"])  # Remove the timestamp column from accelerometer data
+
+    return accel_df, channels_df, dt_data
+
+
+# Fixture to create SleepAnalysis instance
+@pytest.fixture
+def sleep_analyzer_instance():
+    """
+    Create an instance of the SleepAnalysis class.
+
+    Returns:
+        SleepAnalysis: Configured instance of the SleepAnalysis class.
+    """
+    return SleepAnalysis(
+        lying_threshold=0.4,  # Threshold for detecting lying position (g)
+        turn_angle_threshold=10.0,  # Threshold angle for detecting turns (degrees)
+        smoothing_window_sec=10.0,  # Smoothing window size in seconds
+        sliding_window_sec=1.0,  # Sliding window size for analysis in seconds
+        overlap_ratio=0.5,  # Overlap ratio for the sliding window
+        min_lying_duration_sec=300,  # Minimum lying duration to qualify as a rest period (seconds)
+        min_rest_start_duration_sec=3600,  # Minimum duration to mark the start of nocturnal rest (seconds)
+        min_rest_interruption_duration_sec=900,  # Minimum upright duration to mark a rest interruption (seconds)
+    )
+
+
+# Test the main functionality of SleepAnalysis with Parquet data
+def test_sleep_analysis_detection(load_parquet_data, sleep_analyzer_instance):
+    """
+    Test the entire sleep analysis pipeline with real data from Parquet files.
+
+    This test validates that the SleepAnalysis class correctly detects rest periods,
+    classifies postures, and produces a valid posture DataFrame.
+
+    Args:
+        load_parquet_data (fixture): Loaded test data.
+        sleep_analyzer_instance (fixture): Instance of SleepAnalysis.
+    """
+    accel_data, _, dt_data = load_parquet_data
+
+    # Run the sleep analysis detection algorithm
+    sleep_analyzer_instance.detect(
+        accel_data=accel_data,
+        v_accel_col_name=test_parameters["v_accel_col_name"],
+        sampling_frequency_Hz=test_parameters["sampling_frequency_Hz"],
+        tracking_system=test_parameters["tracking_system"],
+        tracked_point=test_parameters["tracked_point"],
+        dt_data=dt_data,
+        plot_results=False,
+    )
+
+    # Validate the output
+    assert hasattr(sleep_analyzer_instance, "posture_"), "SleepAnalysis must have a posture_ attribute."
+    assert isinstance(sleep_analyzer_instance.posture_, pd.DataFrame), "posture_ must be a pandas DataFrame."
+    assert not sleep_analyzer_instance.posture_.empty, "posture_ DataFrame should not be empty."
+
+
+# Test length of the data
+def test_invalid_dt_data_length(load_parquet_data, sleep_analyzer_instance):
+    """
+    Ensure that an error is raised when dt_data length does not match accel_data.
+    """
+    accel_data, _, _ = load_parquet_data
+    invalid_dt_data = pd.Series(pd.date_range("2024-01-01", periods=1000, freq="10ms"))
+
+    with pytest.raises(ValueError, match="dt_data must be a series with the same length as data"):
+        sleep_analyzer_instance.detect(
+            accel_data=accel_data,
+            v_accel_col_name=test_parameters["v_accel_col_name"],
+            sampling_frequency_Hz=test_parameters["sampling_frequency_Hz"],
+            dt_data=invalid_dt_data,
+        )
+
+
+# Test the turn angle threshold
+def test_turn_angle_threshold(load_parquet_data, sleep_analyzer_instance):
+    """
+    Ensure the turn_angle_threshold is applied correctly.
+    """
+    accel_data, _, dt_data = load_parquet_data
+
+    # Modify turn_angle_threshold
+    sleep_analyzer_instance.turn_angle_threshold = 20.0
+
+    # Simulate lying data with turning angles
+    accel_data["X"] = np.random.uniform(-0.5, 0.5, len(accel_data))
+    accel_data["Y"] = np.random.uniform(-0.5, 0.5, len(accel_data))
+    accel_data[test_parameters["v_accel_col_name"]] = np.random.uniform(-0.5, 0.5, len(accel_data))
+
+    sleep_analyzer_instance.detect(
+        accel_data=accel_data,
+        v_accel_col_name=test_parameters["v_accel_col_name"],
+        sampling_frequency_Hz=test_parameters["sampling_frequency_Hz"],
+        dt_data=dt_data,
+        plot_results=False,
+    )
+
+    assert hasattr(sleep_analyzer_instance, "posture_"), "Posture attribute missing after detection."
+    assert not sleep_analyzer_instance.posture_.empty, "Posture DataFrame should not be empty."
+
+
+# Test invalid column name handling
+def test_invalid_v_accel_col_name(load_parquet_data, sleep_analyzer_instance):
+    """
+    Ensure that using a non-existent column name for vertical acceleration raises KeyError.
+
+    Args:
+        load_parquet_data (fixture): Loaded test data.
+        sleep_analyzer_instance (fixture): Instance of SleepAnalysis.
+    """
+    accel_data, _, dt_data = load_parquet_data
+
+    # Pass an invalid vertical acceleration column name
+    with pytest.raises(KeyError):
+        sleep_analyzer_instance.detect(
+            accel_data=accel_data,
+            v_accel_col_name="INVALID_COLUMN",  # Non-existent column
+            sampling_frequency_Hz=test_parameters["sampling_frequency_Hz"],
+            dt_data=dt_data,
+        )
+
+
+# Test posture classification during rest
+def test_classify_postures(load_parquet_data, sleep_analyzer_instance):
+    """
+    Verify correct classification of postures during nocturnal rest.
+
+    Args:
+        load_parquet_data (fixture): Loaded test data.
+        sleep_analyzer_instance (fixture): Instance of SleepAnalysis.
+    """
+    accel_data, _, dt_data = load_parquet_data
+    # Simulate lying data
+    accel_data[test_parameters["v_accel_col_name"]] = np.random.uniform(-0.5, 0.3, len(accel_data))
+
+    # Run the detection
+    sleep_analyzer_instance.detect(
+        accel_data=accel_data,
+        v_accel_col_name=test_parameters["v_accel_col_name"],
+        sampling_frequency_Hz=test_parameters["sampling_frequency_Hz"],
+        dt_data=dt_data,
+    )
+
+    # Validate the output
+    assert hasattr(sleep_analyzer_instance, "posture_"), "posture_ attribute is missing after detection."
+    assert not sleep_analyzer_instance.posture_.empty, "Posture data should not be empty."
+
+
+# Test structure of output posture DataFrame
+def test_posture_dataframe_structure(load_parquet_data, sleep_analyzer_instance):
+    """
+    Ensure the output posture DataFrame contains the required columns in the correct format.
+
+    Args:
+        load_parquet_data (fixture): Loaded test data.
+        sleep_analyzer_instance (fixture): Instance of SleepAnalysis.
+    """
+    accel_data, _, dt_data = load_parquet_data
+
+    # Run the detection
+    sleep_analyzer_instance.detect(
+        accel_data=accel_data,
+        v_accel_col_name=test_parameters["v_accel_col_name"],
+        sampling_frequency_Hz=test_parameters["sampling_frequency_Hz"],
+        dt_data=dt_data,
+    )
+
+    # Expected columns in the posture DataFrame
+    expected_columns = ["onset", "duration", "event_type", "tracking_system", "tracked_point"]
+    assert all(
+        col in sleep_analyzer_instance.posture_.columns for col in expected_columns
+    ), "Posture DataFrame does not contain all expected columns."
+
+
+# Test plotting functionality
+def test_plot_results(load_parquet_data, sleep_analyzer_instance):
+    """
+    Ensure the plotting functionality works without rendering the plot during testing.
+
+    Args:
+        load_parquet_data (fixture): Loaded test data.
+        sleep_analyzer_instance (fixture): Instance of SleepAnalysis.
+    """
+    accel_data, _, dt_data = load_parquet_data
+
+    # Mock the plot display
+    with patch("matplotlib.pyplot.show") as mock_show:
+        sleep_analyzer_instance.detect(
+            accel_data=accel_data,
+            v_accel_col_name=test_parameters["v_accel_col_name"],
+            sampling_frequency_Hz=test_parameters["sampling_frequency_Hz"],
+            dt_data=dt_data,
+            plot_results=True,
+        )
+        mock_show.assert_called_once()
 
 
 # Run the tests with pytest

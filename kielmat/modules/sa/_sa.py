@@ -145,6 +145,10 @@ class SleepAnalysis:
         if not isinstance(plot_results, bool):
             raise ValueError("plot_results must be a boolean value")
 
+        # Validate accel_data
+        if accel_data is None:
+            raise ValueError("Acceleration data cannot be None.")
+
         # Convert acceleration data from m/s² to g (divide by 9.81)
         accel_data = accel_data / 9.81
         
