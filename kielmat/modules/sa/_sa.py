@@ -43,7 +43,7 @@ class SleepAnalysis:
         >>> sleep_analyzer = SleepAnalysis()
         >>> sleep_analyzer.detect(
                 accel_data=accel_data,
-                v_accel_col_name="SA_ACCEL_y",
+                v_accel_col_name="LowerBack_ACCEL_y",
                 sampling_frequency_Hz=128,
                 tracking_system="imu", 
                 tracked_point="LowerBack", 
