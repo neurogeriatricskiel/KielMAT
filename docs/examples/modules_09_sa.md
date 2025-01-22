@@ -1,7 +1,8 @@
 # Tutorial: Sleep Analysis
 
-**Author:** Masoud Abedinifar  
-**Last Update:** Tuesday, January 22, 2024
+**Author:** Masoud Abedinifar
+
+**Last Update:** Tue 22 January 2024
 
 ## Learning Objectives
 By the end of this tutorial, you will be able to:
@@ -66,6 +67,7 @@ dt_data = pd.to_datetime(accel_df["timestamp"])
 print("\nTimestamps:")
 print(dt_data.head())
 ```
+
     Timestamps:
     0   2019-08-01 20:30:00.000000
     1   2019-08-01 20:30:00.007812
