@@ -142,20 +142,22 @@ class SleepAnalysis:
         if not isinstance(plot_results, bool):
             raise ValueError("plot_results must be a boolean value")
 
-        # Validate accel_data
+        # Validate acceleration data
         if accel_data is None:
             raise ValueError("Acceleration data cannot be None.")
 
         # Convert acceleration data from m/s² to g (divide by 9.81)
         accel_data = accel_data / 9.81
         
-        # Smooth vertical acceleration signal
+        # Smooth vertical acceleration using the lowpass_filter function
         vertical_accel = accel_data[v_accel_col_name].values
-        kernel = np.ones(int(self.smoothing_window_sec * sampling_frequency_Hz)) / (
-            self.smoothing_window_sec * sampling_frequency_Hz
+        smoothed_vertical_accel = preprocessing.lowpass_filter(
+            signal=vertical_accel,
+            method="savgol",
+            window_length=int(self.smoothing_window_sec * sampling_frequency_Hz),
+            polynomial_order=2
         )
-        smoothed_vertical_accel = np.convolve(vertical_accel, kernel, mode="same")
-        
+
         # Determine upright and lying periods based on the threshold
         vect_upright = smoothed_vertical_accel >= self.lying_threshold # Mark upright periods
         vect_lying = ~vect_upright
@@ -185,14 +187,14 @@ class SleepAnalysis:
         if start is not None and len(vect_lying) - start >= self.min_lying_duration_sec * sampling_frequency_Hz:
             lying_groups.append((start, len(vect_lying) - 1))
 
-        # Identify Nocturnal Rest Period
+        # Identify nocturnal rest periods uisng thresholds 
         min_rest_start_samples = int(self.min_rest_start_duration_sec * sampling_frequency_Hz)
         min_interrupt_samples = int(self.min_rest_interruption_duration_sec * sampling_frequency_Hz)
 
         idx_start = next((start for start, end in lying_groups if (end - start) >= min_rest_start_samples), None)
         idx_end = next((end for start, end in reversed(lying_groups) if (end - start) >= min_interrupt_samples), None)
         
-        # Identify Nocturnal Rest Period
+        # Vevtor of nocturnal rest periods
         vect_night_rest = np.zeros(len(vect_lying), dtype=bool)
         if idx_start is not None and idx_end is not None:
             vect_night_rest[idx_start:idx_end + 1] = True
@@ -202,13 +204,27 @@ class SleepAnalysis:
         if len(rest_indices) == 0:
             raise ValueError("No nocturnal rest periods detected.")
 
-        # Classify Body Positions During Nocturnal Rest
+        # Classify body positions during nocturnal rest periods
         horizontal_axes = [col for col in accel_data.columns if col != v_accel_col_name]
-        self.acc_h1 = np.convolve(accel_data[horizontal_axes[0]].values, kernel, mode="same")
-        self.acc_h2 = np.convolve(accel_data[horizontal_axes[1]].values, kernel, mode="same")
+
+        # Smooth the horizontal axes using the lowpass_filter function
+        self.acc_h1 = preprocessing.lowpass_filter(
+            signal=accel_data[horizontal_axes[0]].values,
+            method="savgol",
+            window_length=int(self.smoothing_window_sec * sampling_frequency_Hz),
+            polynomial_order=2
+        )
+        self.acc_h2 = preprocessing.lowpass_filter(
+            signal=accel_data[horizontal_axes[1]].values,
+            method="savgol",
+            window_length=int(self.smoothing_window_sec * sampling_frequency_Hz),
+            polynomial_order=2
+        )
+
+        # Calculate the angles using arctan2
         theta = np.degrees(np.arctan2(self.acc_h2, self.acc_h1))
 
-        # Classify Body Positions During Nocturnal Rest
+        # Classify body positions during nocturnal rest
         posture = np.zeros(len(theta), dtype=int)
         previous_angle = theta[rest_indices[0]]
         for i in rest_indices:
