@@ -49,6 +49,7 @@ class SleepAnalysis:
 
     References:
         [1] Louter et al. (2015). Accelerometer-based quantitative analysis of axial nocturnal movements ... https://doi.org/10.1136/jnnp-2013-306851
+        
         [2] Mirelman et al. (2020). Tossing and Turning in Bed: Nocturnal Movements in Parkinson's Disease ... https://doi.org/10.1002/mds.28006
     """
     
