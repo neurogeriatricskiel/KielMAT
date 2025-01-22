@@ -21,8 +21,7 @@ class SleepAnalysis:
         - Mediolateral (X-axis): Side-to-side motion.
         - Anteroposterior (Y-axis): Forward-backward motion.
 
-    By normalizing the vertical acceleration to the gravitational constant (9.81 m/s²),
-    the algorithm distinguishes between upright and lying positions. A smoothed
+    The algorithm distinguishes between upright and lying positions. A smoothed
     threshold of 0.4 g (approximately 33° from the horizontal plane) is applied to
     classify lying periods. This threshold was derived from studies on nocturnal
     movement analysis, ensuring accurate posture detection during sleep.
@@ -36,9 +35,6 @@ class SleepAnalysis:
         detect(accel_data, v_accel_col_name, sampling_frequency, tracking_system, tracked_point, plot_results):
             Processes accelerometer data to detect nocturnal rest, classify postures, and identify events.
 
-            Returns:
-                SleepAnalysis: an instance of the class with the detected events
-                stored in the 'posture_' attribute.
     Examples:
         >>> sleep_analyzer = SleepAnalysis()
         >>> sleep_analyzer.detect(

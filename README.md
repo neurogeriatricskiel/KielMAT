@@ -78,6 +78,15 @@ The table below provides an overview of key modules, their functionalities, inpu
 <td style="padding: 8px;">Spatio-temporal parameters (e.g., turn angle)</td>
 </tr>
 
+<tr>
+<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/sa/">Sleep Analysis</a></td>
+<td style="padding: 8px;">Detects nocturnal rests</td>
+<td style="padding: 8px;">3D acceleration from lower back IMU</td>
+<td style="padding: 8px;"><a> BraVIVA <a>
+<td style="padding: 8px;">body posture
+<td style="padding: 8px;"></td>
+</tr>
+
 </tbody>
 </table>
 </div>

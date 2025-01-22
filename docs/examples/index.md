@@ -33,3 +33,6 @@ This example introduces the [Postural Transition Detection](https://neurogeriatr
 
 ### [Example 8: Turn Detection](modules_08_td.md)
 This example introduces the [Turn Detection](https://neurogeriatricskiel.github.io/KielMAT/modules/td/) module. It demonstrates how the module is implemented on sample 3D acceleration and 3D angular velocity data from a lower back IMU sensor to detect turns.
+
+### [Example 9: Sleep Analysis](modules_09_sa.md)
+This example introduces the [Sleep Analysis](https://neurogeriatricskiel.github.io/KielMAT/modules/sa/) module. It demonstrates how the module is implemented on sample 3D acceleration data from a lower back IMU sensor to detect nocturnal rest period and different body postures during sleep.

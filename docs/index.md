@@ -24,7 +24,7 @@ The table below provides an overview of key modules, their functionalities, inpu
 | [Physical Activity Monitoring](https://neurogeriatricskiel.github.io/KielMAT/modules/pam/) | Monitors physical activity levels | 3D accelerations from wrist IMU | [Fair Park Ⅱ](https://www.fairpark2.eu/) | - | Mean and duration of activity level |
 | [Postural Transition Detection](https://neurogeriatricskiel.github.io/KielMAT/modules/ptd/) | Detects sit-to-stand and stand-to-sit transitions | 3D acceleration and gyroscope data from lower back IMU | [KeepControl](https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/) and [SENSE-PARK](https://pmc.ncbi.nlm.nih.gov/articles/PMC4460963/) | sit-to-stand, stand-to-sit | Spatio-temporal parameters (e.g., postural transition angle) |
 | [Turn Detection](https://neurogeriatricskiel.github.io/KielMAT/modules/td/) | Detects turn movements | 3D acceleration and gyroscope data from lower back IMU | [KeepControl](https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/) and [SENSE-PARK](https://pmc.ncbi.nlm.nih.gov/articles/PMC4460963/) | turn | Spatio-temporal parameters (e.g., turn angle) |
-
+| [Sleep Analysis](https://neurogeriatricskiel.github.io/KielMAT/modules/sa/) | Detects nocturnal rests | 3D acceleration from lower back IMU | <a>BraViva<a> | body posture |  |
 
 ## Units
 

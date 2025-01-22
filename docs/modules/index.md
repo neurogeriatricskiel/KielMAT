@@ -23,3 +23,7 @@ The **Postural Transition Detection** module is based on the work of [Pham](http
 ## [Turn Detection (Pham)](td.md)
 
 The **Turn Detection** module is based on the work of [Pham](https://pubmed.ncbi.nlm.nih.gov/28443059/) and aims to identify and characterize body turns using 3D acceleration and angular velocity data from lower back IMU sensors. The module also calculates key spatial-temporal parameters, such as the angle of turn and peak angular velocity.
+
+## [Sleep Analysis](sa.md)
+
+The **Sleep Analysis** module is based on the work of [Mirelman](https://pubmed.ncbi.nlm.nih.gov/32080891/) and processes sample 3D acceleration data from a lower back IMU sensor to detect nocturnal rest periods and categorizes body postures (e.g., back, belly, left, right) based on accelerometer data and posture angle thresholds.
