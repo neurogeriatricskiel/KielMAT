@@ -251,6 +251,36 @@ def _iir_highpass_filter(signal, sampling_frequency=40):
 
     return filtered_signal
 
+def bandpass_filter(signal, sampling_rate, lowcut=0.5, highcut=2.0, order=4):
+    """
+    Apply a Butterworth bandpass filter to the input signal.
+
+    Args:
+        signal (numpy.ndarray): The input signal to be filtered.
+        sampling_rate (float): The sampling rate of the signal in Hz.
+        lowcut (float, optional): The lower cutoff frequency of the bandpass filter. Default is 0.5 Hz.
+        highcut (float, optional): The upper cutoff frequency of the bandpass filter. Default is 2.0 Hz.
+        order (int, optional): The order of the Butterworth filter. Default is 4.
+
+    Returns:
+        numpy.ndarray: The filtered signal.
+    """
+    if not isinstance(signal, np.ndarray):
+        raise ValueError("Input signal must be a NumPy array.")
+
+    if sampling_rate <= 0:
+        raise ValueError("Sampling rate must be a positive number.")
+
+    if not (0 < lowcut < highcut < (sampling_rate / 2)):
+        raise ValueError("Invalid cutoff frequencies. Ensure 0 < lowcut < highcut < Nyquist frequency.")
+
+    nyquist = sampling_rate / 2
+    low = lowcut / nyquist
+    high = highcut / nyquist
+
+    b, a = scipy.signal.butter(order, [low, high], btype="band")
+    return scipy.signal.filtfilt(b, a, signal)
+
 
 def apply_continuous_wavelet_transform(
     data, scales=10, desired_scale=10, wavelet="gaus2", sampling_frequency=40
