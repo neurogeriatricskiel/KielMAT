@@ -1705,7 +1705,7 @@ def test_pam_plot_results_without_plot(monkeypatch):
     monkeypatch.setattr("matplotlib.pyplot.show", mock_show)
 
     # Call the function
-    viz_utils.plot_pam(hourly_average_data, thresholds_mg)
+    viz_utils.plot_pam(hourly_average_data)
 
 
 # Test function for test_pham_plot_results

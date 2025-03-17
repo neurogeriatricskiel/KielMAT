@@ -1,0 +1,17 @@
+# .pre-commit-config.yaml
+
+repos:
+  # Code formatting with Black for Python
+  - repo: https://github.com/psf/black
+    rev: 24.4.2  # Matches the version specified in pyproject.toml
+    hooks:
+      - id: black
+        language_version: python3.10  # Matches the minimum Python version specified
+        args: ["--line-length", "88"]  # Customize if necessary for project standards
+
+  # Sorting and formatting for TOML files
+  - repo: https://github.com/pappasam/toml-sort
+    rev: v0.23.1  # Version of toml-sort to use
+    hooks:
+      - id: toml-sort-fix
+        files: pyproject.toml  # Only apply to pyproject.toml file

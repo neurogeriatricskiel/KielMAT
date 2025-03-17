@@ -221,7 +221,7 @@ fig.tight_layout()
 plt.show()
 ```
 
-![](modules_04_ptd_files/04_tutorial_postural_transition_detection_1.png)
+![](modules_07_ptd_files/07_tutorial_postural_transition_detection_1.png)
     
 
 ## Applying Pham Postural Transition Detection Algorithm
@@ -253,7 +253,7 @@ pham = pham.detect(
     plot_results=True,
 )
 ```
-![](modules_04_ptd_files/04_tutorial_postural_transition_detection_2.png)
+![](modules_07_ptd_files/07_tutorial_postural_transition_detection_2.png)
 
 The outputs are stored in the `postural_transitions_` attribute, which is a pandas DataFrame in BIDS format with the following columns:
 

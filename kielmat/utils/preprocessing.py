@@ -166,7 +166,7 @@ def lowpass_filter(signal, method="savgol", order=None, padlen=None, **kwargs):
         raise ValueError("Invalid filter method specified")
 
 
-def highpass_filter(signal, sampling_frequency=40, method="iir", **kwargs):
+def highpass_filter(signal, sampling_frequency=40, method="iir"):
     """
     Apply a high-pass filter to the input signal using the specified method.
 
@@ -174,10 +174,9 @@ def highpass_filter(signal, sampling_frequency=40, method="iir", **kwargs):
         signal (np.ndarray): The input signal to be filtered.
         sampling_frequency (float): The sampling frequency of the input signal.
         method (str): The filtering method to be used.
-        **kwargs: Additional keyword arguments specific to the filtering method.
 
     Returns:
-        np.ndarray: The filtered signal.
+        filtered_signal (np.ndarray): The filtered signal.
 
     """
     # Error handling for invalid input data
@@ -472,7 +471,7 @@ def find_consecutive_groups(input_signal):
     the start index of the group and the second column containing the end index of the group.
 
     Parameters:
-        input_array (ndarray): The input array.
+        input_signal (ndarray): The input array.
 
     Returns:
         ind (ndarray): A 2D array where each row represents a group of consecutive non-zero values.
@@ -1116,13 +1115,13 @@ def wavelet_decomposition(data, level, wavetype):
 
 
 # Function for computing moving variance
-def moving_var(data, window):
+def moving_var(data, window) -> np.ndarray:
     """
     Compute the centered moving variance.
 
     Args:
-        Data (int) : Data to take the moving variance on window
-        Window size (int) : Window size for the moving variance.
+        data (int) : Data to take the moving variance on window
+        window size (int) : Window size for the moving variance.
 
     Returns:
         m_var (numpy.ndarray) : Moving variance
