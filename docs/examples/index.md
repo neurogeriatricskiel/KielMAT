@@ -33,3 +33,6 @@ This example introduces the [Postural Transition Detection](https://neurogeriatr
 
 ### [Example 8: Turn Detection](modules_08_td.md)
 This example introduces the [Turn Detection](https://neurogeriatricskiel.github.io/KielMAT/modules/td/) module. It demonstrates how the module is implemented on sample 3D acceleration and 3D angular velocity data from a lower back IMU sensor to detect turns.
+
+### [Example 9: McCamley Initial Contact Classification](modules_09_rlc_mccamley.md)
+This example introduces the [McCamley Initial Contact Classification](https://neurogeriatricskiel.github.io/KielMAT/modules/rlc/) module. The example demonstrates how this module classifies initial contacts as left or right based on gyroscope signals recorded with a lower back IMU sensor.
