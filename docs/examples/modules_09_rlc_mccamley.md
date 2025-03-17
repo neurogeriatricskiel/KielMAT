@@ -7,7 +7,7 @@
 ## Learning Objectives
 By the end of this tutorial:
 
-- You can load data from [`keepcontrol`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/datasets/keepcontrol.py), which is one of the available datasets.
+- You can load data from [`Mobilized`](../datasets/mobilised.md), which is one of the available datasets.
 - Apply the [`McCamley Initial Contact Classification`](../modules/ic_rlc_mccamley.md) algorithm to detect initial contact laterality.
 - Analyze the classified initial contacts for further gait analysis.
 
