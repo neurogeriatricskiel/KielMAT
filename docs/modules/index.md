@@ -23,3 +23,8 @@ The **Postural Transition Detection** module is based on the work of [Pham](http
 ## [Turn Detection (Pham)](td.md)
 
 The **Turn Detection** module is based on the work of [Pham](https://pubmed.ncbi.nlm.nih.gov/28443059/) and aims to identify and characterize body turns using 3D acceleration and angular velocity data from lower back IMU sensors. The module also calculates key spatial-temporal parameters, such as the angle of turn and peak angular velocity.
+
+
+## [Initial Contact Classification (McCamley)](ic_rlc_mccamley.md)
+
+The **McCamley Initial Contact Classification** module is based on the work of [McCamley et al.](https://doi.org/10.1016/j.gaitpost.2012.02.019) and is used to classify initial contacts as `left` or `right` based on gyroscope data. The classified initial contacts are returned in a structured format, allowing for further gait analysis and spatio-temporal parameter extraction.

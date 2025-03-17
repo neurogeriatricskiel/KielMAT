@@ -25,13 +25,13 @@ class MacCamleyInitialContactClassification:
 
         >>> detector = McCamleyLateralityDetection()
         >>> detector = detector.detect(
-        >>>     gyro_data=gyro_dataframe,
-        >>>     sampling_freq_Hz=100,
-        >>>     v_gyr_col_name="LowerBack_GYRO_x",
-        >>>     ap_gyr_col_name="LowerBack_GYRO_z",
-        >>>     ic_timestamps=initial_contact_df,
-        >>>     signal_type="vertical"
-        >>> )
+                        gyro_data=gyro_dataframe,
+                        sampling_freq_Hz=100,
+                        v_gyr_col_name="LowerBack_GYRO_x",
+                        ap_gyr_col_name="LowerBack_GYRO_z",
+                        ic_timestamps=initial_contact_df,
+                        signal_type="vertical"
+                    )
         >>> print(detector.ic_rl_list_)
                 onset    rl_label
             0   5.000    left

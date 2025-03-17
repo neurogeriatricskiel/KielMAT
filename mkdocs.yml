@@ -50,6 +50,8 @@ nav:
     - Physical Activity Monitoring: examples/modules_06_pam.md
     - Postural Transition Detection: examples/modules_07_ptd.md
     - Turn Detection: examples/modules_08_td.md
+    - Initial Contact Classification: examples/modules_09_rlc_mccamley.md
+
   - Dataclass: dataclass.md 
   - Modules: 
     - modules/index.md
@@ -58,6 +60,7 @@ nav:
     - Physical Activity Monitoring: modules/pam.md
     - Postural Transition Detection: modules/ptd.md
     - Turn Detection: modules/td.md
+    - Initial Contact Classification: modules/ic_rlc_mccamley.md
   - Datasets:
     - datasets/index.md
     - KeepControl: datasets/keepcontrol.md
