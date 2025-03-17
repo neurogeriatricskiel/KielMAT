@@ -8,7 +8,7 @@
 By the end of this tutorial:
 
 - You can load data from [`keepcontrol`](https://github.com/neurogeriatricskiel/KielMAT/blob/main/kielmat/datasets/keepcontrol.py), which is one of the available datasets.
-- Apply the [`McCamley Initial Contact Classification`](https://github.com/neurogeriatricskiel/KielMAT/blob/gait-spatiotemporal-parameters/kielmat/modules/rlc/_mccamley.py) algorithm to detect initial contact laterality.
+- Apply the [`McCamley Initial Contact Classification`](../modules/ic_rlc_mccamley.md) algorithm to detect initial contact laterality.
 - Analyze the classified initial contacts for further gait analysis.
 
 ## McCamley Initial Contact Classification
