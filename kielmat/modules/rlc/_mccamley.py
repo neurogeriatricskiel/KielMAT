@@ -23,7 +23,7 @@ class MacCamleyInitialContactClassification:
     Examples:
         Detect initial contacts and classify laterality:
 
-        >>> detector = McCamleyLateralityDetection()
+        >>> detector = MacCamleyInitialContactClassification()
         >>> detector = detector.detect(
                         gyro_data=gyro_dataframe,
                         sampling_freq_Hz=100,
