@@ -1,7 +1,7 @@
 # Introduction and explanation regarding the test suite
 """
-This code is a test suite for various signal processing and analysis functions which exist in the KielMAT toolbox. 
-It employs pytest, a Python testing framework, to verify the correctness of these functions. 
+This code is a test suite for various signal processing and analysis functions which exist in the KielMAT toolbox.
+It employs pytest, a Python testing framework, to verify the correctness of these functions.
 Here's a brief explanation of the code structure:
 
 1. Import necessary libraries, pytest and the functions to be tested.
