@@ -319,23 +319,3 @@ print(mccamley_ic_classifier.mccamley_df)
     2677    3477.925    0.0            initial contact      left            LowerBack
 
     [2665 rows x 5 columns]
-
-
-## **Interpretation of Classified Initial Contacts**
-
-Each row in the output represents a classified **initial contact** (IC) event, with the following columns:
-
-- **`onset`** (`float`):  
-  The timestamp (in seconds) when the initial contact occurred.
-
-- **`duration`** (`float`):  
-  Duration of the event. For initial contacts, this is typically set to `0.0`.
-
-- **`event_type`** (`str`):  
-  The type of event as `initial contact`.
-
-- **`rl_label`** (`str`):  
-  The classification of the initial contact as either `left` or `right`, based on the sign of the gyroscope signal at that timestamp.
-
-- **`tracking_system`** (`str`):  
-  The name of the tracking system (e.g., `"LowerBack"`) that was used to record the IMU data.
