@@ -2,7 +2,7 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Mon 17 March 2025
+**Last update:** Fri 21 March 2025
 
 ## Learning Objectives
 By the end of this tutorial:
@@ -199,13 +199,21 @@ gsd = ParaschivIonescuGaitSequenceDetection()
 
 # Call the gait sequence detection using gsd.detect to detect gait sequences
 gsd = gsd.detect(
-    accel_data=accel_data, sampling_freq_Hz=sampling_frequency, tracking_system="LowerBack", plot_results=False
+    accel_data=accel_data, 
+    sampling_freq_Hz=sampling_frequency, 
+    tracking_system="LowerBack", 
+    plot_results=False
 )
 
-# Gait sequences are stored in gait_sequences_ attribute of gsd
-gait_sequences = gsd.gait_sequences_
+# Add events to the recording as a dictionary including tracking system and events
+recording.add_events(tracking_system="LowerBack", new_events=gsd.gait_sequences_)
+
+# Filter only gait sequence events
+gait_sequence_events = recording.events["LowerBack"][recording.events["LowerBack"]["event_type"] == "gait sequence"]
+
+# Print the filtered gait sequences
 print(f'Gait sequences and thier corresponding information:')
-print(gait_sequences)
+print(gait_sequence_events)
 ```
 
         13 gait sequence(s) detected.
@@ -236,15 +244,21 @@ icd = ParaschivIonescuInitialContactDetection()
 # Call the initial contact detection using icd.detect
 icd = icd.detect(
     accel_data=accel_data,
-    gait_sequences=gait_sequences,
+    gait_sequences=gsd.gait_sequences_,
     sampling_freq_Hz=sampling_frequency,
     tracking_system="LowerBack", 
     v_acc_col_name="LowerBack_ACCEL_x"
 )
 
-# Print initial contacts information
+# Add events to the recording as a dictionary including tracking system and events
+recording.add_events(tracking_system="LowerBack", new_events=icd.initial_contacts_)
+
+# Filter only gait sequence events
+initaal_contact_events = recording.events["LowerBack"][recording.events["LowerBack"]["event_type"] == "initial contact"]
+
+# Print the filtered gait sequences
 print(f"Initial contacts information:")
-print(icd.initial_contacts_)
+print(initaal_contact_events)
 ```
 
         Initial contacts information:
@@ -265,19 +279,37 @@ print(icd.initial_contacts_)
         [2665 rows x 4 columns]
 
 
-Once the initial contacts are detected, the **McCamley Initial Contact Classification** algorithm is used to classify them as left or right based on gyroscope signals using McCamley method.
+Once the initial contacts are detected, the McCamley Initial Contact Classification algorithm is used to classify them as left or right based on gyroscope signals using the McCamley method.
 
-Inputs for McCamley Initial Contact Classification Algorithm:
+### Inputs for McCamley Initial Contact Classification Algorithm:
 
-- **Gyroscope Data:** `gyro_data`, a pandas DataFrame containing gyroscope signals (N, 3) for the x, y, and z axes.
-- **Sampling Frequency:** `sampling_freq_Hz`, the sampling frequency of the gyroscope data in Hz.
-- **Vertical Gyroscope Signal:** `v_gyr_col_name`, the column name corresponding to the vertical gyroscope signal.
-- **Anterior-Posterior Gyroscope Signal:** `ap_gyr_col_name`, the column name corresponding to the anterior-posterior gyroscope signal.
-- **Initial Contact Timestamps:** `ic_timestamps`, a pandas DataFrame containing the detected initial contacts, including an `onset` column with timestamps in seconds.
-- **Signal Type:** `signal_type`, an optional argument specifying which gyroscope signal should be used for classification:
-  - **`'vertical'`**: Uses the vertical gyroscope signal to classify initial contacts.
-  - **`'anterior_posterior'`**: Uses the anterior-posterior gyroscope signal for classification.
-  - **`'combined'`**: Uses a difference-based approach, where the vertical gyroscope signal is subtracted from the anterior-posterior gyroscope signal (`combined` = `gyro_vertical` - `gyro_ap`).
+- **`gyro_data`** (`pd.DataFrame`):  
+  A DataFrame containing gyroscope signals (N, 3), typically including x, y, and z components.
+
+- **`sampling_freq_Hz`** (`float`):  
+  Sampling frequency of the gyroscope signal in Hertz (Hz).
+
+- **`v_gyr_col_name`** (`str`):  
+  Name of the column in `gyro_data` that corresponds to the **vertical gyroscope signal**.
+
+- **`ap_gyr_col_name`** (`str`):  
+  Name of the column in `gyro_data` that corresponds to the **anterior-posterior gyroscope signal**.
+
+- **`ic_timestamps`** (`pd.DataFrame`):  
+  A DataFrame containing detected initial contact (IC) timestamps. Must include an `onset` column with timestamps in seconds.
+
+- **`signal_type`** (`str`, optional, default = `"vertical"`):  
+  Determines which gyroscope signal to use for left/right classification:
+  
+  - **`"vertical"`**: Uses the **vertical** gyroscope signal.
+  - **`"anterior_posterior"`**: Uses the **anterior-posterior** gyroscope signal.
+  - **`"combined"`**: Uses a difference-based signal: `vertical - anterior_posterior`.
+
+- **`recording`** (`KielMATRecording`, optional):  
+  If provided, the output labels (`rl_label`) will be added directly to the `recording.events` table.
+
+- **`tracking_system`** (`str`, required if `recording` is given):  
+  The tracking system key in the recording (e.g., `"LowerBack"`) used to locate and update initial contact events.
 
 
 ```python
@@ -290,36 +322,50 @@ mccamley_ic_classifier.detect(
     sampling_freq_Hz=sampling_frequency,
     v_gyr_col_name="LowerBack_GYRO_x",
     ap_gyr_col_name="LowerBack_GYRO_z",
-    ic_timestamps=icd.initial_contacts_[["onset"]],
-    signal_type="vertical"
+    ic_timestamps=initaal_contact_events[["onset"]],
+    signal_type="vertical",
+    recording=recording,
+    tracking_system="LowerBack"
 )
 
 # Print results
-print(mccamley_ic_classifier.ic_rl_list_)
+print(f"Initial contacts and their corresponding labels:")
+print(mccamley_ic_classifier.mccamley_df)
 ```
 
     Initial contacts and their corresponding labels:
+            
+            onset       duration       event_type           rl_label        tracking_system
+    13      1348.700    0.0            initial contact      left            LowerBack
+    14      1349.350    0.0            initial contact      right           LowerBack
+    15      1349.975    0.0            initial contact      left            LowerBack
+    16      1350.525    0.0            initial contact      right           LowerBack
+    17      1351.050    0.0            initial contact      left            LowerBack
+    ...     ...         ...            ...                  ...             ...
+    2673    3475.750    0.0            initial contact      right           LowerBack
+    2674    3476.300    0.0            initial contact      left            LowerBack
+    2675    3476.825    0.0            initial contact      right           LowerBack
+    2676    3477.375    0.0            initial contact      left            LowerBack
+    2677    3477.925    0.0            initial contact      left            LowerBack
 
-            onset       rl_label
-    0       1348.700    left
-    1       1349.350    right
-    2       1349.975    left
-    3       1350.525    right
-    4       1351.050    left
-    ...     ...         ...
-    2660    3475.750    right
-    2661    3476.300    left
-    2662    3476.825    right
-    2663    3477.375    left
-    2664    3477.925    left
-
-    [2665 rows x 2 columns]
+    [2665 rows x 5 columns]
 
 
-### Classified Initial Contacts
-Each row corresponds to an initial contact (IC) detected in the gait sequence, with the following key details:
+### **Interpretation of Classified Initial Contacts**
 
-- **`onset`**: The timestamp (in seconds) when the initial contact occurred.
-- **`rl_label`**: The classification of the IC as either `left` or `right`, determined by analyzing the gyroscope signals.
+Each row in the output represents a classified **initial contact** (IC) event, with the following columns:
 
-This classification helps in spatio-temporal gait analysis, which is essential for studying movement patterns, detecting asymmetries, or assessing gait impairments in clinical settings.
+- **`onset`** (`float`):  
+  The timestamp (in seconds) when the initial contact occurred.
+
+- **`duration`** (`float`):  
+  Duration of the event. For initial contacts, this is typically set to `0.0`.
+
+- **`event_type`** (`str`):  
+  The type of event as `initial contact`.
+
+- **`rl_label`** (`str`):  
+  The classification of the initial contact as either `left` or `right`, based on the sign of the gyroscope signal at that timestamp.
+
+- **`tracking_system`** (`str`):  
+  The name of the tracking system (e.g., `"LowerBack"`) that was used to record the IMU data.
