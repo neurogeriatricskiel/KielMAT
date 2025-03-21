@@ -193,24 +193,6 @@ icd = icd.detect(
 print(icd.initial_contacts_)
 ```
 
-    1 gait sequence(s) detected.
-            onset   event_type        duration   tracking_systems
-    0       3.425   initial contact   0          None
-    1       4.000   initial contact   0          None
-    2       4.650   initial contact   0          None
-    3       5.350   initial contact   0          None
-    4       6.050   initial contact   0          None
-    5       6.825   initial contact   0          None
-    6       7.500   initial contact   0          None
-    7       8.250   initial contact   0          None
-    8       8.950   initial contact   0          None
-    9       9.700   initial contact   0          None
-    10      10.425  initial contact   0          None
-    11      11.150  initial contact   0          None
-    12      11.900  initial contact   0          None
-    
-
-    1 gait sequence(s) detected.
 
     Initial contacts:       onset       event_type           duration       tracking_systems
     0                       3.850       initial contact      0              None
