@@ -30,6 +30,7 @@ Originally, the algorithm relied on the vertical axis signal alone [1]. However,
 Once classified, the initial contacts are stored in a pandas DataFrame (`ic_rl_list_` attribute), including their `onset` times and corresponding `rl_label` (left/right classification).
 
 **References**
+
 [1] **McCamley et al.** (2012). *An Enhanced Estimate of Initial Contact and Final Contact Instants of Time Using Lower Trunk Inertial Sensor Data.* Gait & Posture, 36(2), 318-320. [https://doi.org/10.1016/j.gaitpost.2012.02.019](https://doi.org/10.1016/j.gaitpost.2012.02.019)
 
 [2] **Ullrich et al.** (2022). *Machine Learning-Based Distinction of Left and Right Foot Contacts in Lower Back Inertial Sensor Data Improves Gait Analysis Accuracy.* IEEE Transactions on Neural Systems and Rehabilitation Engineering. [https://doi.org/10.1109/EMBC46164.2021.9630653](https://doi.org/10.1109/EMBC46164.2021.9630653)
