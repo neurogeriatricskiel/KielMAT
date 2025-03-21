@@ -156,37 +156,6 @@ print(f'Data was filtered at', sampling_frequency, f'Hz')
 ```
 Data was filtered at 100.0 Hz
 
-#### Conversion of Data Units to SI Units
-
-All input data provided to the modules in this toolbox should adhere to SI units to maintain consistency and accuracy across analyses. This ensures compatibility with the underlying algorithms, which are designed to work with standard metric measurements.
-
-If the provided data is in non-SI units (e.g., acceleration in g instead of m/s²), it must be converted to SI units before being used in the analysis. Failure to convert non-SI units may lead to incorrect results or misinterpretation of the output.
-
-For instance:
-
-- **Acceleration:** Convert from g to m/s².
-- **Gyro:** Convert from rad/s to deg/s.
-
-```python
-# Check unit of acceleration data
-if accel_unit in ["m/s^2"]:
-    pass  # No conversion needed
-elif accel_unit in ["g", "G"]:
-    # Convert acceleration data from "g" to "m/s^2"
-    accel_data *= 9.81
-    # Update unit of acceleration
-    accel_unit = ["m/s^2"]
-
-# Check unit of gyro data
-if gyro_unit in ["deg/s", "°/s"]:
-    pass  # No conversion needed
-elif gyro_unit == "rad/s":
-    # Convert gyro data from "rad/s" to "deg/s"
-    gyro_data = np.rad2deg(gyro_data)
-    # Update unit of gyro
-    gyro_unit = ["deg/s"]
-```
-
 ## Applying McCamley Initial Contact Classification Algorithm
 
 Now, we are running the McCamley Initial Contact Classification algorithm from the [`KielMAT.kielmat.modules.rlc._mccamley.MacCamleyInitialContactClassification`](https://github.com/neurogeriatricskiel/KielMAT/blob/gait-spatiotemporal-parameters/kielmat/modules/rlc/_mccamley.py) module to classify the laterality of initial contacts detected in gait sequences. 
