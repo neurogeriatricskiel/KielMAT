@@ -196,7 +196,7 @@ class ParaschivIonescuInitialContactDetection:
             "onset": initial_contacts_list,
             "event_type": ["initial contact"] * len(initial_contacts_list),
             "duration": 0,
-            "tracking_systems": tracking_system,
+            #"tracking_systems": tracking_system,
         })
 
         # Create DataFrame for final contacts

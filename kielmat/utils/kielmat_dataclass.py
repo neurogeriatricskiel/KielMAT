@@ -143,9 +143,14 @@ class KielMATRecording:
             self.events = {}
 
         if tracking_system not in self.events:
+            new_events = new_events.copy()
+            new_events["tracking_system"] = tracking_system
             self.events[tracking_system] = new_events
         else:
             existing_events = self.events[tracking_system]
+            new_events = new_events.copy()
+            new_events["tracking_system"] = tracking_system
+
             self.events[tracking_system] = pd.concat(
                 [existing_events, new_events], ignore_index=True
             )

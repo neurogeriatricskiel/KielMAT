@@ -2,15 +2,15 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Tue 01 Oct 2024
+**Last update:** Thu 12 Dec 2024
 
 ## Learning objectives
 By the end of this tutorial, you will be able to: 
 
 - You can load data from a recording that belongs to one of the available datasets,
 - Apply the Paraschiv-Ionescu initial contact detection algorithm to accelerometer data.  
-- Visualize the results of initial contact detection.  
-- Interpret the detected initial contacts for further analysis.
+- Extract  the results of initial contact detection.
+- Extract final contacts withing each gait seuqence.
 
 # Paraschiv Initial Contact Detection
 
@@ -18,7 +18,7 @@ This example can be referenced by citing the package.
 
 The example illustrates how the Paraschiv initial contact detection algorithm is used to detect initial contacts using body acceleration recorded with a triaxial accelerometer worn or fixed on the lower back. The initial contact detection algorithm is implemented in the main module [`kielmat.modules.icd._paraschiv`](https://github.com/neurogeriatricskiel/KielMAT/tree/main/kielmat/modules/icd/_paraschiv.py). This algorithm is based on the research of Paraschiv-Ionescu et al [`1`-`2`].
 
-The algorithm takes accelerometer data as input, specifically the vertical acceleration component, and processes each specified gait sequence independently. The algorithm requires the start and duration of each gait sequence, in the format provided by the Paraschiv-Ionescu gait sequence detection algorithm ([`kielmat.modules.gsd._paraschiv`](https://github.com/neurogeriatricskiel/KielMAT/tree/main/kielmat/modules/gsd/_paraschiv.py)). The sampling frequency of the accelerometer data is also required as another input. Detected gait sequence information is provided as a DataFrame, which consists of the onset and duration of the gait sequences. For each gait sequence, the algorithm applies the Signal Decomposition algorithm for initial contacts. The algorithm handles multiple gait sequences and ensures uniform output by padding the initial contacts lists with NaN values to match the length of the sequence with the maximum number of initial contacts detected among all sequences. Finally, initial contacts information is provided as a DataFrame with columns `onset`, `event_type`, `tracking_systems`, and `tracked_points`.
+The algorithm takes accelerometer data as input, specifically the vertical acceleration component, and processes each specified gait sequence independently. The algorithm requires the start and duration of each gait sequence, in the format provided by the Paraschiv-Ionescu gait sequence detection algorithm ([`kielmat.modules.gsd._paraschiv`](https://github.com/neurogeriatricskiel/KielMAT/tree/main/kielmat/modules/gsd/_paraschiv.py)). The sampling frequency of the accelerometer data is also required as another input. Detected gait sequence information is provided as a DataFrame, which consists of the onset and duration of the gait sequences. For each gait sequence, the algorithm applies the Signal Decomposition algorithm for initial contacts. The algorithm handles multiple gait sequences and ensures uniform output by padding the initial contacts lists with NaN values to match the length of the sequence with the maximum number of initial contacts detected among all sequences. Finally, initial contacts information is provided as a DataFrame with columns `onset`, `event_type`, `tracking_systems`, and `tracked_points`. Additionally, final contacts (FC) are identified and represnted.
 
 #### References
 [`1`] Paraschiv-Ionescu et al. (2019). Locomotion and cadence detection using a single trunk-fixed accelerometer: validity for children with cerebral palsy in daily life-like conditions. Journal of NeuroEngineering and Rehabilitation, 16(1), 24. https://doi.org/10.1186/s12984-019-0494-z
@@ -166,8 +166,6 @@ Then, in order to apply Paraschiv-Ionescu initial contact detection algorithm, a
 - **Sampling Frequency:** `sampling_freq_Hz` is the sampling frequency of the data, defined in Hz, with a default value of 100 Hz.
 
 
-
-
 ```python
 # Create an instance of the ParaschivIonescuGaitSequenceDetection class
 gsd = ParaschivIonescuGaitSequenceDetection()
@@ -212,120 +210,43 @@ print(icd.initial_contacts_)
     12      11.900  initial contact   0          None
     
 
-## Visualization of the Detected Initial Contacts
+    1 gait sequence(s) detected.
 
-In the following, the raw data of the lower back sensor is plotted with the detected events. The events are plotted as vertical lines. The events are:
+    Initial contacts:       onset       event_type           duration       tracking_systems
+    0                       3.850       initial contact      0              None
+    1                       4.450       initial contact      0              None
+    2                       5.200       initial contact      0              None
+    3                       5.875       initial contact      0              None
+    4                       6.600       initial contact      0              None
+    5                       7.350       initial contact      0              None
+    6                       8.050       initial contact      0              None
+    7                       8.800       initial contact      0              None
+    8                       9.500       initial contact      0              None
+    9                       10.250      initial contact      0              None
+    10                      11.000      initial contact      0              None
+    11                      11.725      initial contact      0              None
+    12                      12.525      initial contact      0              None
 
-- **Gait onset**: Start of the gait sequence
-- **Gait duration**: Duration of the gait sequence
-- **Initial contacts**: Initial contacts
+### Final Contact Detection
 
-The gait onset is represented with the vertical green line and the grey area represents the duration of gait sequence detected by the algorithm. The vertical dashed blue lines are representing detected initial contacts within first gait sequence.
-
+In addition to initial contacts, the final contacts could be extracted using the `final_contacts_` method. The Final contact inofrmation are provided as a DataFrame with columns `onset`, `event_type`, and `tracking_systems`. 
 
 ```python
-# Load lower back acceleration data
-acceleration_data = recording.data[tracking_sys][
-    ["pelvis_ACCEL_x", "pelvis_ACCEL_y", "pelvis_ACCEL_z"]
-]
-
-# Get the corresponding unit of the acceleration data
-accel_unit = recording.channels[tracking_sys][
-    recording.channels[tracking_sys]["name"].str.contains("ACCEL", case=False)
-]["units"].iloc[0]
-
-# Check unit of acceleration data
-if accel_unit in ["m/s^2"]:
-    pass  # No conversion needed
-elif accel_unit in ["g", "G"]:
-    # Convert acceleration data from "g" to "m/s^2"
-    acceleration_data *= 9.81
-    # Update unit of acceleration
-    accel_unit = ["m/s^2"]
-
-# Access the first detected gait sequence
-first_gait_sequence = gsd.gait_sequences_[gsd.gait_sequences_["event_type"] == "gait sequence"].iloc[0]
-
-# Print information about the first gait sequence
-print("First Gait Sequence:", first_gait_sequence)
-
-# Print information about initial contacts within the first gait sequence
-ic_within_gait = icd.initial_contacts_[
-    icd.initial_contacts_["onset"].between(
-        first_gait_sequence["onset"],
-        first_gait_sequence["onset"] + first_gait_sequence["duration"],
-    )
-]
-print("\nInitial Contacts within the First Gait Sequence:", ic_within_gait)
-
-# Plot the raw data from the lower back
-fig, ax = plt.subplots(figsize=(22, 14))
-
-# Plot raw acceleration data
-for i in range(3):
-    ax.plot(
-        time,
-        accel_data.iloc[:,i],
-        color=colors[i],
-        label=f"ACCEL {'xyz'[i]}",
-    )
-
-# Plot the first element of gait sequences
-plt.axvline(first_gait_sequence["onset"], color="g", label="Gait onset")
-ax.axvspan(
-    first_gait_sequence["onset"],
-    first_gait_sequence["onset"] + first_gait_sequence["duration"],
-    alpha=0.2,
-    color="gray",
-    label="Gait duration",
-)
-
-# Plot the initial contacts within the first gait sequence
-for ic_time in ic_within_gait["onset"]:
-    ax.axvline(ic_time, color="blue", linestyle="--")
-
-# Customize plot
-start_limit = first_gait_sequence["onset"] - 1
-end_limit = first_gait_sequence["onset"] + first_gait_sequence["duration"] + 1
-ax.set_xlim(start_limit, end_limit)
-ax.set_xlabel("Time (s)", fontsize=20)
-ax.set_ylabel("Acceleration (m/s$^{2}$)", fontsize=20)
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
-ax.legend(
-    ["ACCEL x", "ACCEL y", "ACCEL z", "Gait onset", "Gait duration", "Initial contacts"],
-    fontsize=20,
-    loc="upper right",
-)
-plt.show()
+# Print final contact information
+print(f"Final contacts: {icd.final_contacts_}")
 ```
 
-    First Gait Sequence: 
-    onset                      3.125
-    duration                   9.775
-    event_type         gait sequence
-    tracking_system             None
-    Name: 0, dtype: object
-
-    Initial Contacts within the First Gait Sequence:      
-         onset  event_type          duration    tracking_systems
-    0    3.425  initial contact     0           None
-    1    4.000  initial contact     0           None
-    2    4.650  initial contact     0           None
-    3    5.350  initial contact     0           None
-    4    6.050  initial contact     0           None
-    5    6.825  initial contact     0           None
-    6    7.500  initial contact     0           None
-    7    8.250  initial contact     0           None
-    8    8.950  initial contact     0           None
-    9    9.700  initial contact     0           None
-    10  10.425  initial contact     0           None
-    11  11.150  initial contact     0           None
-    12  11.900  initial contact     0           None
-    
-
-
-    
-![png](modules_05_icd_files/modules_05_icd_14_1.png)
-    
-
+    Final contacts:         onset       event_type          duration        tracking_systems
+    0                       3.500       final contact       0               None
+    1                       4.175       final contact       0               None
+    2                       4.825       final contact       0               None
+    3                       5.550       final contact       0               None
+    4                       6.225       final contact       0               None
+    5                       6.975       final contact       0               None
+    6                       7.700       final contact       0               None
+    7                       8.425       final contact       0               None
+    8                       9.150       final contact       0               None
+    9                       9.825       final contact       0               None
+    10                      10.625      final contact       0               None
+    11                      11.375      final contact       0               None
+    12                      12.275      final contact       0               None
