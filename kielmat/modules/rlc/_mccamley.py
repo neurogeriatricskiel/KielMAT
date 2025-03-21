@@ -120,9 +120,12 @@ class MacCamleyInitialContactClassification:
         if signal is None:
             raise ValueError("Invalid signal type. Choose 'vertical', 'anterior_posterior', or 'combined'.")
                 
-        # Classify initial contacts using McCamley method (classify based on sign of the signal)
-        labels = ["left" if signal[idx] <= 0 else "right" for idx in ic_indices]
-        
+        # Apply correct labeling logic based on signal type
+        if signal_type == "anterior_posterior":
+            labels = ["right" if signal[idx] <= 0 else "left" for idx in ic_indices]
+        else:
+            labels = ["left" if signal[idx] <= 0 else "right" for idx in ic_indices]
+
         # Store results in DataFrame
         self.ic_rl_list_ = pd.DataFrame({"onset": ic_timestamps["onset"].values, "rl_label": labels})
 
