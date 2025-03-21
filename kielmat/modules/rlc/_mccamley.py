@@ -19,46 +19,26 @@ class MacCamleyInitialContactClassification:
     via `mccamley_df` attribute.
 
     Methods:
-        detect(
-            gyro_data, 
-            sampling_freq_Hz, 
-            v_gyr_col_name, 
-            ap_gyr_col_name, 
-            ic_timestamps, 
-            signal_type='vertical', 
-            recording=None, 
-            tracking_system=None
+        detect(gyro_data, sampling_freq_Hz, v_gyr_col_name, ap_gyr_col_name, ic_timestamps, signal_type='vertical', recording=None, tracking_system=None
         ):
             Detects initial contact laterality using the McCamley method. 
             Adds results to the recording if provided and stores the labeled events in `mccamley_df`.
 
-    Example (with recording):
+    Example:
 
         >>> detector = MacCamleyInitialContactClassification()
         >>> detector = detector.detect(
-        ...     gyro_data=gyro_df,
-        ...     sampling_freq_Hz=100,
-        ...     v_gyr_col_name="LowerBack_GYRO_x",
-        ...     ap_gyr_col_name="LowerBack_GYRO_z",
-        ...     ic_timestamps=initial_contacts_df,
-        ...     signal_type="vertical",
-        ...     recording=recording,
-        ...     tracking_system="LowerBack"
-        ... )
+                                gyro_data=gyro_df,
+                                sampling_freq_Hz=100,
+                                v_gyr_col_name="LowerBack_GYRO_x",
+                                ap_gyr_col_name="LowerBack_GYRO_z",
+                                ic_timestamps=initial_contacts_df,
+                                signal_type="vertical",
+                                recording=recording,
+                                tracking_system="LowerBack"
+                                )
         >>> print(detector.mccamley_df)
 
-    Example (without recording):
-
-        >>> detector = MacCamleyInitialContactClassification()
-        >>> detector = detector.detect(
-        ...     gyro_data=gyro_df,
-        ...     sampling_freq_Hz=100,
-        ...     v_gyr_col_name="LowerBack_GYRO_x",
-        ...     ap_gyr_col_name="LowerBack_GYRO_z",
-        ...     ic_timestamps=initial_contacts_df,
-        ...     signal_type="vertical"
-        ... )
-        >>> print(detector.mccamley_df)
 
     References:
         [1] McCamley, John, et al. "An enhanced estimate of initial contact and final contact instants of time ...
