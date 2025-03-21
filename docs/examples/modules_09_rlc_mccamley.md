@@ -29,7 +29,7 @@ Originally, the algorithm relied on the vertical axis signal alone [1]. However,
 
 Once classified, the initial contacts are stored in a pandas DataFrame (`ic_rl_list_` attribute), including their `onset` times and corresponding `rl_label` (left/right classification).
 
-### **References**
+**References**
 [1] **McCamley et al.** (2012). *An Enhanced Estimate of Initial Contact and Final Contact Instants of Time Using Lower Trunk Inertial Sensor Data.* Gait & Posture, 36(2), 318-320. [https://doi.org/10.1016/j.gaitpost.2012.02.019](https://doi.org/10.1016/j.gaitpost.2012.02.019)
 
 [2] **Ullrich et al.** (2022). *Machine Learning-Based Distinction of Left and Right Foot Contacts in Lower Back Inertial Sensor Data Improves Gait Analysis Accuracy.* IEEE Transactions on Neural Systems and Rehabilitation Engineering. [https://doi.org/10.1109/EMBC46164.2021.9630653](https://doi.org/10.1109/EMBC46164.2021.9630653)
@@ -55,7 +55,7 @@ To implement the MacCamley Initial Contact Classification algortihm, we load exa
 
 The participant was monitored for 2.5 hours in a real-world setting while performing various daily activities. Additionally, structured tasks such as outdoor walking, stair ascent/descent, and transitions between rooms were included in the assessment [`3`].
 
-#### Refertences
+Refertences
 
 [`3`] Mazzà, Claudia, et al. "Technical validation of real-world monitoring of gait: a multicentric observational study." BMJ open 11.12 (2021): e050785. http://dx.doi.org/10.1136/bmjopen-2021-050785
 
@@ -250,7 +250,7 @@ print(initaal_contact_events)
 
 Once the initial contacts are detected, the McCamley Initial Contact Classification algorithm is used to classify them as left or right based on gyroscope signals using the McCamley method.
 
-### Inputs for McCamley Initial Contact Classification Algorithm:
+## Inputs for McCamley Initial Contact Classification Algorithm:
 
 - **`gyro_data`** (`pd.DataFrame`):  
   A DataFrame containing gyroscope signals (N, 3), typically including x, y, and z components.
@@ -320,7 +320,7 @@ print(mccamley_ic_classifier.mccamley_df)
     [2665 rows x 5 columns]
 
 
-### **Interpretation of Classified Initial Contacts**
+## **Interpretation of Classified Initial Contacts**
 
 Each row in the output represents a classified **initial contact** (IC) event, with the following columns:
 
