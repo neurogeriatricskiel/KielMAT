@@ -35,7 +35,7 @@ class MacCamleyInitialContactClassification:
                                 ic_timestamps=initial_contacts_df,
                                 signal_type="vertical",
                                 recording=recording,
-                                tracking_system="LowerBack"
+                                tracking_system="SU"
                                 )
         >>> print(detector.mccamley_df)
 

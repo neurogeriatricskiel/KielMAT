@@ -171,15 +171,15 @@ gsd = ParaschivIonescuGaitSequenceDetection()
 gsd = gsd.detect(
     accel_data=accel_data, 
     sampling_freq_Hz=sampling_frequency, 
-    tracking_system="LowerBack", 
+    tracking_system="SU", 
     plot_results=False
 )
 
 # Add events to the recording as a dictionary including tracking system and events
-recording.add_events(tracking_system="LowerBack", new_events=gsd.gait_sequences_)
+recording.add_events(tracking_system="SU", new_events=gsd.gait_sequences_)
 
 # Filter only gait sequence events
-gait_sequence_events = recording.events["LowerBack"][recording.events["LowerBack"]["event_type"] == "gait sequence"]
+gait_sequence_events = recording.events["SU"][recording.events["SU"]["event_type"] == "gait sequence"]
 
 # Print the filtered gait sequences
 print(f'Gait sequences and thier corresponding information:')
@@ -189,19 +189,19 @@ print(gait_sequence_events)
         13 gait sequence(s) detected.
         Gait sequences and thier corresponding information:
                     onset       duration        event_type          tracking_system
-            0       1348.200    7.050           gait sequence       LowerBack
-            1       1372.025    4.600           gait sequence       LowerBack
-            2       1388.750    199.675         gait sequence       LowerBack
-            3       1596.050    24.700          gait sequence       LowerBack
-            4       1694.750    457.475         gait sequence       LowerBack
-            5       2168.000    310.625         gait sequence       LowerBack
-            6       2585.900    43.700          gait sequence       LowerBack
-            7       2633.625    315.600         gait sequence       LowerBack
-            8       2956.600    9.475           gait sequence       LowerBack
-            9       3029.725    16.450          gait sequence       LowerBack
-            10      3087.550    9.825           gait sequence       LowerBack
-            11      3195.125    12.825          gait sequence       LowerBack
-            12      3464.250    14.375          gait sequence       LowerBack
+            0       1348.200    7.050           gait sequence       SU
+            1       1372.025    4.600           gait sequence       SU
+            2       1388.750    199.675         gait sequence       SU
+            3       1596.050    24.700          gait sequence       SU
+            4       1694.750    457.475         gait sequence       SU
+            5       2168.000    310.625         gait sequence       SU
+            6       2585.900    43.700          gait sequence       SU
+            7       2633.625    315.600         gait sequence       SU
+            8       2956.600    9.475           gait sequence       SU
+            9       3029.725    16.450          gait sequence       SU
+            10      3087.550    9.825           gait sequence       SU
+            11      3195.125    12.825          gait sequence       SU
+            12      3464.250    14.375          gait sequence       SU
 
 
 Next, we apply the **Paraschiv-Ionescu Initial Contact Detection** algorithm to detect initial contacts within these gait sequences using [`KielMAT.kielmat.modules.icd._paraschiv.ParaschivIonescuInitialContactDetection`](https://github.com/neurogeriatricskiel/KielMAT/tree/main/kielmat/modules/icd/_paraschiv.py). 
@@ -216,15 +216,15 @@ icd = icd.detect(
     accel_data=accel_data,
     gait_sequences=gsd.gait_sequences_,
     sampling_freq_Hz=sampling_frequency,
-    tracking_system="LowerBack", 
+    tracking_system="SU", 
     v_acc_col_name="LowerBack_ACCEL_x"
 )
 
 # Add events to the recording as a dictionary including tracking system and events
-recording.add_events(tracking_system="LowerBack", new_events=icd.initial_contacts_)
+recording.add_events(tracking_system="SU", new_events=icd.initial_contacts_)
 
 # Filter only gait sequence events
-initaal_contact_events = recording.events["LowerBack"][recording.events["LowerBack"]["event_type"] == "initial contact"]
+initaal_contact_events = recording.events["SU"][recording.events["SU"]["event_type"] == "initial contact"]
 
 # Print the filtered gait sequences
 print(f"Initial contacts information:")
@@ -234,17 +234,17 @@ print(initaal_contact_events)
         Initial contacts information:
                 onset       event_type          duration    tracking_systems
 
-        0       1348.700    initial contact     0           LowerBack
-        1       1349.350    initial contact     0           LowerBack
-        2       1349.975    initial contact     0           LowerBack
-        3       1350.525    initial contact     0           LowerBack
-        4       1351.050    initial contact     0           LowerBack
+        0       1348.700    initial contact     0           SU
+        1       1349.350    initial contact     0           SU
+        2       1349.975    initial contact     0           SU
+        3       1350.525    initial contact     0           SU
+        4       1351.050    initial contact     0           SU
         ...     ...         ...                 ...         ...
-        2660    3475.750    initial contact     0           LowerBack
-        2661    3476.300    initial contact     0           LowerBack
-        2662    3476.825    initial contact     0           LowerBack
-        2663    3477.375    initial contact     0           LowerBack
-        2664    3477.925    initial contact     0           LowerBack
+        2660    3475.750    initial contact     0           SU
+        2661    3476.300    initial contact     0           SU
+        2662    3476.825    initial contact     0           SU
+        2663    3477.375    initial contact     0           SU
+        2664    3477.925    initial contact     0           SU
 
         [2665 rows x 4 columns]
 
@@ -295,7 +295,7 @@ mccamley_ic_classifier.detect(
     ic_timestamps=initaal_contact_events[["onset"]],
     signal_type="vertical",
     recording=recording,
-    tracking_system="LowerBack"
+    tracking_system="SU"
 )
 
 # Print results
@@ -306,16 +306,16 @@ print(mccamley_ic_classifier.mccamley_df)
     Initial contacts and their corresponding labels:
             
             onset       duration       event_type           rl_label        tracking_system
-    13      1348.700    0.0            initial contact      left            LowerBack
-    14      1349.350    0.0            initial contact      right           LowerBack
-    15      1349.975    0.0            initial contact      left            LowerBack
-    16      1350.525    0.0            initial contact      right           LowerBack
-    17      1351.050    0.0            initial contact      left            LowerBack
+    13      1348.700    0.0            initial contact      left            SU
+    14      1349.350    0.0            initial contact      right           SU
+    15      1349.975    0.0            initial contact      left            SU
+    16      1350.525    0.0            initial contact      right           SU
+    17      1351.050    0.0            initial contact      left            SU
     ...     ...         ...            ...                  ...             ...
-    2673    3475.750    0.0            initial contact      right           LowerBack
-    2674    3476.300    0.0            initial contact      left            LowerBack
-    2675    3476.825    0.0            initial contact      right           LowerBack
-    2676    3477.375    0.0            initial contact      left            LowerBack
-    2677    3477.925    0.0            initial contact      left            LowerBack
+    2673    3475.750    0.0            initial contact      right           SU
+    2674    3476.300    0.0            initial contact      left            SU
+    2675    3476.825    0.0            initial contact      right           SU
+    2676    3477.375    0.0            initial contact      left            SU
+    2677    3477.925    0.0            initial contact      left            SU
 
     [2665 rows x 5 columns]
