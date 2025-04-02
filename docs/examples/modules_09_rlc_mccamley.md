@@ -279,7 +279,7 @@ Once the initial contacts are detected, the McCamley Initial Contact Classificat
   If provided, the output labels (`rl_label`) will be added directly to the `recording.events` table.
 
 - **`tracking_system`** (`str`, required if `recording` is given):  
-  The tracking system key in the recording (e.g., `"LowerBack"`) used to locate and update initial contact events.
+  The tracking system key in the recording (e.g., `"SU"`) used to locate and update initial contact events.
 
 
 ```python
