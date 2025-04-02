@@ -34,7 +34,7 @@ class GaitSpatioTemporalParameters:
             Computes percentage-based stance and swing times for each gait cycle.
 
 
-    Example:
+    Examples:
         >>> gait_stp = GaitSpatioTemporalParameters()
         >>> gait_stp.detect(gait_sequences, initial_contacts, final_contacts)
         >>> temporal_df = gait_stp.temporal_parameters()
@@ -91,7 +91,7 @@ class GaitSpatioTemporalParameters:
         return self
 
     # Function to calculate temporal parameters
-    def temporal_parameters(self):
+    def temporal_parameters(self) -> pd.DataFrame:
         """
         Calculates temporal gait parameters using the provided initial and final contact events.
 
