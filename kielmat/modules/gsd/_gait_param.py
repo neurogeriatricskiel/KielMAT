@@ -6,17 +6,22 @@ from scipy.integrate import cumulative_trapezoid
 
 class GaitSpatioTemporalParameters:
     """
-    Calculates spatio-temporal gait parameters from pre-detected gait events.
-    Events must be provided as DataFrames with initial and final contacts and gait sequences.
+    This algorithm calculates spatio-temporal gait parameters based on pre-detected gait events,
+    such as initial contacts (IC), final contacts (FC), and gait sequences. It is designed for
+    analyzing human gait using event-based temporal data derived from IMU systems.
 
-   This implementation uses algorithms based on literature-reported definitions:
-    - Temporal parameters are calculated following clinical definitions and validated studies [1,4].
-    - Temporophasic percentages (stance and swing times) are derived as portions of the gait cycle [2,3].
-    
-    Attributes:
-        gait_sequences (pd.DataFrame): Gait sequence intervals.
-        initial_contacts (pd.DataFrame): Initial contact events.
-        final_contacts (pd.DataFrame): Final contact events.
+    The algorithm uses clinically validated definitions and reference literature to compute
+    step time, stride time, swing and stance phases, cadence, and percentage-based temporophasic
+    parameters (stance and swing time as a percentage of the gait cycle). The events must be
+    pre-identified using other algorithms or manual annotations and passed as pandas DataFrames.
+
+    ### Workflow:
+    1. Load gait sequences, initial contacts, and final contacts using the `detect()` method.
+    2. Call `temporal_parameters()` to compute duration-based gait parameters (e.g., stride time).
+    3. Call `temporophasic_parameters()` to derive percent-based stance and swing times.
+
+    This implementation supports left and right side separation, handles missing or incomplete
+    strides, and skips over incomplete data ranges.
 
     Methods:
         detect(gait_sequences, initial_contacts, final_contacts):
@@ -32,10 +37,14 @@ class GaitSpatioTemporalParameters:
     Example:
         >>> gait_stp = GaitSpatioTemporalParameters()
         >>> gait_stp.detect(gait_sequences, initial_contacts, final_contacts)
-        >>> temporal = gait_stp.temporal_parameters()
-        >>> phases = gait_stp.temporophasic_parameters()
-        >>> print(temporal)
-        >>> print(phases)
+        >>> temporal_df = gait_stp.temporal_parameters()
+        >>> phasic_df = gait_stp.temporophasic_parameters()
+        >>> print(temporal_df)
+               gait_sequence_id  step_time_l  step_time_r  ...  stance_time_r  cadence
+            0               0      [0.49]       [0.51]     ...      [0.61]       98.0
+
+        >>> print(phasic_df)
+               gait_sequence_id  stance_time_pct_gc_l  ...  swing_time_pct_gc_r
 
     References:
         [1] Zijlstra, W., & At L. Hof (2004). Assessment of spatio-temporal gait parameters from trunk accelerations during human walking
@@ -47,12 +56,16 @@ class GaitSpatioTemporalParameters:
         [4] Hass, C. J., et al. (2012). Quantitative normative gait data in a large cohort of ambulatory persons with Parkinson’s disease. PLoS ONE.
     """
 
-    def __init__(self):
-        # Initialize attributes
-        self.gait_sequences = None
-        self.initial_contacts = None
-        self.final_contacts = None
-        self.temporal_parameters_ = None
+    def __init__(
+        self,
+     
+    ):
+        """
+        Initializes the GaitSpatioTemporalParameters instance.
+        """
+        self.temporal_parameters = None
+        self.temporophasic_parameters = None
+
 
     def detect(
         self,
