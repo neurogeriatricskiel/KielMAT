@@ -36,3 +36,6 @@ This example introduces the [Turn Detection](https://neurogeriatricskiel.github.
 
 ### [Example 9: McCamley Initial Contact Classification](modules_09_rlc_mccamley.md)
 This example introduces the [McCamley Initial Contact Classification](../modules/ic_rlc_mccamley.md) module. The example demonstrates how this module classifies initial contacts as left or right based on gyroscope signals recorded with a lower back IMU sensor.
+
+### [Example 10: Gait Spatio-temporal Parameters](modules_10_gait_param.md)
+This example introduces the [Gait Spatio-temporal Parameters Calculation](../modules/gait_param.md) module. The example demonstrates how to calculate the gait spatio-temporal parameters using the gait events information.

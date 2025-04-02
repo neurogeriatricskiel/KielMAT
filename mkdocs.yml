@@ -51,6 +51,7 @@ nav:
     - Postural Transition Detection: examples/modules_07_ptd.md
     - Turn Detection: examples/modules_08_td.md
     - Initial Contact Classification: examples/modules_09_rlc_mccamley.md
+    - Gait Spatio-temporal Parameters Calculation: examples/modules_10_gait_param.md
 
   - Dataclass: dataclass.md 
   - Modules: 
@@ -61,6 +62,8 @@ nav:
     - Postural Transition Detection: modules/ptd.md
     - Turn Detection: modules/td.md
     - Initial Contact Classification: modules/ic_rlc_mccamley.md
+    -  Gait Spatio-temporal Parameters Calculation: modules/gait_param.md
+
   - Datasets:
     - datasets/index.md
     - KeepControl: datasets/keepcontrol.md
