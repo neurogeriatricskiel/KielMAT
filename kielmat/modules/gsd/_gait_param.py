@@ -97,6 +97,7 @@ class GaitSpatioTemporalParameters:
 
         Returns:
             pd.DataFrame: Gait temporal parameters per sequence, including:
+
                 - step_time_l / step_time_r: time between initial contact of one foot and opposite foot
                 - stride_time_l / stride_time_r: time between two successive ICs of the same foot
                 - swing_time_l / swing_time_r: time from final contact to next initial contact of same foot
@@ -193,6 +194,7 @@ class GaitSpatioTemporalParameters:
 
         Returns:
             A DataFrame with temporophasic parameters, including:
+            
                 - stance_time_pct_gc_l: Stance time as % of the gait cycle for the left foot.
                 - stance_time_pct_gc_r: Stance time as % of the gait cycle for the right foot.
                 - swing_time_pct_gc_l: Swing time as % of the gait cycle for the left foot.
