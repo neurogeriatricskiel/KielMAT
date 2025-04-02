@@ -15,7 +15,7 @@ class GaitSpatioTemporalParameters:
     parameters (stance and swing time as a percentage of the gait cycle). The events must be
     pre-identified using other algorithms or manual annotations and passed as pandas DataFrames.
 
-    ### Workflow:
+    Workflow:
     1. Load gait sequences, initial contacts, and final contacts using the `detect()` method.
     2. Call `temporal_parameters()` to compute duration-based gait parameters (e.g., stride time).
     3. Call `temporophasic_parameters()` to derive percent-based stance and swing times.
@@ -194,7 +194,7 @@ class GaitSpatioTemporalParameters:
 
         Returns:
             A DataFrame with temporophasic parameters, including:
-            
+
                 - stance_time_pct_gc_l: Stance time as % of the gait cycle for the left foot.
                 - stance_time_pct_gc_r: Stance time as % of the gait cycle for the right foot.
                 - swing_time_pct_gc_l: Swing time as % of the gait cycle for the left foot.
