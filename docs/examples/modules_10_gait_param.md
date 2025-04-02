@@ -390,12 +390,12 @@ temporal_df = gait_stp.temporal_parameters()
 
 # Print result
 print("Temporal gait parameters per gait sequence:")
-print(temporal_df)
+print(temporal_df.temporal_parameters_)
 ```
     Temporal gait parameters per gait sequence:
     
-                    gait_sequence_id                step_time_l                     step_time_r                 stride_time_l               stride_time_r               swing_time_l                    swing_time_r                stance_time_l               stance_time_r           cadence  
-        0           0                               [0.535, 0.51, 0.52, 0.55]       [0.545, 0.535, 0.535]       [1.08, 1.045, 1.055]        [1.055, 1.055, 1.085]       [0.415, 0.42, 0.405, 0.39]      [0.4, 0.385, 0.38, 0.4]     [0.665, 0.625, 0.65]        [0.655, 0.67, 0.705]    128.69
+                    gait_sequence_id                step_time_l                     step_time_r                 stride_time_l               stride_time_r               swing_time_l                    swing_time_r                stance_time_l                   stance_time_r           cadence  
+        0           0                               [0.535, 0.51, 0.52, 0.55]       [0.545, 0.535, 0.535]       [1.08, 1.045, 1.055]        [1.055, 1.055, 1.085]       [0.415, 0.42, 0.405, 0.39]      [0.4, 0.385, 0.38, 0.4]     [0.66, 0.64, 0.665, 0.71]       [0.67, 0.675, 0.685]    128.69
 
             
 ### Calculation of the Temporophasic Parameters
@@ -409,10 +409,10 @@ phasic_df = gait_stp.temporophasic_parameters()
 
 # Print result
 print("Temporophasic gait parameters per gait sequence:")
-print(phasic_df)
+print(phasic_df.temporophasic_parameters_)
 ```
 
     Temporophasic gait parameters per gait sequence:
 
                     gait_sequence_id                stance_time_pct_gc_l                stance_time_pct_gc_r                swing_time_pct_gc_l                swing_time_pct_gc_r 
-        0           0                               [61.57, 59.81, 61.61]               [62.09, 63.51, 64.98]               [38.43, 40.19, 38.39]              [37.91, 36.49, 35.02]   
+        0           0                               [61.11, 61.24, 63.03]               [63.51, 63.98, 63.13]               [38.89, 38.76, 36.97]              [36.49, 36.02, 36.87]   
