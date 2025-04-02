@@ -63,8 +63,8 @@ class GaitSpatioTemporalParameters:
         """
         Initializes the GaitSpatioTemporalParameters instance.
         """
-        self.temporal_parameters = None
-        self.temporophasic_parameters = None
+        self.temporal_parameters_ = None
+        self.temporophasic_parameters_ = None
 
 
     def detect(
@@ -107,68 +107,81 @@ class GaitSpatioTemporalParameters:
         if self.gait_sequences is None or self.initial_contacts is None or self.final_contacts is None:
             raise ValueError("Gait sequences and contact events must be loaded using the detect() method.")
 
-        # Temporal parameters
         temporal_parameters = []
 
         for seq_idx, seq in self.gait_sequences.iterrows():
             start = seq["onset"]
             end = seq["onset"] + seq["duration"]
 
-            # Filter events within the current gait sequence
+            # Filter events in range
             ic = self.initial_contacts[
-                (self.initial_contacts["onset"] >= start) &
+                (self.initial_contacts["onset"] >= start) & 
                 (self.initial_contacts["onset"] <= end)
             ]
             fc = self.final_contacts[
-                (self.final_contacts["onset"] >= start) &
+                (self.final_contacts["onset"] >= start) & 
                 (self.final_contacts["onset"] <= end)
             ]
 
-            # Separate IC and FC by side
-            ic_l = ic[ic["rl_label"] == "left"]["onset"].to_numpy()
-            ic_r = ic[ic["rl_label"] == "right"]["onset"].to_numpy()
-            fc_l = fc[fc["rl_label"] == "left"]["onset"].to_numpy()
-            fc_r = fc[fc["rl_label"] == "right"]["onset"].to_numpy()
+            # Separate left/right ICs and FCs
+            ic_l = np.sort(ic[ic["rl_label"] == "left"]["onset"].to_numpy())
+            ic_r = np.sort(ic[ic["rl_label"] == "right"]["onset"].to_numpy())
+            fc_l = np.sort(fc[fc["rl_label"] == "left"]["onset"].to_numpy())
+            fc_r = np.sort(fc[fc["rl_label"] == "right"]["onset"].to_numpy())
 
-            # Skip if there's less than 2 total steps
-            if len(ic_l) + len(ic_r) < 2:
-                continue
+            # Step times (from one foot to opposite)
+            step_time_l = []
+            for ic_time in ic_l:
+                next_r = ic_r[ic_r > ic_time]
+                if len(next_r) > 0:
+                    step_time_l.append(next_r[0] - ic_time)
 
-            # Step Times: time between the initial contact of one foot and the initial contact of the opposite foot
-            step_time_l = [ic_r[i] - ic_l[i] for i in range(min(len(ic_l), len(ic_r)))]
-            step_time_r = [ic_l[i + 1] - ic_r[i] for i in range(len(ic_r) - 1)]
+            step_time_r = []
+            for ic_time in ic_r:
+                next_l = ic_l[ic_l > ic_time]
+                if len(next_l) > 0:
+                    step_time_r.append(next_l[0] - ic_time)
 
-            # Stride Times: time between two successive initial contacts of the same foot
-            stride_time_l = [ic_l[i + 1] - ic_l[i] for i in range(len(ic_l) - 1)]
-            stride_time_r = [ic_r[i + 1] - ic_r[i] for i in range(len(ic_r) - 1)]
-
-            # Swing Times: time from the initial contact to next the initial contact on the same foot
-            swing_time_l = [
-                ic_l[i] - fc_l[i]
-                for i in range(min(len(ic_l), len(fc_l)))
+            # Stride times (from one IC to next same side IC)
+            stride_time_l = [
+                ic_l[i + 1] - ic_l[i] for i in range(len(ic_l) - 1)
+            ]
+            stride_time_r = [
+                ic_r[i + 1] - ic_r[i] for i in range(len(ic_r) - 1)
             ]
 
-            swing_time_r = [
-                ic_r[i] - fc_r[i]
-                for i in range(min(len(ic_r), len(fc_r)))
-            ]
+            # Swing times (from FC to next IC of same foot)
+            swing_time_l = []
+            for fc_time in fc_l:
+                next_ic = ic_l[ic_l > fc_time]
+                if len(next_ic) > 0:
+                    swing_time_l.append(next_ic[0] - fc_time)
 
-            # Stance Times = calculated as stride time - swing time
-            stance_time_l = [
-                stride_time_l[i] - swing_time_l[i]
-                for i in range(min(len(stride_time_l), len(swing_time_l)))
-            ]
-            stance_time_r = [
-                stride_time_r[i] - swing_time_r[i]
-                for i in range(min(len(stride_time_r), len(swing_time_r)))
-            ]
+            swing_time_r = []
+            for fc_time in fc_r:
+                next_ic = ic_r[ic_r > fc_time]
+                if len(next_ic) > 0:
+                    swing_time_r.append(next_ic[0] - fc_time)
 
-            # Cadence (steps/min): number of steps per minute.
+            # Stance times (from IC to next FC of same foot)
+            stance_time_l = []
+            for ic_time in ic_l:
+                next_fc = fc_l[fc_l > ic_time]
+                if len(next_fc) > 0:
+                    stance_time_l.append(next_fc[0] - ic_time)
+
+            stance_time_r = []
+            for ic_time in ic_r:
+                next_fc = fc_r[fc_r > ic_time]
+                if len(next_fc) > 0:
+                    stance_time_r.append(next_fc[0] - ic_time)
+
+            # Cadence (steps per minute)
             all_ics = np.sort(np.concatenate([ic_l, ic_r]))
             duration = all_ics[-1] - all_ics[0] if len(all_ics) > 1 else None
             cadence = (len(all_ics) / duration) * 60 if duration and duration > 0 else np.nan
 
-            # Append parameters
+            # Append results
             temporal_parameters.append({
                 "gait_sequence_id": seq_idx,
                 "step_time_l": np.round(step_time_l, 3).tolist(),
@@ -182,13 +195,12 @@ class GaitSpatioTemporalParameters:
                 "cadence": round(cadence, 2),
             })
 
-        # Store results in a DataFrame
         self.temporal_parameters_ = pd.DataFrame(temporal_parameters)
-
-        return self.temporal_parameters_
+        
+        return self
 
     # Function to calculate temporophasic parameters
-    def temporophasic_parameters(self):
+    def temporophasic_parameters(self) -> pd.DataFrame:
         """
         Calculates temporophasic parameters as percentages of the gait cycle for each foot.
 
@@ -235,4 +247,4 @@ class GaitSpatioTemporalParameters:
         # Store results in a DataFrame
         self.temporophasic_parameters_ = pd.DataFrame(temporophasic_parameters_list)
 
-        return self.temporophasic_parameters_
+        return self
