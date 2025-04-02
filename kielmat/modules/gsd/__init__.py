@@ -1,1 +1,2 @@
 from ._paraschiv import ParaschivIonescuGaitSequenceDetection
+from ._gait_param import GaitSpatioTemporalParameters
