@@ -43,25 +43,25 @@ class GaitSpatioTemporalParameters:
 
     Examples:
 
-    >>> gait_stp = GaitSpatioTemporalParameters()
-    >>> gait_stp.detect(gait_sequences, initial_contacts, final_contacts)
+        >>> gait_stp = GaitSpatioTemporalParameters()
+        >>> gait_stp.detect(gait_sequences, initial_contacts, final_contacts)
 
-    >>> temporal_df = gait_stp.temporal_parameters()
-    >>> print(temporal_df.temporal_parameters_)
+        >>> temporal_df = gait_stp.temporal_parameters()
+        >>> print(temporal_df.temporal_parameters_)
 
-    >>> temporophasic_df = gait_stp.temporophasic_parameters()
-    >>> print(temporophasic_df.temporophasic_parameters_)
+        >>> temporophasic_df = gait_stp.temporophasic_parameters()
+        >>> print(temporophasic_df.temporophasic_parameters_)
 
-    >>> spatial_df = gait_stp.spatial_parameters(
-    ...     accel_data=accel_df, 
-    ...     v_acc_col_name="pelvis_ACCEL_z", 
-    ...     sampling_freq_Hz=100, 
-    ...     wearable_height=1.0
-    ... )
-    >>> print(spatial_df.spatial_parameters_)
+        >>> spatial_df = gait_stp.spatial_parameters(
+                accel_data=accel_df, 
+                v_acc_col_name="pelvis_ACCEL_z", 
+                sampling_freq_Hz=100, 
+                wearable_height=1.0
+         )
+        >>> print(spatial_df.spatial_parameters_)
 
-    >>> spatiotemporal_df = gait_stp.spatiotemporal_parameters()
-    >>> print(spatiotemporal_df.spatiotemporal_parameters_)
+        >>> spatiotemporal_df = gait_stp.spatiotemporal_parameters()
+        >>> print(spatiotemporal_df.spatiotemporal_parameters_)
 
     References:
 
