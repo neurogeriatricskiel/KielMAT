@@ -67,7 +67,7 @@ The `keepcontrol.load_recording` function is used to load the data.
 
 ```python
 # The 'keepcontrol.load_recording' function is used to load the data from the specified file_path
-participant_id = "pp001"
+participant_id = "pp002"
 task = "walkPreferred"
 
 recording = keepcontrol.load_recording(
@@ -96,20 +96,19 @@ print(f"accel_data ({accel_unit}): {accel_data}")
 ```
 
     accel_data (g):       pelvis_ACCEL_x  pelvis_ACCEL_y  pelvis_ACCEL_z
-
-                0         0.994132        0.036127        0.115730
-                1         0.984370        0.032706        0.106439
-                2         0.991221        0.038586        0.109871
-                3         0.990250        0.039067        0.106439
-                4         0.996587        0.039067        0.119627
+                0         0.984890       -0.011232        0.178212
+                1         0.985368       -0.012204        0.187495
+                2         0.987280       -0.007803        0.186044
+                3         0.987818       -0.008803        0.185045
+                4         0.986324       -0.007317        0.194328
                 ...       ...             ...             ...
-                1784      0.909642       -0.163080        0.191894
-                1785      0.892572       -0.167490        0.199224
-                1786      0.893543       -0.167490        0.195792
-                1787      0.889661       -0.174812        0.209471
-                1788      0.886236       -0.181653        0.194346
+                1642      0.912108       -0.182120        0.357906
+                1643      0.920414       -0.195325        0.338374
+                1644      0.922864       -0.208986        0.336923
+                1645      0.930692       -0.210930        0.307141
+                1646      0.930692       -0.210930        0.311041
 
-      [1789 rows x 3 columns]
+    [1647 rows x 3 columns]
 
 
 Get the `pelvis` gyro data and the corresponding unit from the recording as:
@@ -130,22 +129,20 @@ gyro_unit = recording.channels[tracking_sys][
 print(f"gyro_data ({gyro_unit}): {gyro_data}")
 ```
 
-    gyro_data (deg/s):       pelvis_GYRO_x  pelvis_GYRO_y  pelvis_GYRO_z
+    gyro_data (deg/s):      pelvis_GYRO_x  pelvis_GYRO_y  pelvis_GYRO_z
+                0           2.360255       1.661669      -0.263280
+                1           1.486229       0.962426       0.438799
+                2           1.312964       1.223030       0.000000
+                3           1.659495       1.573941       0.087760
+                4           0.785468       1.486213      -0.522744
+                ...         ...            ...            ...
+                1642        41.529716      -9.268191      -4.548252
+                1643        43.015945      -7.518795      -7.169601
+                1644        43.716705      -4.458640      -9.703192
+                1645        43.628147      -4.110309     -13.026620
+                1646        43.889973      -1.661669     -15.125226
 
-                  0         -1.221909       3.059488      -0.962528
-                  1         -1.746291       1.748709      -0.174418
-                  2         -1.924383       2.097848      -1.048660
-                  3         -2.275620       3.410132      -0.525407
-                  4         -1.573146       2.185133      -0.437121
-                  ...             ...            ...            ...
-                  1784    -162.098358       0.174570     -57.529877
-                  1785    -161.836166      -1.136209     -57.267174
-                  1786    -161.400833      -3.671987     -58.229702
-                  1787    -160.787399      -4.021127     -58.492405
-                  1788    -159.822739      -6.469620     -58.404121
-
-        [1789 rows x 3 columns]
-
+    [1647 rows x 3 columns]
 
 Get the corresponding sampling frequency of the data directly from the recording
 
@@ -212,29 +209,30 @@ print(f"Loaded events from file:\n{events_df}")
 
     Loaded events from file:
 
-          onset     duration      event_type
-    0     722       0             start
-    1     751       0             final_contact_left
-    2     834       0             initial_contact_left
-    3     861       0             final_contact_right
-    4     941       0             initial_contact_right
-    5     966       0             final_contact_left
-    6    1050       0             initial_contact_left
-    7    1075       0             final_contact_right
-    8    1152       0             initial_contact_right
-    9    1178       0             final_contact_left
-    10   1259       0             initial_contact_left
-    11   1287       0             final_contact_right
-    12   1363       0             initial_contact_right
-    13   1392       0             final_contact_left
-    14   1470       0             initial_contact_left
-    15   1500       0             final_contact_right
-    16   1580       0             initial_contact_right
-    17   1612       0             final_contact_left
-    18   1613       0             stop
-    19   1684       0             initial_contact_left
-    20   1730       0             final_contact_right
-
+          onset     duration        event_type
+    0     385       0               final_contact_left
+    1     475       0               initial_contact_left
+    2     505       0               final_contact_right
+    3     574       0               start
+    4     590       0               initial_contact_right
+    5     625       0               final_contact_left
+    6     712       0               initial_contact_left
+    7     739       0               final_contact_right
+    8     817       0               initial_contact_right
+    9     843       0               final_contact_left
+    10    923       0               initial_contact_left
+    11    950       0               final_contact_right
+    12   1028       0               initial_contact_right
+    13   1056       0               final_contact_left
+    14   1136       0               initial_contact_left
+    15   1163       0               final_contact_right
+    16   1242       0               initial_contact_right
+    17   1274       0               final_contact_left
+    18   1354       0               initial_contact_left
+    19   1387       0               final_contact_right
+    20   1426       0               stop
+    21   1469       0               initial_contact_right
+    22   1528       0               final_contact_left
 
 ### Extract Reference Gait Sequences Events
 
@@ -277,7 +275,7 @@ print(gait_sequences_df)
   Gait sequences:
 
             onset     duration    event_type      tracking_system
-    0       3.61      4.455       gait sequence   imu
+    0       2.87      4.26        gait sequence   imu
 
 
 ### Extract Reference Initial and Final Contact Events
@@ -330,26 +328,28 @@ print(all_contact_events)
 
     Initial and final contact events:
 
-          onset       duration      event_type        rl_label      tracking_system
-      0   4.170       0.0           initial contact   left          imu
-      1   4.705       0.0           initial contact   right         imu
-      2   5.250       0.0           initial contact   left          imu
-      3   5.760       0.0           initial contact   right         imu
-      4   6.295       0.0           initial contact   left          imu
-      5   6.815       0.0           initial contact   right         imu
-      6   7.350       0.0           initial contact   left          imu
-      7   7.900       0.0           initial contact   right         imu
-      8   8.420       0.0           initial contact   left          imu
-      9   3.755       0.0           final contact     left          imu
-      10  4.305       0.0           final contact     right         imu
-      11  4.830       0.0           final contact     left          imu
-      12  5.375       0.0           final contact     right         imu
-      13  5.890       0.0           final contact     left          imu
-      14  6.435       0.0           final contact     right         imu
-      15  6.960       0.0           final contact     left          imu
-      16  7.500       0.0           final contact     right         imu
-      17  8.060       0.0           final contact     left          imu
-      18  8.650       0.0           final contact     right         imu
+            onset       duration        event_type          rl_label        tracking_system
+        0   2.375       0.0             initial contact     left            imu
+        1   2.950       0.0             initial contact     right           imu
+        2   3.560       0.0             initial contact     left            imu
+        3   4.085       0.0             initial contact     right           imu
+        4   4.615       0.0             initial contact     left            imu
+        5   5.140       0.0             initial contact     right           imu
+        6   5.680       0.0             initial contact     left            imu
+        7   6.210       0.0             initial contact     right           imu
+        8   6.770       0.0             initial contact     left            imu
+        9   7.345       0.0             initial contact     right           imu
+        10  1.925       0.0             final contact       left            imu
+        11  2.525       0.0             final contact       right           imu
+        12  3.125       0.0             final contact       left            imu
+        13  3.695       0.0             final contact       right           imu
+        14  4.215       0.0             final contact       left            imu
+        15  4.750       0.0             final contact       right           imu
+        16  5.280       0.0             final contact       left            imu
+        17  5.815       0.0             final contact       right           imu
+        18  6.370       0.0             final contact       left            imu
+        19  6.935       0.0             final contact       right           imu
+        20  7.640       0.0             final contact       left            imu
 
 
 
@@ -394,8 +394,8 @@ print(temporal_df.temporal_parameters_)
 ```
     Temporal gait parameters per gait sequence:
     
-                    gait_sequence_id                step_time_l                     step_time_r                 stride_time_l               stride_time_r               swing_time_l                    swing_time_r                stance_time_l                   stance_time_r           cadence  
-        0           0                               [0.535, 0.51, 0.52, 0.55]       [0.545, 0.535, 0.535]       [1.08, 1.045, 1.055]        [1.055, 1.055, 1.085]       [0.415, 0.42, 0.405, 0.39]      [0.4, 0.385, 0.38, 0.4]     [0.66, 0.64, 0.665, 0.71]       [0.67, 0.675, 0.685]    128.69
+                    gait_sequence_id                step_time_l                     step_time_r                    stride_time_l               stride_time_r              swing_time_l              swing_time_r              stance_time_l         stance_time_r          cadence  
+        0           0                               [0.525, 0.525, 0.53]            [0.61, 0.53, 0.54, 0.56]       [1.055, 1.065, 1.09]        [1.135, 1.055, 1.07]       [0.655, 0.665, 0.69]      [0.745, 0.665, 0.675]     [0.4, 0.4, 0.4]       [0.39, 0.39, 0.395]    125.65
 
             
 ### Calculation of the Temporophasic Parameters
@@ -414,5 +414,31 @@ print(phasic_df.temporophasic_parameters_)
 
     Temporophasic gait parameters per gait sequence:
 
-                    gait_sequence_id                stance_time_pct_gc_l                stance_time_pct_gc_r                swing_time_pct_gc_l                swing_time_pct_gc_r 
-        0           0                               [61.11, 61.24, 63.03]               [63.51, 63.98, 63.13]               [38.89, 38.76, 36.97]              [36.49, 36.02, 36.87]   
+                    gait_sequence_id                stance_time_pct_gc_l                stance_time_pct_gc_r              swing_time_pct_gc_l               swing_time_pct_gc_r 
+        0           0                               [62.09, 62.44, 63.3]                [62.09, 62.44, 63.3]              [37.91, 37.56, 36.7]              [34.36, 36.97, 36.92]   
+
+
+### Calculation of the Spatial Parameters
+
+Next, the spatial gait parameters could be extracted using the `spatial_parameters`. The outputs are stored in the `phasic_df`.
+
+```python
+# Estimate spatial parameters using vertical acceleration
+# Ensure acceleration is vertical and in m/s^2
+spatial_df = gait_stp.spatial_parameters(
+            accel_data=accel_data,                    
+            v_acc_col_name="pelvis_ACCEL_z",           
+            sampling_freq_Hz=sampling_frequency,       
+            wearable_height=1.0                        
+        )
+
+# Print results
+print("Spatial gait parameters per gait sequence:")
+print(spatial_df.spatial_parameters_)
+```
+
+    Spatial gait parameters per gait sequence:
+
+                gait_sequence_id          step_length_l                step_length_r                       stride_length_l      stride_length_r 
+        0       0                         [0.632, 0.639, 0.662]        [0.718, 0.64, 0.648, 0.694]         [1.271, 1.287]       [1.35, 1.279, 1.31] 
+         
