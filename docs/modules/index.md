@@ -28,3 +28,9 @@ The **Turn Detection** module is based on the work of [Pham](https://pubmed.ncbi
 ## [Initial Contact Classification (McCamley)](ic_rlc_mccamley.md)
 
 The **McCamley Initial Contact Classification** module is based on the work of [McCamley et al.](https://doi.org/10.1016/j.gaitpost.2012.02.019) and is used to classify initial contacts as `left` or `right` based on gyroscope data. The classified initial contacts are returned in a structured format, allowing for further gait analysis and spatio-temporal parameter extraction.
+
+
+## [Gait Spatio-temporal Parameters](gait_param.md)
+The Gait Spatio-temporal Parameters module provides a comprehensive calculation of clinically relevant gait metrics based on pre-detected gait events. These include initial contacts (IC), final contacts (FC), and gait sequences derived from wearable IMU data.
+
+
