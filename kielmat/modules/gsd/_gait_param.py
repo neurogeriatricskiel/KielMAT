@@ -16,7 +16,7 @@ class GaitSpatioTemporalParameters:
     pre-identified using other algorithms or manual annotations and passed as pandas DataFrames.
 
     This implementation uses algorithms based on literature-reported definitions:
-    
+
     - Temporal parameters are calculated following clinical definitions and validated studies [1-4].
     - Temporophasic percentages (stance and swing times) are derived as portions of the gait cycle [2,3].
     - Spatial parameters are derived based on the inverted pendulum model using [5].
@@ -121,11 +121,15 @@ class GaitSpatioTemporalParameters:
     def temporal_parameters(self) -> pd.DataFrame:
         """
         Calculates temporal gait parameters for each gait sequence:
-          - step_time_l / step_time_r: Time from an initial contact (IC) of one foot to the next IC of the opposite foot.
-          - stride_time_l / stride_time_r: Time between consecutive ICs of the same foot.
-          - stance_time_l / stance_time_r: Time from an IC to the first final contact (FC) in the same stride.
-          - swing_time_l / swing_time_r: Stride time minus stance time.
-          - cadence: Total number of steps per minute.
+
+        Returns:
+            A DataFrame with temporophasic parameters, including:
+
+                - step_time_l / step_time_r: Time from an initial contact (IC) of one foot to the next IC of the opposite foot.
+                - stride_time_l / stride_time_r: Time between consecutive ICs of the same foot.
+                - stance_time_l / stance_time_r: Time from an IC to the first final contact (FC) in the same stride.
+                - swing_time_l / swing_time_r: Stride time minus stance time.
+                - cadence: Total number of steps per minute.
         """
         temporal_results = []
 
@@ -307,6 +311,7 @@ class GaitSpatioTemporalParameters:
 
         Returns:
             pd.DataFrame: A DataFrame containing spatial parameters for each gait sequence, including:
+            
                 - 'gait_sequence_id': Index of the gait sequence.
                 - 'step_length_l': List of left step lengths (in meters).
                 - 'step_length_r': List of right step lengths (in meters).
