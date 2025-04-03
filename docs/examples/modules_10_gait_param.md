@@ -18,7 +18,7 @@ By the end of this tutorial, you will be able to:
 
 This section demonstrates how to calculate clinically relevant gait parameters using the `GaitSpatioTemporalParameters` class from the toolbox. The algorithm uses pre-detected gait events (initial contacts, final contacts, and gait sequences) to extract temporal, temporophasic, spatial, and spatio-temporal metrics based on validated biomechanical definitions.
 
-### Parameters Computed
+Computed parameters are as follows: 
 
 - **Temporal Parameters**  
   Step time, stride time, stance time, swing time, cadence, single support time, and double support time  
@@ -298,7 +298,7 @@ print(gait_sequences_df)
     0       2.87      4.26        gait sequence   imu
 
 
-## Extract Reference Initial and Final Contact Events
+### Extract Reference Initial and Final Contact Events
 
 Initial and final contact events are extracted from the raw `events_df` and converted to a BIDS-compatible format for downstream gait analysis. All extracted contacts are combined into a single DataFrame and added to the `recording` object via the `add_events()` method.
 
@@ -383,7 +383,7 @@ To begin the analysis, an instance of the `GaitSpatioTemporalParameters` class m
 
 The `detect()` method is used to load these pre-detected events from the recording. The input data should be structured as a DataFrame (typically extracted from `recording.events["imu"]`) where each event is labeled with an `event_type` such as `"initial contact"`, `"final contact"`, or `"gait sequence"`.
 
-### Inputs to the `detect()` method:
+Inputs to the `detect()` method:
 
 - **`gait_sequences`** (`pd.DataFrame`)  
   DataFrame containing gait sequence events with the columns:
