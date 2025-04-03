@@ -16,6 +16,7 @@ class GaitSpatioTemporalParameters:
     pre-identified using other algorithms or manual annotations and passed as pandas DataFrames.
 
     This implementation uses algorithms based on literature-reported definitions:
+    
     - Temporal parameters are calculated following clinical definitions and validated studies [1-4].
     - Temporophasic percentages (stance and swing times) are derived as portions of the gait cycle [2,3].
     - Spatial parameters are derived based on the inverted pendulum model using [5].
