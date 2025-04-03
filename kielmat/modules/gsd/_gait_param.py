@@ -46,15 +46,26 @@ class GaitSpatioTemporalParameters:
     Examples:
         >>> gait_stp = GaitSpatioTemporalParameters()
         >>> gait_stp.detect(gait_sequences, initial_contacts, final_contacts)
+        
         >>> temporal_df = gait_stp.temporal_parameters()
-        >>> phasic_df = gait_stp.temporophasic_parameters()
         >>> print(temporal_df)
-               gait_sequence_id  step_time_l  step_time_r  ...  stance_time_r  cadence
-            0               0      [0.49]       [0.51]     ...      [0.61]       98.0
+               gait_sequence_id     step_time_l     step_time_r  ...  stance_time_r     cadence
+            0  0                    [0.49, 0.5]     [0.51, 0,5]  ...  [0.61,0.6]        98.0
 
+        >>> phasic_df = gait_stp.temporophasic_parameters()
         >>> print(phasic_df)
                gait_sequence_id  stance_time_pct_gc_l  ...  swing_time_pct_gc_r
-
+            0  0                 [62.1, 63.3]          ...  [36.9, 36.3]
+        >>> spatial_df = gait_stp.spatial_parameters(
+        ...     accel_data=accel_df, 
+        ...     v_acc_col_name="pelvis_ACCEL_z", 
+        ...     sampling_freq_Hz=100, 
+        ...     wearable_height=1.0
+        ... )
+        >>> print(spatial_df)
+               gait_sequence_id     step_length_l       ...     stride_length_r
+            0  0                    [0.57, 0.63]        ...     [1.27]
+    
     References:
         [1] Zijlstra, W., & At L. Hof (2003). Assessment of spatio-temporal gait parameters from trunk accelerations during human walking.
         
