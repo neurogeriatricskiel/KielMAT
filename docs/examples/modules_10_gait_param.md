@@ -2,32 +2,52 @@
 
 **Author:** Masoud Abedinifar
 
-**Last update:** Wed 02 April 2025
+**Last update:** Wed 03 April 2025
 
-## Learning Objectives
-By the end of this tutorial:
+## Learning objectives
+By the end of this tutorial, you will be able to:
 
-- You can calculate spatio-temporal gait parameters from pre-detected gait events.
+- Load and process IMU-based gait event data (initial contacts, final contacts, and gait sequences).
+- Apply the `GaitSpatioTemporalParameters` class to analyze gait using pre-detected event annotations.
+- Compute **temporal gait parameters**, such as step time, stride time, stance, swing, cadence, single and double support times.
+- Calculate **temporophasic parameters**, such as stance and swing times as a percentage of the gait cycle.
+- Estimate **spatial gait parameters**, including step and stride lengths using the inverted pendulum model.
+- Derive **spatio-temporal parameters**, such as gait speed and stride speed for each side.
 
-## Gait Spatio-temporal Parameters
+## Gait Spatio-Temporal Parameters
 
-This example can be referenced by citing the package.
+This section demonstrates how to calculate clinically relevant gait parameters using the `GaitSpatioTemporalParameters` class from the toolbox. The algorithm uses pre-detected gait events (initial contacts, final contacts, and gait sequences) to extract temporal, temporophasic, spatial, and spatio-temporal metrics based on validated biomechanical definitions.
 
-The example demonstrates the application of the `GaitSpatioTemporalParameters` for calculating gait parameters from pre-detected gait events.
+### Parameters Computed
 
-This implementation uses algorithms based on literature-reported definitions:
-- Temporal parameters are calculated following clinical definitions and validated studies [`1`-`4`].
-- Temporophasic percentages (stance and swing times) are derived as portions of the gait cycle [`2`,`3`].
+- **Temporal Parameters**  
+  Step time, stride time, stance time, swing time, cadence, single support time, and double support time  
+  *(Based on: Moe-Nilssen et al. 2020 [`2`], Hollman et al. 2011 [`3`], Hass et al. 2012 [`4`])*
 
-**References**
+- **Temporophasic Parameters**  
+  Stance, swing, single, and double support durations as a percentage of the gait cycle  
+  *(Based on: Moe-Nilssen et al. 2020 [`2`], Hollman et al. 2011 [`3`])*
 
-[`1`] Zijlstra, W., & At L. Hof (2004). Assessment of spatio-temporal gait parameters from trunk accelerations during human walking
+- **Spatial Parameters**  
+  Step and stride lengths using the inverted pendulum model and double integration of vertical acceleration  
+  *(Based on: Cerny et al. 2015 [`5`])*
 
-[`2`] Moe-Nilssen, R., et al. (2020). Spatiotemporal gait parameters for older adults. Gait & Posture.
+- **Spatio-Temporal Parameters**  
+  Gait speed and stride speeds calculated by combining spatial and temporal metrics  
+  *(Based on: Moe-Nilssen et al. 2020 [`2`], Hollman et al. 2011 [`3`], Hass et al. 2012 [`4`])*
 
-[`3`] Hollman, J. H., et al. (2011). Normative spatiotemporal gait parameters in older adults. Gait & Posture.
 
-[`4`] Hass, C. J., et al. (2012). Quantitative normative gait data in a large cohort of ambulatory persons with Parkinson’s disease. PLoS ONE.
+References
+
+[`1`] Zijlstra, W., & Hof, A. L. (2003). *Assessment of spatio-temporal gait parameters from trunk accelerations during human walking*. Gait & Posture.  
+
+[`2`] Moe-Nilssen, R., Helbostad, J. L., et al. (2020). *Spatiotemporal gait parameters for older adults*. Gait & Posture. 
+
+[`3`] Hollman, J. H., et al. (2011). *Normative spatiotemporal gait parameters in older adults*. Gait & Posture. 
+
+[`4`] Hass, C. J., et al. (2012). *Quantitative normative gait data in a large cohort of ambulatory persons with Parkinson’s disease*. PLOS ONE.  
+
+[`5`] Cerny, M., Noury, N., & Deplorte, L. (2015). *Validation of the inverted pendulum model for gait length calculation*. IEEE EMBC.
 
 
 ## Import Libraries
@@ -159,7 +179,7 @@ print(f"sampling frequency: {sampling_frequency} Hz")
 sampling frequency: 200 Hz
 
 
-#### Data Units and Conversion to SI Units
+### Data Units and Conversion to SI Units
 
 All input data provided to the modules in this toolbox should adhere to SI units to maintain consistency and accuracy across analyses. This ensures compatibility with the underlying algorithms, which are designed to work with standard metric measurements.
 
@@ -278,9 +298,9 @@ print(gait_sequences_df)
     0       2.87      4.26        gait sequence   imu
 
 
-### Extract Reference Initial and Final Contact Events
+## Extract Reference Initial and Final Contact Events
 
-Initial and final contact events are extracted and converted to BIDS-compatible format.
+Initial and final contact events are extracted from the raw `events_df` and converted to a BIDS-compatible format for downstream gait analysis. All extracted contacts are combined into a single DataFrame and added to the `recording` object via the `add_events()` method.
 
 ```python
 # Extract Initial Contacts
@@ -353,20 +373,33 @@ print(all_contact_events)
 
 
 
-## Calculate Gait Spatio-Temporal Parameters
+## Load Gait Events and Initialize Spatio-Temporal Analysis
 
-Now, we are running `GaitSpatioTemporalParameters` to calculate gait spatio-temporal parameters using gait events information.
+To begin the analysis, an instance of the `GaitSpatioTemporalParameters` class must be created. This object will store and process all relevant gait events, including:
 
-Inputs of the class are as follows:
+- **Initial Contacts (IC)**  
+- **Final Contacts (FC)**  
+- **Gait Sequences**
 
-- **`gait_sequences`** (`pd.DataFrame`):  
-  Gait sequence events with onset and duration.
+The `detect()` method is used to load these pre-detected events from the recording. The input data should be structured as a DataFrame (typically extracted from `recording.events["imu"]`) where each event is labeled with an `event_type` such as `"initial contact"`, `"final contact"`, or `"gait sequence"`.
 
-- **`initial_contacts`** (`pd.DataFrame`):  
-  Initial contacts with onset and rl_label.
+### Inputs to the `detect()` method:
 
-- **`final_contacts`** (`pd.DataFrame`):  
-  Final contacts with onset and rl_label.
+- **`gait_sequences`** (`pd.DataFrame`)  
+  DataFrame containing gait sequence events with the columns:
+  - `onset`: Start time of the gait sequence (in seconds)
+  - `duration`: Duration of the sequence (in seconds)
+
+- **`initial_contacts`** (`pd.DataFrame`)  
+  DataFrame containing initial contact events with:
+  - `onset`: Time of initial contact (in seconds)
+  - `rl_label`: Side label, either `"left"` or `"right"`
+
+- **`final_contacts`** (`pd.DataFrame`)  
+  DataFrame containing final contact events with:
+  - `onset`: Time of final contact (in seconds)
+  - `rl_label`: Side label, either `"left"` or `"right"`
+
 
 ```python
 # Create an instance of the GaitSpatioTemporalParameters
@@ -380,9 +413,19 @@ gait_stp.detect(
 )
 ```
 
-### Calculation of the Temporal Parameters
+### Calculation of Temporal Gait Parameters
 
-Next, the temporal gait parameters could be extracted using the `temporal_parameters`. The outputs are stored in the `temporal_df`.
+Temporal gait parameters provide information about the timing of gait events such as initial contact (IC) and final contact (FC). These parameters are calculated using the `temporal_parameters()` method, based on pre-identified gait events within each gait sequence.
+
+This method computes:
+
+- **Step time**: Time from IC of one foot to IC of the opposite foot.
+- **Stride time**: Time between two consecutive ICs of the same foot.
+- **Stance time**: Duration from IC to FC of the same foot.
+- **Swing time**: The difference between stride time and stance time.
+- **Single support time**: Time during stance when only one foot is on the ground.
+- **Double support time**: Time during which both feet are on the ground.
+- **Cadence**: Total number of steps per minute.
 
 ```python
 # Compute temporal parameters
@@ -394,33 +437,39 @@ print(temporal_df.temporal_parameters_)
 ```
     Temporal gait parameters per gait sequence:
     
-                    gait_sequence_id                step_time_l                     step_time_r                    stride_time_l               stride_time_r              swing_time_l              swing_time_r              stance_time_l         stance_time_r          cadence  
-        0           0                               [0.525, 0.525, 0.53]            [0.61, 0.53, 0.54, 0.56]       [1.055, 1.065, 1.09]        [1.135, 1.055, 1.07]       [0.655, 0.665, 0.69]      [0.745, 0.665, 0.675]     [0.4, 0.4, 0.4]       [0.39, 0.39, 0.395]    125.65
+                    gait_sequence_id                step_time_l                step_time_r                    stride_time_l              stride_time_r              swing_time_l               swing_time_r                stance_time_l         stance_time_r             single_support_time_l     double_support_time_l     single_support_time_r   double_support_time_r      cadence  
+        0           0                               [0.525, 0.525, 0.53]       [0.61, 0.53, 0.54, 0.56]       [1.055, 1.065, 1.09]       [1.135, 1.055, 1.07]       [0.655, 0.665, 0.69]       [0.745, 0.665, 0.675]       [0.4, 0.4, 0.4]       [0.39, 0.39, 0.395]       [0.39, 0.39, 0.395]       [0.39, 0.39, 0.395]       [0.435, 0.4, 0.4]       [0.31, 0.265, 0.275]       125.65
 
             
-### Calculation of the Temporophasic Parameters
+### Calculation of Temporophasic Gait Parameters
 
-Next, the temporophasic gait parameters could be extracted using the `temporophasic_parameters`. The outputs are stored in the `temporophasic_parameters_`.
-
+After computing the temporal gait parameters, the `temporophasic_parameters()` method can be used to calculate **percentage-based gait cycle phases**. These include stance, swing, single support, and double support times as a percentage of the stride duration for each leg.
 
 ```python
 # Compute temporophasic parameters
-phasic_df = gait_stp.temporophasic_parameters()
+temporophasic_df = gait_stp.temporophasic_parameters()
 
 # Print result
 print("Temporophasic gait parameters per gait sequence:")
-print(phasic_df.temporophasic_parameters_)
+print(temporophasic_df.temporophasic_parameters_)
 ```
 
     Temporophasic gait parameters per gait sequence:
 
-                    gait_sequence_id                stance_time_pct_gc_l                stance_time_pct_gc_r              swing_time_pct_gc_l               swing_time_pct_gc_r 
-        0           0                               [62.09, 62.44, 63.3]                [62.09, 62.44, 63.3]              [37.91, 37.56, 36.7]              [34.36, 36.97, 36.92]   
+                    gait_sequence_id                stance_time_pct_gc_l                stance_time_pct_gc_r              swing_time_pct_gc_l               swing_time_pct_gc_r             single_support_pct_gc_l             double_support_pct_gc_l            single_support_pct_gc_r              double_support_pct_gc_r              
+        0           0                               [62.09, 62.44, 63.3]                [62.09, 62.44, 63.3]              [37.91, 37.56, 36.7]              [34.36, 36.97, 36.92]           [36.97, 36.62, 36.24]               [25.12, 25.82, 27.06]              [38.33, 37.91, 37.38]                [27.31, 25.12, 25.7]                                
 
 
 ### Calculation of the Spatial Parameters
 
-Next, the spatial gait parameters could be extracted using the `spatial_parameters`. The outputs are stored in the `phasic_df`.
+The spatial gait parameters can be estimated using the `spatial_parameters()` method of the `GaitSpatioTemporalParameters` class. This method calculates step and stride lengths based on vertical acceleration data using an inverted pendulum model.
+
+To use this method, you must provide:
+
+- `accel_data`: A DataFrame containing IMU acceleration data.
+- `v_acc_col_name`: The name of the column corresponding to **vertical acceleration** (e.g., `"pelvis_ACCEL_z"`).
+- `sampling_freq_Hz`: The sampling frequency of the data in Hz.
+- `wearable_height`: The height of the wearable sensor from the ground in meters (default is 1.0 m).
 
 ```python
 # Estimate spatial parameters using vertical acceleration
@@ -442,3 +491,25 @@ print(spatial_df.spatial_parameters_)
                 gait_sequence_id          step_length_l                step_length_r                       stride_length_l      stride_length_r 
         0       0                         [0.632, 0.639, 0.662]        [0.718, 0.64, 0.648, 0.694]         [1.271, 1.287]       [1.35, 1.279, 1.31] 
          
+
+### Calculation of the Spatiotemporal Parameters
+
+Once both temporal and spatial gait parameters have been computed, the `spatiotemporal_parameters()` method can be used to derive combined gait metrics. This includes the overall gait speed and stride speed for each side.
+
+The method estimates:
+
+- **Gait speed**: Total walking distance (sum of all step lengths) divided by the ambulation time.
+- **Stride speed**: Stride length divided by stride time, calculated separately for left and right sides.
+
+```python
+spatiotemporal_df = gait_stp.spatiotemporal_parameters()
+
+# Print results
+print("Spatial gait spatiotemporal parameters per gait sequence:")
+print(spatiotemporal_df.spatiotemporal_parameters_)
+```
+
+    Spatial gait spatiotemporal parameters per gait sequence:
+
+                gait_sequence_id        gait_speed         stride_speed_l               stride_speed_r
+    0           0                       0.965              [0.966, 0.963, 0.962]        [0.967, 0.965, 0.963]
