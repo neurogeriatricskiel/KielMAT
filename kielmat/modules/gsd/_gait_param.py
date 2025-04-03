@@ -19,13 +19,13 @@ class GaitSpatioTemporalParameters:
     → Based on [2, 3, 4].
 
     - **Temporophasic parameters** (stance, swing, single and double support time as % of stride)  
-    → Derived following conventions in [2, 3].
+    → Based on [2, 3].
 
     - **Spatial parameters** (step and stride lengths using the inverted pendulum model and vertical displacement)  
-    → Based on the method by Cerny et al. [5].
+    → Based on  [5].
 
     - **Spatio-temporal parameters** (gait speed and stride speed for left and right legs)  
-    → Combines outputs from [2–4].
+    → Based on [2–4].
 
     Notes:
 
