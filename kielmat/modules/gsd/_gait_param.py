@@ -22,10 +22,10 @@ class GaitSpatioTemporalParameters:
         
     Workflow:
 
-        1. Load gait sequences, initial contacts, and final contacts using the `detect()` method.
-        2. Call `temporal_parameters()` to compute duration-based gait parameters (e.g., stride time).
-        3. Call `temporophasic_parameters()` to derive percent-based stance and swing times.
-        4. Call `spatial_parameters()` to estimate step and stride lengths using the inverted pendulum model.
+    1. Load gait sequences, initial contacts, and final contacts using the `detect()` method.
+    2. Call `temporal_parameters()` to compute duration-based gait parameters (e.g., stride time).
+    3. Call `temporophasic_parameters()` to derive percent-based stance and swing times.
+    4. Call `spatial_parameters()` to estimate step and stride lengths using the inverted pendulum model.
 
     This implementation supports left and right side separation, handles missing or incomplete
     strides, and skips over incomplete data ranges.
@@ -57,6 +57,7 @@ class GaitSpatioTemporalParameters:
         >>> print(phasic_df)
                gait_sequence_id  stance_time_pct_gc_l  ...  swing_time_pct_gc_r
             0  0                 [62.1, 63.3]          ...  [36.9, 36.3]
+
         >>> spatial_df = gait_stp.spatial_parameters(
         ...     accel_data=accel_df, 
         ...     v_acc_col_name="pelvis_ACCEL_z", 
