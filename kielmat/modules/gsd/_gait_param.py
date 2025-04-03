@@ -35,11 +35,23 @@ class GaitSpatioTemporalParameters:
 
     Methods:
 
-    - `detect(gait_sequences, initial_contacts, final_contacts)`
-    - `temporal_parameters()`
-    - `temporophasic_parameters()`
-    - `spatial_parameters(accel_data, v_acc_col_name, sampling_freq_Hz, wearable_height=1.0)`
-    - `spatiotemporal_parameters()`
+        detect(gait_sequences, initial_contacts, final_contacts):
+        Loads pre-detected gait events (initial contacts, final contacts, and gait sequences)
+        into the class instance for further analysis. All input DataFrames must include time
+        values in seconds and appropriate labels for left/right events.
+        
+        temporal_parameters():
+        Calculates temporal parameters of the gait events.
+
+        temporophasic_parameters():
+        Calculates temporophasic parameters of the gait events.
+
+        spatial_parameters(accel_data, v_acc_col_name, sampling_freq_Hz, wearable_height=1.0):
+        Calculates spatio parameters of the gait events.
+
+        spatiotemporal_parameters():
+        Calculates spatio-temporal parameters of the gait events.
+
 
     Examples:
 
