@@ -502,6 +502,7 @@ The method estimates:
 - **Stride speed**: Stride length divided by stride time, calculated separately for left and right sides.
 
 ```python
+# Compute spatiotemporal parameters
 spatiotemporal_df = gait_stp.spatiotemporal_parameters()
 
 # Print results
