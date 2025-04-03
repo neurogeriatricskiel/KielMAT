@@ -21,10 +21,11 @@ class GaitSpatioTemporalParameters:
     - Spatial parameters are derived based on the inverted pendulum model using [5].
         
     Workflow:
-    1. Load gait sequences, initial contacts, and final contacts using the `detect()` method.
-    2. Call `temporal_parameters()` to compute duration-based gait parameters (e.g., stride time).
-    3. Call `temporophasic_parameters()` to derive percent-based stance and swing times.
-    4. Call `spatial_parameters()` to estimate step and stride lengths using the inverted pendulum model.
+
+        1. Load gait sequences, initial contacts, and final contacts using the `detect()` method.
+        2. Call `temporal_parameters()` to compute duration-based gait parameters (e.g., stride time).
+        3. Call `temporophasic_parameters()` to derive percent-based stance and swing times.
+        4. Call `spatial_parameters()` to estimate step and stride lengths using the inverted pendulum model.
 
     This implementation supports left and right side separation, handles missing or incomplete
     strides, and skips over incomplete data ranges.
