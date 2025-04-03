@@ -19,7 +19,6 @@ class MacCamleyInitialContactClassification:
     via `mccamley_df` attribute.
 
     Methods:
-
         detect(gyro_data, sampling_freq_Hz, v_gyr_col_name, ap_gyr_col_name, ic_timestamps, signal_type='vertical', recording=None, tracking_system=None):
             Detects initial contact laterality using the McCamley method. 
             Adds results to the recording if provided and stores the labeled events in `mccamley_df`.
