@@ -135,7 +135,8 @@ class GaitSpatioTemporalParameters:
         and stores the result as a step and stride parameter tables.
 
         Returns:
-            - self.step_parameters_ (pd.DataFrame): One row per step containing:
+            - self.step_parameters_ (pd.DataFrame):
+
                 - gait_sequence_id: Index of the gait sequence.
                 - step_id: Sequential ID of the step within the sequence.
                 - foot: The initiating foot (left or right).
@@ -144,6 +145,7 @@ class GaitSpatioTemporalParameters:
                 - step_time: Duration between onset and end_time (s).
 
             - self.stride_parameters_ (pd.DataFrame): One row per stride containing:
+
                 - gait_sequence_id: Index of the gait sequence.
                 - stride_id: Sequential ID of the stride within the sequence.
                 - foot: The initiating foot (left or right).
@@ -298,14 +300,15 @@ class GaitSpatioTemporalParameters:
         Calculates temporophasic parameters as percentage of the gait cycle from stride parameters.
 
         Returns:
-            - self.temporophasic_parameters_ (pd.DataFrame): One row per stride with:
+            - self.temporophasic_parameters_ (pd.DataFrame):
+
                 - gait_sequence_id: Index of the gait sequence.
-                - stride_id: ID of the stride (aligned with stride_parameters_).
+                - stride_id: ID of the stride
                 - foot: Left or right.
                 - stance_pct: Stance time as % of stride duration.
                 - swing_pct: Swing time as % of stride duration.
-                - single_support_pct: Time with one foot in contact (% of stride).
-                - double_support_pct: Time with both feet in contact (% of stride).
+                - single_support_pct: Time with one foot in contact (% of stride duration).
+                - double_support_pct: Time with both feet in contact (% of stride duration).
 
         Notes:
             - All percentage values are rounded to two decimal places.
@@ -368,13 +371,15 @@ class GaitSpatioTemporalParameters:
         Outputs step and stride lengths using the inverted pendulum model.
 
         Returns:
-            - self.step_parameters_ (pd.DataFrame): One row per step with:
+            - self.step_parameters_ (pd.DataFrame):
+
                 - gait_sequence_id: Index of gait sequence
                 - step_id: Step number within sequence
                 - foot: Leading foot (left or right)
                 - step_length: Estimated step length in meters
 
-            - self.stride_parameters_ (pd.DataFrame): One row per stride with:
+            - self.stride_parameters_ (pd.DataFrame):
+
                 - gait_sequence_id: Index of gait sequence
                 - stride_id: Stride number within sequence
                 - foot: Foot completing the stride
@@ -495,11 +500,12 @@ class GaitSpatioTemporalParameters:
         and stride lengths from previously computed temporal and spatial parameters.
 
         Returns:
-            - self.spatiotemporal_parameters_ (pd.DataFrame): One row per stride with:
+            - self.spatiotemporal_parameters_ (pd.DataFrame):
+
                 - gait_sequence_id
                 - stride_id
                 - foot
-                - stride_speed (in m/s)
+                - stride_speed (m/s)
         """
         # Ensure required temporal and spatial stride parameters exist
         if self.stride_temporal_parameters_ is None or self.stride_spatial_parameters_ is None:
