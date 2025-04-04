@@ -130,29 +130,27 @@ class GaitSpatioTemporalParameters:
         and stores the result as a step and stride parameter tables.
 
         Returns:
-                Two attributes are created and returned in the class instance:
+            The step temporal parameteres are stored in the 'step_temporal_parameters_' attribute, which is a pandas DataFrame with the following information:
 
-            **Step-level parameters (`self.step_temporal_parameters_` - pd.DataFrame):**
-                One row per step containing:
-                - `gait_sequence_id` (int): Index of the gait sequence.
-                - `step_id` (int): Sequential ID of the step within the sequence.
-                - `foot` (str): The initiating foot ("left" or "right").
-                - `onset` (float): Time of the step's initial contact (in seconds).
-                - `end_time` (float): Time of the next initial contact (in seconds).
-                - `step_time` (float): Duration between onset and end_time (in seconds).
+                - gait_sequence_id: Index of the gait sequence.
+                - step_id: Sequential ID of the step within the sequence.
+                - foot: The initiating foot (left or right).
+                - onset: Time of the step's initial contact (s).
+                - end_time: Time of the next IC (s).
+                - step_time: Duration between onset and end_time (s).
 
-            **Stride-level parameters (`self.stride_temporal_parameters_` - pd.DataFrame):**
-                One row per stride containing:
-                - `gait_sequence_id` (int): Index of the gait sequence.
-                - `stride_id` (int): Sequential ID of the stride within the sequence.
-                - `foot` (str): The initiating foot ("left" or "right").
-                - `onset` (float): Time of the stride's initial contact (in seconds).
-                - `end_time` (float): Time of the next IC of the same foot (in seconds).
-                - `stride_time` (float): Duration between onset and end_time (in seconds).
-                - `stance_time` (float): Duration of stance phase (in seconds).
-                - `swing_time` (float): Duration of swing phase (in seconds).
-                - `single_support_time` (float): Time during stance with only one foot on the ground (in seconds).
-                - `double_support_time` (float): Time during stance with both feet on the ground (in seconds).
+            The stride temporal parameteres are stored in the 'stride_temporal_parameters_' attribute, which is a pandas DataFrame with the following information:
+
+                - gait_sequence_id: Index of the gait sequence.
+                - stride_id: Sequential ID of the stride within the sequence.
+                - foot: The initiating foot (left or right).
+                - onset: Time of the stride's initial contact (s).
+                - end_time: Time of the next IC of the same foot (s).
+                - stride_time: Duration between onset and end_time (s).
+                - stance_time: Duration of stance phase (s).
+                - swing_time: Duration of swing phase (s).
+                - single_support_time: Duration with only one foot on the ground (s).
+                - double_support_time: Duration with both feet on the ground (s).
 
         Notes:
             - Steps alternate between feet (left → right or right → left), while strides are defined as
@@ -297,7 +295,7 @@ class GaitSpatioTemporalParameters:
         Calculates temporophasic parameters as percentage of the gait cycle from stride parameters.
 
         Returns:
-            - self.temporophasic_parameters_ (pd.DataFrame):
+            The temporophasic parameteres are stored in the 'temporophasic_parameters_' attribute, which is a pandas DataFrame with the following information:
 
                 - gait_sequence_id: Index of the gait sequence.
                 - stride_id: ID of the stride
@@ -368,14 +366,14 @@ class GaitSpatioTemporalParameters:
         Outputs step and stride lengths using the inverted pendulum model.
 
         Returns:
-            - self.step_parameters_ (pd.DataFrame):
+            The step spatial parameteres are stored in the 'step_spatial_parameters_' attribute, which is a pandas DataFrame with the following information:
 
                 - gait_sequence_id: Index of gait sequence
                 - step_id: Step number within sequence
                 - foot: Leading foot (left or right)
                 - step_length: Estimated step length in meters
 
-            - self.stride_parameters_ (pd.DataFrame):
+            The step spatial parameteres are stored in the 'stride_spatial_parameters_' attribute, which is a pandas DataFrame with the following information:
 
                 - gait_sequence_id: Index of gait sequence
                 - stride_id: Stride number within sequence
@@ -497,7 +495,7 @@ class GaitSpatioTemporalParameters:
         and stride lengths from previously computed temporal and spatial parameters.
 
         Returns:
-            - self.spatiotemporal_parameters_ (pd.DataFrame):
+            The stride spatio-temporal parameteres are stored in the 'spatiotemporal_parameters_' attribute, which is a pandas DataFrame with the following information:
 
                 - gait_sequence_id
                 - stride_id
