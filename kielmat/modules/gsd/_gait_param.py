@@ -15,17 +15,18 @@ class GaitSpatioTemporalParameters:
 
     Key Features:
 
-    - **Temporal parameters** (step time, stride time, stance time, swing time, cadence, single and double support times)  
-    → Based on [2, 3, 4].
+    - **Temporal parameters** (step time [s], stride time [s], stance time [s], swing time [s], 
+      single and double support time [s])  
+      → Based on [2, 3, 4].
 
     - **Temporophasic parameters** (stance, swing, single and double support time as % of stride)  
-    → Based on [2, 3].
+      → Based on [2, 3].
 
-    - **Spatial parameters** (step and stride lengths using the inverted pendulum model and vertical displacement)  
-    → Based on  [5].
+    - **Spatial parameters** (step and stride lengths [m] using the inverted pendulum model)  
+      → Based on [5].
 
-    - **Spatio-temporal parameters** (gait speed and stride speed for left and right legs)  
-    → Based on [2–4].
+    - **Spatio-temporal parameters** (stride speed [m/s] for each leg)  
+      → Based on [2–4].
 
     Notes:
 
@@ -35,21 +36,19 @@ class GaitSpatioTemporalParameters:
 
     Methods:
         detect(gait_sequences, initial_contacts, final_contacts):
-            Loads pre-detected gait events (initial contacts, final contacts, and gait sequences)
-            into the class instance for further analysis. All input DataFrames must include time
-            values in seconds and appropriate labels for left/right events.
+            Loads pre-detected gait events into the class.
 
         temporal_parameters():
-            Calculates temporal parameters of the gait events.
+            Computes step and stride timing parameters.
 
         temporophasic_parameters():
-            Calculates temporophasic parameters of the gait events.
+            Computes stride phase durations as percentages.
 
         spatial_parameters(accel_data, v_acc_col_name, sampling_freq_Hz, wearable_height=1.0):
-            Calculates spatio parameters of the gait events.
+            Computes step and stride lengths using vertical acceleration.
 
         spatiotemporal_parameters():
-            Calculates spatio-temporal parameters of the gait events.
+            Computes stride speed using stride time and length.
 
 
     Examples:
@@ -57,33 +56,39 @@ class GaitSpatioTemporalParameters:
         >>> gait_stp = GaitSpatioTemporalParameters()
         >>> gait_stp.detect(gait_sequences, initial_contacts, final_contacts)
 
-        >>> temporal_df = gait_stp.temporal_parameters()
-        >>> print(temporal_df.temporal_parameters_)
+        # Temporal parameters
+        >>> gait_stp.temporal_parameters()
+        >>> print(gait_stp.step_temporal_parameters_)       # Step timing [s]
+        >>> print(gait_stp.stride_temporal_parameters_)     # Stride timing [s]
 
-        >>> temporophasic_df = gait_stp.temporophasic_parameters()
-        >>> print(temporophasic_df.temporophasic_parameters_)
+        # Temporophasic percentages
+        >>> gait_stp.temporophasic_parameters()
+        >>> print(gait_stp.temporophasic_parameters_)       # [% stride]
 
-        >>> spatial_df = gait_stp.spatial_parameters(
-                accel_data=accel_df, 
-                v_acc_col_name="pelvis_ACCEL_z", 
-                sampling_freq_Hz=100, 
+        # Spatial parameters
+        >>> gait_stp.spatial_parameters(
+                accel_data=accel_df,
+                v_acc_col_name="pelvis_ACCEL_z",
+                sampling_freq_Hz=100,
                 wearable_height=1.0
-         )
-        >>> print(spatial_df.spatial_parameters_)
+        )
+        >>> print(gait_stp.step_spatial_parameters_)        # Step length [m]
+        >>> print(gait_stp.stride_spatial_parameters_)      # Stride length [m]
 
-        >>> spatiotemporal_df = gait_stp.spatiotemporal_parameters()
-        >>> print(spatiotemporal_df.spatiotemporal_parameters_)
+        # Spatio-temporal (speed)
+        >>> gait_stp.spatiotemporal_parameters()
+        >>> print(gait_stp.spatiotemporal_parameters_)      # Stride speed [m/s]
 
     References:
 
     [1] Zijlstra, W., & Hof, A. L. (2003). Assessment of spatio-temporal gait parameters from trunk accelerations during human walking. *Gait & Posture*, 18(2), 1–10.
-
+    
     [2] Moe-Nilssen, R., Helbostad, J. L., et al. (2020). Spatiotemporal gait parameters for older adults. *Gait & Posture*, 80, 63–69.
-
+    
     [3] Hollman, J. H., et al. (2011). Normative spatiotemporal gait parameters in older adults. *Gait & Posture*, 34(1), 111–118.
-
+    
     [4] Hass, C. J., et al. (2012). Quantitative normative gait data in a large cohort of ambulatory persons with Parkinson’s disease. *PLOS ONE*, 7(8), e42337.
-
+    
     [5] Cerny, M., Noury, N., & Deplorte, L. (2015). Validation of the inverted pendulum model for gait length calculation. *EMBC 2015 - IEEE Engineering in Medicine and Biology Conference*.
     """
 
@@ -126,504 +131,397 @@ class GaitSpatioTemporalParameters:
     # Function to calculate gait temporal parameters
     def temporal_parameters(self) -> pd.DataFrame:
         """
-        Calculates temporal gait parameters for each gait sequence:
+        Calculates temporal gait parameters from detected initial and final contact events,
+        and stores the result as a step and stride parameter tables.
 
         Returns:
-            A DataFrame with temporal parameters, including:
+            - self.step_parameters_ (pd.DataFrame): One row per step containing:
+                - gait_sequence_id: Index of the gait sequence.
+                - step_id: Sequential ID of the step within the sequence.
+                - foot: The initiating foot (left or right).
+                - onset: Time of the step's initial contact (s).
+                - end_time: Time of the next IC (s).
+                - step_time: Duration between onset and end_time (s).
 
-                - step_time_l / step_time_r: Time from an initial contact (IC) of one foot to the next IC of the opposite foot.
-                - stride_time_l / stride_time_r: Time between consecutive ICs of the same foot.
-                - stance_time_l / stance_time_r: Time from an IC to the first final contact (FC) in the same stride.
-                - swing_time_l / swing_time_r: Stride time minus stance time.
-                - single_support_time_l / single_support_time_r: Time during stance when only one foot contacts the ground.
-                - double_support_time_l / double_support_time_r: Time when both feet are on the ground during gait.
-                - cadence: Total number of steps per minute.
+            - self.stride_parameters_ (pd.DataFrame): One row per stride containing:
+                - gait_sequence_id: Index of the gait sequence.
+                - stride_id: Sequential ID of the stride within the sequence.
+                - foot: The initiating foot (left or right).
+                - onset: Time of the stride's initial contact (s).
+                - end_time: Time of the next IC of the same foot (s).
+                - stride_time: Duration between onset and end_time (s).
+                - stance_time: Duration of stance phase (s).
+                - swing_time: Duration of swing phase (s).
+                - single_support_time: Duration with only one foot on the ground (s).
+                - double_support_time: Duration with both feet on the ground (s).
+
+        Notes:
+            - Steps alternate between feet (left → right or right → left), while strides are defined as
+            consecutive initial contacts of the same foot.
         """
-        # Initialize an empty list to store the gait temporal parameters for each gait sequence
-        temporal_parameters_df = []  
+        # Initialize list to store step data for all sequences
+        step_rows = []
 
-        # Loop through each gait sequence by index and row
+        # Initialize list to store stride data for all sequences
+        stride_rows = []
+
+        # Loop through each gait sequence
         for seq_idx, seq in self.gait_sequences.iterrows():
-            # Determine the start and end times for the current gait sequence
-            start = seq["onset"]
-            end = seq["onset"] + seq["duration"]
+            start = seq["onset"]                        # Start time of gait sequence
+            end = seq["onset"] + seq["duration"]        # End time of gait sequence
 
-            # Select all initial contact (IC) events that occur within the current gait sequence time window
+            # Select initial contacts within current sequence window
             ic = self.initial_contacts[
-                (self.initial_contacts["onset"] >= start) & 
+                (self.initial_contacts["onset"] >= start) &
                 (self.initial_contacts["onset"] <= end)
             ]
-            # Select all final contact (FC) events that occur within the current gait sequence time window
+
+            # Select final contacts within current sequence window
             fc = self.final_contacts[
-                (self.final_contacts["onset"] >= start) & 
+                (self.final_contacts["onset"] >= start) &
                 (self.final_contacts["onset"] <= end)
             ]
-            # Skip this gait sequence if there are not enough IC or FC events
+
+            # Skip sequence if there are not enough ICs or FCs to compute parameters
             if len(ic) < 2 or len(fc) < 1:
                 continue
 
-            # Retrieve the first IC and FC events to check for any timing adjustment
-            first_ic_time = ic.iloc[0]["onset"]
-            first_ic_label = ic.iloc[0]["rl_label"]
-            first_fc_time = fc.iloc[0]["onset"]
-            first_fc_label = fc.iloc[0]["rl_label"]
-
-            # If the first FC occurs before the first IC for the same foot, drop that FC event
-            if first_fc_time < first_ic_time and first_fc_label == first_ic_label:
-                fc = fc.iloc[1:]
-
-            # Create a sorted list of IC events (time and label) based on onset time
+            # Sort ICs by onset time and convert to list of (onset, foot) tuples
             ic_sorted = sorted(
                 ic[["onset", "rl_label"]].to_records(index=False),
                 key=lambda x: x[0]
             )
 
-            # Initialize lists to hold step times for alternating transitions:
-            # step_time_r for right-to-left (R→L) transitions and step_time_l for left-to-right (L→R) transitions
-            step_time_r = []  # R→L transitions (from a right IC to the next left IC)
-            step_time_l = []  # L→R transitions (from a left IC to the next right IC)
+            # CALCULATION OF STEP PARAMETERS
+            step_counter = 0  # Initialize step ID counter for this sequence
 
-            # Loop over consecutive pairs of sorted IC events
+            # Loop through consecutive ICs
             for i in range(len(ic_sorted) - 1):
-                t1, lab1 = ic_sorted[i]      # Current event's time and label
-                t2, lab2 = ic_sorted[i+1]    # Next event's time and label
+                t1, lab1 = ic_sorted[i]       # Current IC: time and foot
+                t2, lab2 = ic_sorted[i + 1]   # Next IC: time and foot
 
-                # If the current event is from the right and the next from the left, record as R→L
-                if lab1 == "right" and lab2 == "left":
-                    step_time_r.append(round(t2 - t1, 3))
+                # Only count steps if feet alternate (e.g., left to right)
+                if lab1 != lab2:
+                    step_time = round(t2 - t1, 3)  # Calculate step duration
+                    step_rows.append({             # Store step row
+                        "gait_sequence_id": seq_idx,
+                        "step_id": step_counter,
+                        "foot": lab1,
+                        "onset": t1,
+                        "end_time": t2,
+                        "step_time": step_time
+                    })
+                    step_counter += 1  # Increment step ID
 
-                # If the current event is from the left and the next from the right, record as L→R
-                elif lab1 == "left" and lab2 == "right":
-                    step_time_l.append(round(t2 - t1, 3))
+            # CALCULATION OF STRIDE PARAMETERS
+            temp_stride_rows = []  # Temporary list for this sequence's strides
 
-            # For stride times, compute the time differences between consecutive IC events for each foot separately.
-            ic_left = np.sort(ic[ic["rl_label"] == "left"]["onset"].to_numpy())
-            ic_right = np.sort(ic[ic["rl_label"] == "right"]["onset"].to_numpy())
-            stride_time_left = [round(ic_left[i+1] - ic_left[i], 3) for i in range(len(ic_left) - 1)]
-            stride_time_right = [round(ic_right[i+1] - ic_right[i], 3) for i in range(len(ic_right) - 1)]
+            # Loop over each foot separately
+            for foot in ["left", "right"]:
+                # Get IC and FC for this foot
+                ic_foot = np.sort(ic[ic["rl_label"] == foot]["onset"].to_numpy())
+                fc_foot = np.sort(fc[fc["rl_label"] == foot]["onset"].to_numpy())
 
-            # For stance times, calculate the time from each IC to the first FC that occurs before the next IC on the same foot.
-            fc_left = np.sort(fc[fc["rl_label"] == "left"]["onset"].to_numpy())
-            fc_right = np.sort(fc[fc["rl_label"] == "right"]["onset"].to_numpy())
+                # Get IC and FC for the opposite foot
+                other_foot = "right" if foot == "left" else "left"
+                ic_other = np.sort(ic[ic["rl_label"] == other_foot]["onset"].to_numpy())
+                fc_other = np.sort(fc[fc["rl_label"] == other_foot]["onset"].to_numpy())
 
-            stance_time_left = []
-            for i in range(len(ic_left) - 1):
-                t_ic = ic_left[i]              # Current left IC time
-                t_next = ic_left[i + 1]        # Next left IC time
+                # Loop through consecutive ICs of the same foot (strides)
+                for i in range(len(ic_foot) - 1):
+                    t_ic1 = ic_foot[i]            # Current stride start time
+                    t_ic2 = ic_foot[i + 1]        # Current stride end time
 
-                # Select FC events for the left foot that occur between the current and next left IC
-                fc_candidates = fc_left[(fc_left > t_ic) & (fc_left < t_next)]
+                    stride_time = round(t_ic2 - t_ic1, 3)  # Duration of stride
 
-                # Use the first FC candidate to compute stance time (or np.nan if none exists)
-                stance_time_left.append(round(fc_candidates[0] - t_ic, 3) if fc_candidates.size > 0 else np.nan)
+                    # Find FC within the stride to compute stance time
+                    fc_in_range = fc_foot[(fc_foot > t_ic1) & (fc_foot < t_ic2)]
+                    stance_time = round(fc_in_range[0] - t_ic1, 3) if fc_in_range.size > 0 else np.nan
 
-            stance_time_right = []
-            for i in range(len(ic_right) - 1):
-                t_ic = ic_right[i]            # Current right IC time
-                t_next = ic_right[i + 1]       # Next right IC time
+                    # Swing = stride - stance
+                    swing_time = round(stride_time - stance_time, 3) if not np.isnan(stance_time) else np.nan
 
-                # Select FC events for the right foot that occur between the current and next right IC
-                fc_candidates = fc_right[(fc_right > t_ic) & (fc_right < t_next)]
-                stance_time_right.append(round(fc_candidates[0] - t_ic, 3) if fc_candidates.size > 0 else np.nan)
+                    # Support phase calculations using both feet
+                    ic_other_in = ic_other[(ic_other > t_ic1) & (ic_other < t_ic2)]
+                    fc_other_in = fc_other[(fc_other > t_ic1) & (fc_other < t_ic2)]
+                    fc_this_in = fc_foot[(fc_foot > t_ic1) & (fc_foot < t_ic2)]
 
-            # Compute swing times as the difference between stride time and stance time for each foot.
-            swing_time_left = [round(st - stc, 3) if not np.isnan(stc) else np.nan 
-                               for st, stc in zip(stride_time_left, stance_time_left)]
-            
-            swing_time_right = [round(st - stc, 3) if not np.isnan(stc) else np.nan 
-                                for st, stc in zip(stride_time_right, stance_time_right)]
+                    if len(ic_other_in) >= 1 and len(fc_other_in) >= 1 and len(fc_this_in) >= 1:
+                        ds1 = fc_other_in[0] - t_ic1                 # First double support phase
+                        ds2 = fc_this_in[0] - ic_other_in[0]         # Second double support phase
+                        double_support = round(ds1 + ds2, 3)         # Total double support
+                        single_support = round(stance_time - double_support, 3) if not np.isnan(stance_time) else np.nan
+                    else:
+                        double_support = np.nan
+                        single_support = np.nan
 
-            # Calculate single and double support times for the left foot
-            single_support_left = []
-            double_support_left = []
+                    # Append stride row
+                    temp_stride_rows.append({
+                        "gait_sequence_id": seq_idx,
+                        "foot": foot,
+                        "onset": t_ic1,
+                        "end_time": t_ic2,
+                        "stride_time": stride_time,
+                        "stance_time": stance_time,
+                        "swing_time": swing_time,
+                        "single_support_time": single_support,
+                        "double_support_time": double_support
+                    })
 
-            for i in range(len(ic_left) - 1):
-                ic_l1 = ic_left[i]          # Start of current left stride (initial contact)
-                ic_l2 = ic_left[i + 1]      # End of current left stride (next IC)
+            # Sort stride rows by onset and assign stride_id
+            temp_stride_rows = sorted(temp_stride_rows, key=lambda x: x["onset"])
+            for idx, row in enumerate(temp_stride_rows):
+                row["stride_id"] = idx         # Assign stride ID based on order
+                stride_rows.append(row)        # Add row to global stride list
 
-                # Get right ICs and FCs that occur within this left stride
-                ic_r_within = ic_right[(ic_right > ic_l1) & (ic_right < ic_l2)]
-                fc_r_within = fc_right[(fc_right > ic_l1) & (fc_right < ic_l2)]
-                fc_l_within = fc_left[(fc_left > ic_l1) & (fc_left < ic_l2)]
+        # Create DataFrame from step rows
+        self.step_temporal_parameters_ = pd.DataFrame(step_rows)[
+            ["gait_sequence_id", "step_id", "foot", "onset", "end_time", "step_time"]
+        ]
 
-                if len(ic_r_within) >= 1 and len(fc_r_within) >= 1 and len(fc_l_within) >= 1:
-                    ic_r = ic_r_within[0]   # First right IC after current left IC
-                    fc_r = fc_r_within[0]   # First right FC after current left IC
-                    fc_l = fc_l_within[0]   # First left FC after current left IC
+        # Create DataFrame from stride ROWS
+        self.stride_temporal_parameters_ = pd.DataFrame(stride_rows)[
+            [
+                "gait_sequence_id", "stride_id", "foot", "onset", "end_time",
+                "stride_time", "stance_time", "swing_time",
+                "single_support_time", "double_support_time"
+            ]
+        ]
 
-                    # Double support phase 1: from left IC to right FC (both feet on ground)
-                    ds1 = fc_r - ic_l1
-
-                    # Double support phase 2: from right IC to left FC (again, both feet on ground)
-                    ds2 = fc_l - ic_r
-
-                    # Total double support time for the left stride
-                    double_support = round(ds1 + ds2, 3)
-                    double_support_left.append(double_support)
-
-                    # Single support = stance time - double support
-                    ss = round(stance_time_left[i] - double_support, 3) if not np.isnan(stance_time_left[i]) else np.nan
-                    single_support_left.append(ss)
-                else:
-                    # If required events are missing, fill with NaN
-                    double_support_left.append(np.nan)
-                    single_support_left.append(np.nan)
-
-            # Repeat for the right foot
-            single_support_right = []
-            double_support_right = []
-
-            for i in range(len(ic_right) - 1):
-                ic_r1 = ic_right[i]         # Start of current right stride (initial contact)
-                ic_r2 = ic_right[i + 1]     # End of current right stride (next IC)
-
-                # Get left ICs and FCs that occur within this right stride
-                ic_l_within = ic_left[(ic_left > ic_r1) & (ic_left < ic_r2)]
-                fc_l_within = fc_left[(fc_left > ic_r1) & (fc_left < ic_r2)]
-                fc_r_within = fc_right[(fc_right > ic_r1) & (fc_right < ic_r2)]
-
-                if len(ic_l_within) >= 1 and len(fc_l_within) >= 1 and len(fc_r_within) >= 1:
-                    ic_l = ic_l_within[0]   # First left IC after current right IC
-                    fc_l = fc_l_within[0]   # First left FC after current right IC
-                    fc_r = fc_r_within[0]   # First right FC after current right IC
-
-                    # Double support phase 1: from right IC to left FC
-                    ds1 = fc_l - ic_r1
-
-                    # Double support phase 2: from left IC to right FC
-                    ds2 = fc_r - ic_l
-
-                    # Total double support time for the right stride
-                    double_support = round(ds1 + ds2, 3)
-                    double_support_right.append(double_support)
-
-                    # Single support = stance time - double support
-                    ss = round(stance_time_right[i] - double_support, 3) if not np.isnan(stance_time_right[i]) else np.nan
-                    single_support_right.append(ss)
-                else:
-                    # If required events are missing, fill with NaN
-                    double_support_right.append(np.nan)
-                    single_support_right.append(np.nan)
-
-            # Calculate cadence: total number of IC events per minute over the gait sequence
-            all_ics = np.sort(np.concatenate([ic_left, ic_right]))
-            duration = all_ics[-1] - all_ics[0] if all_ics.size > 1 else np.nan
-            cadence = round(all_ics.size / duration * 60, 2) if duration > 0 else np.nan
-
-            # Append the computed temporal parameters for the current gait sequence into the list
-            temporal_parameters_df.append({
-                "gait_sequence_id": seq_idx,
-                "step_time_l": step_time_l,  # L→R transitions
-                "step_time_r": step_time_r,  # R→L transitions
-                "stride_time_l": stride_time_left,
-                "stride_time_r": stride_time_right,
-                "stance_time_l": stance_time_left,
-                "stance_time_r": stance_time_right,
-                "swing_time_l": swing_time_left,
-                "swing_time_r": swing_time_right,
-                "single_support_time_l": single_support_left,
-                "double_support_time_l": double_support_left,
-                "single_support_time_r": single_support_right,
-                "double_support_time_r": double_support_right,
-                "cadence": cadence
-            })
-
-        # Convert the list of dictionaries into a DataFrame and store it in the instance variable
-        self.temporal_parameters_ = pd.DataFrame(temporal_parameters_df)
-
-        # Return self
+        # Return the instance for chaining if desired
         return self
-    
+
 
     # Function to calculate gait temporophasic parameters
     def temporophasic_parameters(self) -> pd.DataFrame:
         """
-        Calculates temporophasic parameters as percentages of the gait cycle for each foot.
+        Calculates temporophasic parameters as percentage of the gait cycle from stride parameters.
 
         Returns:
-            A DataFrame with temporophasic parameters, including:
+            - self.temporophasic_parameters_ (pd.DataFrame): One row per stride with:
+                - gait_sequence_id: Index of the gait sequence.
+                - stride_id: ID of the stride (aligned with stride_parameters_).
+                - foot: Left or right.
+                - stance_pct: Stance time as % of stride duration.
+                - swing_pct: Swing time as % of stride duration.
+                - single_support_pct: Time with one foot in contact (% of stride).
+                - double_support_pct: Time with both feet in contact (% of stride).
 
-                - stance_time_pct_gc_l / r: Stance time as % of the gait cycle.
-                - swing_time_pct_gc_l / r: Swing time as % of the gait cycle.
-                - single_support_pct_gc_l / r: Single support time as % of the gait cycle.
-                - double_support_pct_gc_l / r: Double support time as % of the gait cycle.
+        Notes:
+            - All percentage values are rounded to two decimal places.
+            - Requires `temporal_parameters()` to be called first.
         """
-        if self.temporal_parameters_ is None:
+        # Ensure stride parameters are available
+        if self.stride_temporal_parameters_ is None:
             raise ValueError("Call temporal_parameters() before computing temporophasic_parameters().")
-        
-        # Initialize an empty list to store the gait temporophasic parameters for each gait sequence
-        temporophasic_parameters_df = []
 
-        for _, row in self.temporal_parameters_.iterrows():
-            # Calculate stance and swing times as percentage of stride time
-            stance_time_pct_gc_l = [
-                (stance / stride) * 100 if stride > 0 else np.nan
-                for stance, stride in zip(row["stance_time_l"], row["stride_time_l"])
-            ]
-            stance_time_pct_gc_r = [
-                (stance / stride) * 100 if stride > 0 else np.nan
-                for stance, stride in zip(row["stance_time_r"], row["stride_time_r"])
-            ]
-            swing_time_pct_gc_l = [
-                100 - pct if pct is not np.nan else np.nan
-                for pct in stance_time_pct_gc_l
-            ]
-            swing_time_pct_gc_r = [
-                100 - pct if pct is not np.nan else np.nan
-                for pct in stance_time_pct_gc_r
-            ]
+        # Initialize output list
+        tempophasic_rows = []
 
-            # Calculate single and double support percentages
-            single_support_pct_gc_l = [
-                (ss / stride) * 100 if stride > 0 and ss is not np.nan else np.nan
-                for ss, stride in zip(row["single_support_time_l"], row["stride_time_l"])
-            ]
-            double_support_pct_gc_l = [
-                (ds / stride) * 100 if stride > 0 and ds is not np.nan else np.nan
-                for ds, stride in zip(row["double_support_time_l"], row["stride_time_l"])
-            ]
-            single_support_pct_gc_r = [
-                (ss / stride) * 100 if stride > 0 and ss is not np.nan else np.nan
-                for ss, stride in zip(row["single_support_time_r"], row["stride_time_r"])
-            ]
-            double_support_pct_gc_r = [
-                (ds / stride) * 100 if stride > 0 and ds is not np.nan else np.nan
-                for ds, stride in zip(row["double_support_time_r"], row["stride_time_r"])
-            ]
+        # Iterate over each stride
+        for _, row in self.stride_temporal_parameters_.iterrows():
+            stride_time = row["stride_time"]               # Total stride time
+            stance_time = row["stance_time"]               # Stance duration
+            swing_time = row["swing_time"]                 # Swing duration
+            ss_time = row["single_support_time"]           # Single support time
+            ds_time = row["double_support_time"]           # Double support time
 
-            # Append the computed temporophasic parameters for the current gait sequence into the list
-            temporophasic_parameters_df.append({
+            # Calculate temporophasic percentages
+            stance_pct = round((stance_time / stride_time) * 100, 2) if stride_time > 0 else np.nan
+            swing_pct = round((swing_time / stride_time) * 100, 2) if stride_time > 0 else np.nan
+            single_pct = round((ss_time / stride_time) * 100, 2) if stride_time > 0 and not np.isnan(ss_time) else np.nan
+            double_pct = round((ds_time / stride_time) * 100, 2) if stride_time > 0 and not np.isnan(ds_time) else np.nan
+
+            # Append the result as one row per stride
+            tempophasic_rows.append({
                 "gait_sequence_id": row["gait_sequence_id"],
-                "stance_time_pct_gc_l": np.round(stance_time_pct_gc_l, 2).tolist(),
-                "stance_time_pct_gc_r": np.round(stance_time_pct_gc_r, 2).tolist(),
-                "swing_time_pct_gc_l": np.round(swing_time_pct_gc_l, 2).tolist(),
-                "swing_time_pct_gc_r": np.round(swing_time_pct_gc_r, 2).tolist(),
-                "single_support_pct_gc_l": np.round(single_support_pct_gc_l, 2).tolist(),
-                "double_support_pct_gc_l": np.round(double_support_pct_gc_l, 2).tolist(),
-                "single_support_pct_gc_r": np.round(single_support_pct_gc_r, 2).tolist(),
-                "double_support_pct_gc_r": np.round(double_support_pct_gc_r, 2).tolist(),
+                "stride_id": row["stride_id"],
+                "foot": row["foot"],
+                "stance_pct": stance_pct,
+                "swing_pct": swing_pct,
+                "single_support_pct": single_pct,
+                "double_support_pct": double_pct
             })
 
-        # Convert the list of dictionaries into a DataFrame and store it in the instance variable
-        self.temporophasic_parameters_ = pd.DataFrame(temporophasic_parameters_df)
+        # Store as DataFrame in the instance
+        self.temporophasic_parameters_ = pd.DataFrame(tempophasic_rows)[
+            [
+                "gait_sequence_id", "stride_id", "foot",
+                "stance_pct", "swing_pct", "single_support_pct", "double_support_pct"
+            ]
+        ]
 
-        # Return self
+        # Return self for chaining
         return self
 
 
     # Function to calculate gait spatial parameters
     def spatial_parameters(
-            self, 
-            accel_data: pd.DataFrame, 
-            v_acc_col_name: str, 
-            sampling_freq_Hz: float, 
-            wearable_height: float = 1.0
-            ) -> pd.DataFrame:
+        self,
+        accel_data: pd.DataFrame,
+        v_acc_col_name: str,
+        sampling_freq_Hz: float,
+        wearable_height: float = 1.0
+    ) -> pd.DataFrame:
         """
-        Calculates spatial gait parameters using vertical acceleration data and pre-detected gait events.
-        The method estimates vertical displacement for each step using double integration, then applies the
-        inverted pendulum model to compute step length. The step length is calculated using the following model:
-
-                        step_length = 2 * sqrt(2 * wearable_height * delta_z - delta_z^2)
-
-        Then, stride lengths are derived from consecutive steps.
-
-        Args:
-            accel_data (pd.DataFrame): Acceleration data as a DataFrame containing at least the vertical axis.
-            v_acc_col_name (str): Name of the column representing vertical acceleration.
-            sampling_freq_Hz (float): Sampling frequency of the signal in Hertz.
-            wearable_height (float, optional): Estimated height of the sensor above the ground in meters.
-                                               Default is 1.0 meter.
+        Calculates spatial gait parameters using vertical acceleration data and detected gait events.
+        Outputs step and stride lengths using the inverted pendulum model.
 
         Returns:
-            pd.DataFrame: A DataFrame containing spatial parameters for each gait sequence, including:
+            - self.step_parameters_ (pd.DataFrame): One row per step with:
+                - gait_sequence_id: Index of gait sequence
+                - step_id: Step number within sequence
+                - foot: Leading foot (left or right)
+                - step_length: Estimated step length in meters
 
-                - 'gait_sequence_id': Index of the gait sequence.
-                - 'step_length_l': List of left step lengths (in meters).
-                - 'step_length_r': List of right step lengths (in meters).
-                - 'stride_length_l': List of left stride lengths (in meters).
-                - 'stride_length_r': List of right stride lengths (in meters).
+            - self.stride_parameters_ (pd.DataFrame): One row per stride with:
+                - gait_sequence_id: Index of gait sequence
+                - stride_id: Stride number within sequence
+                - foot: Foot completing the stride
+                - stride_length: Sum of two consecutive steps (meters)
         """
-        if self.temporal_parameters_ is None or self.gait_sequences is None:
-            # Ensure that the necessary data (gait sequences and temporal parameters) has been computed.
-            raise ValueError("Call detect() and temporal_parameters() before computing spatial_parameters().")
+        # Raise error if required temporal step data is missing
+        if self.gait_sequences is None or self.step_temporal_parameters_ is None:
+            raise ValueError("Call detect() and temporal_parameters() before spatial_parameters().")
 
-        # Initialize an empty list to store the gait spatial parameters for each gait sequence
-        spatial_parameters_df = []
+        # Create lists to store individual step and stride results
+        step_spatial_rows = []
+        stride_spatial_rows = []
 
-        # Convert the vertical acceleration data to a NumPy array and remove the mean (detrend).
+        # Extract vertical acceleration signal as a NumPy array
         acc_vertical = accel_data[v_acc_col_name].to_numpy().copy()
 
-        # Remove the mean from vertical acceleration signal.
+        # Remove mean from signal to remove bias
         acc_vertical -= np.mean(acc_vertical)
 
-        # Apply a lowpass Butterworth filter to the vertical acceleration signal.
+        # Apply low-pass filter to smooth the vertical acceleration
         acc_vertical = preprocessing.lowpass_filter(acc_vertical, method="butter", order=4, fs=sampling_freq_Hz)
 
-        # Loop through each gait sequence.
+        # Loop over each gait sequence window
         for seq_idx, seq in self.gait_sequences.iterrows():
-            start = seq["onset"]  # Start time of the gait sequence.
-            end = seq["onset"] + seq["duration"]  # End time of the gait sequence.
+            start = seq["onset"]  # Start time of current gait sequence
+            end = start + seq["duration"]  # End time of current gait sequence
 
-            # Select the initial contact (IC) events within the current gait sequence.
+            # Get all ICs within this sequence
             ic_seq = self.initial_contacts[
-                (self.initial_contacts["onset"] >= start) & 
+                (self.initial_contacts["onset"] >= start) &
                 (self.initial_contacts["onset"] <= end)
             ]
-            
-            # If there are fewer than 2 IC events, skip this sequence.
+
+            # Skip if fewer than two ICs (can't compute even one step)
             if len(ic_seq) < 2:
                 continue
 
-            # Build a sorted list of IC events as (time, label) tuples based on onset time.
-            ic_sorted = sorted(
-                ic_seq[["onset", "rl_label"]].to_records(index=False),
-                key=lambda x: x[0]
-            )
+            # Sort initial contacts by time (onset) and convert to (onset, foot) tuples
+            ic_sorted = sorted(ic_seq[["onset", "rl_label"]].to_records(index=False), key=lambda x: x[0])
 
-            # Initialize lists to store computed step lengths.
-            step_length_r = []  # Step lengths for R→L transitions (from a right IC to the next left IC).
-            step_length_l = []  # Step lengths for L→R transitions (from a left IC to the next right IC).
-            step_events = []    # To store detailed information: (t1, t2, direction, step_length).
+            step_events = []  # Store step direction and length for stride construction
+            step_counter = 0  # Initialize counter for assigning step_id
 
-            # Loop over consecutive pairs of IC events.
+            # Loop through each pair of consecutive ICs
             for i in range(len(ic_sorted) - 1):
-                t1, lab1 = ic_sorted[i]      # Current event's time and label.
-                t2, lab2 = ic_sorted[i+1]    # Next event's time and label.
+                t1, lab1 = ic_sorted[i]         # First event: time and foot label
+                t2, lab2 = ic_sorted[i + 1]     # Second event: time and foot label
 
-                # Process only if the two consecutive events are from different feet.
+                # Only process alternating feet (i.e., valid step)
                 if lab1 != lab2:
-                    # Determine the corresponding indices in the acceleration array based on sampling frequency.
-                    idx_start = int(t1 * sampling_freq_Hz)
-                    idx_end = int(t2 * sampling_freq_Hz)
-                    
-                    # Ensure valid indices and that the segment length is positive.
+                    idx_start = int(t1 * sampling_freq_Hz)  # Convert time to sample index
+                    idx_end = int(t2 * sampling_freq_Hz)    # Convert next time to index
+
+                    # Ensure indices are valid and segment is within signal range
                     if idx_end > idx_start and idx_end <= len(acc_vertical):
-                        # Extract the acceleration segment between the two events.
-                        accel_seg = acc_vertical[idx_start:idx_end]
+                        acc_seg = acc_vertical[idx_start:idx_end]  # Extract signal segment between two ICs
 
-                        # Compute velocity by integrating the acceleration segment.
-                        vel = cumulative_trapezoid(accel_seg, dx=1/sampling_freq_Hz, initial=0)
+                        vel = cumulative_trapezoid(acc_seg, dx=1 / sampling_freq_Hz, initial=0)  # Integrate to get velocity
+                        disp = cumulative_trapezoid(vel, dx=1 / sampling_freq_Hz, initial=0)     # Integrate again for displacement
 
-                        # Compute displacement by integrating the velocity.
-                        disp_m = cumulative_trapezoid(vel, dx=1/sampling_freq_Hz, initial=0)
+                        delta_z = np.max(disp) - np.min(disp)  # Vertical displacement during step
 
-                        # Calculate vertical displacement (delta_z) as the difference between the max and min displacement (meter).
-                        delta_z = np.max(disp_m) - np.min(disp_m)
                         try:
-                            # Compute step length using the inverted pendulum model.
-                            step_len = 2 * np.sqrt(2 * wearable_height * delta_z - delta_z**2)
+                            # Compute step length using inverted pendulum model
+                            step_length = 2 * np.sqrt(2 * wearable_height * delta_z - delta_z ** 2)
                         except Exception:
-                            step_len = np.nan
+                            step_length = np.nan  # If invalid (e.g., negative sqrt), assign NaN
 
-                        # Store detailed step event data.
-                        step_events.append((t1, t2, lab1 + "->" + lab2, step_len))
+                        # Append step result
+                        step_spatial_rows.append({
+                            "gait_sequence_id": seq_idx,
+                            "step_id": step_counter,
+                            "foot": lab1,
+                            "step_length": round(step_length, 3)
+                        })
 
-                        # Depending on the transition direction, add the step length to the corresponding list.
-                        if lab1 == "right" and lab2 == "left":
-                            step_length_r.append(step_len)
-                        elif lab1 == "left" and lab2 == "right":
-                            step_length_l.append(step_len)
+                        # Save for stride building
+                        step_events.append((lab1, step_length))
+                        step_counter += 1  # Increment step ID
 
-            # Compute stride lengths by pairing consecutive step events that form a full gait cycle.
-            # For example:
-            #   A right stride might be computed from a R→L step followed by a L→R step.
-            #   A left stride might be computed from a L→R step followed by a R→L step.
-            stride_length_right = []
-            stride_length_left = []
+            # Construct strides from consecutive valid steps
             for i in range(len(step_events) - 1):
-                current_dir = step_events[i][2]  # Direction of the current step.
-                next_dir = step_events[i+1][2]     # Direction of the next step.
-                
-                if current_dir == "right->left" and next_dir == "left->right":
-                    # Sum the two consecutive step lengths to get the stride length for the right foot.
-                    stride_length_right.append(round(step_events[i][3] + step_events[i+1][3], 3))
+                f1, l1 = step_events[i]         # First step: foot and length
+                f2, l2 = step_events[i + 1]     # Second step: foot and length
 
-                elif current_dir == "left->right" and next_dir == "right->left":
-                    # Sum the two consecutive step lengths to get the stride length for the left foot.
-                    stride_length_left.append(round(step_events[i][3] + step_events[i+1][3], 3))
+                # Only pair opposite foot steps into a stride
+                if (f1 == "left" and f2 == "right") or (f1 == "right" and f2 == "left"):
+                    stride_length = round(l1 + l2, 3)  # Add two step lengths
+                    stride_foot = f1  # Assign stride to foot initiating it
 
-            # Append the computed spatial parameters for the current gait sequence into the list
-            spatial_parameters_df.append({
-                "gait_sequence_id": seq_idx,
-                "step_length_l": np.round(step_length_l, 3).tolist(),
-                "step_length_r": np.round(step_length_r, 3).tolist(),
-                "stride_length_l": np.round(stride_length_left, 3).tolist(),
-                "stride_length_r": np.round(stride_length_right, 3).tolist(),
-            })
+                    stride_spatial_rows.append({
+                        "gait_sequence_id": seq_idx,
+                        "foot": stride_foot,
+                        "stride_length": stride_length
+                    })
 
-        # Convert the list of dictionaries into a DataFrame and store it in the instance variable
-        self.spatial_parameters_ = pd.DataFrame(spatial_parameters_df)
+        # Convert step results to DataFrame
+        self.step_spatial_parameters_ = pd.DataFrame(step_spatial_rows)[
+            ["gait_sequence_id", "step_id", "foot", "step_length"]
+        ]
 
-        # Return self
+        # Convert stride results to DataFrame and assign stride_id
+        df_stride_spatial = pd.DataFrame(stride_spatial_rows)  # Create stride DataFrame
+        df_stride_spatial = df_stride_spatial.sort_values(by=["gait_sequence_id"]).reset_index(drop=True)  # Sort by sequence
+        df_stride_spatial["stride_id"] = df_stride_spatial.groupby("gait_sequence_id").cumcount()  # Assign stride_id per sequence
+
+        # Store as class attribute
+        self.stride_spatial_parameters_ = df_stride_spatial[
+            ["gait_sequence_id", "stride_id", "foot", "stride_length"]
+        ]
+
+        # Return self for chaining
         return self
-
 
     def spatiotemporal_parameters(self) -> pd.DataFrame:
         """
-        Calculates spatio-temporal gait parameters using previously computed spatial and temporal parameters.
+        Calculates stride-level spatio-temporal gait parameters by combining stride times
+        and stride lengths from previously computed temporal and spatial parameters.
 
         Returns:
-            pd.DataFrame with the following columns per gait sequence:
-                - gait_speed: Mean gait speed (m/s)
-                - stride_speed_l: List of left stride speeds (m/s)
-                - stride_speed_r: List of right stride speeds (m/s)
+            - self.spatiotemporal_parameters_ (pd.DataFrame): One row per stride with:
+                - gait_sequence_id
+                - stride_id
+                - foot
+                - stride_speed (in m/s)
         """
-        # Ensure that both spatial and temporal parameters have been computed before proceeding.
-        if self.spatial_parameters_ is None or self.temporal_parameters_ is None:
-            raise ValueError("Call spatial_parameters() and temporal_parameters() before computing spatiotemporal_parameters().")
-        
-        # Initialize an empty list to store the gait spatio-temporal parameters for each gait sequence
-        spatiotemporal_parameters_df = []
+        # Ensure required temporal and spatial stride parameters exist
+        if self.stride_temporal_parameters_ is None or self.stride_spatial_parameters_ is None:
+            raise ValueError("Call temporal_parameters() and spatial_parameters() before spatiotemporal_parameters().")
 
-        # Loop through each gait sequence using the spatial_parameters DataFrame.
-        for i in range(len(self.spatial_parameters_)):
-            # Retrieve the corresponding row from spatial_parameters and temporal_parameters.
-            spatial_row = self.spatial_parameters_.iloc[i]
-            temporal_row = self.temporal_parameters_.iloc[i]
+        # Merge temporal and spatial stride-level parameters
+        merged = pd.merge(
+            self.stride_temporal_parameters_,
+            self.stride_spatial_parameters_,
+            on=["gait_sequence_id", "stride_id", "foot"],
+            how="inner"  # keep only matching strides
+        )
 
-            # Get the gait sequence identifier.
-            gait_sequence_id = spatial_row["gait_sequence_id"]
+        # Compute stride speed: stride length / stride time
+        merged["stride_speed"] = merged["stride_length"] / merged["stride_time"]
+        merged["stride_speed"] = merged["stride_speed"].round(3)
 
-            # Convert stride lengths and stride times into NumPy arrays for vectorized operations.
-            stride_lengths_l = np.array(spatial_row["stride_length_l"])
-            stride_lengths_r = np.array(spatial_row["stride_length_r"])
-            stride_times_l = np.array(temporal_row["stride_time_l"])
-            stride_times_r = np.array(temporal_row["stride_time_r"])
+        # Select final output columns
+        self.spatiotemporal_parameters_ = merged[[
+            "gait_sequence_id", "stride_id", "foot", "stride_speed"
+        ]]
 
-            # Calculate Gait Speed
-            # Total distance walked is computed as the sum of all step lengths (from both left and right steps).
-            total_distance = np.nansum(spatial_row["step_length_l"]) + np.nansum(spatial_row["step_length_r"])
-
-            # Extract all initial contact (IC) times for the current gait sequence.
-            # This is determined by selecting IC events within the start and end times of the sequence.
-            all_ics = self.initial_contacts[
-                (self.initial_contacts["onset"] >= self.gait_sequences.loc[gait_sequence_id, "onset"]) &
-                (self.initial_contacts["onset"] <= self.gait_sequences.loc[gait_sequence_id, "onset"] +
-                self.gait_sequences.loc[gait_sequence_id, "duration"])
-            ]["onset"].sort_values().to_numpy()
-
-            # Compute ambulation time as the duration between the first and last IC event.
-            ambulation_time = all_ics[-1] - all_ics[0] if len(all_ics) > 1 else np.nan
-
-             # Gait speed (in m/s) is the total distance divided by the ambulation time.
-            gait_speed = total_distance / ambulation_time if ambulation_time > 0 else np.nan
-
-            # Calculate Stride Speed
-            # Stride speed for each side is computed as the stride length divided by the stride time.
-            stride_speed_l = np.round((stride_lengths_l / stride_times_l), 3)
-            stride_speed_r = np.round((stride_lengths_r / stride_times_r), 3)
-
-            # Append the computed spatio-temporal parameters for the current gait sequence into the list
-            spatiotemporal_parameters_df.append({
-                "gait_sequence_id": gait_sequence_id,
-                "gait_speed": round(gait_speed, 3),
-                "stride_speed_l": stride_speed_l.tolist(),
-                "stride_speed_r": stride_speed_r.tolist()
-            })
-
-        # Convert the list of dictionaries into a DataFrame and store it in the instance variable
-        self.spatiotemporal_parameters_ = pd.DataFrame(spatiotemporal_parameters_df)
-
-        # Return self
         return self
+
+
