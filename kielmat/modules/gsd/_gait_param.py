@@ -52,20 +52,16 @@ class GaitSpatioTemporalParameters:
 
 
     Examples:
-
         >>> gait_stp = GaitSpatioTemporalParameters()
         >>> gait_stp.detect(gait_sequences, initial_contacts, final_contacts)
 
-        # Temporal parameters
         >>> gait_stp.temporal_parameters()
         >>> print(gait_stp.step_temporal_parameters_)       # Step timing [s]
         >>> print(gait_stp.stride_temporal_parameters_)     # Stride timing [s]
 
-        # Temporophasic percentages
         >>> gait_stp.temporophasic_parameters()
         >>> print(gait_stp.temporophasic_parameters_)       # [% stride]
 
-        # Spatial parameters
         >>> gait_stp.spatial_parameters(
                 accel_data=accel_df,
                 v_acc_col_name="pelvis_ACCEL_z",
@@ -75,7 +71,6 @@ class GaitSpatioTemporalParameters:
         >>> print(gait_stp.step_spatial_parameters_)        # Step length [m]
         >>> print(gait_stp.stride_spatial_parameters_)      # Stride length [m]
 
-        # Spatio-temporal (speed)
         >>> gait_stp.spatiotemporal_parameters()
         >>> print(gait_stp.spatiotemporal_parameters_)      # Stride speed [m/s]
 
