@@ -434,6 +434,7 @@ gait_stp.temporal_parameters()
 print("Step-level temporal gait parameters [s]:")
 print(gait_stp.step_temporal_parameters_)
 ```
+
         Step-level temporal gait parameters [s]:
                 gait_sequence_id    step_id     foot    onset   end_time    step_time
         0       0                   0           right   2.95    3.56        0.61
