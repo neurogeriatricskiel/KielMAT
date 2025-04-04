@@ -268,6 +268,8 @@ class PhysicalActivityMonitoring:
         # Reshape the data to have dates as rows, hours as columns, and average ENMO as values
         hourly_average_data = hourly_average_data.unstack()
 
+        self.hourly_average_data = hourly_average_data
+
         # Plot if set to true
         if plot:
 

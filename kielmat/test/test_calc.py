@@ -1,7 +1,7 @@
 # Introduction and explanation regarding the test suite
 """
-This code is a test suite for various signal processing and analysis functions which exist in the KielMAT toolbox. 
-It employs pytest, a Python testing framework, to verify the correctness of these functions. 
+This code is a test suite for various signal processing and analysis functions which exist in the KielMAT toolbox.
+It employs pytest, a Python testing framework, to verify the correctness of these functions.
 Here's a brief explanation of the code structure:
 
 1. Import necessary libraries, pytest and the functions to be tested.
@@ -10,8 +10,8 @@ Here's a brief explanation of the code structure:
 4. Inside each test function, we validate the correctness of the corresponding function and its inputs.
 5. We make use of 'assert' statements to check that the functions return expected results.
 6. In some test functions for plot functions, the "monkeypatch" is used which is a feature provided by the pytest library.
-It allows to temporarily modify or replace attributes, methods, or functions during testing. Here, monkeypatch is being 
-used to replace the plt.show() function. This way, when run test functions where it won't actually display any plots, 
+It allows to temporarily modify or replace attributes, methods, or functions during testing. Here, monkeypatch is being
+used to replace the plt.show() function. This way, when run test functions where it won't actually display any plots,
 allowing to focus on testing the logic of the function without the overhead of rendering plots.
 7. The code is organized for clarity and maintainability.
 
