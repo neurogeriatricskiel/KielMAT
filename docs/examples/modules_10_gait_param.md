@@ -16,7 +16,7 @@ By the end of this tutorial, you will be able to:
 
 ## Gait Spatio-Temporal Parameters
 
-This section demonstrates how to calculate clinically relevant gait parameters using the `GaitSpatioTemporalParameters` class from the toolbox. The algorithm uses pre-detected gait events (initial contacts, final contacts, and gait sequences) to extract `temporal`, `temporophasic`, `spatial`, and `spatio-temporal` metrics based on validated biomechanical definitions.
+This section demonstrates how to calculate clinically relevant gait parameters using the `GaitSpatioTemporalParameters` class from the KielMAT toolbox. The algorithm uses pre-detected gait events (initial contacts, final contacts, and gait sequences) to extract `temporal`, `temporophasic`, `spatial`, and `spatio-temporal` metrics based on validated biomechanical definitions.
 
 ### Parameters Computed
 
@@ -37,7 +37,7 @@ This section demonstrates how to calculate clinically relevant gait parameters u
   *(Based on: Moe-Nilssen et al. 2020 [`2`], Hollman et al. 2011 [`3`], Hass et al. 2012 [`4`])*
 
 
-References
+**References**
 
 [`1`] Zijlstra, W., & Hof, A. L. (2003). *Assessment of spatio-temporal gait parameters from trunk accelerations during human walking*. Gait & Posture.  
 

@@ -76,15 +76,16 @@ class GaitSpatioTemporalParameters:
 
     References:
 
-    [1] Zijlstra, W., & Hof, A. L. (2003). Assessment of spatio-temporal gait parameters from trunk accelerations during human walking. *Gait & Posture*, 18(2), 1–10.
-    
-    [2] Moe-Nilssen, R., Helbostad, J. L., et al. (2020). Spatiotemporal gait parameters for older adults. *Gait & Posture*, 80, 63–69.
-    
-    [3] Hollman, J. H., et al. (2011). Normative spatiotemporal gait parameters in older adults. *Gait & Posture*, 34(1), 111–118.
-    
-    [4] Hass, C. J., et al. (2012). Quantitative normative gait data in a large cohort of ambulatory persons with Parkinson’s disease. *PLOS ONE*, 7(8), e42337.
-    
-    [5] Cerny, M., Noury, N., & Deplorte, L. (2015). Validation of the inverted pendulum model for gait length calculation. *EMBC 2015 - IEEE Engineering in Medicine and Biology Conference*.
+        [1] Zijlstra, W., & Hof, A. L. (2003). Assessment of spatio-temporal gait parameters from trunk accelerations during human walking. *Gait & Posture*, 18(2), 1–10.
+        
+        [2] Moe-Nilssen, R., Helbostad, J. L., et al. (2020). Spatiotemporal gait parameters for older adults. *Gait & Posture*, 80, 63–69.
+        
+        [3] Hollman, J. H., et al. (2011). Normative spatiotemporal gait parameters in older adults. *Gait & Posture*, 34(1), 111–118.
+        
+        [4] Hass, C. J., et al. (2012). Quantitative normative gait data in a large cohort of ambulatory persons with Parkinson’s disease. *PLOS ONE*, 7(8), e42337.
+        
+        [5] Cerny, M., Noury, N., & Deplorte, L. (2015). Validation of the inverted pendulum model for gait length calculation. *EMBC 2015 - IEEE Engineering in Medicine and Biology Conference*.
+        
     """
 
     def __init__(
@@ -432,10 +433,14 @@ class GaitSpatioTemporalParameters:
                     if idx_end > idx_start and idx_end <= len(acc_vertical):
                         acc_seg = acc_vertical[idx_start:idx_end]  # Extract signal segment between two ICs
 
-                        vel = cumulative_trapezoid(acc_seg, dx=1 / sampling_freq_Hz, initial=0)  # Integrate to get velocity
-                        disp = cumulative_trapezoid(vel, dx=1 / sampling_freq_Hz, initial=0)     # Integrate again for displacement
+                        # Integrate acceleration data to get velocity
+                        vel = cumulative_trapezoid(acc_seg, dx=1 / sampling_freq_Hz, initial=0)  
 
-                        delta_z = np.max(disp) - np.min(disp)  # Vertical displacement during step
+                        # Integrate velocity to obtain displacement
+                        disp = cumulative_trapezoid(vel, dx=1 / sampling_freq_Hz, initial=0)     
+
+                        # Vertical displacement during step
+                        delta_z = np.max(disp) - np.min(disp) 
 
                         try:
                             # Compute step length using inverted pendulum model
@@ -486,7 +491,7 @@ class GaitSpatioTemporalParameters:
             ["gait_sequence_id", "stride_id", "foot", "stride_length"]
         ]
 
-        # Return self for chaining
+        # Return self
         return self
 
     def spatiotemporal_parameters(self) -> pd.DataFrame:
@@ -524,5 +529,3 @@ class GaitSpatioTemporalParameters:
         ]]
 
         return self
-
-
