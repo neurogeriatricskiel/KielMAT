@@ -30,6 +30,8 @@ from kielmat.modules.icd import ParaschivIonescuInitialContactDetection
 from kielmat.modules.pam import PhysicalActivityMonitoring
 from kielmat.modules.ptd import PhamPosturalTransitionDetection
 from kielmat.modules.td import PhamTurnDetection
+from kielmat.modules.rlc import MacCamleyInitialContactClassification
+from kielmat.modules.gsd import GaitSpatioTemporalParameters
 
 ## Module test
 # Test for gait sequence detection algorithm
@@ -286,6 +288,7 @@ def test_detect_no_plot():
     # Check if initial_contacts_ is None
     assert icd.initial_contacts_.empty, "Initial contacts should be empty if no gait sequences are provided"
 
+
 @pytest.fixture
 def sample_accelerometer_data():
     # Create sample accelerometer data
@@ -327,7 +330,7 @@ def test_detect_method(sample_accelerometer_data, sample_gait_sequences):
     assert isinstance(icd.initial_contacts_, pd.DataFrame)
 
     # Check the columns in the initial_contacts_ DataFrame
-    expected_columns = ["onset", "event_type", "tracking_systems"]
+    expected_columns = ["onset", "event_type", "duration"]
     assert all(col in icd.initial_contacts_.columns for col in expected_columns)
 
     # Check the data type of the 'onset' column
@@ -433,7 +436,6 @@ def test_invalid_sampling_freq_pam():
             },
             epoch_duration_sec=5,
         )
-
 
 def test_invalid_thresholds_type():
     # Initialize the class
@@ -951,6 +953,268 @@ def test_invalid_sampling_freq_pham_pt():
             gyro_data=sample_data.iloc[:, 3:6],
             sampling_freq_Hz=0,
         )
+
+
+# TESTS FOR MacCamleyInitialContactClassification
+def test_mccamley_detect_vertical_signal():
+    # Create synthetic gyro data
+    num_samples = 1000
+    sampling_freq_Hz = 100
+    time_index = pd.date_range("2024-01-01", periods=num_samples, freq="10ms")
+    gyro_data = pd.DataFrame({
+        "LowerBack_GYRO_x": np.random.randn(num_samples),
+        "LowerBack_GYRO_z": np.random.randn(num_samples),
+    }, index=time_index)
+
+    # Create synthetic initial contact timestamps in seconds
+    ic_timestamps = pd.DataFrame({
+        "onset": np.array([1.0, 2.0, 3.0])  # seconds
+    })
+
+    # Initialize and run the classifier
+    classifier = MacCamleyInitialContactClassification()
+    classifier.detect(
+        gyro_data=gyro_data,
+        sampling_freq_Hz=sampling_freq_Hz,
+        v_gyr_col_name="LowerBack_GYRO_x",
+        ap_gyr_col_name="LowerBack_GYRO_z",
+        ic_timestamps=ic_timestamps,
+        signal_type="vertical"
+    )
+
+    # Assertions
+    assert isinstance(classifier.mccamley_df, pd.DataFrame)
+    assert set(classifier.mccamley_df.columns) == {"onset", "duration", "event_type", "rl_label", "tracking_system"}
+    assert len(classifier.mccamley_df) == len(ic_timestamps)
+    assert all(label in ["left", "right"] for label in classifier.mccamley_df["rl_label"])
+
+
+def test_mccamley_invalid_signal_type():
+    # Create dummy gyro data
+    gyro_data = pd.DataFrame({
+        "LowerBack_GYRO_x": np.random.randn(100),
+        "LowerBack_GYRO_z": np.random.randn(100),
+    })
+    ic_timestamps = pd.DataFrame({"onset": np.array([0.5, 1.0])})
+
+    classifier = MacCamleyInitialContactClassification()
+
+    with pytest.raises(ValueError, match="Invalid signal_type"):
+        classifier.detect(
+            gyro_data=gyro_data,
+            sampling_freq_Hz=100,
+            v_gyr_col_name="LowerBack_GYRO_x",
+            ap_gyr_col_name="LowerBack_GYRO_z",
+            ic_timestamps=ic_timestamps,
+            signal_type="invalid_signal"
+        )
+
+
+def test_mccamley_detect_combined_signal_labels():
+    # Generate synthetic signals
+    num_samples = 500
+    gyro_data = pd.DataFrame({
+        "LowerBack_GYRO_x": np.sin(np.linspace(0, 20, num_samples)),
+        "LowerBack_GYRO_z": np.cos(np.linspace(0, 20, num_samples)),
+    })
+    ic_timestamps = pd.DataFrame({
+        "onset": np.linspace(1, 4, 5)
+    })
+
+    classifier = MacCamleyInitialContactClassification()
+    classifier.detect(
+        gyro_data=gyro_data,
+        sampling_freq_Hz=100,
+        v_gyr_col_name="LowerBack_GYRO_x",
+        ap_gyr_col_name="LowerBack_GYRO_z",
+        ic_timestamps=ic_timestamps,
+        signal_type="combined"
+    )
+
+    assert classifier.mccamley_df is not None
+    assert "rl_label" in classifier.mccamley_df.columns
+    assert all(label in ["left", "right"] for label in classifier.mccamley_df["rl_label"])
+
+def test_mccamley_ap_labeling():
+    # Create synthetic gyro signal where value at IC is positive → should label 'left'
+    gyro_data = pd.DataFrame({
+        "GYRO_vert": np.zeros(100),
+        "GYRO_ap": np.concatenate([np.zeros(50), np.ones(1), np.zeros(49)])  # index 50 is +1
+    })
+    ic_timestamps = pd.DataFrame({"onset": [0.5]})  # index = 50 at 100 Hz
+
+    mcc = MacCamleyInitialContactClassification()
+    mcc.detect(
+        gyro_data=gyro_data,
+        sampling_freq_Hz=100,
+        v_gyr_col_name="GYRO_vert",
+        ap_gyr_col_name="GYRO_ap",
+        ic_timestamps=ic_timestamps,
+        signal_type="anterior_posterior"
+    )
+
+    assert mcc.mccamley_df["rl_label"].iloc[0] == "left", "Positive anterior-posterior value should be labeled 'left'"
+
+
+def test_mccamley_adds_rl_label_to_recording():
+    # Dummy gyro signal
+    gyro_data = pd.DataFrame({
+        "GYRO_vert": np.zeros(100),
+        "GYRO_ap": np.zeros(100)
+    })
+
+    # Dummy IC onset at 0.5s (index 50)
+    ic_timestamps = pd.DataFrame({"onset": [0.5]})
+
+    # Dummy recording structure
+    class DummyRecording:
+        def __init__(self):
+            self.events = {
+                "SU": pd.DataFrame({
+                    "onset": [0.5],
+                    "event_type": ["initial contact"],
+                    "duration": [0.0],
+                    "tracking_system": ["SU"]
+                })
+            }
+
+    recording = DummyRecording()
+
+    mcc = MacCamleyInitialContactClassification()
+    mcc.detect(
+        gyro_data=gyro_data,
+        sampling_freq_Hz=100,
+        v_gyr_col_name="GYRO_vert",
+        ap_gyr_col_name="GYRO_ap",
+        ic_timestamps=ic_timestamps,
+        signal_type="vertical",
+        recording=recording,
+        tracking_system="SU"
+    )
+
+    # Assertions
+    updated_df = recording.events["SU"]
+    assert "rl_label" in updated_df.columns
+    assert updated_df.loc[0, "rl_label"] in ["left", "right"]
+    assert mcc.mccamley_df.equals(updated_df[updated_df["event_type"] == "initial contact"])
+
+
+# TESTS FOR GaitSpatioTemporalParameters
+@pytest.fixture
+def sample_events():
+    # Sample gait sequence lasting 5 seconds
+    gait_sequences = pd.DataFrame({
+        "onset": [0.0],
+        "duration": [5.0]
+    })
+
+    # Sample initial contacts at alternating left/right foot
+    initial_contacts = pd.DataFrame({
+        "onset": [0.5, 1.1, 2.0, 2.7, 3.5, 4.2],
+        "rl_label": ["left", "right", "left", "right", "left", "right"],
+        "event_type": ["initial contact"] * 6,
+        "duration": [0.0] * 6,
+        "tracking_system": ["SU"] * 6
+    })
+
+    # Sample final contacts corresponding to each IC
+    final_contacts = pd.DataFrame({
+        "onset": [0.9, 1.6, 2.4, 3.1, 4.0, 4.6],
+        "rl_label": ["left", "right", "left", "right", "left", "right"],
+        "event_type": ["final contact"] * 6,
+        "duration": [0.0] * 6,
+        "tracking_system": ["SU"] * 6
+    })
+
+    # Return all event data
+    return gait_sequences, initial_contacts, final_contacts
+
+
+@pytest.fixture
+def sample_acceleration():
+    # Create synthetic vertical acceleration for 5 seconds at 100 Hz
+    time = np.linspace(0, 5, 500)  # 500 samples over 5 seconds
+    acc_z = 9.81 + 0.5 * np.sin(2 * np.pi * 1 * time)  # Simulated walking pattern
+    df = pd.DataFrame({"pelvis_ACCEL_z": acc_z})  # Return as DataFrame
+    return df
+
+def test_temporal_parameters(sample_events):
+    # Unpack test fixtures
+    gait_sequences, initial_contacts, final_contacts = sample_events
+
+    # Initialize class and detect events
+    stp = GaitSpatioTemporalParameters()
+    stp.detect(gait_sequences, initial_contacts, final_contacts)
+
+    # Calculate temporal parameters (step, stride, etc.)
+    stp.temporal_parameters()
+
+    # Assertions
+    assert isinstance(stp.step_temporal_parameters_, pd.DataFrame)
+    assert isinstance(stp.stride_temporal_parameters_, pd.DataFrame)
+    assert "step_time" in stp.step_temporal_parameters_.columns
+    assert "stride_time" in stp.stride_temporal_parameters_.columns
+
+
+def test_temporophasic_parameters(sample_events):
+    # Load fixtures and detect events
+    gait_sequences, initial_contacts, final_contacts = sample_events
+    stp = GaitSpatioTemporalParameters()
+    stp.detect(gait_sequences, initial_contacts, final_contacts)
+    stp.temporal_parameters()  # Required before calling temporophasic_parameters()
+
+    # Compute temporophasic (% phase) parameters
+    stp.temporophasic_parameters()
+
+    # Assert correct structure
+    assert isinstance(stp.temporophasic_parameters_, pd.DataFrame)
+    assert "stance_pct" in stp.temporophasic_parameters_.columns
+
+
+def test_spatial_parameters(sample_events, sample_acceleration):
+    # Load fixtures and detect events
+    gait_sequences, initial_contacts, final_contacts = sample_events
+    stp = GaitSpatioTemporalParameters()
+    stp.detect(gait_sequences, initial_contacts, final_contacts)
+    stp.temporal_parameters()  # Required for spatial calc
+
+    # Compute spatial parameters (step/stride length) from acceleration
+    stp.spatial_parameters(
+        accel_data=sample_acceleration,
+        v_acc_col_name="pelvis_ACCEL_z",
+        sampling_freq_Hz=100,
+        wearable_height=1.0
+    )
+
+    # Assertions for spatial metrics
+    assert isinstance(stp.step_spatial_parameters_, pd.DataFrame)
+    assert isinstance(stp.stride_spatial_parameters_, pd.DataFrame)
+    assert "step_length" in stp.step_spatial_parameters_.columns
+    assert "stride_length" in stp.stride_spatial_parameters_.columns
+
+
+def test_spatiotemporal_parameters(sample_events, sample_acceleration):
+    # Load event and acceleration fixtures
+    gait_sequences, initial_contacts, final_contacts = sample_events
+    stp = GaitSpatioTemporalParameters()
+    stp.detect(gait_sequences, initial_contacts, final_contacts)
+    stp.temporal_parameters()
+
+    # First compute spatial parameters
+    stp.spatial_parameters(
+        accel_data=sample_acceleration,
+        v_acc_col_name="pelvis_ACCEL_z",
+        sampling_freq_Hz=100,
+        wearable_height=1.0
+    )
+
+    # Compute spatiotemporal parameters (e.g., stride speed)
+    stp.spatiotemporal_parameters()
+
+    # Final assertions
+    assert isinstance(stp.spatiotemporal_parameters_, pd.DataFrame)
+    assert "stride_speed" in stp.spatiotemporal_parameters_.columns
+
 
 
 # Run the tests with pytest
