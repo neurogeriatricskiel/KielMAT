@@ -31,6 +31,7 @@ from kielmat.modules.pam import PhysicalActivityMonitoring
 from kielmat.modules.ptd import PhamPosturalTransitionDetection
 from kielmat.modules.td import PhamTurnDetection
 from kielmat.modules.rlc import MacCamleyInitialContactClassification
+from kielmat.modules.rlc import UllrichInitialContactClassification
 from kielmat.modules.gsd import GaitSpatioTemporalParameters
 
 ## Module test
@@ -1099,6 +1100,99 @@ def test_mccamley_adds_rl_label_to_recording():
     assert mcc.mccamley_df.equals(updated_df[updated_df["event_type"] == "initial contact"])
 
 
+# TESTS FOR UllrichInitialContactClassification
+import pytest
+import pandas as pd
+import numpy as np
+from kielmat.modules.rlc._ulrich import UllrichInitialContactClassification
+
+
+# Dummy ML model for testing – alternates between 'left' and 'right' labels
+class DummyModel:
+    def predict(self, X):
+        return ["left" if i % 2 == 0 else "right" for i in range(len(X))]
+
+
+# Fixture to simulate initial contact timestamps in seconds
+@pytest.fixture
+def ic_timestamps():
+    return pd.DataFrame({"onset": [0.5, 1.0, 1.5]})
+
+
+# Fixture to simulate gyroscope data with vertical and anterior-posterior axes
+@pytest.fixture
+def gyro_data():
+    n = 200
+    return pd.DataFrame({
+        "gyr_v": np.random.randn(n),
+        "gyr_ap": np.random.randn(n)
+    })
+
+
+def test_error_if_tracking_system_missing(monkeypatch, gyro_data, ic_timestamps):
+    # Initialize classifier
+    classifier = UllrichInitialContactClassification()
+
+    # Mock model loading and file checks to avoid dependency on real files
+    monkeypatch.setattr("joblib.load", lambda _: DummyModel())  # Use dummy model
+    monkeypatch.setattr("pathlib.Path.exists", lambda _: True)  # Pretend model file exists
+    monkeypatch.setattr("pathlib.Path.__truediv__", lambda self, other: self)  # Allow path joining
+
+    # Create a mock recording object with one tracking system "SU"
+    class DummyRecording:
+        def __init__(self):
+            self.events = {
+                "SU": pd.DataFrame({
+                    "onset": [0.5, 1.0, 1.5],
+                    "event_type": ["initial contact"] * 3,
+                    "duration": [0.0] * 3,
+                    "tracking_system": ["SU"] * 3
+                })
+            }
+
+    recording = DummyRecording()
+
+    # Expect ValueError when `recording` is passed but `tracking_system` is missing
+    with pytest.raises(ValueError, match="If 'recording' is provided, 'tracking_system' must also be specified."):
+        classifier.detect(
+            gyro_data=gyro_data.rename(columns={"gyr_v": "LowerBack_GYRO_x", "gyr_ap": "LowerBack_GYRO_z"}),
+            sampling_freq_Hz=100,
+            v_gyr_col_name="LowerBack_GYRO_x",
+            ap_gyr_col_name="LowerBack_GYRO_z",
+            ic_timestamps=ic_timestamps,
+            ml_model_type="rfc",
+            recording=recording,
+            tracking_system=None  # This is intentionally omitted
+        )
+
+
+def test_output_df_without_recording(monkeypatch, gyro_data, ic_timestamps):
+    # Initialize classifier
+    classifier = UllrichInitialContactClassification()
+
+    # Patch the model loading logic to bypass actual file
+    monkeypatch.setattr("joblib.load", lambda _: DummyModel())  # Use dummy model
+    monkeypatch.setattr("pathlib.Path.exists", lambda _: True)  # Assume model file exists
+    monkeypatch.setattr("pathlib.Path.__truediv__", lambda self, other: self)  # Handle path join
+
+    # Run the classifier with no `recording` provided
+    result = classifier.detect(
+        gyro_data=gyro_data.rename(columns={"gyr_v": "LowerBack_GYRO_x", "gyr_ap": "LowerBack_GYRO_z"}),
+        sampling_freq_Hz=100,
+        v_gyr_col_name="LowerBack_GYRO_x",
+        ap_gyr_col_name="LowerBack_GYRO_z",
+        ic_timestamps=ic_timestamps,
+        ml_model_type="rfc"
+    ).ulrich_df
+
+    # Validate the structure of the resulting DataFrame
+    assert isinstance(result, pd.DataFrame)  # Ensure it's a DataFrame
+    assert list(result.columns) == ["onset", "duration", "event_type", "rl_label", "tracking_system"]  # Check column order
+    assert all(result["event_type"] == "initial contact")  # All should be initial contacts
+    assert all(label in ["left", "right"] for label in result["rl_label"])  # Labels must be 'left' or 'right'
+    assert result.shape[0] == ic_timestamps.shape[0]  # Output row count must match input
+
+
 # TESTS FOR GaitSpatioTemporalParameters
 @pytest.fixture
 def sample_events():
@@ -1214,6 +1308,7 @@ def test_spatiotemporal_parameters(sample_events, sample_acceleration):
     # Final assertions
     assert isinstance(stp.spatiotemporal_parameters_, pd.DataFrame)
     assert "stride_speed" in stp.spatiotemporal_parameters_.columns
+
 
 
 
