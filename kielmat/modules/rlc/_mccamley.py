@@ -25,8 +25,8 @@ class MacCamleyInitialContactClassification:
 
     Example:
 
-        >>> detector = MacCamleyInitialContactClassification()
-        >>> detector = detector.detect(
+        >>> classifier = MacCamleyInitialContactClassification()
+        >>> classifier = classifier.detect(
                                 gyro_data=gyro_df,
                                 sampling_freq_Hz=100,
                                 v_gyr_col_name="LowerBack_GYRO_x",
@@ -36,7 +36,7 @@ class MacCamleyInitialContactClassification:
                                 recording=recording,
                                 tracking_system="SU"
                                 )
-        >>> print(detector.mccamley_df)
+        >>> print(classifier.mccamley_df)
 
 
     References:

@@ -35,6 +35,7 @@ class UllrichInitialContactClassification:
             Detects initial contact laterality using the Ullrich ML method and stores the labeled events.
 
     Example:
+
         >>> classifier = UllrichInitialContactClassification()
         >>> classifier = classifier.detect(
                 gyro_data=gyro_df,
@@ -49,12 +50,9 @@ class UllrichInitialContactClassification:
         >>> print(classifier.ulrich_df)
 
     References:
-        [1] Ullrich, Martin, et al. "Machine learning-based distinction of left and right foot contacts 
-            in lower back inertial sensor data during gait." IEEE Journal of Biomedical and Health Informatics (2021).
-            https://ieeexplore.ieee.org/document/9630653
-
-        [2] McCamley, John, et al. "An enhanced estimate of initial contact and final contact instants 
-            of time using lower trunk inertial sensor data." Journal of Biomechanics (2012).
+        [1] McCamley, John, et al. "An enhanced estimate of initial contact and final contact instants of time ...
+        
+        [2] Ullrich, Martin, et al. "Machine learning-based distinction of left and right foot contacts in lower back ...
     """
 
     def __init__(self, lowcut: float = 0.5, highcut: float = 2, order: int = 4):
