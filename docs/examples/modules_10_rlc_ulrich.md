@@ -26,11 +26,13 @@ Unlike signal sign-based classification, the Ullrich algorithm extracts a 6-dime
 The signals are first preprocessed using a Butterworth bandpass filter to enhance signal quality and reduce noise. After feature extraction, the pre-trained machine learning model is used to classify each IC as either `left` or `right`.
 
 The method supports multiple model types:
+
 - **Random Forest Classifier** (`rfc`)
 - **Support Vector Machine** (`svm linear or RBF kernel`)
 - **K-Nearest Neighbors** (`knn`)
 
 The classification results are stored in a pandas DataFrame (`ulrich_df` attribute), containing:
+
 - `onset`: Time of initial contact (in seconds)
 - `duration`: Set to 0.0
 - `event_type`: Always `initial contact`
