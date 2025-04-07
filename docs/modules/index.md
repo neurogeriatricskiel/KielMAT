@@ -12,17 +12,21 @@ The **Gait Sequence Detection** module is based on the [Paraschiv-Ionescu](https
 
 The **Initial Contact Detection** module is also based on the [Paraschiv-Ionescu](https://ieeexplore.ieee.org/document/9176281) algorithm and is designed to identify the initial contact in each gait sequence. The outputs of this module are essential for accurately measuring temporal gait parameters, such as stride time and gait symmetry.
 
+
 ## [Physical Activity Monitoring](pam.md)
 
 The **Physical Activity Monitoring** module tracks and analyzes physical activity levels using 3D acceleration data from IMU sensors. It provides outputs such as activity intensity and duration, enabling a comprehensive assessment of an individual's movement behavior throughout the day.
+
 
 ## [Postural Transition Detection (Pham)](ptd.md)
 
 The **Postural Transition Detection** module is based on the work of [Pham](https://www.frontiersin.org/journals/neurology/articles/10.3389/fneur.2018.00652/full) and aims to identify and analyze postural transitions, such as sit-to-stand or stand-to-sit movements. The module detects these transitions using 3D acceleration and 3D angular velocity data from lower back IMU sensors. It also calculates key spatial-temporal parameters, such as the angle of postural transition and maximum flexion velocity.
 
+
 ## [Turn Detection (Pham)](td.md)
 
 The **Turn Detection** module is based on the work of [Pham](https://pubmed.ncbi.nlm.nih.gov/28443059/) and aims to identify and characterize body turns using 3D acceleration and angular velocity data from lower back IMU sensors. The module also calculates key spatial-temporal parameters, such as the angle of turn and peak angular velocity.
+
 
 ## [Initial Contact Classification](ic_rlc.md)
 
@@ -32,7 +36,6 @@ KielMAT provides two alternative methods for classifying the laterality of initi
 
 - The **Ullrich method** is a machine learning-based approach that uses a model trained on six features extracted from vertical and anterior-posterior gyroscope signals (original values, first derivatives, and second derivatives). The method supports multiple classifiers (e.g., random forest, SVM, k-NN) and is based on the work of [Ullrich et al. (2021)](https://ieeexplore.ieee.org/document/9630653).
 
+
 ## [Gait Spatio-temporal Parameters](gait_param.md)
 The Gait Spatio-temporal Parameters module provides a comprehensive calculation of clinically relevant gait metrics based on pre-detected gait events. These include initial contacts (IC), final contacts (FC), and gait sequences derived from wearable IMU data.
-
-
