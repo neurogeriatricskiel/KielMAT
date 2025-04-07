@@ -35,7 +35,10 @@ This example introduces the [Postural Transition Detection](https://neurogeriatr
 This example introduces the [Turn Detection](https://neurogeriatricskiel.github.io/KielMAT/modules/td/) module. It demonstrates how the module is implemented on sample 3D acceleration and 3D angular velocity data from a lower back IMU sensor to detect turns.
 
 ### [Example 9: McCamley Initial Contact Classification](modules_09_rlc_mccamley.md)
-This example introduces the [McCamley Initial Contact Classification](../modules/ic_rlc_mccamley.md) module. The example demonstrates how this module classifies initial contacts as left or right based on gyroscope signals recorded with a lower back IMU sensor.
+This example introduces the [McCamley Initial Contact Classification](../modules/ic_rlc_ulrich.md#maccamleyinitialcontactclassification) module. It demonstrates how to classify initial contacts as either left or right using a signal thresholding method applied to filtered gyroscope signals. The classification is based on the original method proposed by [McCamley et al. (2012)](https://pubmed.ncbi.nlm.nih.gov/22465705/), with options to use vertical, anterior-posterior, or combined axes of the lower-back gyroscope data.
 
-### [Example 10: Gait Spatio-temporal Parameters](modules_10_gait_param.md)
+### [Example 10: Ullrich Initial Contact Classification](modules_10_rlc_ulrich.md)
+This example introduces the [Ullrich Initial Contact Classification](../modules/ic_rlc_ulrich.md#ullrichinitialcontactclassification) module. It demonstrates how to classify initial contacts as either left or right using a machine learning-based model trained on filtered vertical and anterior-posterior gyroscope signals and their derivatives. The approach is based on [Ullrich et al. (2021)](https://ieeexplore.ieee.org/document/9630653) and supports classification using pre-trained models (e.g., random forest, SVM, or k-NN).
+
+### [Example 11: Gait Spatio-temporal Parameters](modules_10_gait_param.md)
 This example introduces the [Gait Spatio-temporal Parameters Calculation](../modules/gait_param.md) module. The example demonstrates how to calculate the gait spatio-temporal parameters using the gait events information.

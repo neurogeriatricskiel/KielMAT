@@ -1,1 +1,2 @@
 from ._mccamley import MacCamleyInitialContactClassification
+from ._ulrich import UllrichInitialContactClassification
