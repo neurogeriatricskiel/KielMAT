@@ -21,7 +21,7 @@ In general you'll be working with three different copies of the the KielMAT code
 
 ### Setting up your local development environment
 1. Clone the repository
-2. Set up the environment via poetry. (If you don't have poetry, you can install it from [here](https://python-poetry.org/).) Then go to the repository directory, and run ``poetry install``.
+2. Set up the environment via [uv](https://docs.astral.sh/uv/). (If you don't have uv, you can install it by following the [installation instructions](https://docs.astral.sh/uv/getting-started/installation/).) Then go to the repository directory, and run ``uv sync``. This creates a virtual environment in ``.venv`` and installs KielMAT together with all development dependencies. You can run commands inside this environment by prefixing them with ``uv run`` (e.g. ``uv run pytest``), or by activating the environment directly.
 3. Make changes to the code
 4. Push to your fork
 5. Open a Pull request
