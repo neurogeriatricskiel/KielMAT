@@ -33,3 +33,6 @@ This example introduces the [Postural Transition Detection](https://neurogeriatr
 
 ### [Example 8: Turn Detection](modules_08_td.md)
 This example introduces the [Turn Detection](https://neurogeriatricskiel.github.io/KielMAT/modules/td/) module. It demonstrates how the module is implemented on sample 3D acceleration and 3D angular velocity data from a lower back IMU sensor to detect turns.
+
+### [Example 9: Initial and Final Contact Detection (Leeuwen)](modules_09_icfc_leeuwen.md)
+This example introduces the marker-based [Initial Contact Detection](https://neurogeriatricskiel.github.io/KielMAT/modules/icd/) and [Final Contact Detection](https://neurogeriatricskiel.github.io/KielMAT/modules/fcd/) modules. It demonstrates how the Leeuwen coordinate-based method is applied to optical motion-capture heel and pelvis markers to detect initial contacts (heel strikes) and final contacts (toe-offs).
