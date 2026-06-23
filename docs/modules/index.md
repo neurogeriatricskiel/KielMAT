@@ -12,6 +12,12 @@ The **Gait Sequence Detection** module is based on the [Paraschiv-Ionescu](https
 
 The **Initial Contact Detection** module is also based on the [Paraschiv-Ionescu](https://ieeexplore.ieee.org/document/9176281) algorithm and is designed to identify the initial contact in each gait sequence. The outputs of this module are essential for accurately measuring temporal gait parameters, such as stride time and gait symmetry.
 
+The module additionally provides a **Leeuwen** coordinate-based detector ([Zeni et al., 2008](https://doi.org/10.1016/j.gaitpost.2007.07.007)) that identifies initial contacts from optical motion-capture heel markers expressed relative to a pelvis marker.
+
+## [Final Contact Detection (Leeuwen)](fcd.md)
+
+The **Final Contact Detection** module identifies final contacts (toe-offs) from optical motion-capture heel markers using the [Leeuwen](https://doi.org/10.1016/j.gaitpost.2007.07.007) coordinate-based method. Final contacts correspond to the most posterior position of the heel relative to a pelvis marker. Together with the initial contacts, they enable computation of stance and swing phase durations.
+
 ## [Physical Activity Monitoring](pam.md)
 
 The **Physical Activity Monitoring** module tracks and analyzes physical activity levels using 3D acceleration data from IMU sensors. It provides outputs such as activity intensity and duration, enabling a comprehensive assessment of an individual's movement behavior throughout the day.

@@ -27,6 +27,8 @@ import pandas as pd
 import os
 from kielmat.modules.gsd import ParaschivIonescuGaitSequenceDetection
 from kielmat.modules.icd import ParaschivIonescuInitialContactDetection
+from kielmat.modules.icd import LeeuwenInitialContactDetection
+from kielmat.modules.fcd import LeeuwenFinalContactDetection
 from kielmat.modules.pam import PhysicalActivityMonitoring
 from kielmat.modules.ptd import PhamPosturalTransitionDetection
 from kielmat.modules.td import PhamTurnDetection
@@ -953,6 +955,232 @@ def test_invalid_sampling_freq_pham_pt():
             accel_data=sample_data.iloc[:, 0:3],
             gyro_data=sample_data.iloc[:, 3:6],
             sampling_freq_Hz=0,
+        )
+
+
+# Tests for the Leeuwen marker-based initial/final contact detection algorithms
+# A synthetic pelvis-referenced heel signal: a 1 Hz sinusoid sampled at 100 Hz for 10 s.
+# The heel oscillates anterior/posterior about a stationary reference, so the relative
+# signal has one anterior maximum (initial contact) and one posterior minimum (final
+# contact) per gait cycle -> roughly 10 of each over the 10 s window.
+LEEUWEN_FS = 100.0
+LEEUWEN_DURATION_S = 10.0
+_leeuwen_t = np.arange(int(LEEUWEN_FS * LEEUWEN_DURATION_S)) / LEEUWEN_FS
+marker_data = pd.DataFrame(
+    {
+        "LHEE_PosY": 0.5 * np.sin(2 * np.pi * 1.0 * _leeuwen_t) + 1.0,
+        "SACR_PosY": np.full_like(_leeuwen_t, 1.0),
+    }
+)
+
+
+def test_leeuwen_icd_detect():
+    # Initial contacts are detected and stored in BIDS-like format
+    icd = LeeuwenInitialContactDetection()
+    icd = icd.detect(
+        data=marker_data,
+        sampling_freq_Hz=LEEUWEN_FS,
+        heel_col_name="LHEE_PosY",
+        reference_col_name="SACR_PosY",
+        side="left",
+        tracking_system="omc",
+    )
+    result = icd.initial_contacts_
+
+    # Output schema
+    assert isinstance(result, pd.DataFrame)
+    assert list(result.columns) == [
+        "onset",
+        "duration",
+        "event_type",
+        "side",
+        "tracking_system",
+    ]
+    # Approximately one initial contact per 1 Hz cycle
+    assert 9 <= len(result) <= 11
+    assert (result["event_type"] == "initial contact").all()
+    assert (result["side"] == "left").all()
+    assert (result["tracking_system"] == "omc").all()
+    assert (result["duration"] == 0).all()
+    # Onsets are within the recording and monotonically increasing
+    assert result["onset"].is_monotonic_increasing
+    assert result["onset"].min() >= 0
+    assert result["onset"].max() <= LEEUWEN_DURATION_S
+
+
+def test_leeuwen_fcd_detect():
+    # Final contacts are detected and stored in BIDS-like format
+    fcd = LeeuwenFinalContactDetection()
+    fcd = fcd.detect(
+        data=marker_data,
+        sampling_freq_Hz=LEEUWEN_FS,
+        heel_col_name="LHEE_PosY",
+        reference_col_name="SACR_PosY",
+        side="left",
+        tracking_system="omc",
+    )
+    result = fcd.final_contacts_
+
+    assert isinstance(result, pd.DataFrame)
+    assert list(result.columns) == [
+        "onset",
+        "duration",
+        "event_type",
+        "side",
+        "tracking_system",
+    ]
+    assert 9 <= len(result) <= 11
+    assert (result["event_type"] == "final contact").all()
+    assert (result["side"] == "left").all()
+    assert result["onset"].is_monotonic_increasing
+
+
+def test_leeuwen_ic_fc_interleave():
+    # Within a gait cycle the heel reaches its anterior max (IC) before its posterior
+    # min (FC); detected IC and FC times should therefore alternate.
+    icd = LeeuwenInitialContactDetection().detect(
+        data=marker_data,
+        sampling_freq_Hz=LEEUWEN_FS,
+        heel_col_name="LHEE_PosY",
+        reference_col_name="SACR_PosY",
+    )
+    fcd = LeeuwenFinalContactDetection().detect(
+        data=marker_data,
+        sampling_freq_Hz=LEEUWEN_FS,
+        heel_col_name="LHEE_PosY",
+        reference_col_name="SACR_PosY",
+    )
+    ic = icd.initial_contacts_["onset"].to_numpy()
+    fc = fcd.final_contacts_["onset"].to_numpy()
+    # No IC should coincide with an FC
+    assert not np.any(np.isin(ic, fc))
+
+
+def test_leeuwen_dt_data():
+    # When datetime is provided, onset is taken from it
+    dt_data = pd.Series(
+        pd.date_range(start="2022-01-01", periods=len(marker_data), freq="10ms")
+    )
+    icd = LeeuwenInitialContactDetection().detect(
+        data=marker_data,
+        sampling_freq_Hz=LEEUWEN_FS,
+        heel_col_name="LHEE_PosY",
+        reference_col_name="SACR_PosY",
+        dt_data=dt_data,
+    )
+    assert pd.api.types.is_datetime64_any_dtype(icd.initial_contacts_["onset"])
+
+
+def test_leeuwen_empty_data():
+    # Empty input returns an empty result rather than raising
+    icd = LeeuwenInitialContactDetection().detect(
+        data=pd.DataFrame(),
+        sampling_freq_Hz=LEEUWEN_FS,
+        heel_col_name="LHEE_PosY",
+        reference_col_name="SACR_PosY",
+    )
+    fcd = LeeuwenFinalContactDetection().detect(
+        data=pd.DataFrame(),
+        sampling_freq_Hz=LEEUWEN_FS,
+        heel_col_name="LHEE_PosY",
+        reference_col_name="SACR_PosY",
+    )
+    assert icd.initial_contacts_.empty
+    assert fcd.final_contacts_.empty
+
+
+def test_leeuwen_invalid_data_type():
+    icd = LeeuwenInitialContactDetection()
+    with pytest.raises(ValueError):
+        icd.detect(
+            data=np.zeros((100, 2)),
+            sampling_freq_Hz=LEEUWEN_FS,
+            heel_col_name="LHEE_PosY",
+            reference_col_name="SACR_PosY",
+        )
+
+
+def test_leeuwen_invalid_sampling_freq():
+    fcd = LeeuwenFinalContactDetection()
+    with pytest.raises(ValueError):
+        fcd.detect(
+            data=marker_data,
+            sampling_freq_Hz=-1,
+            heel_col_name="LHEE_PosY",
+            reference_col_name="SACR_PosY",
+        )
+
+
+def test_leeuwen_missing_column():
+    icd = LeeuwenInitialContactDetection()
+    with pytest.raises(ValueError):
+        icd.detect(
+            data=marker_data,
+            sampling_freq_Hz=LEEUWEN_FS,
+            heel_col_name="DOES_NOT_EXIST",
+            reference_col_name="SACR_PosY",
+        )
+
+
+def test_leeuwen_invalid_col_name_type():
+    icd = LeeuwenInitialContactDetection()
+    with pytest.raises(ValueError):
+        icd.detect(
+            data=marker_data,
+            sampling_freq_Hz=LEEUWEN_FS,
+            heel_col_name=123,
+            reference_col_name="SACR_PosY",
+        )
+
+
+def test_leeuwen_invalid_side_type():
+    icd = LeeuwenInitialContactDetection()
+    with pytest.raises(ValueError):
+        icd.detect(
+            data=marker_data,
+            sampling_freq_Hz=LEEUWEN_FS,
+            heel_col_name="LHEE_PosY",
+            reference_col_name="SACR_PosY",
+            side=1,
+        )
+
+
+def test_leeuwen_invalid_tracking_system_type():
+    fcd = LeeuwenFinalContactDetection()
+    with pytest.raises(ValueError):
+        fcd.detect(
+            data=marker_data,
+            sampling_freq_Hz=LEEUWEN_FS,
+            heel_col_name="LHEE_PosY",
+            reference_col_name="SACR_PosY",
+            tracking_system=123,
+        )
+
+
+def test_leeuwen_invalid_dt_data_type():
+    icd = LeeuwenInitialContactDetection()
+    with pytest.raises(
+        ValueError, match="dt_data must be a pandas Series with datetime values"
+    ):
+        icd.detect(
+            data=marker_data,
+            sampling_freq_Hz=LEEUWEN_FS,
+            heel_col_name="LHEE_PosY",
+            reference_col_name="SACR_PosY",
+            dt_data="not_a_series",
+        )
+
+
+def test_leeuwen_invalid_dt_data_length():
+    fcd = LeeuwenFinalContactDetection()
+    dt_data = pd.Series(pd.date_range(start="2022-01-01", periods=10, freq="10ms"))
+    with pytest.raises(ValueError):
+        fcd.detect(
+            data=marker_data,
+            sampling_freq_Hz=LEEUWEN_FS,
+            heel_col_name="LHEE_PosY",
+            reference_col_name="SACR_PosY",
+            dt_data=dt_data,
         )
 
 

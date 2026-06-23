@@ -55,6 +55,7 @@ nav:
     - modules/index.md
     - Gait Sequence Detection: modules/gsd.md
     - Initial Contact Detection: modules/icd.md
+    - Final Contact Detection: modules/fcd.md
     - Physical Activity Monitoring: modules/pam.md
     - Postural Transition Detection: modules/ptd.md
     - Turn Detection: modules/td.md

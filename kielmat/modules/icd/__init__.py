@@ -1,1 +1,2 @@
 from ._paraschiv import ParaschivIonescuInitialContactDetection
+from ._leeuwen import LeeuwenInitialContactDetection
