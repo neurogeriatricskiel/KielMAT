@@ -44,11 +44,20 @@ The table below provides an overview of key modules, their functionalities, inpu
 
 <tr>
 <td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/icd/">Initial Contact Detection</a></td>
-<td style="padding: 8px;">Detects initial and final contacts within each gait cycle</td>
-<td style="padding: 8px;">3D accelerations from lower back IMU</td>
+<td style="padding: 8px;">Detects initial contacts within each gait cycle</td>
+<td style="padding: 8px;">3D accelerations from lower back IMU (Paraschiv-Ionescu) or 3D heel &amp; pelvis markers from optical motion capture (Leeuwen)</td>
 <td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/mobilised/">Mobilise-D</a> and <a href="https://neurogeriatricskiel.github.io/KielMAT/datasets/keepcontrol/">KeepControl</a></td>
-<td style="padding: 8px;">initial contact, final contact</td>
+<td style="padding: 8px;">initial contact</td>
 <td style="padding: 8px;">Temporal parameters (e.g., step time, stride time)</td>
+</tr>
+
+<tr>
+<td style="padding: 8px;"><a href="https://neurogeriatricskiel.github.io/KielMAT/modules/fcd/">Final Contact Detection</a></td>
+<td style="padding: 8px;">Detects final contacts (toe-offs) within each gait cycle</td>
+<td style="padding: 8px;">3D heel &amp; pelvis markers from optical motion capture (Leeuwen)</td>
+<td style="padding: 8px;">-</td>
+<td style="padding: 8px;">final contact</td>
+<td style="padding: 8px;">Temporal parameters (e.g., stance &amp; swing time)</td>
 </tr>
 
 <tr>

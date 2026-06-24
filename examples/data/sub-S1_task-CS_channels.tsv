@@ -1,0 +1,10 @@
+name	type	tracked_point	units	sampling_frequency
+LHEE_PosX	POS	left_heel	m	100
+LHEE_PosY	POS	left_heel	m	100
+LHEE_PosZ	POS	left_heel	m	100
+RHEE_PosX	POS	right_heel	m	100
+RHEE_PosY	POS	right_heel	m	100
+RHEE_PosZ	POS	right_heel	m	100
+SACR_PosX	POS	pelvis	m	100
+SACR_PosY	POS	pelvis	m	100
+SACR_PosZ	POS	pelvis	m	100

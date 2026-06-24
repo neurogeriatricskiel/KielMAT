@@ -11,8 +11,6 @@ plugins:
       handlers:
         python:
           paths: [kielmat]
-          options:
-            verbose: True
 
 theme:
   name: material
@@ -50,11 +48,13 @@ nav:
     - Physical Activity Monitoring: examples/modules_06_pam.md
     - Postural Transition Detection: examples/modules_07_ptd.md
     - Turn Detection: examples/modules_08_td.md
-  - Dataclass: dataclass.md 
+    - Initial and Final Contact Detection (Leeuwen): examples/modules_09_icfc_leeuwen.md
+  - Dataclass: dataclass.md
   - Modules: 
     - modules/index.md
     - Gait Sequence Detection: modules/gsd.md
     - Initial Contact Detection: modules/icd.md
+    - Final Contact Detection: modules/fcd.md
     - Physical Activity Monitoring: modules/pam.md
     - Postural Transition Detection: modules/ptd.md
     - Turn Detection: modules/td.md
